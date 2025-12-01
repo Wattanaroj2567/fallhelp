@@ -1,0 +1,99 @@
+/**
+ * @fileoverview Elder Service
+ * @description Handles elder profile management and member access control
+ */
+
+import { apiClient, toApiError } from './api';
+import type { Elder, Member } from './types';
+
+export type CreateElderPayload = {
+  firstName: string;
+  lastName: string;
+  dateOfBirth?: string;
+  gender?: string;
+  weight?: number;
+  height?: number;
+  diseases?: string[];
+  profileImage?: string;
+  bloodType?: string;
+  allergies?: string[];
+  medications?: string[];
+  notes?: string;
+};
+
+export type UpdateElderPayload = Partial<CreateElderPayload>;
+
+export type InviteMemberPayload = {
+  email: string;
+};
+
+export async function createElder(payload: CreateElderPayload): Promise<Elder> {
+  try {
+    const { data } = await apiClient.post<Elder>('/api/elders', payload);
+    return data;
+  } catch (error) {
+    throw toApiError(error);
+  }
+}
+
+export async function listElders(): Promise<Elder[]> {
+  try {
+    const { data } = await apiClient.get<Elder[]>('/api/elders');
+    return data;
+  } catch (error) {
+    throw toApiError(error);
+  }
+}
+
+export async function getElder(elderId: string): Promise<Elder> {
+  try {
+    const { data } = await apiClient.get<Elder>(`/api/elders/${elderId}`);
+    return data;
+  } catch (error) {
+    throw toApiError(error);
+  }
+}
+
+export async function updateElder(elderId: string, payload: UpdateElderPayload): Promise<Elder> {
+  try {
+    const { data } = await apiClient.put<Elder>(`/api/elders/${elderId}`, payload);
+    return data;
+  } catch (error) {
+    throw toApiError(error);
+  }
+}
+
+export async function deactivateElder(elderId: string): Promise<Elder> {
+  try {
+    const { data } = await apiClient.patch<Elder>(`/api/elders/${elderId}/deactivate`);
+    return data;
+  } catch (error) {
+    throw toApiError(error);
+  }
+}
+
+export async function listMembers(elderId: string): Promise<Member[]> {
+  try {
+    const { data } = await apiClient.get<Member[]>(`/api/elders/${elderId}/members`);
+    return data;
+  } catch (error) {
+    throw toApiError(error);
+  }
+}
+
+export async function inviteMember(elderId: string, payload: InviteMemberPayload): Promise<Member> {
+  try {
+    const { data } = await apiClient.post<Member>(`/api/elders/${elderId}/members`, payload);
+    return data;
+  } catch (error) {
+    throw toApiError(error);
+  }
+}
+
+export async function removeMember(elderId: string, userId: string) {
+  try {
+    await apiClient.delete(`/api/elders/${elderId}/members/${userId}`);
+  } catch (error) {
+    throw toApiError(error);
+  }
+}
