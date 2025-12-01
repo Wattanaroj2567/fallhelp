@@ -30,7 +30,16 @@
       "favicon": "./assets/images/logoicon.png"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/logoicon.png",
+          "color": "#ffffff",
+          "defaultChannel": "default",
+          "sounds": []
+        }
+      ]
     ],
     "extra": {
       "apiUrl": "http://192.168.1.100:3000",
