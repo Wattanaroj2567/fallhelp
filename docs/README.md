@@ -22,12 +22,13 @@ FallHelp คือระบบตรวจจับการหกล้มข�
 ## 📚 ลิงก์เอกสารสำคัญ
 
 - **Backend Summary:** `backend/docs/IMPLEMENTATION_SUMMARY.md`
+- **Backend Troubleshooting:** `backend/docs/TROUBLESHOOTING.md`
+- **Mobile Progress:** `mobile/docs/progress/PROGRESS.md`
+- **Mobile Troubleshooting:** `mobile/docs/TROUBLESHOOTING.md`
+- **Admin Panel:** `admin/docs/README.md` ✨ NEW
 - **ESP32 Firmware Guide:** `arduino/README.md`
 - **UI Features (Mobile):** `docs/UI_FEATURES.md`
 - **Project Structure:** `docs/PROJECT_STRUCTURE.md`
-- **Admin Panel:** `docs/ADMIN_PANEL.md` ✨ NEW
-- **Feedback System:** `docs/FEEDBACK_SYSTEM.md` ✨ NEW
-- **Functional Requirements:** `docs/FUNCTIONAL_REQUIREMENTS.md` ✨ NEW
 - **Postman Collection:** `backend/postman_collection.json`
 
 ---

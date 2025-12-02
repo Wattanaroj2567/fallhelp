@@ -8,7 +8,7 @@ import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useState } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { getToken } from "../services/tokenStorage";
+import { getToken, clearToken } from "../services/tokenStorage";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { usePushNotifications } from "../hooks/usePushNotifications";
 
@@ -128,7 +128,24 @@ export default function RootLayout() {
                   router.replace("/(setup)/empty-state");
                 }
               }
-            } catch (error) {
+            } catch (error: any) {
+              // Check for 401 Unauthorized
+              // [CRITICAL] DO NOT REMOVE: Handles session expiration gracefully
+              // If the token is invalid/expired (401), we MUST clear it and redirect to login.
+              // NOTE: Use 'clearToken()' from tokenStorage, NOT 'removeToken' (which doesn't exist).
+              const status = error?.status || error?.response?.status;
+              const message = error?.message || '';
+              const isUnauthorized = status === 401 || message.includes('401') || JSON.stringify(error).includes('401');
+
+              if (isUnauthorized) {
+                console.log('Session expired (401), redirecting to login...');
+                await clearToken();
+                if (segments[0] !== "(auth)") {
+                  router.replace("/(auth)/login");
+                }
+                return; // Stop execution
+              }
+
               console.error("Failed to check elders:", error);
               // If error (e.g. network), allow access to tabs (fallback)
               if (inAuthGroup) {
@@ -137,8 +154,16 @@ export default function RootLayout() {
             }
           }
         }
-      } catch (e) {
+      } catch (e: any) {
         console.error("Auth check failed:", e);
+        // If 401, clear token and redirect to login
+        if (e?.response?.status === 401 || e?.message?.includes('401')) {
+          const { removeToken } = require("../services/tokenStorage");
+          await removeToken();
+          if (segments[0] !== "(auth)") {
+            router.replace("/(auth)/login");
+          }
+        }
       } finally {
         setIsReady(true);
         try {

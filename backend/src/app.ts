@@ -23,7 +23,10 @@ const logDocs = createDebug('fallhelp:api:docs');
 
 // Middleware
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:8081',
+  origin: [
+    process.env.FRONTEND_URL || 'http://localhost:8081',
+    process.env.ADMIN_URL || 'http://localhost:5173'
+  ],
   credentials: true,
 }));
 

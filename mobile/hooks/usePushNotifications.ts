@@ -74,11 +74,32 @@ export const usePushNotifications = (): PushNotificationState => {
       console.log('Expo Push Token:', token);
 
       // Send token to backend
+      // Send token to backend if user is logged in
       try {
-        await updatePushToken({ pushToken: token });
-        console.log('Push token saved to backend');
-      } catch (err) {
-        console.error('Failed to save push token to backend:', err);
+        const { getToken } = require('@/services/tokenStorage');
+        const authToken = await getToken();
+        if (authToken) {
+          await updatePushToken({ pushToken: token });
+          console.log('Push token saved to backend');
+        } else {
+          console.log('User not logged in, skipping push token save');
+        }
+      } catch (err: any) {
+        // Check for 401 Unauthorized (invalid/expired token)
+        // [CRITICAL] DO NOT REMOVE OR MODIFY THIS CHECK WITHOUT TESTING STARTUP FLOW
+        // This logic suppresses "Invalid token" errors that occur when the app starts
+        // and tries to register a push token before the user has logged in.
+        // We check status, message, and stringified error to be absolutely sure we catch it.
+        const status = err?.status || err?.response?.status;
+        const message = err?.message || '';
+        const isUnauthorized = status === 401 || message.includes('401') || JSON.stringify(err).includes('401');
+
+        // Only log if it's NOT a 401 error
+        if (!isUnauthorized) {
+          console.error('Failed to save push token to backend:', err);
+        } else {
+          console.log('Push token save skipped: User not authenticated (401)');
+        }
       }
     } else {
       console.warn('Must use physical device for Push Notifications');

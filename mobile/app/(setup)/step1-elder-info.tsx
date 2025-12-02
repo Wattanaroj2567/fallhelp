@@ -153,10 +153,13 @@ export default function Step1() {
       await SecureStore.setItemAsync('setup_elderId', String(elder.id));
       // 2. Clear Form Data - COMMENTED OUT to allow back navigation with data
       // await AsyncStorage.removeItem(FORM_STORAGE_KEY);
-      // 3. Set Setup Step to 2
-      await SecureStore.setItemAsync('setup_step', '2');
+      // 3. Set Setup Step to 2 (Skipped for now as we jump to dashboard)
+      // await SecureStore.setItemAsync('setup_step', '2');
 
-      router.push('/(setup)/step2-device-pairing');
+      // [TEMPORARY] Redirect to Dashboard for testing internal functions
+      // TODO: Revert this to router.push('/(setup)/step2-device-pairing') when testing is complete
+      // and uncomment the setItemAsync above.
+      router.replace('/(tabs)');
     },
     onError: (error: any) => {
       console.error('Error creating elder:', error);
