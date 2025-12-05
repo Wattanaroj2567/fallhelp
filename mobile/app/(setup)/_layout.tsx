@@ -6,7 +6,14 @@ import { Stack } from 'expo-router';
 // ==========================================
 export default function SetupLayout() {
   return (
-    <Stack screenOptions={{ headerShown: false, headerTitleAlign: 'center' }}>
+    <Stack 
+      screenOptions={{ 
+        headerShown: false, 
+        headerTitleAlign: 'center',
+        animation: 'slide_from_right',
+        animationDuration: 250,
+      }}
+    >
       <Stack.Screen name="empty-state" options={{ title: 'เริ่มต้นใช้งาน', headerShown: false }} />
       <Stack.Screen name="step1-elder-info" options={{ title: 'ข้อมูลผู้สูงอายุ' }} />
       <Stack.Screen name="step2-device-pairing" options={{ title: 'จับคู่เครื่อง' }} />

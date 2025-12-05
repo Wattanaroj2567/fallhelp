@@ -1260,6 +1260,33 @@ Dashboard Update:
 - **สถานะ:** ❤️ "120 BPM" (สูงกว่าปกติ - สีแดง)
 - **รายละเอียด:** "สูงกว่าปกติ"
 
+### 10.2 Notification History Screen (ประวัติการแจ้งเตือน)
+
+> **📍 ตำแหน่งในแอป:** ปุ่มกระดิ่ง (🔔) มุมขวาบนของหน้า Home
+
+**หน้า: Notifications**
+
+- **Header:** "ประวัติการแจ้งเตือน"
+  - **Right Action:** ปุ่ม "ถังขยะ" (Clear All) - ลบการแจ้งเตือนทั้งหมด
+- **Action Bar:**
+  - ปุ่ม "อ่านทั้งหมด" (Mark all as read) - เปลี่ยนสถานะทุกรายการเป็นอ่านแล้ว
+- **List Item:**
+  - **Icon:** ตามประเภท (Fall=Warning, Heart=Heart, System=Info)
+  - **Title:** หัวข้อแจ้งเตือน (ตัวหนา = ยังไม่อ่าน)
+  - **Time:** เวลาที่เกิดเหตุ
+  - **Message:** รายละเอียด
+  - **Badge:** "ใหม่" (สีแดง) สำหรับรายการที่ยังไม่อ่าน
+- **Interaction:**
+  - **Tap:** เปิดดูรายละเอียด / ทำเครื่องหมายว่าอ่านแล้ว
+  - **Pull-to-refresh:** ดึงข้อมูลใหม่
+
+**Unread Badge:**
+
+- แสดงจุดสีแดงพร้อมตัวเลขบนไอคอนกระดิ่งในหน้า Home
+- อัปเดต Real-time (ทุก 30 วินาที)
+
+---
+
 ---
 
 ## 11. Emergency Call Behavior
@@ -1597,7 +1624,46 @@ Dashboard Update:
 
 ---
 
-### **6. Event & History APIs**
+### **7. Notification APIs**
+
+- **`GET /api/notifications`**
+
+  - **Request:** Query: `page`, `pageSize`, `isRead`
+  - **Response:** `{ data: [Notification], total, page, totalPages }`
+  - **UI:** Notification History List
+
+- **`GET /api/notifications/unread-count`**
+
+  - **Request:** Header: Authorization Bearer token
+  - **Response:** `{ count: number }`
+  - **UI:** Home Screen Badge
+
+- **`PATCH /api/notifications/:id/read`**
+
+  - **Request:** Param: `id`
+  - **Response:** `{ success: true }`
+  - **UI:** Tap on notification
+
+- **`PATCH /api/notifications/read-all`**
+
+  - **Request:** None
+  - **Response:** `{ success: true }`
+  - **UI:** "Mark all as read" button
+
+- **`DELETE /api/notifications`**
+
+  - **Request:** None
+  - **Response:** `{ success: true }`
+  - **UI:** "Clear all" button
+
+- **`DELETE /api/notifications/:id`**
+  - **Request:** Param: `id`
+  - **Response:** `{ success: true }`
+  - **UI:** Delete single item
+
+---
+
+### **8. Event & History APIs**
 
 #### 6.1 Fall Detection Events
 

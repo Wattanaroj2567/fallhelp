@@ -27,6 +27,7 @@ arduino/
 │   2. Mobile ส่ง HTTP POST ไป http://192.168.4.1/wifi-config           │
 │      Body: { "ssid": "WiFi", "password": "xxx", "mqtt": "192.168.1.x" }│
 │   3. ESP32 restart → เชื่อม WiFi บ้าน → MQTT                          │
+│      → ส่งสถานะ ONLINE → Backend ส่ง Push Notification "Device Online" │
 ├────────────────────────────────────────────────────────────────────────┤
 │ Step 4: ทดสอบ Sensor Events (จำลอง)                                    │
 │   พิมพ์ใน Serial Monitor: fall, hr low/normal/high, status            │
@@ -98,4 +99,9 @@ arduino/
 6. เปิด Serial Monitor (115200) → ดู Serial Number
 7. Admin สร้างอุปกรณ์ด้วย Serial Number
 8. Mobile App ตั้งค่า WiFi + MQTT Server
-9. พิมพ์ `fall` หรือ `hr normal` เพื่อทดสอบ
+9. พิมพ์ `fall` หรือ `hr normal` เพื่อทดสอบ (จะมีการแจ้งเตือนไปที่ Mobile App)
+
+---
+
+**Last Updated:** December 5, 2025
+**Status:** Firmware Stable & Production Ready

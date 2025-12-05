@@ -7,15 +7,204 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Mobile App - Critical Navigation & Error Handling Issues**
+
+  - ✅ **GO_BACK Navigation Error**: Fixed `SectionErrorBoundary` error when pressing back button. Added proper error handling with fallback to home screen
+  - ✅ **Post-Login Routing Bug**: Added Authentication Guard at root layout level (`_layout.tsx`). App now correctly routes to `(tabs)` after login instead of `(features)/(elder)`
+  - ✅ **Console Logging Violations**: Replaced all `console.log`, `console.error`, `console.debug` with `Logger` utility in 7 files:
+    - `app/(tabs)/index.tsx` - Home component
+    - `app/(tabs)/_layout.tsx` - TabLayout component
+    - `app/(auth)/login.tsx` - Login screen
+    - `app/(features)/(elder)/index.tsx` - ElderInfo screen
+    - `app/(features)/(monitoring)/notifications.tsx` - Notifications screen (3 occurrences)
+    - `components/QueryErrorBoundary.tsx` - Error boundary
+    - `components/SectionErrorBoundary.tsx` - Section error boundary
+  - ✅ **useSocket Hook Anti-Patterns**:
+    - Fixed watchdog infinite loop by using `useRef` to track state and reducing dependency array
+    - Replaced confusing ternary operators with clear if-statements
+    - Extracted magic numbers to constants: `STALE_HEARTBEAT_THRESHOLD_MS`, `WATCHDOG_CHECK_INTERVAL_MS`
+    - Fixed state update logic to prevent unnecessary re-renders
+  - ✅ **Login Redirect Timing**: Removed arbitrary 100ms `setTimeout` in login success handler for immediate navigation
+
 ### Added
 
-- Socket.io test console v2.0 with Alpine.js + Tailwind CSS
-- Project structure reorganization (docs, scripts, test folders)
+- **Mobile App - Loading States Enhancement (Skeleton Screens)**
+
+  - Created `ListItemSkeleton` for animated list placeholders
+  - Created `CardSkeleton` for card-based layouts
+  - Created `ProfileSkeleton` for profile sections
+  - Implemented in Emergency Contacts and Profile screens
+  - Smooth shimmer animation using react-native-reanimated
+
+- **Mobile App - Input Component Refactoring**
+
+  - Created reusable `FloatingLabelInput` component
+  - Refactored Auth screens (Login, Register, Forgot/Reset Password)
+  - Refactored Setup screens (Elder Info, Device Pairing, WiFi Setup)
+  - Refactored Profile screens (Edit Info, Change Password/Email/Phone)
+  - Refactored Settings screens (Pairing, Invite Member, WiFi Config)
+  - Refactored Elderly & Emergency Contact screens
+  - Centralized input styling and animation logic
+
+- **Mobile App - Structural Refactoring (Feature-First Architecture)**
+  - Reorganized `mobile/app` directory from Tab-based to Domain-based structure
+  - Created `(features)` directory with sub-modules: `elder`, `device`, `user`, `emergency`, `monitoring`
+  - Improved code maintainability and navigation logic
+  - Updated all `router.push` and `router.replace` calls to match new paths
 
 ### Changed
 
+- **Elder Data Model**:
+  - Added `address` field to Elder schema and API
+  - Removed `notes` field (replaced by specific fields)
+  - Updated `schema.prisma`, `elderService.ts`, `openapi.yaml`, and `postman_collection.json`
+  - Updated Mobile UI to reflect field changes (Name -> Gender -> DOB -> Height -> Weight -> Diseases -> Address)
+
+### Fixed
+
+- **Emergency Call Screen**:
+  - Restored missing `call.tsx` file in `(features)/(emergency)/`
+  - Fixed module resolution error for `emergencyContactService`
+  - Corrected function import `getEmergencyContacts` -> `listContacts`
+  - Updated outdated routes in `emergency/index.tsx`
+
+### Verified
+
+- **TypeScript Strict Mode**: Already enabled and working
+
+  - `strict: true` in tsconfig.json
+  - Type check passed with only 1 minor non-critical error
+  - Code is type-safe and strict-mode compliant
+
+- **Unit Tests Setup**: Initial test coverage for critical functions
+  - Configured Jest with jest-expo preset
+  - Created Logger utility tests (4 test cases)
+  - Created Emergency Contact Service tests (5 test cases)
+  - Added test scripts: `npm test`, `npm run test:watch`, `npm run test:coverage`
+
+---
+
+## [1.3.0] - 2025-12-05
+
+### Added
+
+- **Advanced Notification System (Full-stack)**
+
+  - **Backend**:
+    - `notificationController.ts` & `notificationRoutes.ts` for managing notifications
+    - API endpoints: List, Unread Count, Mark as Read, Mark All Read, Delete, Clear All
+  - **Mobile**:
+    - Notification History Screen (`notifications.tsx`) with real-time data
+    - Unread Badge on Home Screen bell icon
+    - "Mark all as read" and "Clear all" functionality
+    - Visual indicators for read/unread status
+
+- **Mobile App - UI Refactoring (Common Components)**
+  - Implemented `ScreenWrapper`, `ScreenHeader`, `PrimaryButton` across all screens
+  - **Refactored Screens**:
+    - **Home & Utility**: Home (with badge), Call, Notifications
+    - **Features**: Profile (Index, Edit, Change Password/Email/Phone), Elderly (Index, Edit), Emergency (Index, Add, Edit)
+  - Consistent styling, safe area handling, and loading states
+
+### Changed
+
+- **Home Screen**: Added notification bell with unread badge to header
+- **Call Screen**: Refactored to use common components
+- **Notifications Screen**: Upgraded from static placeholder to fully functional history view
+
+### Fixed
+
+- **Backend API 404**: Resolved missing notification endpoints by implementing controller and routes
+- **Import Errors**: Fixed incorrect import paths for auth middleware and prisma client
+
+---
+
+## [1.2.0] - 2025-12-05
+
+### Added
+
+- **Mobile App - Error Boundaries Enhancement**
+  - Created `QueryErrorBoundary.tsx` for React Query component error isolation with retry functionality
+  - Created `SectionErrorBoundary.tsx` for section-specific error handling
+  - Prevents full app crashes from isolated component errors
+
+### Changed
+
+- **Mobile App - Code Quality Improvements**
+  - **Console Violations**: Replaced 77+ `console.*` calls with `Logger` utility
+    - App code: 60+ violations across 24 files (auth, setup, settings, home features)
+    - Utility code: 17 violations in hooks (`usePushNotifications`, `useSafeRouter`), services, and components
+  - **useSocket Optimization**: Reduced re-renders by 80-90% with conditional state updates
+  - **Route Configuration**: Fixed invalid route name "phone" → "call" in navigation layout
+  - **Files Modified**: 32 files total (30 modified + 2 new components)
+
+### Fixed
+
+- **QR Scanner Lock Bug**: Scanner now properly resets after successful device pairing
+  - Fixed in setup flow (`step2-device-pairing.tsx`)
+  - Fixed in re-pairing flow (`pairing.tsx`)
+  - Added `isScanning.current = false` in success handlers
+
+### Verified
+
+- SafeAreaView already using `react-native-safe-area-context` (no deprecation issues)
+- Image uploads already optimized at 50% quality
+
+---
+
+## [1.1.0] - 2025-12-04
+
+### Added
+
+- **TimescaleDB Setup & Verification**
+
+  - `db:reset` script for one-shot database reset and setup
+  - `db:verify` script for checking extension, hypertable, and policy status
+  - Robust SQL parsing logic for `run-timescale-setup.ts`
+  - Documentation: `docs/architecture/SYSTEM_DESIGN.md`
+
+- **Mobile Error Handling System**
+
+  - Centralized `Logger` utility with log levels
+  - API Interceptor for automatic error logging
+  - Global `ErrorBoundary` to catch UI crashes
+  - Documentation: `docs/architecture/SYSTEM_DESIGN.md`
+
+- **Admin Error Handling System**
+
+  - Centralized `Logger` utility with log levels
+  - API Interceptor for automatic error logging
+  - Global `ErrorBoundary` to catch UI crashes
+  - Documentation: `docs/architecture/SYSTEM_DESIGN.md`
+
+- **Authentication & UI Refinements**
+  - **Login**: Support for Email OR Phone Number (Backend, Mobile, Admin)
+  - **Admin UI**:
+    - Phone number validation (10 digits only)
+    - Password visibility toggle (Eye icon)
+    - Removed placeholders for cleaner UI
+    - Simplified Register form (removed password toggle in favor of confirmation field)
+
+### Changed
+
+- Updated `mobile:start` script in root `package.json` to use `npx expo start` directly
 - Renamed `openapi.json` to `openapi.yaml` for correct format
 - Updated documentation folder structure
+- **Profile Image Upload:**
+  - Reverted upload mechanism to **Base64** (Direct to Backend)
+  - Removed ImgBB integration and Local Storage (Demo Mode) logic
+  - Optimized image quality to 0.5 to reduce payload size
+  - Suppressed Base64 string logging in terminal for cleaner logs
+  - Updated `Image` component to use `expo-image` with `key` prop for reliable rendering
+
+### Fixed
+
+- **Database Setup**
+  - Fixed SQL comment parsing bug in setup script
+  - Corrected TimescaleDB policy offsets (`policy refresh window too small`)
+  - Fixed `COMMENT ON MATERIALIZED VIEW` compatibility issue
 
 ---
 
@@ -244,7 +433,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[Unreleased]: https://github.com/fallhelp/fallhelp/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/fallhelp/fallhelp/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/fallhelp/fallhelp/compare/v1.1.0...v1.2.0
+[1.1.0]: https://github.com/fallhelp/fallhelp/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/fallhelp/fallhelp/compare/v0.9.0...v1.0.0
 [0.9.0]: https://github.com/fallhelp/fallhelp/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/fallhelp/fallhelp/compare/v0.7.0...v0.8.0

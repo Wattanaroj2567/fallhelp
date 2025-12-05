@@ -142,3 +142,26 @@ export const updatePushToken = async (
     message: 'Push token updated successfully',
   };
 };
+
+/**
+ * Delete user account (Hard Delete)
+ */
+export const deleteUser = async (userId: string): Promise<{ message: string }> => {
+  // Check if user exists
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  // Delete user (Cascade delete will handle related records)
+  await prisma.user.delete({
+    where: { id: userId },
+  });
+
+  return {
+    message: 'User account deleted successfully',
+  };
+};

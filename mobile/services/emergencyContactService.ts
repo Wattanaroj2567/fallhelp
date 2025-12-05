@@ -10,17 +10,17 @@ export type CreateContactPayload = {
   name: string;
   phone: string;
   relationship?: string;
-  priority: number;
+  priority?: number;
 };
 
 export type UpdateContactPayload = Partial<CreateContactPayload>;
 
 export async function listContacts(elderId: string): Promise<EmergencyContact[]> {
   try {
-    const { data } = await apiClient.get<EmergencyContact[]>(
+    const { data } = await apiClient.get<{ success: boolean; data: EmergencyContact[] }>(
       `/api/elders/${elderId}/emergency-contacts`
     );
-    return data;
+    return data.data;
   } catch (error) {
     throw toApiError(error);
   }
@@ -41,16 +41,24 @@ export async function createContact(
   }
 }
 
-export async function updateContact(
-  contactId: string,
-  payload: UpdateContactPayload
-): Promise<EmergencyContact> {
+export async function updateContact(id: string, payload: Partial<CreateContactPayload>): Promise<EmergencyContact> {
   try {
-    const { data } = await apiClient.put<EmergencyContact>(
-      `/api/emergency-contacts/${contactId}`,
+    const { data } = await apiClient.put<{ success: boolean; data: EmergencyContact }>(
+      `/api/emergency-contacts/${id}`,
       payload
     );
-    return data;
+    return data.data;
+  } catch (error) {
+    throw toApiError(error);
+  }
+}
+
+export async function reorderContacts(elderId: string, contactIds: string[]): Promise<void> {
+  try {
+    await apiClient.put(
+      `/api/elders/${elderId}/emergency-contacts/reorder`,
+      { contactIds }
+    );
   } catch (error) {
     throw toApiError(error);
   }

@@ -76,16 +76,18 @@ export const register = async (data: {
  * Login user
  */
 export const login = async (
-  email: string,
+  identifier: string,
   password: string
 ): Promise<{ user: Omit<User, 'password'>; token: string }> => {
-  // Find user
-  const user = await prisma.user.findUnique({
-    where: { email },
+  // Find user by email or phone
+  const user = await prisma.user.findFirst({
+    where: {
+      OR: [{ email: identifier }, { phone: identifier }],
+    },
   });
 
   if (!user) {
-    throw new Error('Invalid email or password');
+    throw new Error('Invalid email/phone or password');
   }
 
   // Check if user is active

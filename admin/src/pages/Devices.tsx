@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../services/api';
 import { QRCodeSVG } from 'qrcode.react';
-import { Plus, Trash2, QrCode } from 'lucide-react';
+import { Plus, Trash2, QrCode, Unplug } from 'lucide-react';
 
 interface Device {
     id: string;
@@ -30,6 +30,7 @@ export default function Devices() {
             const response = await api.get('/admin/devices');
             return response.data.data as Device[];
         },
+        refetchInterval: 5000,
     });
 
     const createMutation = useMutation({
@@ -49,6 +50,7 @@ export default function Devices() {
     };
 
     const [deleteId, setDeleteId] = useState<string | null>(null);
+    const [unpairId, setUnpairId] = useState<string | null>(null);
 
     const deleteMutation = useMutation({
         mutationFn: async (id: string) => {
@@ -63,9 +65,28 @@ export default function Devices() {
         }
     });
 
+    const unpairMutation = useMutation({
+        mutationFn: async (id: string) => {
+            return await api.post(`/admin/devices/${id}/unpair`);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['devices'] });
+            setUnpairId(null);
+        },
+        onError: (error: any) => {
+            alert(error.response?.data?.message || 'Failed to unpair device');
+        }
+    });
+
     const handleDelete = () => {
         if (deleteId) {
             deleteMutation.mutate(deleteId);
+        }
+    };
+
+    const handleUnpair = () => {
+        if (unpairId) {
+            unpairMutation.mutate(unpairId);
         }
     };
 
@@ -128,6 +149,15 @@ export default function Devices() {
                                         >
                                             <QrCode size={18} />
                                         </button>
+                                        {device.status === 'PAIRED' && (
+                                            <button
+                                                onClick={() => setUnpairId(device.id)}
+                                                className="text-orange-600 hover:text-orange-800 hover:bg-orange-50 p-2 rounded-lg transition-colors"
+                                                title="Force Unpair"
+                                            >
+                                                <Unplug size={18} />
+                                            </button>
+                                        )}
                                         <button
                                             onClick={() => setDeleteId(device.id)}
                                             className="text-red-600 hover:text-red-800 hover:bg-red-50 p-2 rounded-lg transition-colors"
@@ -257,6 +287,33 @@ export default function Devices() {
                                 className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
                             >
                                 {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Unpair Confirmation Modal */}
+            {unpairId && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+                    <div className="bg-white rounded-xl p-6 w-full max-w-sm">
+                        <h2 className="text-xl font-bold mb-2 text-orange-600">Force Unpair Device?</h2>
+                        <p className="text-gray-600 mb-6">
+                            Are you sure you want to force unpair this device? This will disconnect it from the current elder.
+                        </p>
+                        <div className="flex justify-end space-x-3">
+                            <button
+                                onClick={() => setUnpairId(null)}
+                                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleUnpair}
+                                disabled={unpairMutation.isPending}
+                                className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50"
+                            >
+                                {unpairMutation.isPending ? 'Unpairing...' : 'Force Unpair'}
                             </button>
                         </div>
                     </div>

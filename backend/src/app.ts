@@ -1,9 +1,10 @@
 import express, { Express } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import routes from './routes';
-import fs from 'node:fs';
 import path from 'node:path';
+import routes from './routes';
+import uploadRoutes from './routes/uploadRoutes';
+import fs from 'node:fs';
 import swaggerUi from 'swagger-ui-express';
 import createDebug from 'debug';
 import yaml from 'js-yaml';
@@ -31,7 +32,7 @@ app.use(cors({
 }));
 
 // Custom JSON parser for Swagger UI (handles text/plain with JSON content)
-app.use(express.text({ type: ['text/plain', 'application/json', '*/json'] }));
+app.use(express.text({ type: ['text/plain', 'application/json', '*/json'], limit: '10mb' }));
 app.use((req, res, next) => {
   // If body is a string (from text parser), try to parse as JSON
   if (typeof req.body === 'string' && req.body.trim()) {
@@ -54,6 +55,10 @@ app.use('/api', apiLimiter);
 
 // API Routes
 app.use('/api', routes);
+app.use('/api/upload', uploadRoutes);
+
+// Serve uploaded files
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // OpenAPI YAML (serve static spec generated from Postman) - DEV only
 app.get('/openapi.yaml', (_req, res) => {

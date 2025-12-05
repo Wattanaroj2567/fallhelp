@@ -7,6 +7,7 @@ import eventRoutes from './eventRoutes';
 import emergencyContactRoutes from './emergencyContactRoutes';
 import adminRoutes from './adminRoutes';
 import feedbackRoutes from './feedbackRoutes';
+import notificationRoutes from './notificationRoutes';
 
 const router = Router();
 
@@ -25,6 +26,7 @@ router.use('/elders', elderRoutes);
 router.use('/devices', deviceRoutes);
 router.use('/events', eventRoutes);
 router.use('/emergency-contacts', emergencyContactRoutes);
+router.use('/notifications', notificationRoutes);
 
 router.use('/admin', adminRoutes);
 router.use('/feedback', feedbackRoutes);

@@ -6,10 +6,10 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
-  SafeAreaView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { MaterialIcons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { listEvents } from '@/services/eventService';
 import { getUserElders } from '@/services/userService';
@@ -30,11 +30,50 @@ const formatDate = (dateString: string) => {
 };
 
 // ==========================================
+// 🎨 LAYER: Mock Data (for UI Preview)
+// ==========================================
+// Generate 60 mock events for testing filters (25, 50, All)
+const generateMockEvents = (): Event[] => {
+  const events: Event[] = [];
+  const types: Array<'FALL' | 'HEART_RATE_HIGH' | 'HEART_RATE_LOW'> = ['FALL', 'HEART_RATE_HIGH', 'HEART_RATE_LOW'];
+  const baseDate = new Date('2025-01-05T23:00:00');
+
+  for (let i = 0; i < 60; i++) {
+    const typeIndex = i % 3; // Rotate through types
+    const type = types[typeIndex];
+    const hoursAgo = i * 4; // Events every 4 hours going back
+    const timestamp = new Date(baseDate.getTime() - hoursAgo * 60 * 60 * 1000);
+
+    events.push({
+      id: `mock-${i + 1}`,
+      elderId: 'mock-elder',
+      deviceId: 'mock-device',
+      type,
+      severity: type === 'FALL' ? 'CRITICAL' : 'WARNING',
+      value: type === 'FALL' ? null : type === 'HEART_RATE_HIGH' ? 110 + (i % 20) : 45 + (i % 10),
+      isCancelled: false,
+      isNotified: true,
+      timestamp: timestamp.toISOString(),
+    });
+  }
+
+  return events;
+};
+
+const MOCK_EVENTS = generateMockEvents();
+
+// ==========================================
 // 📱 LAYER: View (Component)
 // Purpose: History List Screen
 // ==========================================
 export default function HistoryScreen() {
   const router = useRouter();
+
+  // TODO: REMOVE IN PRODUCTION
+  // This toggle is for UI preview during development only.
+  // Set to false and remove the toggle button before production deployment.
+  const [useMockData, setUseMockData] = React.useState(true); // Toggle for preview
+  const [displayLimit, setDisplayLimit] = React.useState<number | null>(25); // 25, 50, or null (All)
 
   // ==========================================
   // ⚙️ LAYER: Logic (Data Fetching)
@@ -64,37 +103,52 @@ export default function HistoryScreen() {
 
       return filteredEvents;
     },
+    enabled: !useMockData, // Only fetch when not using mock data
   });
 
-  const totalEvents = events?.length || 0;
+  const displayEvents = useMockData ? MOCK_EVENTS : (events || []);
+  const limitedEvents = displayLimit ? displayEvents.slice(0, displayLimit) : displayEvents;
+  const totalEvents = limitedEvents.length;
 
   // ==========================================
   // 🧩 LAYER: Logic (Presentation Logic)
   // Purpose: Determine display text/colors based on event type
   // ==========================================
   const getEventDisplayInfo = (item: Event) => {
+    let icon: 'warning' | 'favorite' | 'heart-broken' = 'warning';
+    let iconColor = '#EF4444';
+    let bgColor = '#FEE2E2';
     let titleStatus = 'ปกติ';
     let description = 'เหตุการณ์ทั่วไป';
     let bpmText = item.value ? `${Math.round(item.value)} BPM` : '';
 
     switch (item.type) {
       case 'FALL':
-        titleStatus = 'ล้ม';
-        description = 'ตรวจพบการหกล้ม';
+        icon = 'warning';
+        iconColor = '#EF4444';
+        bgColor = '#FEE2E2';
+        titleStatus = 'ตรวจพบการหกล้ม';
+        description = 'พบเหตุการณ์หกล้ม กรุณาตรวจสอบ';
         break;
       case 'HEART_RATE_HIGH':
-        titleStatus = 'ชีพจรสูง';
-        description = 'ชีพจรสูงกว่าปกติ';
+        icon = 'favorite';
+        iconColor = '#F59E0B';
+        bgColor = '#FEF3C7';
+        titleStatus = 'ชีพจรสูงกว่าปกติ';
+        description = `ชีพจร ${bpmText}`;
         break;
       case 'HEART_RATE_LOW':
-        titleStatus = 'ชีพจรต่ำ';
-        description = 'ชีพจรต่ำกว่าปกติ';
+        icon = 'heart-broken';
+        iconColor = '#3B82F6';
+        bgColor = '#DBEAFE';
+        titleStatus = 'ชีพจรต่ำกว่าปกติ';
+        description = `ชีพจร ${bpmText}`;
         break;
       default:
         description = item.type;
     }
 
-    return { titleStatus, description, bpmText };
+    return { icon, iconColor, bgColor, titleStatus, description, bpmText };
   };
 
   // ==========================================
@@ -102,58 +156,55 @@ export default function HistoryScreen() {
   // Purpose: Render individual list item
   // ==========================================
   const renderItem = ({ item, index }: { item: Event, index: number }) => {
-    const { titleStatus, description, bpmText } = getEventDisplayInfo(item);
+    const { icon, iconColor, bgColor, titleStatus, description } = getEventDisplayInfo(item);
     const displayIndex = totalEvents - index;
 
     return (
-      <View className="mb-3 flex-row items-center justify-between rounded-2xl bg-[#F5F6F7] p-4 border border-gray-100">
-        {/* Index Column */}
-        <View className="mr-3 w-14 items-center justify-center border-r border-gray-200">
-          <Text
-            className="font-kanit text-xl font-medium text-gray-400"
-            numberOfLines={1}
-            adjustsFontSizeToFit
-          >
+      <View className="mb-4 bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
+        {/* Number Badge */}
+        <View className="absolute top-3 right-3 w-8 h-8 rounded-full bg-gray-100 items-center justify-center z-10">
+          <Text style={{ fontSize: 14, fontWeight: '700' }} className="font-kanit text-gray-600">
             {displayIndex}
           </Text>
         </View>
 
-        {/* Info Column */}
-        <View className="flex-1 pl-2">
-          <Text className="font-kanit text-xs text-gray-500 mb-1">
-            {formatDate(item.timestamp)}
-          </Text>
-          <Text className="font-kanit text-base font-bold text-gray-800">
-            {description}
-          </Text>
+        {/* Icon Header */}
+        <View className="flex-row items-center p-4" style={{ backgroundColor: bgColor }}>
+          <View className="w-12 h-12 rounded-full items-center justify-center" style={{ backgroundColor: 'white' }}>
+            <MaterialIcons name={icon} size={24} color={iconColor} />
+          </View>
+          <View className="flex-1 ml-3">
+            <Text style={{ fontSize: 16, fontWeight: '600' }} className="font-kanit text-gray-900">
+              {titleStatus}
+            </Text>
+            <Text style={{ fontSize: 12 }} className="font-kanit text-gray-600 mt-0.5">
+              {formatDate(item.timestamp)}
+            </Text>
+          </View>
         </View>
 
-        {/* Status Column */}
-        <View className="items-end ml-2 min-w-[70px]">
-          <Text className="font-kanit text-sm font-bold mb-1" style={{
-            color: titleStatus === 'ล้ม' || titleStatus.includes('สูง') || titleStatus.includes('ต่ำ')
-              ? '#EF4A5A'
-              : '#4B5563'
-          }}>
-            {titleStatus}
+        {/* Description */}
+        <View className="px-4 py-3 border-t border-gray-100">
+          <Text style={{ fontSize: 14, lineHeight: 20 }} className="font-kanit text-gray-700">
+            {description}
           </Text>
-          {bpmText ? (
-            <Text className="font-kanit text-sm font-medium text-gray-600">
-              {bpmText}
-            </Text>
-          ) : null}
         </View>
       </View>
     );
   };
 
-  if (isError) {
+  if (isError && !useMockData) {
     return (
-      <SafeAreaView className="flex-1 bg-white justify-center items-center">
-        <Text className="font-kanit text-red-500 mb-4">เกิดข้อผิดพลาดในการโหลดข้อมูล</Text>
-        <TouchableOpacity onPress={() => refetch()} className="bg-gray-200 p-3 rounded-lg">
-          <Text className="font-kanit">ลองใหม่</Text>
-        </TouchableOpacity>
+      <SafeAreaView className="flex-1 bg-white" edges={['top', 'left', 'right']}>
+        <View className="flex-1 justify-center items-center px-6">
+          <MaterialIcons name="error-outline" size={64} color="#D1D5DB" />
+          <Text style={{ fontSize: 18 }} className="font-kanit text-gray-700 mt-4 text-center">
+            เกิดข้อผิดพลาดในการโหลดข้อมูล
+          </Text>
+          <TouchableOpacity onPress={() => refetch()} className="mt-4 bg-gray-200 px-6 py-3 rounded-xl">
+            <Text className="font-kanit text-gray-700">ลองใหม่</Text>
+          </TouchableOpacity>
+        </View>
       </SafeAreaView>
     );
   }
@@ -163,55 +214,114 @@ export default function HistoryScreen() {
   // Purpose: Render the main UI
   // ==========================================
   return (
-    <SafeAreaView className="flex-1 bg-white">
-      <View className="flex-1 px-6 pt-2">
-        {/* Header */}
-        <View className="mb-6 items-center py-4">
-          <Text className="font-kanit text-2xl font-bold text-black">
-            ประวัติการหกล้ม
-          </Text>
-        </View>
+    <SafeAreaView className="flex-1 bg-white" edges={['top', 'left', 'right']}>
+      {/* Header */}
+      <View className="flex-row items-center justify-between px-6 py-4">
+        <View className="w-8" />
+        <Text className="font-kanit text-xl font-bold text-gray-900">
+          ประวัติเหตุการณ์
+        </Text>
+        {/* TODO: REMOVE THIS TOGGLE BUTTON IN PRODUCTION */}
+        <TouchableOpacity
+          onPress={() => setUseMockData(!useMockData)}
+          className="w-8 h-8 items-center justify-center"
+        >
+          <MaterialIcons
+            name={useMockData ? "visibility" : "visibility-off"}
+            size={24}
+            color="#6B7280"
+          />
+        </TouchableOpacity>
+      </View>
 
-        {/* Navigation Link */}
+      {/* Navigation Link */}
+      <View className="px-6">
         <TouchableOpacity
           className="flex-row items-center justify-between py-4 mb-2 border-b border-gray-100"
-          onPress={() => router.push('/(history-features)/report-summary')}
+          onPress={() => router.push('/(features)/(monitoring)/report-summary')}
         >
-          <Text className="font-kanit text-lg font-medium text-gray-900">
+          <Text style={{ fontSize: 16, fontWeight: '500' }} className="font-kanit text-gray-900">
             ดูรายงานสรุปประจำเดือน
           </Text>
-          <Ionicons name="chevron-forward" size={24} color="#6B7280" />
+          <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
         </TouchableOpacity>
 
-        <Text className="font-kanit text-sm text-gray-500 mb-4 mt-2">
-          แสดงรายการเหตุการณ์ทั้งหมด
-        </Text>
+        <View className="flex-row items-center justify-between mb-4 mt-2">
+          <Text style={{ fontSize: 14 }} className="font-kanit text-gray-500">
+            {useMockData ? 'แสดงข้อมูลตัวอย่าง' : `แสดง ${totalEvents} จาก ${displayEvents.length} เหตุการณ์`}
+          </Text>
+          {/* TODO: REMOVE THIS BADGE IN PRODUCTION */}
+          {useMockData && (
+            <View className="bg-blue-50 px-3 py-1 rounded-full">
+              <Text style={{ fontSize: 12 }} className="font-kanit text-blue-600">
+                MOCK DATA
+              </Text>
+            </View>
+          )}
+        </View>
 
-        {/* List */}
-        {isLoading ? (
-          <View className="flex-1 items-center justify-center">
-            <ActivityIndicator size="large" color="#16AD78" />
+        {/* Limit Filter Chips */}
+        <View className="flex-row items-center mb-4">
+          <Text style={{ fontSize: 14 }} className="font-kanit text-gray-600 mr-3">
+            แสดง:
+          </Text>
+          <View className="flex-row gap-2">
+            {[25, 50, null].map((limit) => {
+              const isSelected = displayLimit === limit;
+              const label = limit === null ? 'ทั้งหมด' : `${limit}`;
+
+              return (
+                <TouchableOpacity
+                  key={limit?.toString() || 'all'}
+                  onPress={() => setDisplayLimit(limit)}
+                  className={`px-4 py-2 rounded-full ${isSelected ? 'bg-[#16AD78]' : 'bg-gray-100'
+                    }`}
+                  activeOpacity={0.7}
+                >
+                  <Text
+                    style={{ fontSize: 14, fontWeight: isSelected ? '600' : '400' }}
+                    className={`font-kanit ${isSelected ? 'text-white' : 'text-gray-700'
+                      }`}
+                  >
+                    {label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
           </View>
-        ) : (
-          <FlatList
-            data={events}
-            renderItem={renderItem}
-            keyExtractor={(item) => item.id}
-            refreshControl={
-              <RefreshControl refreshing={isLoading} onRefresh={refetch} />
-            }
-            contentContainerStyle={{ paddingBottom: 20 }}
-            ListEmptyComponent={
-              <View className="mt-10 items-center">
-                <Text className="font-kanit text-gray-400">
-                  ไม่มีประวัติเหตุการณ์ผิดปกติ
-                </Text>
-              </View>
-            }
-            showsVerticalScrollIndicator={false}
-          />
-        )}
+        </View>
       </View>
+
+      {/* List */}
+      {isLoading && !useMockData ? (
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color="#16AD78" />
+          <Text className="font-kanit text-gray-500 mt-4">กำลังโหลดข้อมูล...</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={limitedEvents}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id}
+          refreshControl={
+            <RefreshControl
+              refreshing={!useMockData && isLoading}
+              onRefresh={refetch}
+              colors={['#16AD78']}
+            />
+          }
+          contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 8, paddingBottom: 20 }}
+          ListEmptyComponent={
+            <View className="mt-20 items-center">
+              <MaterialIcons name="event-note" size={64} color="#D1D5DB" />
+              <Text style={{ fontSize: 16 }} className="font-kanit text-gray-400 mt-4">
+                ไม่มีประวัติเหตุการณ์ผิดปกติ
+              </Text>
+            </View>
+          }
+          showsVerticalScrollIndicator={false}
+        />
+      )}
     </SafeAreaView>
   );
 }

@@ -85,6 +85,22 @@ export const deactivateElder = asyncHandler(async (req: Request, res: Response) 
 });
 
 /**
+ * DELETE /api/elders/:id
+ */
+export const deleteElder = asyncHandler(async (req: Request, res: Response) => {
+  const userId = req.user!.userId;
+  const { id } = req.params;
+
+  const result = await elderService.deleteElder(userId, id);
+
+  res.json({
+    success: true,
+    message: 'Elder deleted successfully',
+    data: result,
+  });
+});
+
+/**
  * POST /api/elders/:id/members
  */
 export const inviteMember = asyncHandler(async (req: Request, res: Response) => {

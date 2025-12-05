@@ -14,19 +14,13 @@ import { useRouter } from 'expo-router';
 import { useMutation } from '@tanstack/react-query';
 import { requestOtp } from '@/services/authService';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import Animated, {
-  interpolate,
-  useAnimatedStyle,
-  useDerivedValue,
-  withTiming,
-} from 'react-native-reanimated';
+import { MaterialIcons } from '@expo/vector-icons';
+import Logger from '@/utils/logger';
+import { FloatingLabelInput } from '@/components/FloatingLabelInput';
+import { ScreenWrapper } from '@/components/ScreenWrapper';
+import { ScreenHeader } from '@/components/ScreenHeader';
+import { PrimaryButton } from '@/components/PrimaryButton';
 
-const INPUT_HEIGHT = 60;
-const LABEL_FONT_LARGE = 15;
-const LABEL_FONT_SMALL = 12;
-const LABEL_TOP_START = 18;
-const LABEL_TOP_END = -8;
 // สีปุ่มตามรูปภาพอ้างอิง (สีแดงอมชมพู/ส้ม)
 const BUTTON_COLOR = '#EB6A6A';
 
@@ -41,7 +35,6 @@ export default function ForgotPasswordScreen() {
   // ==========================================
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
-  const [emailFocused, setEmailFocused] = useState(false);
 
   const router = useRouter();
 
@@ -49,20 +42,7 @@ export default function ForgotPasswordScreen() {
   // 🎨 LAYER: View (Animation)
   // Purpose: Handle floating label animations
   // ==========================================
-  const emailProgress = useDerivedValue(
-    () => withTiming(emailFocused || !!email ? 1 : 0, { duration: 200 }),
-    [emailFocused, email]
-  );
 
-  const emailLabelContainerStyle = useAnimatedStyle(() => ({
-    top: interpolate(emailProgress.value, [0, 1], [LABEL_TOP_START, LABEL_TOP_END]),
-    backgroundColor: emailProgress.value > 0.5 ? '#FFFFFF' : 'transparent',
-  }));
-
-  const emailLabelTextStyle = useAnimatedStyle(() => ({
-    fontSize: interpolate(emailProgress.value, [0, 1], [LABEL_FONT_LARGE, LABEL_FONT_SMALL]),
-    color: emailFocused ? BUTTON_COLOR : '#9CA3AF',
-  }));
 
   // ==========================================
   // ⚙️ LAYER: Logic (Mutation)
@@ -87,7 +67,7 @@ export default function ForgotPasswordScreen() {
       ]);
     },
     onError: (error: any) => {
-      console.error('Request OTP error:', error);
+      Logger.error('Request OTP error:', error);
       const message = error.response?.data?.message || error.message || 'เกิดข้อผิดพลาดในการส่ง OTP';
       Alert.alert('ส่งรหัสไม่สำเร็จ', message);
     },
@@ -122,101 +102,48 @@ export default function ForgotPasswordScreen() {
   // Purpose: Render forgot password form
   // ==========================================
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={['top', 'left', 'right']}>
-      {/* Custom Header */}
-      <View className="flex-row items-center justify-between px-6 py-4">
-        <TouchableOpacity onPress={() => router.back()} className="p-2 -ml-2">
-          <Ionicons name="chevron-back" size={28} color="#374151" />
-        </TouchableOpacity>
-        <Text className="font-kanit text-xl font-bold text-gray-900">
-          ลืมรหัสผ่าน
+    <ScreenWrapper contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 100, flexGrow: 1 }}>
+      <ScreenHeader title="ลืมรหัสผ่าน" onBack={router.back} />
+
+      <View>
+        {/* Description Section */}
+        <Text className="font-kanit" style={{ fontSize: 14, color: '#6B7280', marginBottom: 32 }}>
+          กรุณากรอกอีเมลที่คุณใช้ลงทะเบียน{'\n'}
+          ระบบจะส่งรหัส OTP 6 หลักไปยังอีเมลคุณ
         </Text>
-        <View className="w-8" />
-      </View>
 
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        className="flex-1"
-      >
-        <ScrollView
-          className="flex-1"
-          contentContainerStyle={{ paddingHorizontal: 32, paddingTop: 20 }}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-        >
-          <View>
-            {/* Description Section */}
-            <Text className="font-kanit" style={{ fontSize: 14, color: '#6B7280', marginBottom: 32 }}>
-              กรุณากรอกอีเมลที่คุณใช้ลงทะเบียน{'\n'}
-              ระบบจะส่งรหัส OTP 6 หลักไปยังอีเมลคุณ
-            </Text>
+        {/* Form Section */}
+        <View className="w-full max-w-md mx-auto">
 
-            {/* Form Section */}
-            <View className="w-full max-w-md mx-auto">
-
-              {/* Email Input with Floating Label */}
-              <View className="mb-8">
-                <View style={{ height: INPUT_HEIGHT, position: 'relative' }}>
-                  <Animated.View
-                    style={[
-                      {
-                        position: 'absolute',
-                        left: 16,
-                        paddingHorizontal: 4,
-                        zIndex: 1,
-                      },
-                      emailLabelContainerStyle,
-                    ]}
-                  >
-                    <Animated.Text className="font-kanit" style={[emailLabelTextStyle]}>
-                      อีเมล
-                    </Animated.Text>
-                  </Animated.View>
-                  <TextInput
-                    className={`font-kanit h-[60px] rounded-2xl px-4 border ${emailFocused ? `border-[${BUTTON_COLOR}]` : emailError ? 'border-red-500' : 'border-gray-300'
-                      } bg-white text-gray-900 text-[16px]`}
-                    style={{ borderColor: emailFocused ? BUTTON_COLOR : emailError ? '#EF4444' : '#E5E7EB', borderWidth: 1, height: 60, paddingTop: 18, paddingBottom: 18, textAlignVertical: 'center' }}
-                    value={email}
-                    onChangeText={(text) => {
-                      setEmail(text);
-                      if (/[ก-๙]/.test(text)) {
-                        setEmailError('กรุณากรอกอีเมลเป็นภาษาอังกฤษ');
-                      } else {
-                        setEmailError('');
-                      }
-                    }}
-                    onFocus={() => setEmailFocused(true)}
-                    onBlur={() => setEmailFocused(false)}
-                    autoCapitalize="none"
-                    keyboardType="email-address"
-                  />
-                </View>
-                {emailError ? (
-                  <Text className="font-kanit text-red-500 text-xs mt-1 ml-2">{emailError}</Text>
-                ) : null}
-              </View>
-
-              {/* Submit Button */}
-              <TouchableOpacity
-                className={`rounded-2xl py-4 items-center shadow-sm ${requestOtpMutation.isPending ? 'opacity-70' : ''}`}
-                style={{ backgroundColor: BUTTON_COLOR }}
-                onPress={handleSendOtp}
-                disabled={requestOtpMutation.isPending}
-                activeOpacity={0.8}
-              >
-                {requestOtpMutation.isPending ? (
-                  <ActivityIndicator color="#FFFFFF" />
-                ) : (
-                  <Text className="font-kanit" style={{ fontSize: 17, color: '#FFFFFF', fontWeight: '600' }}>
-                    ส่งรหัส OTP
-                  </Text>
-                )}
-              </TouchableOpacity>
-
-            </View>
+          {/* Email Input with Floating Label */}
+          <View className="mb-8">
+            <FloatingLabelInput
+              label="อีเมล"
+              value={email}
+              onChangeText={(text) => {
+                setEmail(text);
+                if (/[ก-๙]/.test(text)) {
+                  setEmailError('กรุณากรอกอีเมลเป็นภาษาอังกฤษ');
+                } else {
+                  setEmailError('');
+                }
+              }}
+              error={emailError}
+              autoCapitalize="none"
+              keyboardType="email-address"
+            />
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+
+          {/* Submit Button */}
+          <PrimaryButton
+            title="ส่งรหัส OTP"
+            onPress={handleSendOtp}
+            loading={requestOtpMutation.isPending}
+            style={{ backgroundColor: BUTTON_COLOR }}
+          />
+
+        </View>
+      </View>
+    </ScreenWrapper >
   );
 }

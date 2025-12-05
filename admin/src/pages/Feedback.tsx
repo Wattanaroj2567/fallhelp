@@ -25,6 +25,7 @@ export default function Feedback() {
             const response = await api.get('/feedback');
             return response.data.data as Feedback[];
         },
+        refetchInterval: 5000,
     });
 
     const updateStatusMutation = useMutation({
@@ -99,7 +100,7 @@ export default function Feedback() {
                                     </div>
                                 </td>
                                 <td className="px-6 py-4">
-                                    <div className="text-sm text-gray-900 max-w-md break-words">{feedback.message}</div>
+                                    <div className="text-sm text-gray-900 max-w-md wrap-break-word">{feedback.message}</div>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
                                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(feedback.status)}`}>

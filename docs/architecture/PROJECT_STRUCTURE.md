@@ -40,6 +40,7 @@ fallhelp/
 │   │   │   ├── eventController.ts
 │   │   │   ├── emergencyContactController.ts
 │   │   │   ├── userController.ts
+│   │   │   ├── notificationController.ts
 │   │   │   └── adminController.ts
 │   │   │
 │   │   ├── services/                 # Business logic + Prisma ORM
@@ -57,6 +58,7 @@ fallhelp/
 │   │   │   ├── deviceRoutes.ts
 │   │   │   ├── eventRoutes.ts
 │   │   │   ├── emergencyContactRoutes.ts
+│   │   │   ├── notificationRoutes.ts
 │   │   │   └── adminRoutes.ts
 │   │   │
 │   │   ├── middlewares/              # Express middlewares
@@ -158,38 +160,44 @@ fallhelp/
 │   │   │   ├── step2-device-pairing.tsx
 │   │   │   └── step3-wifi-setup.tsx
 │   │   │
-│   │   ├── (elder)/                  # Elder Management
-│   │   │   ├── index.tsx             # Elder list
-│   │   │   ├── [id].tsx              # Elder detail
-│   │   │   ├── add.tsx
-│   │   │   └── edit.tsx
+│   │   ├── (features)/               # Feature Modules (Domain-Driven)
+│   │   │   ├── _layout.tsx
+│   │   │   │
+│   │   │   ├── (elder)/              # Elder Management
+│   │   │   │   ├── index.tsx
+│   │   │   │   ├── edit.tsx
+│   │   │   │   └── _layout.tsx
+│   │   │   │
+│   │   │   ├── (device)/             # Device Management
+│   │   │   │   ├── pairing.tsx
+│   │   │   │   ├── wifi-config.tsx
+│   │   │   │   └── _layout.tsx
+│   │   │   │
+│   │   │   ├── (emergency)/          # Emergency Contacts
+│   │   │   │   ├── index.tsx
+│   │   │   │   ├── add.tsx
+│   │   │   │   ├── edit.tsx
+│   │   │   │   ├── call.tsx
+│   │   │   │   └── _layout.tsx
+│   │   │   │
+│   │   │   ├── (monitoring)/         # Monitoring & Reports
+│   │   │   │   ├── notifications.tsx
+│   │   │   │   ├── report-summary.tsx
+│   │   │   │   └── _layout.tsx
+│   │   │   │
+│   │   │   └── (user)/               # User Management
+│   │   │       ├── (profile)/
+│   │   │       ├── members.tsx
+│   │   │       ├── invite-member.tsx
+│   │   │       ├── feedback.tsx
+│   │   │       └── _layout.tsx
 │   │   │
-│   │   ├── (device)/                 # Device Management
-│   │   │   ├── pair-qr.tsx
-│   │   │   ├── pair-manual.tsx
-│   │   │   └── wifi-config.tsx
-│   │   │
-│   │   ├── (emergency)/              # Emergency Contacts
-│   │   │   ├── index.tsx
-│   │   │   ├── add.tsx
-│   │   │   └── [id].tsx
-│   │   │
-│   │   ├── (events)/                 # Events & Reports
-│   │   │   ├── history.tsx
-│   │   │   ├── monthly-report.tsx
-│   │   │   └── [id].tsx              # Event detail
-│   │   │
-│   │   ├── (profile)/                # Profile Management
-│   │   │   ├── index.tsx
-│   │   │   ├── edit.tsx
-│   │   │   ├── edit-phone.tsx
-│   │   │   ├── edit-email.tsx
-│   │   │   └── edit-password.tsx
-│   │   │
-│   │   └── (members)/                # Multi-User Access
-│   │       ├── index.tsx
-│   │       ├── invite.tsx
-│   │       └── [id].tsx
+│   ├── components/                   # Reusable UI components
+│   │   ├── common/
+│   │   │   ├── Button.tsx
+│   │   │   ├── Card.tsx
+│   │   │   ├── Input.tsx
+│   │   └── [id].tsx
 │   │
 │   ├── components/                   # Reusable UI components
 │   │   ├── common/
@@ -197,6 +205,8 @@ fallhelp/
 │   │   │   ├── Card.tsx
 │   │   │   ├── Input.tsx
 │   │   │   ├── Modal.tsx
+│   │   │   ├── ScreenWrapper.tsx
+│   │   │   ├── ScreenHeader.tsx
 │   │   │   └── Loading.tsx
 │   │   │
 │   │   ├── dashboard/
@@ -611,6 +621,14 @@ const elders = await prisma.elder.findMany({
 - `POST /api/elders/:elderId/invite`
 - `GET /api/elders/:elderId/members`
 - `DELETE /api/elders/:elderId/members/:userId`
+
+### Notifications
+
+- `GET /api/notifications`
+- `GET /api/notifications/unread-count`
+- `PATCH /api/notifications/:id/read`
+- `PATCH /api/notifications/read-all`
+- `DELETE /api/notifications`
 
 ### Admin
 

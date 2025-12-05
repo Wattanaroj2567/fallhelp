@@ -29,16 +29,21 @@ async function main() {
         const sqlPath = path.join(__dirname, '..', 'prisma', 'timescale-setup.sql');
         const sqlContent = fs.readFileSync(sqlPath, 'utf-8');
 
-        // Split commands by semicolon, but handle comments and empty lines
-        const commands = sqlContent
+        // Remove comments (both -- and /* */)
+        const cleanSql = sqlContent
+            .replace(/--.*$/gm, '') // Remove single line comments
+            .replace(/\/\*[\s\S]*?\*\//g, ''); // Remove block comments
+
+        // Split commands by semicolon
+        const commands = cleanSql
             .split(';')
             .map(cmd => cmd.trim())
-            .filter(cmd => cmd.length > 0 && !cmd.startsWith('--'));
+            .filter(cmd => cmd.length > 0);
 
         log('📝 Found %d commands to execute.', commands.length);
 
         for (const command of commands) {
-            if (command.startsWith('--') || command.includes('CREATE EXTENSION')) continue;
+            if (command.includes('CREATE EXTENSION')) continue;
 
             try {
                 await prisma.$executeRawUnsafe(command);
@@ -48,6 +53,7 @@ async function main() {
                     log('⚠️  Skipped (Already exists): %s...', command.substring(0, 50));
                 } else {
                     log('❌ Error executing: %s...', command.substring(0, 50));
+                    log('   Details: %O', error);
                     // Don't throw, continue with other commands
                 }
             }

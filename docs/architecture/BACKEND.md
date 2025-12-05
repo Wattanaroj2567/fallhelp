@@ -6,7 +6,7 @@
 
 ## 📚 เอกสารหลัก
 
-- **Implementation Summary:** `backend/docs/IMPLEMENTATION_SUMMARY.md`
+- **Implementation Summary:** `backend/docs/progress/IMPLEMENTATION_SUMMARY.md`
 
   - รายละเอียด API endpoints ทั้งหมด (45+ endpoints)
   - โครงสร้างโค้ด Backend แบบเต็ม
@@ -31,11 +31,23 @@
 
 ---
 
+## 🔔 Notification System
+
+- **Notification Routes:** `backend/src/routes/notificationRoutes.ts`
+- **API Endpoints:**
+  - `GET /api/notifications` - List notifications
+  - `GET /api/notifications/unread-count` - Get unread count
+  - `PATCH /api/notifications/:id/read` - Mark as read
+  - `PATCH /api/notifications/read-all` - Mark all as read
+  - `DELETE /api/notifications` - Clear all notifications
+
+---
+
 ## 🗄️ Database & Schema
 
 - **Prisma Schema:** `backend/prisma/schema.prisma`
 - **Migrations:** `backend/prisma/migrations/`
-- **TimescaleDB Setup:** `backend/prisma/timescale-setup.sql`
+- **TimescaleDB Setup:** `docs/architecture/SYSTEM_DESIGN.md` (Section 1)
 
 ---
 
@@ -68,4 +80,4 @@ npm run dev
 
 ---
 
-**Last Updated:** December 1, 2025
+**Last Updated:** December 5, 2025

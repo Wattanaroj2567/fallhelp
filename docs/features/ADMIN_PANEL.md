@@ -5,6 +5,7 @@
 The FallHelp Admin Panel is a web-based dashboard for system administrators to manage devices, view statistics, and monitor user feedback.
 
 **Technology Stack:**
+
 - Vite + React 18
 - TypeScript
 - TailwindCSS
@@ -27,6 +28,7 @@ The FallHelp Admin Panel is a web-based dashboard for system administrators to m
 - **Token Management:** JWT token stored in localStorage
 
 **API Endpoints:**
+
 - `POST /api/auth/login`
 - `POST /api/auth/register`
 - `GET /api/auth/me`
@@ -36,12 +38,14 @@ The FallHelp Admin Panel is a web-based dashboard for system administrators to m
 ### 2. Dashboard
 
 **Statistics Overview:**
+
 - Total Users count
 - Total Elders count
 - Total Devices count
 - Recent Events list
 
 **API Endpoint:**
+
 - `GET /api/admin/dashboard`
 
 ---
@@ -49,12 +53,14 @@ The FallHelp Admin Panel is a web-based dashboard for system administrators to m
 ### 3. User Management
 
 **Features:**
+
 - View all users
 - View caregivers
 - User details (name, email, role, created date)
 - Search and filter functionality
 
 **API Endpoints:**
+
 - `GET /api/admin/users`
 - `GET /api/admin/elders` (to see caregivers)
 
@@ -63,12 +69,14 @@ The FallHelp Admin Panel is a web-based dashboard for system administrators to m
 ### 4. Elder Management
 
 **Features:**
+
 - View all elders
 - Elder details with caregiver information
 - Medical history display
 - Search and filter functionality
 
 **API Endpoint:**
+
 - `GET /api/admin/elders`
 
 ---
@@ -76,6 +84,7 @@ The FallHelp Admin Panel is a web-based dashboard for system administrators to m
 ### 5. Device Management
 
 **Features:**
+
 - Register new device
 - Generate QR code for device pairing
 - View device list (with status, serial number, paired elder)
@@ -83,6 +92,7 @@ The FallHelp Admin Panel is a web-based dashboard for system administrators to m
 - Print device label (receipt style)
 
 **API Endpoints:**
+
 - `POST /api/admin/devices`
 - `GET /api/admin/devices`
 - `DELETE /api/admin/devices/:id`
@@ -93,6 +103,7 @@ The FallHelp Admin Panel is a web-based dashboard for system administrators to m
 ### 6. Feedback Management
 
 **Features:**
+
 - View all user feedback
 - Update feedback status (PENDING → REVIEWED → RESOLVED)
 - Filter by status
@@ -100,19 +111,37 @@ The FallHelp Admin Panel is a web-based dashboard for system administrators to m
 - Timestamp display
 
 **API Endpoints:**
+
 - `GET /api/feedback`
 - `PATCH /api/feedback/:id/status`
+
+---
+
+### 7. Notification Management
+
+**Features:**
+
+- View all system notifications
+- Filter by type (Fall, Heart Rate, System)
+- View notification status (Sent, Read)
+
+**API Endpoints:**
+
+- `GET /api/admin/notifications` (if implemented)
+- `GET /api/notifications` (General list)
 
 ---
 
 ## UI Components
 
 ### Layout
+
 - **DashboardLayout:** Main layout with sidebar and content area
 - **Sidebar:** Collapsible navigation menu
 - **Header:** Page title and user info
 
 ### Common Components
+
 - **Loading States:** Spinner animations
 - **Empty States:** Friendly messages when no data
 - **Error Handling:** Toast notifications for errors
@@ -153,7 +182,7 @@ Located in `src/services/api.ts`:
 
 ```typescript
 const api = axios.create({
-  baseURL: 'http://localhost:3000/api',
+  baseURL: "http://localhost:3000/api",
 });
 ```
 
@@ -207,6 +236,7 @@ admin/
 7. User is redirected to dashboard
 
 **Auto-logout on 401:**
+
 - API interceptor detects 401 responses
 - Clears localStorage
 - Redirects to login page
@@ -242,14 +272,17 @@ netlify deploy --prod
 ## Screenshots
 
 ### Dashboard
+
 ![Dashboard](../assets/screenshots/admin-dashboard.png)
 
 ### Device Management
+
 ![Devices](../assets/screenshots/admin-devices.png)
 
 ### Feedback Management
+
 ![Feedback](../assets/screenshots/admin-feedback.png)
 
 ---
 
-**Last Updated:** December 1, 2025
+**Last Updated:** December 5, 2025

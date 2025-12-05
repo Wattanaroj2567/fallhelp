@@ -12,7 +12,7 @@ import { asyncHandler } from '../middlewares/errorHandler.js';
  */
 export const createEmergencyContact = asyncHandler(async (req: Request, res: Response) => {
   const userId = req.user!.userId;
-  const { elderId } = req.params;
+  const elderId = req.params.elderId || req.params.id;
   const { name, phone, relationship, priority } = req.body;
 
   // Check if user is OWNER
@@ -29,13 +29,25 @@ export const createEmergencyContact = asyncHandler(async (req: Request, res: Res
     throw new Error('Only owner can manage emergency contacts');
   }
 
+  // Calculate next priority
+  const lastContact = await prisma.emergencyContact.findFirst({
+    where: {
+      elderId,
+    },
+    orderBy: {
+      priority: 'desc',
+    },
+  });
+
+  const nextPriority = (lastContact?.priority || 0) + 1;
+
   const contact = await prisma.emergencyContact.create({
     data: {
       elderId,
       name,
       phone,
       relationship,
-      priority,
+      priority: nextPriority,
     },
   });
 
@@ -51,7 +63,7 @@ export const createEmergencyContact = asyncHandler(async (req: Request, res: Res
  */
 export const getEmergencyContacts = asyncHandler(async (req: Request, res: Response) => {
   const userId = req.user!.userId;
-  const { elderId } = req.params;
+  const elderId = req.params.elderId || req.params.id;
 
   // Check if user has access
   const access = await prisma.userElderAccess.findUnique({
@@ -70,7 +82,6 @@ export const getEmergencyContacts = asyncHandler(async (req: Request, res: Respo
   const contacts = await prisma.emergencyContact.findMany({
     where: {
       elderId,
-      isActive: true,
     },
     orderBy: {
       priority: 'asc',
@@ -161,14 +172,65 @@ export const deleteEmergencyContact = asyncHandler(async (req: Request, res: Res
     throw new Error('Only owner can delete emergency contacts');
   }
 
-  // Soft delete
-  await prisma.emergencyContact.update({
+  // Hard delete
+  await prisma.emergencyContact.delete({
     where: { id },
-    data: { isActive: false },
   });
 
   res.json({
     success: true,
     message: 'Emergency contact deleted successfully',
+  });
+});
+
+/**
+ * PUT /api/elders/:elderId/emergency-contacts/reorder
+ */
+export const reorderEmergencyContacts = asyncHandler(async (req: Request, res: Response) => {
+  const userId = req.user!.userId;
+  const elderId = req.params.elderId || req.params.id;
+  const { contactIds } = req.body; // Array of IDs in new order
+
+  if (!Array.isArray(contactIds) || contactIds.length === 0) {
+    throw new Error('Invalid contact IDs');
+  }
+
+  // Check access
+  const access = await prisma.userElderAccess.findUnique({
+    where: {
+      userId_elderId: {
+        userId,
+        elderId,
+      },
+    },
+  });
+
+  if (!access || access.accessLevel !== 'OWNER') {
+    throw new Error('Only owner can reorder contacts');
+  }
+
+  // Use transaction to update priorities safely
+  await prisma.$transaction(async (tx) => {
+    // 1. Shift all priorities to avoid unique constraint violation
+    // We use a large offset (e.g., 1000)
+    for (const id of contactIds) {
+      await tx.emergencyContact.update({
+        where: { id },
+        data: { priority: { increment: 1000 } },
+      });
+    }
+
+    // 2. Set correct priorities
+    for (let i = 0; i < contactIds.length; i++) {
+      await tx.emergencyContact.update({
+        where: { id: contactIds[i] },
+        data: { priority: i + 1 },
+      });
+    }
+  });
+
+  res.json({
+    success: true,
+    message: 'Contacts reordered successfully',
   });
 });

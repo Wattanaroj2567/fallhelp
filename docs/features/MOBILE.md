@@ -57,9 +57,10 @@ npm start
 - ✅ **Event History** (Timeline view)
 - ✅ **Multi-User Access** (Invite members)
 - ✅ **Feedback System** (Send feedback to admin)
+- ✅ **Notification History** (View past alerts, Mark as read)
 
-**Status:** ✅ **100% COMPLETE** (December 1, 2025)
+**Status:** ✅ **100% COMPLETE** (December 5, 2025)
 
 ---
 
-**Last Updated:** December 1, 2025
+**Last Updated:** December 5, 2025

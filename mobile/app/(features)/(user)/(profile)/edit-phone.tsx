@@ -1,0 +1,148 @@
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
+import { MaterialIcons } from '@expo/vector-icons';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getProfile, updateProfile } from '@/services/userService';
+import Logger from '@/utils/logger';
+import { FloatingLabelInput } from '@/components/FloatingLabelInput';
+import { ScreenWrapper } from '@/components/ScreenWrapper';
+import { ScreenHeader } from '@/components/ScreenHeader';
+import { PrimaryButton } from '@/components/PrimaryButton';
+
+// ==========================================
+// 📱 LAYER: View (Component)
+// Purpose: Edit Phone Number Screen
+// ==========================================
+export default function EditPhone() {
+  const router = useRouter();
+  const queryClient = useQueryClient();
+
+  // ==========================================
+  // 🧩 LAYER: Logic (Local State)
+  // Purpose: Manage form inputs
+  // ==========================================
+  const [phone, setPhone] = useState('');
+
+  // ==========================================
+  // ⚙️ LAYER: Logic (Data Fetching)
+  // Purpose: Fetch current profile
+  // ==========================================
+  const { data: profile, isLoading } = useQuery({
+    queryKey: ['userProfile'],
+    queryFn: getProfile,
+  });
+
+  // ==========================================
+  // 🧩 LAYER: Logic (Side Effects)
+  // Purpose: Populate form when data is loaded
+  // ==========================================
+  useEffect(() => {
+    if (profile) {
+      setPhone(profile.phone || '');
+    }
+  }, [profile]);
+
+  // ==========================================
+  // ⚙️ LAYER: Logic (Mutation)
+  // Purpose: Update phone
+  // ==========================================
+  const updateMutation = useMutation({
+    mutationFn: async (data: { phone?: string }) => {
+      await updateProfile(data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['userProfile'] });
+      Alert.alert(
+        'สำเร็จ',
+        'บันทึกเบอร์โทรศัพท์เรียบร้อยแล้ว',
+        [
+          {
+            text: 'ตกลง',
+            onPress: () => router.back(),
+          },
+        ]
+      );
+    },
+    onError: (error: any) => {
+      Logger.error('Error updating phone:', error);
+      Alert.alert('ข้อผิดพลาด', error.message || 'ไม่สามารถบันทึกข้อมูลได้');
+    },
+  });
+
+  // ==========================================
+  // 🎮 LAYER: Logic (Event Handlers)
+  // Purpose: Handle form submission
+  // ==========================================
+  const handleSave = () => {
+    // Validate phone number (Thai: 10 digits starting with 0)
+    if (phone && !/^0\d{9}$/.test(phone)) {
+      Alert.alert('เบอร์โทรไม่ถูกต้อง', 'กรุณากรอกเบอร์โทรศัพท์ 10 หลัก');
+      return;
+    }
+
+    updateMutation.mutate({
+      phone: phone.trim() || undefined,
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <SafeAreaView className="flex-1 bg-white" edges={['top', 'left', 'right']}>
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color="#16AD78" />
+          <Text className="font-kanit text-gray-500 mt-4">กำลังโหลดข้อมูล...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // ==========================================
+  // 🖼️ LAYER: View (Main Render)
+  // Purpose: Render the form UI
+  // ==========================================
+  return (
+    <ScreenWrapper contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 100, flexGrow: 1 }} useScrollView={false}>
+      {/* Header */}
+      <ScreenHeader title="แก้ไขเบอร์โทรศัพท์" onBack={() => router.back()} />
+
+      <View className="px-6">
+        <Text className="font-kanit" style={{ fontSize: 14, color: '#6B7280', marginBottom: 32, textAlign: 'left' }}>
+          กรุณากรอกเบอร์โทรศัพท์ของคุณ (10 หลัก)
+        </Text>
+
+        {/* Phone Input */}
+        <View className="mb-8">
+          <FloatingLabelInput
+            label="เบอร์โทรศัพท์"
+            value={phone}
+            onChangeText={(text) => {
+              const cleaned = text.replace(/[^0-9]/g, '');
+              if (cleaned.length <= 10) {
+                setPhone(cleaned);
+              }
+            }}
+            keyboardType="phone-pad"
+            maxLength={10}
+          />
+        </View>
+
+        {/* Info Box */}
+        <View className="bg-blue-50 rounded-2xl p-4 mb-8 flex-row">
+          <MaterialIcons name="info" size={20} color="#3B82F6" style={{ marginTop: 2 }} />
+          <Text style={{ fontSize: 12 }} className="font-kanit text-blue-700 flex-1 ml-2">
+            คุณจะต้องใช้เบอร์โทรศัพท์ใหม่ในการเข้าสู่ระบบครั้งถัดไป
+          </Text>
+        </View>
+
+        {/* Save Button */}
+        <PrimaryButton
+          title="บันทึกข้อมูล"
+          onPress={handleSave}
+          loading={updateMutation.isPending}
+        />
+      </View>
+    </ScreenWrapper>
+  );
+}

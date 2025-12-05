@@ -134,6 +134,9 @@ SOCKET_PORT="3001"  # หรือใช้ port เดียวกับ Expres
 # Server
 PORT="3000"
 NODE_ENV="production"
+
+# Push Notifications (Optional but recommended)
+EXPO_ACCESS_TOKEN="your-expo-access-token"
 ```
 
 ---
@@ -265,6 +268,6 @@ Payload: {
 
 ---
 
-**อัพเดทล่าสุด:** 26 พฤศจิกายน 2568
+**อัพเดทล่าสุด:** 5 ธันวาคม 2568
 
 **หมายเหตุ:** เอกสารนี้สำหรับการ Deploy Production เท่านั้น สำหรับ Development/Testing ให้ใช้ Simulator Code ได้ตามปกติ

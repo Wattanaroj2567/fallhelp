@@ -1,9 +1,11 @@
 import { useRouter } from 'expo-router';
-import { Text, View, TouchableOpacity, Alert, ScrollView, Share } from 'react-native';
+import { Text, View, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { MaterialIcons } from '@expo/vector-icons';
 import { useMutation } from '@tanstack/react-query';
 import { logout } from '@/services/authService';
+import { ScreenWrapper } from '@/components/ScreenWrapper';
+import { ScreenHeader } from '@/components/ScreenHeader';
 
 // ==========================================
 // 📱 LAYER: View (Component)
@@ -54,7 +56,7 @@ export default function SettingsScreen() {
     isLast = false,
     isDanger = false
   }: {
-    icon: string;
+    icon: React.ComponentProps<typeof MaterialIcons>['name'];
     title: string;
     onPress: () => void;
     isLast?: boolean;
@@ -62,22 +64,26 @@ export default function SettingsScreen() {
   }) => (
     <TouchableOpacity
       onPress={onPress}
-      className={`flex-row items-center justify-between py-5 ${!isLast ? 'border-b border-gray-200' : ''}`}
+      className={`flex-row items-center justify-between p-5 ${!isLast ? 'border-b border-gray-100' : ''}`}
+      activeOpacity={0.6}
     >
       <View className="flex-row items-center flex-1">
-        <Ionicons
-          name={icon as any}
-          size={24}
-          color={isDanger ? '#EF4444' : '#9CA3AF'}
-        />
+        <View className={`w-10 h-10 rounded-full items-center justify-center ${isDanger ? 'bg-red-50' : 'bg-gray-50'
+          }`}>
+          <MaterialIcons
+            name={icon}
+            size={22}
+            color={isDanger ? '#EF4444' : '#6B7280'}
+          />
+        </View>
         <Text
-          style={{ fontSize: 16 }}
-          className={`font-kanit ml-4 ${isDanger ? 'text-red-500' : 'text-gray-900'}`}
+          style={{ fontSize: 16, fontWeight: '500' }}
+          className={`font-kanit ml-3 ${isDanger ? 'text-red-500' : 'text-gray-900'}`}
         >
           {title}
         </Text>
       </View>
-      <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+      <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
     </TouchableOpacity>
   );
 
@@ -86,39 +92,35 @@ export default function SettingsScreen() {
   // Purpose: Render settings menu
   // ==========================================
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
+    <ScreenWrapper edges={['top', 'left', 'right']} useScrollView={false}>
       {/* Header */}
-      <View className="bg-white px-6 py-4 border-b border-gray-200">
-        <Text style={{ fontSize: 24, fontWeight: '700' }} className="font-kanit text-gray-900">
-          ตั้งค่า
-        </Text>
-      </View>
+      <ScreenHeader title="ตั้งค่า" />
 
-      <ScrollView className="flex-1">
+      <View className="flex-1 px-4 pt-4">
         {/* Settings Section */}
-        <View className="bg-white mt-6 px-6">
+        <View className="bg-white rounded-3xl border border-gray-200 mx-6 mt-4 overflow-hidden">
           <MenuItem
-            icon="wifi-outline"
+            icon="wifi"
             title="ตั้งค่าการเชื่อม WiFi ใหม่"
-            onPress={() => router.push('/(device-settings)/re-wifi' as any)}
+            onPress={() => router.push('/(features)/(device)/wifi-config' as any)}
           />
           <MenuItem
-            icon="hardware-chip-outline"
+            icon="memory"
             title="ตั้งค่าการเชื่อมอุปกรณ์ใหม่"
-            onPress={() => router.push('/(device-settings)/re-pair' as any)}
+            onPress={() => router.push('/(features)/(device)/pairing' as any)}
           />
           <MenuItem
-            icon="people-outline"
+            icon="people"
             title="จัดการสมาชิก"
-            onPress={() => router.push('/(setting-features)/members' as any)}
+            onPress={() => router.push('/(features)/(user)/members' as any)}
           />
           <MenuItem
-            icon="chatbox-ellipses-outline"
+            icon="chat-bubble"
             title="ส่งความคิดเห็น / แจ้งปัญหา"
-            onPress={() => router.push('/(setting-features)/feedback' as any)}
+            onPress={() => router.push('/(features)/(user)/feedback' as any)}
           />
           <MenuItem
-            icon="log-out-outline"
+            icon="logout"
             title="ออกจากระบบ"
             onPress={handleLogout}
             isLast={true}
@@ -127,15 +129,17 @@ export default function SettingsScreen() {
         </View>
 
         {/* App Info */}
-        <View className="mt-8 px-6 items-center pb-8">
-          <Text style={{ fontSize: 12 }} className="font-kanit text-gray-500">
-            FallHelp v1.0.0
-          </Text>
-          <Text style={{ fontSize: 10 }} className="font-kanit text-gray-400 mt-1">
-            © 2025 Fall Detection System
-          </Text>
+        <View className="mt-8 px-6 items-center">
+          <View className="bg-gray-50 rounded-2xl py-4 px-6 items-center">
+            <Text style={{ fontSize: 13, fontWeight: '600' }} className="font-kanit text-gray-700">
+              FallHelp v1.0.0
+            </Text>
+            <Text style={{ fontSize: 11 }} className="font-kanit text-gray-500 mt-1">
+              © 2025 Fall Detection System
+            </Text>
+          </View>
         </View>
-      </ScrollView>
-    </SafeAreaView>
+      </View>
+    </ScreenWrapper>
   );
 }

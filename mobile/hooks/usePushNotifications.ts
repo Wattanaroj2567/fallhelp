@@ -4,6 +4,7 @@ import * as Device from 'expo-device';
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 import { updatePushToken } from '@/services';
+import Logger from '@/utils/logger';
 
 // Configure how notifications are handled when app is in foreground
 Notifications.setNotificationHandler({
@@ -71,7 +72,7 @@ export const usePushNotifications = (): PushNotificationState => {
         })
       ).data;
 
-      console.log('Expo Push Token:', token);
+      Logger.info('Expo Push Token:', token);
 
       // Send token to backend
       // Send token to backend if user is logged in
@@ -80,9 +81,9 @@ export const usePushNotifications = (): PushNotificationState => {
         const authToken = await getToken();
         if (authToken) {
           await updatePushToken({ pushToken: token });
-          console.log('Push token saved to backend');
+          Logger.info('Push token saved to backend');
         } else {
-          console.log('User not logged in, skipping push token save');
+          Logger.debug('User not logged in, skipping push token save');
         }
       } catch (err: any) {
         // Check for 401 Unauthorized (invalid/expired token)
@@ -96,13 +97,13 @@ export const usePushNotifications = (): PushNotificationState => {
 
         // Only log if it's NOT a 401 error
         if (!isUnauthorized) {
-          console.error('Failed to save push token to backend:', err);
+          Logger.error('Failed to save push token to backend:', err);
         } else {
-          console.log('Push token save skipped: User not authenticated (401)');
+          Logger.debug('Push token save skipped: User not authenticated (401)');
         }
       }
     } else {
-      console.warn('Must use physical device for Push Notifications');
+      Logger.warn('Must use physical device for Push Notifications');
     }
 
     return token;
@@ -116,16 +117,16 @@ export const usePushNotifications = (): PushNotificationState => {
 
     // Listener for when a notification is received while app is foregrounded
     notificationListener.current = Notifications.addNotificationReceivedListener((notification) => {
-      console.log('Notification received:', notification);
+      Logger.debug('Notification received:', notification);
       setNotification(notification);
     });
 
     // Listener for when a user taps on a notification
     responseListener.current = Notifications.addNotificationResponseReceivedListener((response) => {
-      console.log('Notification tapped:', response);
+      Logger.debug('Notification tapped:', response);
       // Handle navigation based on notification data
       const data = response.notification.request.content.data;
-      console.log('Notification data:', data);
+      Logger.debug('Notification data:', data);
       // TODO: Add navigation logic based on notification type
     });
 

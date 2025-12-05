@@ -2,24 +2,18 @@ import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Modal, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { MaterialIcons } from '@expo/vector-icons';
 import { useMutation } from '@tanstack/react-query';
-import { createElder, CreateElderPayload } from '@/services/elderService';
+import { createElder, updateElder, deleteElder, CreateElderPayload } from '@/services/elderService';
 import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Animated, {
-  interpolate,
-  useAnimatedStyle,
-  useDerivedValue,
-  withTiming,
-} from 'react-native-reanimated';
+import Logger from '@/utils/logger';
+import { FloatingLabelInput } from '@/components/FloatingLabelInput';
+import { ScreenWrapper } from '@/components/ScreenWrapper';
+import { ScreenHeader } from '@/components/ScreenHeader';
+import { PrimaryButton } from '@/components/PrimaryButton';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
-const INPUT_HEIGHT = 60;
-const LABEL_FONT_LARGE = 15;
-const LABEL_FONT_SMALL = 12;
-const LABEL_TOP_START = 18;
-const LABEL_TOP_END = -8;
 const FORM_STORAGE_KEY = 'setup_step1_form_data';
 
 // ==========================================
@@ -54,13 +48,7 @@ export default function Step1() {
   const [medicalCondition, setMedicalCondition] = useState('');
   const [address, setAddress] = useState('');
   const [isLoaded, setIsLoaded] = useState(false);
-
-  // Focus State
-  const [nameFocused, setNameFocused] = useState(false);
-  const [heightFocused, setHeightFocused] = useState(false);
-  const [weightFocused, setWeightFocused] = useState(false);
-  const [medicalFocused, setMedicalFocused] = useState(false);
-  const [addressFocused, setAddressFocused] = useState(false);
+  const [initialData, setInitialData] = useState<any>(null);
 
   // ==========================================
   // 💾 LAYER: Logic (Persistence)
@@ -69,6 +57,13 @@ export default function Step1() {
   useEffect(() => {
     const loadFormData = async () => {
       try {
+        // Check if we already have an elderId saved (means we're returning from step2)
+        let existingElderId = await SecureStore.getItemAsync('setup_elderId');
+        if (existingElderId === 'undefined' || existingElderId === 'null') {
+          existingElderId = null;
+        }
+        Logger.debug('Step 1 loadFormData: existingElderId =', existingElderId);
+
         const savedData = await AsyncStorage.getItem(FORM_STORAGE_KEY);
         if (savedData) {
           const parsed = JSON.parse(savedData);
@@ -79,9 +74,20 @@ export default function Step1() {
           setWeight(parsed.weight || '');
           setMedicalCondition(parsed.medicalCondition || '');
           setAddress(parsed.address || '');
+
+          // Only set initialData if we have a valid elderId
+          // This ensures we update instead of create when going back from step2
+          if (existingElderId) {
+            setInitialData(parsed);
+            Logger.debug('Step 1: Set initialData for existing elder');
+          } else {
+            // No elderId means this is a fresh start, don't set initialData
+            // to force create on first submit
+            Logger.debug('Step 1: No elderId, will create new elder');
+          }
         }
       } catch (error) {
-        console.log('Failed to load form data:', error);
+        Logger.error('Failed to load form data:', error);
       } finally {
         setIsLoaded(true);
       }
@@ -104,7 +110,7 @@ export default function Step1() {
         };
         await AsyncStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(dataToSave));
       } catch (error) {
-        console.log('Failed to save form data:', error);
+        Logger.error('Failed to save form data:', error);
       }
     };
     // Debounce saving slightly to avoid excessive writes
@@ -112,57 +118,45 @@ export default function Step1() {
     return () => clearTimeout(timeoutId);
   }, [name, gender, dateOfBirth, height, weight, medicalCondition, address, isLoaded]);
 
-  // Animation Hooks
-  const useInputAnimation = (focused: boolean, value: string) => {
-    const progress = useDerivedValue(
-      () => withTiming(focused || !!value ? 1 : 0, { duration: 200 }),
-      [focused, value]
-    );
 
-    const containerStyle = useAnimatedStyle(() => ({
-      top: interpolate(progress.value, [0, 1], [LABEL_TOP_START, LABEL_TOP_END]),
-      backgroundColor: progress.value > 0.5 ? '#FFFFFF' : 'transparent',
-      paddingHorizontal: 4,
-      zIndex: 1,
-    }));
-
-    const textStyle = useAnimatedStyle(() => ({
-      fontSize: interpolate(progress.value, [0, 1], [LABEL_FONT_LARGE, LABEL_FONT_SMALL]),
-      color: focused ? '#16AD78' : '#9CA3AF',
-    }));
-
-    return { containerStyle, textStyle };
-  };
-
-  const nameAnim = useInputAnimation(nameFocused, name);
-  const heightAnim = useInputAnimation(heightFocused, height);
-  const weightAnim = useInputAnimation(weightFocused, weight);
-  const medicalAnim = useInputAnimation(medicalFocused, medicalCondition);
-  const addressAnim = useInputAnimation(addressFocused, address);
 
   // ==========================================
   // ⚙️ LAYER: Logic (Mutation)
-  // Purpose: Create new elder profile
+  // Purpose: Create or Update elder profile
   // ==========================================
-  const createElderMutation = useMutation({
+  const saveElderMutation = useMutation({
     mutationFn: async (data: CreateElderPayload) => {
-      return await createElder(data);
+      let existingElderId = await SecureStore.getItemAsync('setup_elderId');
+
+      // Check for invalid values stored as strings
+      if (existingElderId === 'undefined' || existingElderId === 'null') {
+        existingElderId = null;
+        // Clean up invalid data
+        await SecureStore.deleteItemAsync('setup_elderId');
+      }
+
+      if (existingElderId) {
+        // Update existing elder
+        Logger.info('Updating existing elder:', existingElderId);
+        return await updateElder(existingElderId, data);
+      } else {
+        // Create new elder
+        Logger.info('Creating new elder');
+        return await createElder(data);
+      }
     },
     onSuccess: async (elder) => {
-      // 1. Save Elder ID
+      // 1. Save Elder ID (if not already saved)
       await SecureStore.setItemAsync('setup_elderId', String(elder.id));
-      // 2. Clear Form Data - COMMENTED OUT to allow back navigation with data
-      // await AsyncStorage.removeItem(FORM_STORAGE_KEY);
-      // 3. Set Setup Step to 2 (Skipped for now as we jump to dashboard)
-      // await SecureStore.setItemAsync('setup_step', '2');
 
-      // [TEMPORARY] Redirect to Dashboard for testing internal functions
-      // TODO: Revert this to router.push('/(setup)/step2-device-pairing') when testing is complete
-      // and uncomment the setItemAsync above.
-      router.replace('/(tabs)');
+      // 2. Set Setup Step to 2
+      await SecureStore.setItemAsync('setup_step', '2');
+
+      // Navigate to Step 2
+      router.push('/(setup)/step2-device-pairing');
     },
     onError: (error: any) => {
-      console.error('Error creating elder:', error);
+      Logger.error('Error saving elder:', error);
       Alert.alert('ข้อผิดพลาด', error.message || 'ไม่สามารถบันทึกข้อมูลได้');
     },
   });
@@ -218,7 +212,7 @@ export default function Step1() {
       return;
     }
 
-    createElderMutation.mutate({
+    const currentData = {
       firstName: name.split(' ')[0] || name,
       lastName: name.split(' ').slice(1).join(' ') || '',
       gender: gender as 'MALE' | 'FEMALE' | 'OTHER',
@@ -227,7 +221,48 @@ export default function Step1() {
       weight: Number(weight),
       diseases: medicalCondition ? [medicalCondition.trim()] : [],
       notes: address.trim(),
-    });
+    };
+
+    // Check if data is unchanged and we have an existing elderId
+    const existingElderId = await SecureStore.getItemAsync('setup_elderId');
+    if (existingElderId && existingElderId !== 'undefined' && existingElderId !== 'null' && initialData) {
+      // Reconstruct initial data to match currentData structure for comparison
+      const initialDataFormatted = {
+        firstName: initialData.name?.split(' ')[0] || initialData.name,
+        lastName: initialData.name?.split(' ').slice(1).join(' ') || '',
+        gender: initialData.gender,
+        dateOfBirth: initialData.dateOfBirth ? new Date(initialData.dateOfBirth).toISOString() : null,
+        height: Number(initialData.height),
+        weight: Number(initialData.weight),
+        diseases: initialData.medicalCondition ? [initialData.medicalCondition.trim()] : [],
+        notes: initialData.address?.trim(),
+      };
+
+      if (JSON.stringify(currentData) === JSON.stringify(initialDataFormatted)) {
+        Logger.debug('Data unchanged, skipping update');
+        await SecureStore.setItemAsync('setup_step', '2');
+        router.push('/(setup)/step2-device-pairing');
+        return;
+      }
+    }
+
+    saveElderMutation.mutate(currentData);
+  };
+
+  const handleBack = async () => {
+    try {
+      // Auto-Delete Elder: Undo Step 1 if user goes back to empty state
+      const elderId = await SecureStore.getItemAsync('setup_elderId');
+      if (elderId) {
+        await deleteElder(elderId);
+        await SecureStore.deleteItemAsync('setup_elderId');
+        await AsyncStorage.removeItem(FORM_STORAGE_KEY);
+        Logger.info('Auto-deleted elder on back to empty state:', elderId);
+      }
+    } catch (error) {
+      Logger.error('Failed to auto-delete elder:', error);
+    }
+    router.replace('/(setup)/empty-state');
   };
 
   const onDateChange = (event: any, selectedDate?: Date) => {
@@ -294,17 +329,13 @@ export default function Step1() {
   // Purpose: Render the form UI
   // ==========================================
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={['top', 'left', 'right']}>
+    <ScreenWrapper
+      contentContainerStyle={{ paddingBottom: 100, flexGrow: 1 }}
+      keyboardAvoiding
+      edges={['top', 'left', 'right']}
+    >
       {/* Header - Matched Register Screen */}
-      <View className="flex-row items-center justify-between px-6 py-4">
-        <TouchableOpacity onPress={() => router.replace('/(setup)/empty-state')} className="p-2 -ml-2">
-          <Ionicons name="chevron-back" size={28} color="#374151" />
-        </TouchableOpacity>
-        <Text className="font-kanit text-xl font-bold text-gray-900">
-          ข้อมูลผู้สูงอายุ
-        </Text>
-        <View className="w-8" />
-      </View>
+      <ScreenHeader title="ข้อมูลผู้สูงอายุ" onBack={handleBack} />
 
       {/* Progress Bar */}
       <View className="px-6 pb-4 mb-4">
@@ -351,267 +382,151 @@ export default function Step1() {
         </View>
       </View>
 
-      <KeyboardAvoidingView
-        behavior="padding"
-        className="flex-1"
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
-      >
-        <ScrollView
-          ref={scrollViewRef}
-          className="flex-1 px-6"
-          contentContainerStyle={{ paddingBottom: 100, flexGrow: 1 }}
-          keyboardShouldPersistTaps="handled"
-          keyboardDismissMode="on-drag"
-          showsVerticalScrollIndicator={false}
+      <View className="px-6 flex-1">
+        {/* Info Note */}
+        <View className="bg-blue-50 rounded-2xl p-4 mb-6 mt-6">
+          <Text className="font-kanit text-blue-700" style={{ fontSize: 14 }}>
+            เพื่อให้เป็นข้อมูลส่วนตัวของคุณในการติดตามผู้สูงอายุและเพิ่มเติม
+          </Text>
+        </View>
+
+        {/* Elder Name */}
+        <View
+          className="mb-4"
+          onLayout={(event) => {
+            inputLayouts.current['name'] = event.nativeEvent.layout.y;
+          }}
         >
-          {/* Info Note */}
-          <View className="bg-blue-50 rounded-2xl p-4 mb-6 mt-6">
-            <Text className="font-kanit text-blue-700" style={{ fontSize: 14 }}>
-              เพื่อให้เป็นข้อมูลส่วนตัวของคุณในการติดตามผู้สูงอายุและเพิ่มเติม
-            </Text>
-          </View>
+          <FloatingLabelInput
+            label="ชื่อผู้สูงอายุ *"
+            value={name}
+            onChangeText={setName}
+            onFocus={() => scrollToInput('name')}
+          />
+        </View>
 
-          {/* Elder Name */}
-          <View
-            className="mb-4"
-            onLayout={(event) => {
-              inputLayouts.current['name'] = event.nativeEvent.layout.y;
-            }}
-          >
-            <View style={{ height: INPUT_HEIGHT, position: 'relative' }}>
-              <Animated.View style={[{ position: 'absolute', left: 16, zIndex: 1 }, nameAnim.containerStyle]}>
-                <Animated.Text className="font-kanit" style={[nameAnim.textStyle]}>
-                  ชื่อผู้สูงอายุ <Text className="text-red-500">*</Text>
-                </Animated.Text>
-              </Animated.View>
-              <TextInput
-                className={`font-kanit h-[60px] rounded-2xl px-4 border ${nameFocused ? 'border-[#16AD78]' : 'border-gray-200'} bg-white text-gray-900 text-[16px]`}
-                style={{
-                  fontFamily: 'Kanit',
-                  height: 60,
-                  paddingTop: 18,
-                  paddingBottom: 18,
-                  textAlignVertical: 'center',
-                  includeFontPadding: false,
-                }}
-                placeholderTextColor="#9CA3AF"
-                value={name}
-                onChangeText={setName}
-                onFocus={() => {
-                  setNameFocused(true);
-                  scrollToInput('name');
-                }}
-                onBlur={() => setNameFocused(false)}
-              />
-            </View>
-          </View>
-
-          {/* Gender */}
-          <View className="mb-4">
-            <View style={{ height: INPUT_HEIGHT }}>
-              <TouchableOpacity
-                activeOpacity={0.7}
-                onPress={() => setShowGenderPicker(true)}
-                className="h-full justify-center rounded-2xl border border-gray-200 px-4 bg-white relative"
-              >
-                {gender ? (
-                  <View className="absolute -top-2.5 left-3 bg-white px-1 z-10">
-                    <Text className="font-kanit" style={{ fontSize: 12, color: '#9CA3AF' }}>
-                      เพศ <Text className="text-red-500">*</Text>
-                    </Text>
-                  </View>
-                ) : null}
-
-                <View className="flex-row justify-between items-center">
-                  <Text
-                    className={`font-kanit text-[16px] ${gender ? 'text-gray-900' : 'text-gray-400'}`}
-                  >
-                    {gender === 'MALE' ? 'ชาย' : gender === 'FEMALE' ? 'หญิง' : gender === 'OTHER' ? 'อื่นๆ' : 'เพศ *'}
-                  </Text>
-                  <Ionicons name="chevron-down" size={20} color="#6B7280" />
-                </View>
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {/* Birth Date */}
-          <View className="mb-4">
+        {/* Gender */}
+        <View className="mb-4">
+          <View style={{ height: 60 }}>
             <TouchableOpacity
-              onPress={() => setShowDatePicker(true)}
-              className="bg-white rounded-2xl px-4 border border-gray-200 justify-center"
-              style={{ height: 60 }}
+              activeOpacity={0.7}
+              onPress={() => setShowGenderPicker(true)}
+              className="h-full justify-center rounded-2xl border border-gray-200 px-4 bg-white relative"
             >
-              {dateOfBirth ? (
+              {gender ? (
                 <View className="absolute -top-2.5 left-3 bg-white px-1 z-10">
                   <Text className="font-kanit" style={{ fontSize: 12, color: '#9CA3AF' }}>
-                    วัน/เดือน/ปีเกิด <Text className="text-red-500">*</Text>
+                    เพศ <Text className="text-red-500">*</Text>
                   </Text>
                 </View>
               ) : null}
-              <Text className={`font-kanit text-[16px] ${dateOfBirth ? 'text-gray-900' : 'text-gray-400'}`}>
-                {formatDate(dateOfBirth)}
-                {!dateOfBirth && ' *'}
-              </Text>
+
+              <View className="flex-row justify-between items-center">
+                <Text
+                  className={`font-kanit text-[16px] ${gender ? 'text-gray-900' : 'text-gray-400'}`}
+                >
+                  {gender === 'MALE' ? 'ชาย' : gender === 'FEMALE' ? 'หญิง' : gender === 'OTHER' ? 'อื่นๆ' : 'เพศ *'}
+                </Text>
+                <MaterialIcons name="keyboard-arrow-down" size={20} color="#6B7280" />
+              </View>
             </TouchableOpacity>
           </View>
+        </View>
 
-          {/* Height and Weight */}
-          <View
-            className="flex-row mb-4"
-            onLayout={(event) => {
-              inputLayouts.current['height_weight'] = event.nativeEvent.layout.y;
-            }}
-          >
-            <View className="flex-1 mr-2">
-              <View style={{ height: INPUT_HEIGHT, position: 'relative' }}>
-                <Animated.View style={[{ position: 'absolute', left: 16, zIndex: 1 }, heightAnim.containerStyle]}>
-                  <Animated.Text className="font-kanit" style={[heightAnim.textStyle]}>
-                    ส่วนสูง (cm) <Text className="text-red-500">*</Text>
-                  </Animated.Text>
-                </Animated.View>
-                <TextInput
-                  className={`font-kanit h-[60px] rounded-2xl px-4 border ${heightFocused ? 'border-[#16AD78]' : 'border-gray-200'} bg-white text-gray-900 text-[16px]`}
-                  style={{
-                    fontFamily: 'Kanit',
-                    height: 60,
-                    paddingTop: 18,
-                    paddingBottom: 18,
-                    textAlignVertical: 'center',
-                    includeFontPadding: false,
-                  }}
-                  placeholderTextColor="#9CA3AF"
-                  keyboardType="numeric"
-                  value={height}
-                  onChangeText={setHeight}
-                  onFocus={() => {
-                    setHeightFocused(true);
-                    scrollToInput('height_weight');
-                  }}
-                  onBlur={() => setHeightFocused(false)}
-                />
-              </View>
-            </View>
-            <View className="flex-1 ml-2">
-              <View style={{ height: INPUT_HEIGHT, position: 'relative' }}>
-                <Animated.View style={[{ position: 'absolute', left: 16, zIndex: 1 }, weightAnim.containerStyle]}>
-                  <Animated.Text className="font-kanit" style={[weightAnim.textStyle]}>
-                    น้ำหนัก (kg) <Text className="text-red-500">*</Text>
-                  </Animated.Text>
-                </Animated.View>
-                <TextInput
-                  className={`font-kanit h-[60px] rounded-2xl px-4 border ${weightFocused ? 'border-[#16AD78]' : 'border-gray-200'} bg-white text-gray-900 text-[16px]`}
-                  style={{
-                    fontFamily: 'Kanit',
-                    height: 60,
-                    paddingTop: 18,
-                    paddingBottom: 18,
-                    textAlignVertical: 'center',
-                    includeFontPadding: false,
-                  }}
-                  placeholderTextColor="#9CA3AF"
-                  keyboardType="numeric"
-                  value={weight}
-                  onChangeText={setWeight}
-                  onFocus={() => {
-                    setWeightFocused(true);
-                    scrollToInput('height_weight');
-                  }}
-                  onBlur={() => setWeightFocused(false)}
-                />
-              </View>
-            </View>
-          </View>
-
-          {/* Medical Condition */}
-          <View
-            className="mb-4"
-            onLayout={(event) => {
-              inputLayouts.current['medical'] = event.nativeEvent.layout.y;
-            }}
-          >
-            <View style={{ minHeight: 100, position: 'relative' }}>
-              <Animated.View style={[{ position: 'absolute', left: 16, zIndex: 1 }, medicalAnim.containerStyle]}>
-                <Animated.Text className="font-kanit" style={[medicalAnim.textStyle]}>โรคประจำตัว หรือ เคยป่วย (ถ้ามี)</Animated.Text>
-              </Animated.View>
-              <TextInput
-                className={`font-kanit rounded-2xl px-4 py-3 border ${medicalFocused ? 'border-[#16AD78]' : 'border-gray-200'} bg-white text-gray-900 text-[16px]`}
-                style={{
-                  fontFamily: 'Kanit',
-                  minHeight: 100,
-                  paddingTop: 18,
-                  paddingBottom: 18,
-                  textAlignVertical: 'top',
-                  includeFontPadding: false,
-                }}
-                placeholderTextColor="#9CA3AF"
-                multiline
-                numberOfLines={3}
-                value={medicalCondition}
-                onChangeText={setMedicalCondition}
-                onFocus={() => {
-                  setMedicalFocused(true);
-                  scrollToInput('medical');
-                }}
-                onBlur={() => setMedicalFocused(false)}
-              />
-            </View>
-          </View>
-
-          {/* Address */}
-          <View
-            className="mb-6"
-            onLayout={(event) => {
-              inputLayouts.current['address'] = event.nativeEvent.layout.y;
-            }}
-          >
-            <View style={{ minHeight: 120, position: 'relative' }}>
-              <Animated.View style={[{ position: 'absolute', left: 16, zIndex: 1 }, addressAnim.containerStyle]}>
-                <Animated.Text className="font-kanit" style={[addressAnim.textStyle]}>
-                  ที่อยู่ <Text className="text-red-500">*</Text>
-                </Animated.Text>
-              </Animated.View>
-              <TextInput
-                className={`font-kanit rounded-2xl px-4 py-3 border ${addressFocused ? 'border-[#16AD78]' : 'border-gray-200'} bg-white text-gray-900 text-[16px]`}
-                style={{
-                  fontFamily: 'Kanit',
-                  minHeight: 120,
-                  paddingTop: 18,
-                  paddingBottom: 18,
-                  textAlignVertical: 'top',
-                  includeFontPadding: false,
-                }}
-                placeholderTextColor="#9CA3AF"
-                multiline
-                numberOfLines={4}
-                value={address}
-                onChangeText={setAddress}
-                onFocus={() => {
-                  setAddressFocused(true);
-                  scrollToInput('address');
-                }}
-                onBlur={() => setAddressFocused(false)}
-              />
-            </View>
-          </View>
-
-          {/* Next Button */}
+        {/* Birth Date */}
+        <View className="mb-4">
           <TouchableOpacity
-            onPress={handleNext}
-            disabled={createElderMutation.isPending}
-            className="bg-[#16AD78] rounded-2xl py-4 items-center mb-8"
-            style={{ opacity: createElderMutation.isPending ? 0.6 : 1 }}
-            activeOpacity={0.8}
+            onPress={() => setShowDatePicker(true)}
+            className="bg-white rounded-2xl px-4 border border-gray-200 justify-center"
+            style={{ height: 60 }}
           >
-            {createElderMutation.isPending ? (
-              <ActivityIndicator size="small" color="#FFFFFF" />
-            ) : (
-              <Text style={{ fontSize: 16, fontWeight: '600' }} className="font-kanit text-white">
-                ถัดไป
-              </Text>
-            )}
+            {dateOfBirth ? (
+              <View className="absolute -top-2.5 left-3 bg-white px-1 z-10">
+                <Text className="font-kanit" style={{ fontSize: 12, color: '#9CA3AF' }}>
+                  วัน/เดือน/ปีเกิด <Text className="text-red-500">*</Text>
+                </Text>
+              </View>
+            ) : null}
+            <Text className={`font-kanit text-[16px] ${dateOfBirth ? 'text-gray-900' : 'text-gray-400'}`}>
+              {formatDate(dateOfBirth)}
+              {!dateOfBirth && ' *'}
+            </Text>
           </TouchableOpacity>
-        </ScrollView>
-      </KeyboardAvoidingView>
+        </View>
+
+        {/* Height and Weight */}
+        <View
+          className="flex-row mb-4"
+          onLayout={(event) => {
+            inputLayouts.current['height_weight'] = event.nativeEvent.layout.y;
+          }}
+        >
+          <View className="flex-1 mr-2">
+            <FloatingLabelInput
+              label="ส่วนสูง (cm) *"
+              value={height}
+              onChangeText={setHeight}
+              keyboardType="numeric"
+              onFocus={() => scrollToInput('height_weight')}
+            />
+          </View>
+          <View className="flex-1 ml-2">
+            <FloatingLabelInput
+              label="น้ำหนัก (kg) *"
+              value={weight}
+              onChangeText={setWeight}
+              keyboardType="numeric"
+              onFocus={() => scrollToInput('height_weight')}
+            />
+          </View>
+        </View>
+
+        {/* Medical Condition */}
+        <View
+          className="mb-4"
+          onLayout={(event) => {
+            inputLayouts.current['medical'] = event.nativeEvent.layout.y;
+          }}
+        >
+          <FloatingLabelInput
+            label="โรคประจำตัว หรือ เคยป่วย (ถ้ามี)"
+            value={medicalCondition}
+            onChangeText={setMedicalCondition}
+            multiline
+            numberOfLines={3}
+            onFocus={() => scrollToInput('medical')}
+            style={{ minHeight: 100, textAlignVertical: 'top', paddingTop: 18 }}
+            containerStyle={{ minHeight: 100 }}
+          />
+        </View>
+
+        {/* Address */}
+        <View
+          className="mb-6"
+          onLayout={(event) => {
+            inputLayouts.current['address'] = event.nativeEvent.layout.y;
+          }}
+        >
+          <FloatingLabelInput
+            label="ที่อยู่ *"
+            value={address}
+            onChangeText={setAddress}
+            multiline
+            numberOfLines={4}
+            onFocus={() => scrollToInput('address')}
+            style={{ minHeight: 120, textAlignVertical: 'top', paddingTop: 18 }}
+            containerStyle={{ minHeight: 120 }}
+          />
+        </View>
+
+        {/* Next Button */}
+        <PrimaryButton
+          title="ถัดไป"
+          onPress={handleNext}
+          loading={saveElderMutation.isPending}
+          style={{ marginBottom: 32 }}
+        />
+      </View>
       <GenderPickerModal />
 
       {/* Date Picker Modal (iOS) or standard (Android) */}
@@ -659,6 +574,6 @@ export default function Step1() {
           />
         )
       )}
-    </SafeAreaView>
+    </ScreenWrapper>
   );
 }

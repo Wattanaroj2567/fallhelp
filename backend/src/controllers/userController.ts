@@ -85,3 +85,17 @@ export const updatePushToken = asyncHandler(async (req: Request, res: Response) 
     data: result,
   });
 });
+
+/**
+ * DELETE /api/users/me
+ */
+export const deleteUser = asyncHandler(async (req: Request, res: Response) => {
+  const userId = req.user!.userId;
+
+  const result = await userService.deleteUser(userId);
+
+  res.json({
+    success: true,
+    data: result,
+  });
+});

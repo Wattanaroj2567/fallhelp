@@ -66,16 +66,16 @@ model Elder {
   id           String    @id @default(uuid())
   firstName    String
   lastName     String
-  dateOfBirth  DateTime?
   gender       Gender?
-  weight       Float? // น้ำหนัก (kg)
+  dateOfBirth  DateTime?
   height       Float? // ส่วนสูง (cm)
+  weight       Float? // น้ำหนัก (kg)
   diseases     String[] // โรคประจำตัว
+  address      String?  // ที่อยู่
   profileImage String?
   bloodType    String?
   allergies    String[]
   medications  String[]
-  notes        String?
   isActive     Boolean   @default(true)
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
@@ -163,7 +163,6 @@ model EmergencyContact {
   phone        String
   relationship String? // เช่น "ลูก", "หลาน", "เพื่อนบ้าน"
   priority     Int // 1 = สำคัญที่สุด, 2 = รอง, ...
-  isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 

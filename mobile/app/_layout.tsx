@@ -4,200 +4,175 @@ import "../global.css";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { DefaultTheme, ThemeProvider } from "@react-navigation/native";
 import { useFonts } from "expo-font";
-import { Stack, useRouter, useSegments } from "expo-router";
-import * as SplashScreen from "expo-splash-screen";
+import {
+  Stack,
+  SplashScreen,
+  useRouter,
+  useSegments,
+  useNavigationContainerRef,
+} from "expo-router";
 import { useEffect, useState } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { getToken, clearToken } from "../services/tokenStorage";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { usePushNotifications } from "../hooks/usePushNotifications";
+import { View, ActivityIndicator } from "react-native";
+import { getToken } from "@/services/tokenStorage";
+import Logger from "@/utils/logger";
 
 const queryClient = new QueryClient();
 
 export { ErrorBoundary } from "expo-router";
 
-export const unstable_settings = {
-  initialRouteName: "(auth)",
-};
-
 SplashScreen.preventAutoHideAsync();
 
-// ==========================================
-// 📱 LAYER: View (Root Layout)
-// Purpose: Main Application Entry Point & Provider Setup
-// ==========================================
+/**
+ * Root Navigation Guard
+ * Handles auth state and routes to correct flow
+ */
+function RootLayoutNav() {
+  const segments = useSegments();
+  const router = useRouter();
+  const navigationRef = useNavigationContainerRef();
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSignedIn, setIsSignedIn] = useState(false);
+  const [hasRedirected, setHasRedirected] = useState(false);
+
+  useEffect(() => {
+    const bootstrap = async () => {
+      try {
+        // Check if user has valid token
+        const token = await getToken();
+        setIsSignedIn(!!token);
+        Logger.info(
+          "Auth check:",
+          !!token ? "Authenticated" : "Not authenticated"
+        );
+      } catch (e) {
+        Logger.error("Error checking auth state:", e);
+        setIsSignedIn(false);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    bootstrap();
+  }, []);
+
+  useEffect(() => {
+    if (isLoading) return;
+
+    // ✅ CRITICAL FIX: Wait for navigation to be ready
+    if (!navigationRef.isReady()) {
+      Logger.debug("Navigation not ready yet, skipping redirect");
+      return;
+    }
+
+    const currentRoot = segments[0];
+    const inAuthGroup = currentRoot === "(auth)" || currentRoot === "(setup)";
+    const inTabsGroup = currentRoot === "(tabs)";
+    const inFeaturesGroup = currentRoot === "(features)";
+
+    Logger.debug("Navigation check:", {
+      segments: segments.join("/"),
+      inAuthGroup,
+      inTabsGroup,
+      inFeaturesGroup,
+      isSignedIn,
+      hasRedirected,
+    });
+
+    // Route based on auth state
+    if (!isSignedIn && !inAuthGroup) {
+      // User not signed in and trying to access protected routes
+      Logger.warn("User not authenticated, redirecting to login");
+      if (!hasRedirected) {
+        setHasRedirected(true);
+        setTimeout(() => {
+          try {
+            router.replace("/(auth)/login");
+          } catch (e) {
+            Logger.error("Navigation error:", e);
+          }
+        }, 0);
+      }
+    } else if (isSignedIn && inAuthGroup && !hasRedirected) {
+      // User signed in but on auth screens, redirect to dashboard
+      Logger.info("User authenticated, redirecting from auth to dashboard");
+      setHasRedirected(true);
+      setTimeout(() => {
+        try {
+          // ✅ FIX: Use explicit index route to prevent wrong screen resolution
+          router.replace({ pathname: "/(tabs)", params: {} });
+        } catch (e) {
+          Logger.error("Navigation error:", e);
+          setHasRedirected(false); // Allow retry on error
+        }
+      }, 100); // Increase timeout slightly for better stability
+    } else if (isSignedIn && inFeaturesGroup && !navigationRef.canGoBack()) {
+      // เปิดแอปแล้วหลุดเข้าหน้า features โดยไม่มีประวัติ stack ให้ย้อนกลับ → ส่งกลับแท็บหลักเป็น default
+      if (!hasRedirected) {
+        Logger.info(
+          "No history and landed in features, redirecting to tabs as initial screen"
+        );
+        setHasRedirected(true);
+        setTimeout(() => {
+          try {
+            router.replace({ pathname: "/(tabs)", params: {} });
+          } catch (e) {
+            Logger.error("Navigation error:", e);
+            setHasRedirected(false);
+          }
+        }, 50);
+      }
+    } else if (inTabsGroup) {
+      // Reset only when in tabs root to avoid flip-flop in features
+      if (hasRedirected) setHasRedirected(false);
+    }
+  }, [isSignedIn, segments, isLoading, navigationRef, hasRedirected]);
+
+  if (isLoading) {
+    return (
+      <View className="flex-1 justify-center items-center bg-white">
+        <ActivityIndicator size="large" color="#16AD78" />
+      </View>
+    );
+  }
+
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="(auth)" />
+      <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="(setup)" />
+      <Stack.Screen name="(features)" />
+      <Stack.Screen name="modal" options={{ presentation: "modal" }} />
+    </Stack>
+  );
+}
+
 export default function RootLayout() {
   const [loaded, error] = useFonts({
     Kanit: require("../assets/fonts/Kanit-Regular.ttf"),
     ...FontAwesome.font,
   });
 
-  const segments = useSegments();
-  const router = useRouter();
-  const [isReady, setIsReady] = useState(false);
-
-  // Use push notifications hook
-  const { expoPushToken, notification } = usePushNotifications();
-
-  // Log push token when available
-  useEffect(() => {
-    if (expoPushToken) {
-      console.log("✅ Expo Push Token registered:", expoPushToken);
-    }
-  }, [expoPushToken]);
-
-  // Handle notification tap navigation
-  useEffect(() => {
-    if (notification) {
-      const data = notification.request.content.data;
-      // Navigate to history for relevant events
-      if (data?.type === "FALL_DETECTED" || data?.type === "HEART_RATE_ALERT") {
-        router.push("/(tabs)/history");
-      }
-    }
-  }, [notification]);
-
-  // ==========================================
-  // ⚙️ LAYER: Logic (Side Effects)
-  // Purpose: Handle font loading errors
-  // ==========================================
   useEffect(() => {
     if (error) throw error;
   }, [error]);
 
-  // ==========================================
-  // 🔐 LAYER: Logic (Auth Check)
-  // Purpose: Check authentication status and redirect
-  // ==========================================
   useEffect(() => {
-    if (!loaded) return;
+    if (loaded) {
+      SplashScreen.hideAsync();
+    }
+  }, [loaded]);
 
-    const checkAuth = async () => {
-      try {
-        const token = await getToken();
-        const inAuthGroup = segments[0] === "(auth)";
-
-        if (!token) {
-          if (!inAuthGroup) {
-            router.replace("/(auth)/login");
-          }
-        } else {
-          // Token exists
-          // Check for saved setup step
-          try {
-            const SecureStore = await import("expo-secure-store");
-            const setupStep = await SecureStore.getItemAsync("setup_step");
-
-            if (setupStep === "2") {
-              if (
-                segments[0] !== "(setup)" ||
-                segments[1] !== "step2-device-pairing"
-              ) {
-                router.replace("/(setup)/step2-device-pairing");
-              }
-              return;
-            } else if (setupStep === "3") {
-              if (
-                segments[0] !== "(setup)" ||
-                segments[1] !== "step3-wifi-setup"
-              ) {
-                router.replace("/(setup)/step3-wifi-setup");
-              }
-              return;
-            }
-          } catch (e) {
-            console.log("Error checking setup step:", e);
-          }
-
-          // Fallback to existing logic if no setup step is saved
-          if (!isReady || inAuthGroup) {
-            try {
-              const { listElders } = require("../services/elderService");
-              const elders = await listElders();
-              const hasElders = elders && elders.length > 0;
-
-              if (hasElders) {
-                if (inAuthGroup || segments[0] === "(setup)") {
-                  router.replace("/(tabs)");
-                }
-              } else {
-                // No elders - force redirect to Setup Welcome
-                // Unless we are already there
-                const isAtSetup = segments[0] === "(setup)";
-                if (!isAtSetup) {
-                  router.replace("/(setup)/empty-state");
-                }
-              }
-            } catch (error: any) {
-              // Check for 401 Unauthorized
-              // [CRITICAL] DO NOT REMOVE: Handles session expiration gracefully
-              // If the token is invalid/expired (401), we MUST clear it and redirect to login.
-              // NOTE: Use 'clearToken()' from tokenStorage, NOT 'removeToken' (which doesn't exist).
-              const status = error?.status || error?.response?.status;
-              const message = error?.message || '';
-              const isUnauthorized = status === 401 || message.includes('401') || JSON.stringify(error).includes('401');
-
-              if (isUnauthorized) {
-                console.log('Session expired (401), redirecting to login...');
-                await clearToken();
-                if (segments[0] !== "(auth)") {
-                  router.replace("/(auth)/login");
-                }
-                return; // Stop execution
-              }
-
-              console.error("Failed to check elders:", error);
-              // If error (e.g. network), allow access to tabs (fallback)
-              if (inAuthGroup) {
-                router.replace("/(tabs)");
-              }
-            }
-          }
-        }
-      } catch (e: any) {
-        console.error("Auth check failed:", e);
-        // If 401, clear token and redirect to login
-        if (e?.response?.status === 401 || e?.message?.includes('401')) {
-          const { removeToken } = require("../services/tokenStorage");
-          await removeToken();
-          if (segments[0] !== "(auth)") {
-            router.replace("/(auth)/login");
-          }
-        }
-      } finally {
-        setIsReady(true);
-        try {
-          await SplashScreen.hideAsync();
-        } catch (splashError) {
-          // ignore
-        }
-      }
-    };
-
-    checkAuth();
-  }, [loaded, segments]);
-
-  if (!loaded || !isReady) {
+  if (!loaded) {
     return null;
   }
 
-  // ==========================================
-  // 🖼️ LAYER: View (Main Render)
-  // Purpose: Render app providers and navigation stack
-  // ==========================================
   return (
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider value={DefaultTheme}>
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="(auth)" />
-            <Stack.Screen name="(setup)" />
-            <Stack.Screen name="(tabs)" />
-            <Stack.Screen name="(home-features)" />
-            <Stack.Screen name="(history-features)" />
-            <Stack.Screen name="(setting-features)" />
-            <Stack.Screen name="modal" options={{ presentation: "modal" }} />
-          </Stack>
+          <RootLayoutNav />
         </ThemeProvider>
       </QueryClientProvider>
     </SafeAreaProvider>

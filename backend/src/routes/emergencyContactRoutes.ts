@@ -11,12 +11,13 @@ const router = Router();
 // All routes require authentication
 router.use(authenticate);
 
-// Routes nested under elders
-router.post('/elders/:elderId/emergency-contacts', emergencyContactController.createEmergencyContact);
-router.get('/elders/:elderId/emergency-contacts', emergencyContactController.getEmergencyContacts);
+// Routes nested under elders are now handled in elderRoutes.ts
+// router.post('/elders/:elderId/emergency-contacts', emergencyContactController.createEmergencyContact);
+// router.get('/elders/:elderId/emergency-contacts', emergencyContactController.getEmergencyContacts);
 
 // Direct emergency contact routes
-router.put('/emergency-contacts/:id', emergencyContactController.updateEmergencyContact);
-router.delete('/emergency-contacts/:id', emergencyContactController.deleteEmergencyContact);
+// Direct emergency contact routes
+router.put('/:id', emergencyContactController.updateEmergencyContact);
+router.delete('/:id', emergencyContactController.deleteEmergencyContact);
 
 export default router;

@@ -81,7 +81,7 @@ WITH NO DATA;
 -- Add refresh policy: refresh every hour for last 2 days
 SELECT add_continuous_aggregate_policy(
   'events_daily_stats',
-  start_offset => INTERVAL '2 days',
+  start_offset => INTERVAL '3 days',
   end_offset => INTERVAL '1 hour',
   schedule_interval => INTERVAL '1 hour',
   if_not_exists => TRUE
@@ -107,4 +107,4 @@ SELECT * FROM timescaledb_information.jobs
 WHERE hypertable_name = 'events';
 
 COMMENT ON TABLE events IS 'TimescaleDB hypertable for storing fall detection and heart rate events with 7-day partitions';
-COMMENT ON MATERIALIZED VIEW events_daily_stats IS 'Daily aggregated statistics for events (auto-refreshed every hour)';
+COMMENT ON VIEW events_daily_stats IS 'Daily aggregated statistics for events (auto-refreshed every hour)';

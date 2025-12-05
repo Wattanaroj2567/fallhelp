@@ -10,6 +10,7 @@ export default function Users() {
             const response = await api.get('/admin/users');
             return response.data.data;
         },
+        refetchInterval: 5000,
     });
 
     const { data: elders, isLoading: eldersLoading } = useQuery({
@@ -18,6 +19,7 @@ export default function Users() {
             const response = await api.get('/admin/elders');
             return response.data.data;
         },
+        refetchInterval: 5000,
     });
 
     if (usersLoading || eldersLoading) return <div className="text-center py-10">Loading data...</div>;

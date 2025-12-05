@@ -52,6 +52,7 @@
 - `deviceController.ts` - 7 endpoints (create, QR, pair, unpair, WiFi, config)
 - `eventController.ts` - 6 endpoints (list, stats, cancel)
 - `emergencyContactController.ts` - 4 endpoints (CRUD)
+- `notificationController.ts` - 5 endpoints (list, unread count, mark read, clear)
 - `adminController.ts` - 7 endpoints (dashboard, users, elders, devices, events)
 
 ### ✅ Phase 9: Routes Layer
@@ -63,6 +64,7 @@
 - `/api/elders` - Elder management routes (with member management)
 - `/api/devices` - Device management routes
 - `/api/events` - Event tracking routes
+- `/api/notifications` - Notification management routes
 - `/api/elders/:elderId/contacts` - Emergency contacts routes
 - `/api/admin` - Admin dashboard routes
 - `/api/health` - Health check endpoint
@@ -261,6 +263,16 @@ PUT    /api/elders/:elderId/contacts/:id  - Update contact
 DELETE /api/elders/:elderId/contacts/:id  - Delete contact
 ```
 
+### Notifications (5 endpoints)
+
+```
+GET    /api/notifications       - List notifications
+GET    /api/notifications/unread-count - Get unread count
+PATCH  /api/notifications/:id/read - Mark as read
+PATCH  /api/notifications/read-all - Mark all as read
+DELETE /api/notifications       - Clear all notifications
+```
+
 ### Admin (7 endpoints)
 
 ```
@@ -278,7 +290,7 @@ GET    /api/admin/events/stats  - Event statistics
 GET    /api/health              - Health check endpoint
 ```
 
-**Total:** 42+ REST API endpoints
+**Total:** 47+ REST API endpoints
 
 ---
 
@@ -622,9 +634,9 @@ SELECT create_hypertable('Event', 'timestamp', chunk_time_interval => INTERVAL '
 
 ### 📊 Statistics
 
-- **Total Files:** 53+ TypeScript files
-- **Total Lines:** ~5,200+ lines of code
-- **API Endpoints:** 42+ REST endpoints
+- **Total Files:** 55+ TypeScript files
+- **Total Lines:** ~5,500+ lines of code
+- **API Endpoints:** 47+ REST endpoints
 - **MQTT Topics:** 3 subscribe topics
 - **Socket.io Events:** 6 real-time events
 - **Database Tables:** 8 tables with TimescaleDB
@@ -711,5 +723,5 @@ npm run openapi:gen
 ---
 
 **สร้างโดย:** GitHub Copilot (Claude Sonnet 4.5)  
-**วันที่:** 24-26 พฤศจิกายน 2025  
+**วันที่:** 24-26 พฤศจิกายน 2025 (Updated Dec 5, 2025)
 **สถานะ:** ✅ Production Ready

@@ -7,7 +7,7 @@
     "backend:debug": "npm run debug --prefix backend",
     "backend:build": "npm run build --prefix backend",
     "backend:start": "npm run start --prefix backend",
-    "mobile:start": "npm start --prefix mobile",
+    "mobile:start": "cd mobile && npx expo start",
     "mobile:android": "npm run android --prefix mobile",
     "mobile:ios": "npm run ios --prefix mobile",
     "admin:dev": "npm run dev --prefix admin",

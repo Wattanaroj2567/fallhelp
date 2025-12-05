@@ -6,6 +6,9 @@
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import Logger from '@/utils/logger';
+
 /** Storage key for authentication token */
 const TOKEN_KEY = 'fallhelp_auth_token';
 
@@ -41,5 +44,26 @@ export async function clearToken(): Promise<void> {
     localStorage.removeItem(TOKEN_KEY);
   } else {
     await SecureStore.deleteItemAsync(TOKEN_KEY);
+  }
+}
+
+/**
+ * Clears all session data including token, setup progress, and cached forms
+ */
+export async function clearSession(): Promise<void> {
+  await clearToken();
+  
+  if (Platform.OS !== 'web') {
+    // Clear Setup Progress & IDs
+    await SecureStore.deleteItemAsync('setup_step');
+    await SecureStore.deleteItemAsync('setup_elderId');
+    await SecureStore.deleteItemAsync('setup_deviceId');
+  }
+  
+  // Clear Cached Form Data (AsyncStorage)
+  try {
+    await AsyncStorage.removeItem('setup_step1_form_data');
+  } catch (e) {
+    Logger.debug('Error clearing form data:', e);
   }
 }

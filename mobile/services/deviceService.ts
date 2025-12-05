@@ -33,10 +33,17 @@ export type UpdateDeviceConfigPayload = Partial<
   >
 >;
 
+// Helper type for API response
+type ApiResponse<T> = {
+  success: boolean;
+  message?: string;
+  data: T;
+};
+
 export async function createDevice(payload: CreateDevicePayload): Promise<Device> {
   try {
-    const { data } = await apiClient.post<Device>('/api/devices', payload);
-    return data;
+    const { data } = await apiClient.post<ApiResponse<Device>>('/api/devices', payload);
+    return data.data;
   } catch (error) {
     throw toApiError(error);
   }
@@ -53,8 +60,8 @@ export async function getPairingQr(deviceCode: string): Promise<{ qr: string }> 
 
 export async function pairDevice(payload: PairDevicePayload): Promise<Device> {
   try {
-    const { data } = await apiClient.post<Device>('/api/devices/pair', payload);
-    return data;
+    const { data } = await apiClient.post<ApiResponse<Device>>('/api/devices/pair', payload);
+    return data.data;
   } catch (error) {
     throw toApiError(error);
   }
@@ -62,8 +69,8 @@ export async function pairDevice(payload: PairDevicePayload): Promise<Device> {
 
 export async function unpairDevice(payload: UnpairDevicePayload): Promise<Device> {
   try {
-    const { data } = await apiClient.delete<Device>(`/api/devices/${payload.deviceId}/unpair`);
-    return data;
+    const { data } = await apiClient.delete<ApiResponse<Device>>(`/api/devices/${payload.deviceId}/unpair`);
+    return data.data;
   } catch (error) {
     throw toApiError(error);
   }
@@ -71,8 +78,8 @@ export async function unpairDevice(payload: UnpairDevicePayload): Promise<Device
 
 export async function getDeviceConfig(deviceId: string): Promise<DeviceConfig> {
   try {
-    const { data } = await apiClient.get<DeviceConfig>(`/api/devices/${deviceId}/config`);
-    return data;
+    const { data } = await apiClient.get<ApiResponse<DeviceConfig>>(`/api/devices/${deviceId}/config`);
+    return data.data;
   } catch (error) {
     throw toApiError(error);
   }
@@ -83,8 +90,8 @@ export async function updateDeviceConfig(
   payload: UpdateDeviceConfigPayload
 ): Promise<DeviceConfig> {
   try {
-    const { data } = await apiClient.put<DeviceConfig>(`/api/devices/${deviceId}/config`, payload);
-    return data;
+    const { data } = await apiClient.put<ApiResponse<DeviceConfig>>(`/api/devices/${deviceId}/config`, payload);
+    return data.data;
   } catch (error) {
     throw toApiError(error);
   }
@@ -92,8 +99,8 @@ export async function updateDeviceConfig(
 
 export async function configureWifi(deviceId: string, payload: WifiConfigPayload) {
   try {
-    const { data } = await apiClient.put<{ success: boolean }>(`/api/devices/${deviceId}/wifi`, payload);
-    return data;
+    const { data } = await apiClient.put<ApiResponse<{ success: boolean }>>(`/api/devices/${deviceId}/wifi`, payload);
+    return data.data;
   } catch (error) {
     throw toApiError(error);
   }

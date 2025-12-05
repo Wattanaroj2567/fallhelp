@@ -103,7 +103,8 @@ export const validateEmail = validate([
  * Validate login request
  */
 export const validateLogin = validate([
-  { field: 'email', required: true, type: 'email' },
+  { field: 'identifier', required: false, type: 'string' }, // Optional because it might be email
+  { field: 'email', required: false, type: 'string' }, // Keep for backward compatibility
   { field: 'password', required: true, type: 'string', minLength: 6 },
 ]);
 

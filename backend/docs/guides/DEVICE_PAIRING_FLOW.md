@@ -33,7 +33,7 @@
 ┌──────────────┐
 │ Caregiver    │ 2. ผู้ดูแลเข้าแอป → เพิ่มผู้สูงอายุ
 │ Creates      │    POST /elders
-│ Elder        │    Body: { firstName, lastName, ... }
+│ Elder        │    Body: { firstName, lastName, gender, dob, ... }
 └──────┬───────┘
        │
        ▼
@@ -260,7 +260,16 @@
 │ สถานะของอุปกรณ์: "เชื่อมต่อแล้ว" 🟢 │
 │ สถานะการหกล้ม: "ปกติ" 🔵           │
 │ สถานะของชีพจร: "90 BPM" ❤️          │
+│ สถานะของอุปกรณ์: "เชื่อมต่อแล้ว" 🟢 │
+│ สถานะการหกล้ม: "ปกติ" 🔵           │
+│ สถานะของชีพจร: "90 BPM" ❤️          │
 └─────────────────────────────────────┘
+       │
+       ▼
+┌──────────────┐
+│ Notification │ 14. แจ้งเตือน Push Notification
+│ Alert        │     "อุปกรณ์ของ แม่ทองดี ออนไลน์แล้ว"
+└──────────────┘     (Type: DEVICE_ONLINE)
 ```
 
 ---
@@ -749,5 +758,5 @@ async function configureWiFiViaBackend(deviceCode: string) {
 
 ---
 
-**Last Updated:** November 26, 2025  
-**Status:** Backend ready, awaiting ESP32 & Mobile implementation
+**Last Updated:** December 5, 2025  
+**Status:** Backend & Mobile Implementation Complete

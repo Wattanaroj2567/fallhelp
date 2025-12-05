@@ -27,6 +27,11 @@ export default function Register() {
             return;
         }
 
+        if (formData.phone.length !== 10) {
+            setError('Phone number must be exactly 10 digits');
+            return;
+        }
+
         setLoading(true);
 
         try {
@@ -49,8 +54,9 @@ export default function Register() {
             const { token, user } = loginResponse.data.data;
             login(token, user);
             navigate('/');
-        } catch (err: any) {
-            setError(err.response?.data?.error || err.response?.data?.message || 'Registration failed');
+        } catch (err) {
+            const error = err as { response?: { data?: { error?: string; message?: string } } };
+            setError(error.response?.data?.error || error.response?.data?.message || 'Registration failed');
         } finally {
             setLoading(false);
         }
@@ -82,7 +88,6 @@ export default function Register() {
                                     value={formData.firstName}
                                     onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                                     className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
-                                    placeholder="John"
                                 />
                             </div>
                         </div>
@@ -94,7 +99,6 @@ export default function Register() {
                                 value={formData.lastName}
                                 onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
-                                placeholder="Doe"
                             />
                         </div>
                     </div>
@@ -109,7 +113,6 @@ export default function Register() {
                                 value={formData.email}
                                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                 className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
-                                placeholder="admin@example.com"
                             />
                         </div>
                     </div>
@@ -118,14 +121,19 @@ export default function Register() {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
                         <div className="relative">
                             <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                            <input
-                                type="tel"
-                                required
-                                value={formData.phone}
-                                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
-                                placeholder="0812345678"
-                            />
+                                <input
+                                    type="tel"
+                                    required
+                                    value={formData.phone}
+                                    onChange={(e) => {
+                                        const value = e.target.value.replace(/\D/g, ''); // Only allow numbers
+                                        if (value.length <= 10) {
+                                            setFormData({ ...formData, phone: value });
+                                        }
+                                    }}
+                                    maxLength={10}
+                                    className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
+                                />
                         </div>
                     </div>
 
@@ -139,7 +147,6 @@ export default function Register() {
                                 value={formData.password}
                                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                                 className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
-                                placeholder="••••••••"
                             />
                         </div>
                     </div>
@@ -154,7 +161,6 @@ export default function Register() {
                                 value={formData.confirmPassword}
                                 onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                                 className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary outline-none"
-                                placeholder="••••••••"
                             />
                         </div>
                     </div>

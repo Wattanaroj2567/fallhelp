@@ -14,15 +14,15 @@ export const createElder = async (
   data: {
     firstName: string;
     lastName: string;
-    dateOfBirth?: Date;
     gender?: 'MALE' | 'FEMALE' | 'OTHER';
-    weight?: number;
+    dateOfBirth?: Date;
     height?: number;
+    weight?: number;
     diseases?: string[];
+    address?: string;
     bloodType?: string;
     allergies?: string[];
     medications?: string[];
-    notes?: string;
     profileImage?: string;
   }
 ) => {
@@ -138,7 +138,7 @@ export const getElderById = async (userId: string, elderId: string) => {
       },
       emergencyContacts: {
         where: {
-          isActive: true,
+
         },
         orderBy: {
           priority: 'asc',
@@ -188,7 +188,7 @@ export const updateElder = async (
     include: {
       device: true,
       emergencyContacts: {
-        where: { isActive: true },
+
         orderBy: { priority: 'asc' },
       },
     },
@@ -223,6 +223,35 @@ export const deactivateElder = async (userId: string, elderId: string) => {
   return {
     message: 'Elder deactivated successfully',
     elder,
+  };
+};
+
+/**
+ * Hard delete elder (only OWNER can delete)
+ */
+export const deleteElder = async (userId: string, elderId: string) => {
+  // Check access level
+  const access = await prisma.userElderAccess.findUnique({
+    where: {
+      userId_elderId: {
+        userId,
+        elderId,
+      },
+    },
+  });
+
+  if (!access || access.accessLevel !== 'OWNER') {
+    throw new Error('Only owner can delete elder');
+  }
+
+  // Delete elder (Cascade delete will handle related records if configured in schema, otherwise might need manual cleanup)
+  // Assuming Prisma schema has onDelete: Cascade for relations
+  await prisma.elder.delete({
+    where: { id: elderId },
+  });
+
+  return {
+    message: 'Elder deleted successfully',
   };
 };
 

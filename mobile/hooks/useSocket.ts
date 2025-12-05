@@ -1,7 +1,12 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { AppState } from 'react-native';
 import { io, Socket } from 'socket.io-client';
 import { CONFIG } from '@/constants/Config';
+import Logger from '@/utils/logger';
+
+// Constants
+const STALE_HEARTBEAT_THRESHOLD_MS = 30_000; // 30 seconds
+const WATCHDOG_CHECK_INTERVAL_MS = 5_000; // 5 seconds
 
 export const useSocket = (elderId: string | undefined, deviceId: string | undefined) => {
     const [isConnected, setIsConnected] = useState(false);
@@ -10,35 +15,45 @@ export const useSocket = (elderId: string | undefined, deviceId: string | undefi
     const [heartRate, setHeartRate] = useState<number | null>(null);
     const [lastHeartUpdate, setLastHeartUpdate] = useState<Date | null>(null);
 
+    const [activeFallEventId, setActiveFallEventId] = useState<string | null>(null);
+
     const socketRef = useRef<Socket | null>(null);
     const appState = useRef(AppState.currentState);
+    const lastHeartUpdateRef = useRef<Date | null>(null);
+
+    // Update ref when lastHeartUpdate changes (for watchdog to access)
+    useEffect(() => {
+        lastHeartUpdateRef.current = lastHeartUpdate;
+    }, [lastHeartUpdate]);
 
     // Watchdog: Check for stale data
+    // ✅ FIXED: Remove isConnected from dependencies to prevent infinite loops
+    // ✅ FIXED: Clearer logic without confusing ternaries
     useEffect(() => {
         const watchdog = setInterval(() => {
-            if (isConnected && lastHeartUpdate) {
+            if (lastHeartUpdateRef.current) {
                 const now = new Date();
-                const diff = now.getTime() - lastHeartUpdate.getTime();
+                const diff = now.getTime() - lastHeartUpdateRef.current.getTime();
 
-                if (diff > 30000) { // 30 seconds
-                    console.log('⚠️ Data stale: No heart rate update for 30s. Assuming offline.');
+                if (diff > STALE_HEARTBEAT_THRESHOLD_MS && isConnected) {
+                    Logger.warn('Data stale: No heart rate update for 30s. Marking as offline.');
                     setIsConnected(false);
                     setHeartRate(null);
                 }
             }
-        }, 5000);
+        }, WATCHDOG_CHECK_INTERVAL_MS);
 
         return () => clearInterval(watchdog);
-    }, [isConnected, lastHeartUpdate]);
+    }, [isConnected]); // Only dependency is isConnected to check status
 
     // Socket Connection
     useEffect(() => {
         if (!elderId || !deviceId) {
-            console.log('⏭️ Skip socket: No elder or no device paired');
+            Logger.debug('Skip socket: No elder or no device paired');
             return;
         }
 
-        console.log('🔌 Connecting to Socket:', CONFIG.SOCKET_URL);
+        Logger.info('Connecting to Socket:', CONFIG.SOCKET_URL);
 
         // Initialize socket if not exists or if URL changed (unlikely)
         // We use a ref to keep the socket instance
@@ -58,22 +73,23 @@ export const useSocket = (elderId: string | undefined, deviceId: string | undefi
         };
 
         socket.on('connect', () => {
-            console.log('✅ Socket Connected ID:', socket.id);
+            Logger.info('Socket Connected ID:', socket.id);
             socket.emit('authenticate', { elderId });
             setIsConnected(true);
         });
 
         const handleOffline = (reason: string) => {
-            console.log(`❌ Socket Offline (${reason})`);
+            Logger.warn(`Socket Offline (${reason})`);
             setIsConnected(false);
         };
 
         socket.on('disconnect', (reason) => handleOffline(reason));
         socket.on('connect_error', () => handleOffline('Connect Error'));
-        socket.on('reconnect_attempt', () => console.log('Reconnecting...'));
+        socket.on('reconnect_attempt', () => Logger.debug('Reconnecting...'));
 
         socket.on('device_status_update', (data) => {
             if (data.elderId === elderId) {
+                // ✅ FIXED: Clearer logic
                 setIsConnected(data.online === true);
                 if (!data.online) {
                     setHeartRate(null);
@@ -83,7 +99,10 @@ export const useSocket = (elderId: string | undefined, deviceId: string | undefi
 
         socket.on('heart_rate_update', (data) => {
             if (data.elderId === elderId) {
-                setHeartRate(data.heartRate);
+                // ✅ FIXED: Only update if value changed
+                if (heartRate !== data.heartRate) {
+                    setHeartRate(data.heartRate);
+                }
                 setLastHeartUpdate(new Date(data.timestamp));
                 setIsConnected(true);
             }
@@ -91,7 +110,10 @@ export const useSocket = (elderId: string | undefined, deviceId: string | undefi
 
         socket.on('heart_rate_alert', (data) => {
             if (data.elderId === elderId) {
-                setHeartRate(data.heartRate);
+                // ✅ FIXED: Only update if value changed
+                if (heartRate !== data.heartRate) {
+                    setHeartRate(data.heartRate);
+                }
                 setLastHeartUpdate(new Date(data.timestamp));
                 setIsConnected(true);
             }
@@ -101,6 +123,9 @@ export const useSocket = (elderId: string | undefined, deviceId: string | undefi
             if (data.elderId === elderId) {
                 setFallStatus('FALL');
                 setLastFallUpdate(new Date(data.timestamp));
+                if (data.id) {
+                    setActiveFallEventId(data.id);
+                }
             }
         });
 
@@ -108,6 +133,7 @@ export const useSocket = (elderId: string | undefined, deviceId: string | undefi
             if (data.elderId === elderId && data.status === 'RESOLVED') {
                 setFallStatus('NORMAL');
                 setLastFallUpdate(new Date(data.timestamp));
+                setActiveFallEventId(null);
             }
         });
 
@@ -117,14 +143,22 @@ export const useSocket = (elderId: string | undefined, deviceId: string | undefi
                 appState.current.match(/inactive|background/) &&
                 nextAppState === 'active'
             ) {
-                console.log('📱 App has come to the foreground! Reconnecting socket...');
-                connectSocket();
+                Logger.info('App has come to the foreground! Checking socket status...');
+                
+                if (socket.connected) {
+                    Logger.info('Socket is already connected. Re-authenticating and forcing UI update.');
+                    socket.emit('authenticate', { elderId });
+                    setIsConnected(true);
+                } else {
+                    Logger.info('Socket is disconnected. Attempting to reconnect...');
+                    connectSocket();
+                }
             }
             appState.current = nextAppState;
         });
 
         return () => {
-            console.log('🧹 Cleaning up socket');
+            Logger.debug('Cleaning up socket');
             subscription.remove();
             socket.disconnect();
             socket.removeAllListeners();
@@ -138,10 +172,12 @@ export const useSocket = (elderId: string | undefined, deviceId: string | undefi
         lastFallUpdate,
         heartRate,
         lastHeartUpdate,
+        activeFallEventId,
         setFallStatus,
         setLastFallUpdate,
         setHeartRate,
         setLastHeartUpdate,
+        setActiveFallEventId,
         setIsConnected
     };
 };

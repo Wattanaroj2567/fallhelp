@@ -295,7 +295,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"firstName\": \"Mae\",\n  \"lastName\": \"Thongdee\",\n  \"dateOfBirth\": \"1940-01-01\"\n}"
+              "raw": "{\n  \"firstName\": \"Mae\",\n  \"lastName\": \"Thongdee\",\n  \"gender\": \"FEMALE\",\n  \"dateOfBirth\": \"1940-01-01\",\n  \"height\": 160,\n  \"weight\": 55,\n  \"diseases\": [\"Hypertension\"],\n  \"address\": \"123 Happy Street\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/elders",
@@ -363,7 +363,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"notes\": \"Hypertension\"\n}"
+              "raw": "{\n  \"address\": \"456 New Address\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/elders/{{elderId}}",
@@ -889,6 +889,105 @@
               "body": "{ \n  \"success\": true,\n  \"message\": \"Emergency contact deleted successfully\" \n}"
             }
           ]
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "GET /notifications",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/notifications?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["notifications"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /notifications/unread-count",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/notifications/unread-count",
+              "host": ["{{baseUrl}}"],
+              "path": ["notifications", "unread-count"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "PATCH /notifications/:id/read",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/notifications/NOTIF_ID/read",
+              "host": ["{{baseUrl}}"],
+              "path": ["notifications", "NOTIF_ID", "read"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "PATCH /notifications/read-all",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/notifications/read-all",
+              "host": ["{{baseUrl}}"],
+              "path": ["notifications", "read-all"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE /notifications",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/notifications",
+              "host": ["{{baseUrl}}"],
+              "path": ["notifications"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE /notifications/:id",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/notifications/NOTIF_ID",
+              "host": ["{{baseUrl}}"],
+              "path": ["notifications", "NOTIF_ID"]
+            }
+          },
+          "response": []
         }
       ]
     },

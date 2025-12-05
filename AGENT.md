@@ -80,6 +80,38 @@ If you lack context, ASK the user. Do NOT guess.
 
 Say: "I need to check the schema for X before proceeding" instead of hallucinating fields.
 
+RULE 6: Continuous Documentation (User Request)
+
+ALWAYS update the documentation (CHANGELOG.md, walkthrough.md, etc.) immediately after completing a task.
+
+Do not wait for a "batch update" at the end of the day.
+
+Record every significant change to keep the project history accurate and up-to-date.
+
+RULE 7: Follow Official Documentation (CRITICAL)
+
+⚠️ DO NOT invent patterns, solutions, or code structures on your own.
+
+ALWAYS refer to and follow the official documentation:
+
+- **React Native**: https://reactnative.dev/docs/getting-started
+- **Expo**: https://docs.expo.dev
+- **Expo Router**: https://docs.expo.dev/router/introduction/
+
+When implementing features, especially authentication, navigation, or state management:
+
+1. **Search documentation first** before writing code
+2. **Use official patterns** and examples from docs
+3. **Copy and adapt** from official examples, don't create from scratch
+4. **If unsure, read the docs** - don't guess or make up solutions
+
+Benefits:
+
+- Code follows standard patterns that everyone understands
+- Easier to refactor and maintain
+- Better community support for debugging
+- Fewer bugs from non-standard implementations
+
 📝 Documentation & Deliverables Standard
 
 When asked to produce documentation or summaries, follow this measurable format:
@@ -167,6 +199,77 @@ API: Use Expo Push API endpoint: https://exp.host/--/api/v2/push/send
 6. Express v5 Error Handling
 
 Pattern: Use Async functions in routes; let Express handle rejections.
+
+- Log errors with stack traces and contextual data structures (not stringified JSON).
+
+7. CHANGELOG Management
+
+ALWAYS update `CHANGELOG.md` when making significant changes:
+
+**Workflow:** 11. **During Development**: Add changes to `[Unreleased]` section
+
+```markdown
+## [Unreleased]
+
+### Added
+
+- New feature X
+
+### Fixed
+
+- Bug Y
+```
+
+12. **When Ready to Release**: Convert `[Unreleased]` to new version
+
+```markdown
+## [Unreleased]
+
+(empty - ready for next changes)
+
+## [1.3.0] - 2025-12-10
+
+### Added
+
+- New feature X
+
+### Fixed
+
+- Bug Y
+```
+
+13. **Update Version Links** at bottom of file:
+
+```markdown
+[Unreleased]: https://github.com/fallhelp/fallhelp/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/fallhelp/fallhelp/compare/v1.2.0...v1.3.0
+```
+
+**Format (Keep a Changelog):**
+
+- `### Added` - New features
+- `### Changed` - Changes to existing functionality
+- `### Deprecated` - Soon-to-be removed features
+- `### Removed` - Removed features
+- `### Fixed` - Bug fixes
+- `### Security` - Security improvements
+
+**Version Numbering (Semantic Versioning):**
+
+- **MAJOR** (2.0.0): Breaking changes
+- **MINOR** (1.3.0): New features, backward compatible
+- **PATCH** (1.2.1): Bug fixes only
+
+8. Mobile Error Handling (Standard)
+
+- Use `Logger` from `@/utils/logger` instead of `console.log`.
+- Rely on `apiClient` interceptor for network errors.
+- Trust `ErrorBoundary` for UI crashes.
+
+9. Database Management
+
+- Always use `npm run db:reset` to reset.
+- Always use `npm run db:verify` to check TimescaleDB status.
 
 🚨 Common Pitfalls to Avoid
 

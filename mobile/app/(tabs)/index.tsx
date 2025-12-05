@@ -1,24 +1,49 @@
-import React, { useEffect } from 'react';
-import { ScrollView, Text, TouchableOpacity, View, RefreshControl } from 'react-native';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { getUserElders as getElders } from '@/services/userService';
-import { listEvents } from '@/services/eventService';
-import { useSocket } from '@/hooks/useSocket';
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  RefreshControl,
+  Alert,
+  Image,
+  ActivityIndicator,
+} from "react-native";
+// import { Image } from 'expo-image';
+import { MaterialIcons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { ScreenWrapper } from "@/components/ScreenWrapper";
+import { useRouter, useFocusEffect, Link } from "expo-router";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withRepeat,
+  withSequence,
+  withTiming,
+  Easing,
+  cancelAnimation,
+} from "react-native-reanimated";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { getUserElders as getElders, getProfile } from "@/services/userService";
+import { listEvents, cancelEvent } from "@/services/eventService";
+import { getUnreadCount } from "@/services/notificationService";
+import { useSocket } from "@/hooks/useSocket";
+import * as SecureStore from "expo-secure-store";
+import Logger from "@/utils/logger";
 
 // ==========================================
 // 🧩 LAYER: Logic (Helper Functions)
 // Purpose: Pure functions for data formatting
 // ==========================================
 const formatTime = (date: Date | null) => {
-  if (!date) return '--:-- น.';
-  return date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + ' น.';
+  if (!date) return "--:-- น.";
+  return (
+    date.toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" }) +
+    " น."
+  );
 };
 
 const calculateAge = (dobString?: string) => {
-  if (!dobString) return '--';
+  if (!dobString) return "--";
   const dob = new Date(dobString);
   const diffMs = Date.now() - dob.getTime();
   const ageDt = new Date(diffMs);
@@ -29,9 +54,10 @@ const calculateAge = (dobString?: string) => {
 // 📱 LAYER: View (Component)
 // Purpose: Main Dashboard Screen
 // ==========================================
-export default function DashboardScreen() {
+export default function Home() {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const [imageError, setImageError] = useState(false);
 
   // ==========================================
   // ⚙️ LAYER: Logic (Data Fetching)
@@ -39,23 +65,59 @@ export default function DashboardScreen() {
   // ==========================================
 
   // 1. Fetch Elder Profile
-  const { data: elderInfo, isLoading, refetch } = useQuery({
-    queryKey: ['userElders'],
+  const {
+    data: elderInfo,
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ["userElders"],
     queryFn: async () => {
       const elders = await getElders();
       return elders && elders.length > 0 ? elders[0] : null;
     },
   });
 
+  // 1.5. Fetch User Profile (for profile image)
+  const { data: userProfile } = useQuery({
+    queryKey: ["userProfile"],
+    queryFn: getProfile,
+  });
+
+  // Reset error state when profile image changes
+  useEffect(() => {
+    setImageError(false);
+  }, [userProfile?.profileImage]);
+
+  // Refetch data when screen is focused
+  useFocusEffect(
+    React.useCallback(() => {
+      // Invalidate all relevant queries to ensure fresh data
+      queryClient.invalidateQueries({ queryKey: ["userProfile"] });
+      queryClient.invalidateQueries({ queryKey: ["userElders"] });
+      queryClient.invalidateQueries({ queryKey: ["initialEvents"] });
+    }, [queryClient])
+  );
+
   // 2. Fetch Initial Events (for initial state before socket updates)
   const { data: initialEvents } = useQuery({
-    queryKey: ['initialEvents', elderInfo?.id],
+    queryKey: ["initialEvents", elderInfo?.id],
     queryFn: async () => {
       if (!elderInfo?.id) return null;
-      const response = await listEvents({ elderId: elderInfo.id, pageSize: 20, page: 1 });
+      const response = await listEvents({
+        elderId: elderInfo.id,
+        pageSize: 20,
+        page: 1,
+      });
       return response.data || [];
     },
     enabled: !!elderInfo?.id,
+  });
+
+  // 3. Fetch Unread Notification Count
+  const { data: unreadCount = 0 } = useQuery({
+    queryKey: ["unreadCount"],
+    queryFn: getUnreadCount,
+    refetchInterval: 30000, // Poll every 30 seconds
   });
 
   // ==========================================
@@ -68,18 +130,20 @@ export default function DashboardScreen() {
     lastFallUpdate,
     heartRate,
     lastHeartUpdate,
+    activeFallEventId,
     setFallStatus,
     setLastFallUpdate,
     setHeartRate,
     setLastHeartUpdate,
-    setIsConnected
+    setActiveFallEventId,
+    setIsConnected,
   } = useSocket(elderInfo?.id, elderInfo?.device?.id);
 
   // Sync Device Status
   useEffect(() => {
     if (elderInfo?.device) {
       const deviceStatus = elderInfo.device.status;
-      const online = deviceStatus === 'ACTIVE' || deviceStatus === 'PAIRED';
+      const online = deviceStatus === "ACTIVE" || deviceStatus === "PAIRED";
       setIsConnected(online);
     } else {
       setIsConnected(false);
@@ -89,89 +153,195 @@ export default function DashboardScreen() {
   // Sync Initial Event Data
   useEffect(() => {
     if (initialEvents && initialEvents.length > 0) {
-      const latestHR = initialEvents.find((e) => ['HEART_RATE_NORMAL', 'HEART_RATE_HIGH', 'HEART_RATE_LOW'].includes(e.type));
+      const latestHR = initialEvents.find((e) =>
+        ["HEART_RATE_NORMAL", "HEART_RATE_HIGH", "HEART_RATE_LOW"].includes(
+          e.type
+        )
+      );
       if (latestHR && latestHR.value) {
         setHeartRate(latestHR.value);
         setLastHeartUpdate(new Date(latestHR.timestamp));
       }
 
-      const latestFall = initialEvents.find((e) => e.type === 'FALL');
+      const latestFall = initialEvents.find((e) => e.type === "FALL");
       if (latestFall) {
         setLastFallUpdate(new Date(latestFall.timestamp));
-        setFallStatus(latestFall.isCancelled ? 'NORMAL' : 'FALL');
+        setFallStatus(latestFall.isCancelled ? "NORMAL" : "FALL");
+        if (!latestFall.isCancelled) {
+          setActiveFallEventId(latestFall.id);
+        }
       } else {
-        setFallStatus('NORMAL');
+        setFallStatus("NORMAL");
       }
     }
-  }, [initialEvents, setHeartRate, setLastHeartUpdate, setFallStatus, setLastFallUpdate]);
+  }, [
+    initialEvents,
+    setHeartRate,
+    setLastHeartUpdate,
+    setFallStatus,
+    setLastFallUpdate,
+    setActiveFallEventId,
+  ]);
 
   // ==========================================
   // 🎮 LAYER: Logic (Event Handlers)
   // Purpose: Handle user interactions
   // ==========================================
-  const onRefresh = async () => {
-    await Promise.all([
-      refetch(),
-      queryClient.invalidateQueries({ queryKey: ['initialEvents'] })
-    ]);
+  // Removed onRefresh as we auto-refresh on focus now
+
+  const handleResetStatus = async () => {
+    if (!activeFallEventId) return;
+    try {
+      await cancelEvent(activeFallEventId);
+      setFallStatus("NORMAL");
+      setActiveFallEventId(null);
+      Alert.alert("สำเร็จ", "รีเซ็ตสถานะเรียบร้อยแล้ว");
+    } catch (error) {
+      Alert.alert("ผิดพลาด", "ไม่สามารถรีเซ็ตสถานะได้");
+      Logger.error("Failed to reset fall status:", error);
+    }
   };
 
   // UI Logic: Calculate Status Colors/Labels
   const hrStatus = (() => {
-    if (heartRate === null) return { label: '--', color: '#9CA3AF' };
-    if (heartRate < 60) return { label: 'ต่ำกว่าเกณฑ์', color: '#1E88E5' };
-    if (heartRate > 100) return { label: 'สูงกว่าปกติ', color: '#EF4A5A' };
-    return { label: 'ปกติ', color: '#4A90E2' };
+    if (heartRate === null) return { label: "--", color: "#9CA3AF" };
+    if (heartRate < 60) return { label: "ต่ำกว่าเกณฑ์", color: "#1E88E5" };
+    if (heartRate > 100) return { label: "สูงกว่าปกติ", color: "#EF4A5A" };
+    return { label: "ปกติ", color: "#4A90E2" };
   })();
 
   const getFallStatusColor = () => {
-    if (fallStatus === 'FALL') return '#EF4A5A';
-    if (isConnected) return '#4A90E2';
-    return '#9CA3AF';
+    if (fallStatus === "FALL") return "#EF4A5A";
+    if (isConnected) return "#4A90E2";
+    return "#9CA3AF";
   };
+
+  // Animation Logic
+  const heartScale = useSharedValue(1);
+
+  const heartAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ scale: heartScale.value }],
+    };
+  });
+
+  useEffect(() => {
+    if (heartRate && heartRate > 0) {
+      // Calculate duration per beat in ms (60000ms / BPM)
+      // Subtracting a small buffer for the contraction phase
+      const beatDuration = 60000 / heartRate;
+
+      // Standard Heartbeat Pattern:
+      // 1. Systole (Contraction/Pump): Fast expansion
+      // 2. Diastole (Relaxation): Fast return to normal
+      // 3. Rest: Wait for the next beat
+
+      // Reset animation
+      cancelAnimation(heartScale);
+      heartScale.value = 1;
+
+      heartScale.value = withRepeat(
+        withSequence(
+          withTiming(1.25, { duration: 100, easing: Easing.out(Easing.quad) }), // Pump
+          withTiming(1, { duration: 150, easing: Easing.in(Easing.quad) }), // Relax
+          withTiming(1, { duration: Math.max(0, beatDuration - 250) }) // Rest
+        ),
+        -1,
+        false
+      );
+    } else {
+      cancelAnimation(heartScale);
+      heartScale.value = withTiming(1);
+    }
+  }, [heartRate]);
 
   // ==========================================
   // 🖼️ LAYER: View (Render)
   // Purpose: Render the UI JSX
   // ==========================================
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={['top', 'left', 'right']}>
-
+    <ScreenWrapper
+      edges={["top"]}
+      useScrollView={false}
+      style={{ backgroundColor: "#FDFDFD" }}
+    >
       {/* Header Section */}
-      <View className="flex-row items-center justify-between pt-3 pb-4 bg-white px-6">
-        <Text className="font-kanit text-2xl font-bold text-gray-800">
-          FallHelp
-        </Text>
-        <TouchableOpacity
-          onPress={() => router.push('/(home-features)/(profile)')}
-          className="p-1"
-        >
-          <Ionicons name="person-circle-outline" size={36} color="#4B5563" />
-        </TouchableOpacity>
+      <View className="flex-row items-center justify-between pt-3 pb-4 bg-white px-6 border-b border-gray-100">
+        <View>
+          <Text className="text-sm text-gray-500 font-kanit">สวัสดี,</Text>
+          <Text className="text-xl font-kanit font-bold text-gray-800">
+            {userProfile?.firstName}
+          </Text>
+        </View>
+
+        <View className="flex-row items-center gap-5">
+          <Link href="/(features)/(monitoring)/notifications" asChild>
+            <TouchableOpacity className="p-1 relative">
+              <MaterialIcons
+                name="notifications-none"
+                size={28}
+                color="#374151"
+              />
+              {unreadCount > 0 && (
+                <View className="absolute top-1 right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white" />
+              )}
+            </TouchableOpacity>
+          </Link>
+
+          <Link href="/(features)/(user)/(profile)" asChild>
+            <TouchableOpacity className="rounded-full overflow-hidden">
+              {userProfile?.profileImage && !imageError ? (
+                <Image
+                  key={userProfile?.profileImage} // Force re-render on change
+                  source={{ uri: userProfile.profileImage }}
+                  style={{ width: 48, height: 48, borderRadius: 24 }}
+                  onError={() => setImageError(true)}
+                />
+              ) : (
+                <View
+                  style={{ width: 48, height: 48 }}
+                  className="bg-gray-200 items-center justify-center rounded-full"
+                >
+                  <MaterialIcons name="person" size={28} color="#9CA3AF" />
+                </View>
+              )}
+            </TouchableOpacity>
+          </Link>
+        </View>
       </View>
 
-      <ScrollView
-        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 100 }}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl refreshing={isLoading} onRefresh={onRefresh} />
-        }
-      >
-        {!elderInfo ? (
+      <View className="flex-1 px-5 pt-6 pb-4 justify-between">
+        {isLoading ? (
+          <View className="flex-1 items-center justify-center">
+            <ActivityIndicator size="large" color="#16AD78" />
+            <Text className="font-kanit text-gray-500 mt-4">
+              กำลังโหลดข้อมูล...
+            </Text>
+          </View>
+        ) : !elderInfo ? (
           // Empty State UI
-          <View className="flex-1 items-center justify-center py-20">
-            <Ionicons name="person-add-outline" size={80} color="#D1D5DB" />
-            <Text style={{ fontSize: 20, fontWeight: '600' }} className="font-kanit text-gray-900 mt-6">
+          <View className="flex-1 items-center justify-center">
+            <MaterialIcons name="person-add" size={80} color="#D1D5DB" />
+            <Text
+              style={{ fontSize: 20, fontWeight: "600" }}
+              className="font-kanit text-gray-900 mt-6"
+            >
               ยินดีต้อนรับสู่ FallHelp
             </Text>
-            <Text style={{ fontSize: 14 }} className="font-kanit text-gray-500 mt-2 text-center">
+            <Text
+              style={{ fontSize: 14 }}
+              className="font-kanit text-gray-500 mt-2 text-center"
+            >
               คุณยังไม่มีข้อมูลในระบบ
             </Text>
             <TouchableOpacity
-              onPress={() => router.push('/(setup)/empty-state')}
+              onPress={() => router.push("/(setup)/empty-state")}
               className="bg-[#16AD78] rounded-2xl px-8 py-4 mt-8"
             >
-              <Text style={{ fontSize: 16, fontWeight: '600' }} className="font-kanit text-white">
+              <Text
+                style={{ fontSize: 16, fontWeight: "600" }}
+                className="font-kanit text-white"
+              >
                 เพิ่มอุปกรณ์และเริ่มต้นใช้งาน
               </Text>
             </TouchableOpacity>
@@ -179,144 +349,230 @@ export default function DashboardScreen() {
         ) : (
           // Main Dashboard UI
           <>
-            <Text className="font-kanit text-lg font-bold text-black mb-4">
-              ภาพรวม
-            </Text>
-
-            {/* Card 1: Device Status */}
-            <View className="bg-[#F5F6F7] rounded-2xl p-4 mb-4 shadow-sm border border-gray-100">
-              <Text className="font-kanit text-base font-bold text-gray-800 mb-3">
-                สถานะของอุปกรณ์
+            <View>
+              {/* Section Title */}
+              <Text className="text-lg font-kanit font-bold text-gray-800 ml-1 mb-5">
+                ภาพรวม
               </Text>
+
+              {/* Fall Status Card (Hero - Colorful) */}
               <View
-                className="w-full py-3 rounded-xl items-center"
-                style={{ backgroundColor: elderInfo?.device ? (isConnected ? '#56AE57' : '#9CA3AF') : '#9CA3AF' }}
+                className={`p-6 rounded-[24px] shadow-md mb-6 ${fallStatus === "FALL" ? "bg-red-500" : "bg-[#4A90E2]"
+                  }`}
               >
-                <Text className="font-kanit text-white text-lg font-bold">
-                  {elderInfo?.device ? (isConnected ? 'เชื่อมต่อแล้ว' : 'ขาดการเชื่อมต่อ') : '--'}
+                <View className="flex-row justify-between items-start mb-6">
+                  <View className="flex-row items-center gap-4">
+                    <View className="w-12 h-12 rounded-full bg-white/20 items-center justify-center backdrop-blur-sm">
+                      <MaterialIcons
+                        name={fallStatus === "FALL" ? "warning" : "accessibility"}
+                        size={28}
+                        color="white"
+                      />
+                    </View>
+                    <View>
+                      <Text className="text-white/80 font-kanit text-sm mb-0.5">
+                        สถานะการหกล้ม
+                      </Text>
+                      <Text className="text-white font-kanit font-bold text-2xl">
+                        {fallStatus === "FALL" ? "ตรวจพบ!" : "ปกติ"}
+                      </Text>
+                    </View>
+                  </View>
+                  {fallStatus === "FALL" && (
+                    <View className="bg-white px-3 py-1 rounded-full">
+                      <Text className="text-xs text-red-600 font-kanit font-bold">
+                        ฉุกเฉิน
+                      </Text>
+                    </View>
+                  )}
+                </View>
+
+                <View className="flex-row justify-between items-end">
+                  <Text className="text-white/70 font-kanit text-xs">
+                    อัปเดตล่าสุด : {formatTime(lastFallUpdate)}
+                  </Text>
+
+                  {fallStatus === "FALL" && (
+                    <TouchableOpacity
+                      onPress={handleResetStatus}
+                      className="bg-white px-5 py-2.5 rounded-xl shadow-sm active:bg-gray-100"
+                    >
+                      <Text className="text-red-500 font-kanit font-bold text-sm">
+                        รีเซ็ตสถานะ
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </View>
+
+              {/* Grid: Device & Heart Rate */}
+              <View className="flex-row mb-6">
+                {/* Device Status */}
+                <View className="flex-1 bg-white p-5 rounded-[24px] border border-gray-100 shadow-sm mr-1.5">
+                  <View className="flex-row justify-between items-start">
+                    <View
+                      className={`w-12 h-12 rounded-2xl items-center justify-center ${isConnected ? "bg-green-100" : "bg-gray-100"
+                        }`}
+                    >
+                      <MaterialIcons
+                        name="devices"
+                        size={24}
+                        color={isConnected ? "#16AD78" : "#9CA3AF"}
+                      />
+                    </View>
+                    <View
+                      className={`w-3 h-3 rounded-full ${isConnected ? "bg-green-500" : "bg-gray-300"
+                        }`}
+                    />
+                  </View>
+
+                  <View className="mt-4">
+                    <Text className="text-gray-400 font-kanit text-xs mb-1">
+                      อุปกรณ์
+                    </Text>
+                    <Text
+                      className={`text-lg font-kanit font-bold ${isConnected ? "text-gray-800" : "text-gray-400"
+                        }`}
+                    >
+                      {isConnected ? "เชื่อมต่อ" : "หลุด"}
+                    </Text>
+                  </View>
+                </View>
+
+                {/* Heart Rate */}
+                <View className="flex-1 bg-white p-5 rounded-[24px] border border-gray-100 shadow-sm ml-1.5">
+                  <View className="flex-row justify-between items-start">
+                    <Animated.View
+                      style={heartAnimatedStyle}
+                      className="w-12 h-12 rounded-2xl bg-rose-100 items-center justify-center"
+                    >
+                      <MaterialIcons name="favorite" size={24} color="#E11D48" />
+                    </Animated.View>
+                    {(heartRate || 0) > 0 &&
+                      ((heartRate || 0) < 60 || (heartRate || 0) > 100) ? (
+                      <View
+                        className={`px-2 py-1 rounded-md ${(heartRate || 0) > 100 ? "bg-red-100" : "bg-blue-100"
+                          }`}
+                      >
+                        <Text
+                          className={`text-[10px] font-bold ${(heartRate || 0) > 100
+                            ? "text-red-600"
+                            : "text-blue-600"
+                            }`}
+                        >
+                          {(heartRate || 0) > 100 ? "สูง" : "ต่ำ"}
+                        </Text>
+                      </View>
+                    ) : null}
+                  </View>
+
+                  <View className="mt-4">
+                    <Text className="text-gray-400 font-kanit text-xs mb-1">
+                      ชีพจร
+                    </Text>
+                    <View className="flex-row items-baseline">
+                      <Text className="text-3xl font-kanit font-bold text-gray-800 mr-1">
+                        {heartRate ? heartRate : "--"}
+                      </Text>
+                      <Text className="text-xs text-gray-400 font-kanit">
+                        BPM
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              </View>
+
+              {/* Elder Info Card (Clickable) */}
+              <Link href="/(features)/(elder)" asChild>
+                <TouchableOpacity className="bg-white p-6 rounded-[28px] border border-gray-100 shadow-sm flex-row items-center justify-between active:bg-gray-50">
+                  <View className="flex-row items-center gap-5">
+                    <View className="w-16 h-16 bg-blue-50 rounded-full items-center justify-center border border-blue-100 overflow-hidden shadow-sm">
+                      {/* @ts-ignore: imageProfile might not be in type yet */}
+                      {elderInfo?.imageProfile ? (
+                        <Image
+                          // @ts-ignore
+                          source={{ uri: elderInfo.imageProfile }}
+                          className="w-full h-full rounded-full"
+                          resizeMode="cover"
+                        />
+                      ) : (
+                        <MaterialIcons name="elderly" size={40} color="#4A90E2" />
+                      )}
+                    </View>
+                    <View>
+                      <Text className="text-gray-400 font-kanit text-xs mb-1.5">
+                        ผู้สูงอายุที่ดูแล
+                      </Text>
+                      <Text className="text-xl font-kanit font-bold text-gray-800 mb-2">
+                        {(() => {
+                          const first = elderInfo?.firstName?.trim() || "";
+                          const last = elderInfo?.lastName?.trim() || "";
+                          const full = `${first} ${last}`.trim();
+                          return full || "ยังไม่มีข้อมูลผู้สูงอายุ";
+                        })()}
+                      </Text>
+                      <View className="flex-row space-x-2">
+                        {/* @ts-ignore: Gender enum mismatch */}
+                        <View
+                          className={`px-3 py-1 rounded-full ${elderInfo?.gender === "MALE"
+                            ? "bg-blue-100"
+                            : elderInfo?.gender === "FEMALE"
+                              ? "bg-pink-100"
+                              : "bg-gray-100"
+                            }`}
+                        >
+                          <Text
+                            className={`text-xs font-bold font-kanit ${elderInfo?.gender === "MALE"
+                              ? "text-blue-600"
+                              : elderInfo?.gender === "FEMALE"
+                                ? "text-pink-600"
+                                : "text-gray-600"
+                              }`}
+                          >
+                            {/* @ts-ignore: Gender enum mismatch */}
+                            {elderInfo?.gender === "MALE"
+                              ? "ชาย"
+                              : elderInfo?.gender === "FEMALE"
+                                ? "หญิง"
+                                : "ไม่ระบุ"}
+                          </Text>
+                        </View>
+                        <View className="bg-gray-100 px-3 py-1 rounded-full">
+                          <Text className="text-xs text-gray-600 font-kanit font-bold">
+                            {elderInfo?.dateOfBirth
+                              ? calculateAge(elderInfo.dateOfBirth.toString())
+                              : "--"}{" "}
+                            ปี
+                          </Text>
+                        </View>
+                      </View>
+                    </View>
+                  </View>
+                  <View className="w-10 h-10 rounded-full bg-gray-50 items-center justify-center">
+                    <MaterialIcons
+                      name="chevron-right"
+                      size={24}
+                      color="#9CA3AF"
+                    />
+                  </View>
+                </TouchableOpacity>
+              </Link>
+            </View>
+
+            {/* Emergency Call Button - Docked to Bottom */}
+            <Link href="/(features)/(emergency)/call" asChild>
+              <TouchableOpacity className="bg-[#FF4B4B] rounded-[24px] p-5 flex-row justify-center items-center shadow-lg shadow-red-200 active:bg-red-600 mt-4">
+                <View className="bg-white/20 p-2 rounded-full mr-3">
+                  <MaterialIcons name="phone-in-talk" size={24} color="white" />
+                </View>
+                <Text className="text-white font-kanit font-bold text-xl">
+                  โทรฉุกเฉิน
                 </Text>
-              </View>
-            </View>
-
-            {/* Card 2: Fall Status */}
-            <View className="bg-[#F5F6F7] rounded-2xl p-4 mb-4 shadow-sm border border-gray-100">
-              <View className="flex-row justify-between items-start">
-                <View>
-                  <Text className="font-kanit text-base font-bold text-gray-800 mb-1">
-                    สถานะการหกล้ม
-                  </Text>
-                  <Text className="font-kanit text-sm text-gray-500">
-                    อัปเดตล่าสุด : <Text className="font-kanit text-gray-800 font-medium">
-                      {elderInfo?.device ? formatTime(lastFallUpdate) : '--:-- น.'}
-                    </Text>
-                  </Text>
-                </View>
-                <View
-                  className="px-6 py-1.5 rounded-lg"
-                  style={{ backgroundColor: getFallStatusColor() }}
-                >
-                  <Text className="font-kanit text-white font-bold text-base">
-                    {elderInfo?.device ? (fallStatus === 'FALL' ? 'หกล้ม!' : (isConnected ? 'ปกติ' : '--')) : '--'}
-                  </Text>
-                </View>
-              </View>
-            </View>
-
-            {/* Card 3: Heart Rate */}
-            <View className="bg-[#F5F6F7] rounded-2xl p-4 mb-6 shadow-sm border border-gray-100">
-              <View className="flex-row justify-between items-start mb-4">
-                <View>
-                  <Text className="font-kanit text-base font-bold text-gray-800 mb-1">
-                    สถานะของชีพจร
-                  </Text>
-                  <Text className="font-kanit text-sm text-gray-500">
-                    อัปเดตล่าสุด : <Text className="font-kanit text-gray-800 font-medium">
-                      {elderInfo?.device ? formatTime(lastHeartUpdate) : '--:-- น.'}
-                    </Text>
-                  </Text>
-                </View>
-                <View className="px-6 py-1.5 rounded-lg" style={{ backgroundColor: hrStatus.color }}>
-                  <Text className="font-kanit text-white font-bold text-base">
-                    {elderInfo?.device ? hrStatus.label : '--'}
-                  </Text>
-                </View>
-              </View>
-
-              <View className="items-end">
-                {elderInfo?.device && heartRate !== null ? (
-                  <View className="bg-[#EF4A5A] px-4 py-2 rounded-xl flex-row items-center shadow-sm">
-                    <Ionicons name="heart" size={20} color="white" style={{ marginRight: 6 }} />
-                    <Text className="font-kanit text-white text-xl font-bold">
-                      {Math.round(heartRate)} BPM
-                    </Text>
-                  </View>
-                ) : (
-                  <Text className="font-kanit text-gray-400 text-lg">-- BPM</Text>
-                )}
-              </View>
-            </View>
-
-            {/* Card 4: Elder Info */}
-            <View className="bg-[#F5F6F7] rounded-2xl p-5 mb-20 shadow-sm border border-gray-100">
-              <Text className="font-kanit text-sm font-bold text-gray-600 mb-4">
-                ข้อมูลผู้สูงอายุ
-              </Text>
-              <TouchableOpacity
-                onPress={() => router.push('/(home-features)/(elderly)')}
-                className="flex-row items-center justify-between"
-              >
-                <View className="flex-row items-center gap-4">
-                  <View className="w-12 h-12 bg-gray-300 rounded-full items-center justify-center">
-                    <Ionicons name="person" size={24} color="#FFF" />
-                  </View>
-                  <View>
-                    <View className="flex-row mb-2">
-                      <Text className="font-kanit w-16 text-gray-500">ชื่อ</Text>
-                      <Text className="font-kanit text-gray-800 font-medium">
-                        {elderInfo ? `${elderInfo.firstName} ${elderInfo.lastName}` : '--'}
-                      </Text>
-                    </View>
-                    <View className="flex-row mb-2">
-                      <Text className="font-kanit w-16 text-gray-500">เพศ</Text>
-                      <Text className="font-kanit text-gray-800 font-medium">
-                        {elderInfo?.gender === 'FEMALE' ? 'หญิง' : (elderInfo?.gender === 'MALE' ? 'ชาย' : '--')}
-                      </Text>
-                    </View>
-                    <View className="flex-row">
-                      <Text className="font-kanit w-16 text-gray-500">อายุ</Text>
-                      <Text className="font-kanit text-gray-800 font-medium">
-                        {elderInfo?.dateOfBirth ? `${calculateAge(elderInfo.dateOfBirth)} ปี` : '--'}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-                <Ionicons name="chevron-forward" size={24} color="#4B5563" />
               </TouchableOpacity>
-            </View>
+            </Link>
           </>
         )}
-      </ScrollView>
-
-      {/* Floating Action Button */}
-      <View className="absolute bottom-4 left-0 right-0 px-6 pb-4 bg-transparent">
-        <TouchableOpacity
-          activeOpacity={0.9}
-          className="w-full bg-[#FF4444] rounded-2xl py-4 flex-row justify-center items-center shadow-lg"
-          onPress={() => router.push('/(home-features)/call')}
-          style={{
-            shadowColor: '#FF4444',
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.3,
-            shadowRadius: 8,
-            elevation: 5
-          }}
-        >
-          <MaterialCommunityIcons name="phone-in-talk" size={24} color="white" style={{ marginRight: 8 }} />
-          <Text className="font-kanit text-white text-lg font-bold">
-            โทรฉุกเฉิน
-          </Text>
-        </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </ScreenWrapper>
   );
 }

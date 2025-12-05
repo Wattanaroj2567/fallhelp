@@ -216,15 +216,18 @@
 
 ### Phase Breakdown
 
-| Phase                | Duration | Files   | Lines     | Status |
-| -------------------- | -------- | ------- | --------- | ------ |
-| Phase 1: Foundation  | 3h       | 11      | 862       | ✅     |
-| Phase 2-7: Services  | 7h       | 7       | 1,940     | ✅     |
-| Phase 8: Controllers | 4h       | 7       | 1,563     | ✅     |
-| Phase 9: Routes      | 2h       | 8       | 565       | ✅     |
-| Phase 10: IoT        | 3.5h     | 11      | 1,082     | ✅     |
-| Phase 11: Core       | 2.5h     | 15+     | 3,434     | ✅     |
-| **TOTAL**            | **22h**  | **59+** | **9,446** | **✅** |
+| Phase                | Duration | Files   | Lines       | Status |
+| -------------------- | -------- | ------- | ----------- | ------ |
+| Phase 1: Foundation  | 3h       | 11      | 862         | ✅     |
+| Phase 2-7: Services  | 7h       | 7       | 1,940       | ✅     |
+| Phase 8: Controllers | 4h       | 7       | 1,563       | ✅     |
+| Phase 9: Routes      | 2h       | 8       | 565         | ✅     |
+| Phase 10: IoT        | 3.5h     | 11      | 1,082       | ✅     |
+| Phase 11: Core       | 2.5h     | 15+     | 3,434       | ✅     |
+| Phase 12: Dev Exp    | 2h       | 5       | -           | ✅     |
+| Phase 13: Email      | 1h       | 4       | -           | ✅     |
+| Phase 14: Notify     | 4h       | 4       | 500+        | ✅     |
+| **TOTAL**            | **29h**  | **70+** | **10,000+** | **✅** |
 
 ### Technology Stack
 
@@ -255,7 +258,7 @@
 
 **Backend:** ✅ **PRODUCTION READY**  
 **Progress:** 100% Complete  
-**Last Update:** December 1, 2025
+**Last Update:** December 5, 2025
 
 ### Ready for Integration
 
@@ -400,4 +403,32 @@ POST /auth/request-otp
 
 ---
 
-**Last Updated:** November 26, 2025 16:00
+---
+
+## ✅ Phase 14: Notification System
+
+**Date:** December 5, 2025
+**Status:** COMPLETED
+**Duration:** 4 hours
+
+### Notification Infrastructure
+
+| Component                   | Purpose                                 | Status | Time  |
+| --------------------------- | --------------------------------------- | ------ | ----- |
+| `notificationController.ts` | API for fetching/managing notifications | ✅     | 10:00 |
+| `notificationRoutes.ts`     | API routes definition                   | ✅     | 10:30 |
+| `notificationService.ts`    | Business logic for notifications        | ✅     | 11:00 |
+| `pushNotification.ts`       | Enhanced Expo Push integration          | ✅     | 11:30 |
+
+**Features:**
+
+- ✅ Store notifications in database (Prisma)
+- ✅ API to list, mark as read, and delete notifications
+- ✅ Real-time push notifications for Fall, Heart Rate, and Device Status
+- ✅ Unread count badge support
+
+**Key Achievement:** Full-featured notification center for caregivers
+
+---
+
+**Last Updated:** December 5, 2025 14:00

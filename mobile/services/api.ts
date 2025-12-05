@@ -8,6 +8,8 @@ import axios, { type AxiosRequestHeaders } from 'axios';
 import { CONFIG } from '@/constants/Config';
 import { getToken } from './tokenStorage';
 
+import Logger from '@/utils/logger';
+
 /**
  * Configured Axios instance for API requests
  * - Base URL from CONFIG
@@ -20,7 +22,7 @@ export const apiClient = axios.create({
 });
 
 if (__DEV__) {
-  console.log('🚀 API Client Initialized with Base URL:', CONFIG.API_URL);
+  Logger.info('🚀 API Client Initialized with Base URL:', CONFIG.API_URL);
 }
 
 apiClient.interceptors.request.use(async (config) => {
@@ -30,8 +32,26 @@ apiClient.interceptors.request.use(async (config) => {
     headers.Authorization = `Bearer ${token}`;
     config.headers = headers;
   }
+    // Logger.debug(`Request: ${config.method?.toUpperCase()} ${config.url}`, config.data);
   return config;
 });
+
+apiClient.interceptors.response.use(
+  (response) => {
+    // Logger.debug(`Response: ${response.status} ${response.config.url}`, response.data);
+    return response;
+  },
+  (error) => {
+    const apiError = toApiError(error);
+    // Silence 401 errors as they are handled globally
+    if (error.response?.status === 401) {
+      Logger.debug(`API 401 (Session Expired): ${error.config?.method?.toUpperCase()} ${error.config?.url}`);
+    } else {
+      Logger.error(`API Error: ${error.config?.method?.toUpperCase()} ${error.config?.url}`, apiError);
+    }
+    return Promise.reject(apiError);
+  }
+);
 
 /**
  * Standardized API error structure

@@ -15,7 +15,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useMutation } from '@tanstack/react-query';
 import { verifyOtp, requestOtp } from '@/services/authService';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { MaterialIcons } from '@expo/vector-icons';
 
 const THEME_COLOR = '#EB6A6A'; // สีตามรูปภาพ (Coral/Red)
 const OTP_LENGTH = 6;
@@ -136,7 +136,7 @@ export default function VerifyOtpScreen() {
     <SafeAreaView className="flex-1 bg-white">
       <View className="px-4 py-2">
         <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={30} color="#333" />
+          <MaterialIcons name="arrow-back" size={30} color="#333" />
         </TouchableOpacity>
       </View>
 
@@ -209,8 +209,8 @@ export default function VerifyOtpScreen() {
               ไม่ได้รับ OTP ?{' '}
             </Text>
             {timer > 0 ? (
-              <Text className="font-kanit" style={{ color: THEME_COLOR, textDecorationLine: 'underline' }}>
-                ส่งรหัสให้ใหม่ใน {formattedTimer} น.
+              <Text className="font-kanit" style={{ color: '#9CA3AF', fontSize: 14 }}>
+                รอ {formattedTimer} เพื่อส่งอีกครั้ง
               </Text>
             ) : (
               <TouchableOpacity onPress={handleResendOtp}>
@@ -223,7 +223,7 @@ export default function VerifyOtpScreen() {
 
           {/* Submit Button */}
           <TouchableOpacity
-            className={`rounded-full py-4 items-center shadow-sm ${verifyOtpMutation.isPending ? 'opacity-70' : ''}`}
+            className={`rounded-full py-4 items-center ${verifyOtpMutation.isPending ? 'opacity-70' : ''}`}
             style={{ backgroundColor: THEME_COLOR }}
             onPress={handleVerify}
             disabled={verifyOtpMutation.isPending}
@@ -232,7 +232,7 @@ export default function VerifyOtpScreen() {
               <ActivityIndicator color="#FFFFFF" />
             ) : (
               <Text className="font-kanit" style={{ fontSize: 18, color: '#FFFFFF', fontWeight: 'bold' }}>
-                ยืนยันรหัสผ่าน
+                ยืนยัน
               </Text>
             )}
           </TouchableOpacity>

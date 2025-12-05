@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { View, Text } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { MaterialIcons } from '@expo/vector-icons';
 
 // ==========================================
 // 📱 LAYER: View (Component)
@@ -30,8 +30,13 @@ export default function AuthSuccessScreen() {
   // ==========================================
   useEffect(() => {
     const timer = setTimeout(() => {
-      // Reset stack and go to login
-      router.replace('/(auth)/login');
+      if (type === 'register') {
+        // Go to setup flow
+        router.replace('/(setup)/empty-state');
+      } else {
+        // Reset stack and go to login
+        router.replace('/(auth)/login');
+      }
     }, 3000); // 3 วินาที
 
     return () => clearTimeout(timer);
@@ -56,7 +61,7 @@ export default function AuthSuccessScreen() {
             justifyContent: 'center'
           }}
         >
-          <Ionicons name="checkmark" size={50} color="white" />
+          <MaterialIcons name="check" size={50} color="white" />
         </View>
       </View>
 

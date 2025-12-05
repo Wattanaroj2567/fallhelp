@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import * as adminService from '../services/adminService';
+import * as deviceService from '../services/deviceService';
 import { asyncHandler } from '../middlewares/errorHandler';
 
 // ==========================================
@@ -98,6 +99,20 @@ export const deleteDevice = asyncHandler(async (req: Request, res: Response) => 
   res.json({
     success: true,
     message: 'Device deleted successfully',
+  });
+});
+
+/**
+ * POST /api/admin/devices/:id/unpair
+ */
+export const forceUnpairDevice = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  await deviceService.forceUnpairDevice(id);
+
+  res.json({
+    success: true,
+    message: 'Device unpaired successfully',
   });
 });
 

@@ -1,0 +1,125 @@
+import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, ActivityIndicator, Modal, KeyboardAvoidingView, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { MaterialIcons } from '@expo/vector-icons';
+import { useMutation } from '@tanstack/react-query';
+import { configureWifi } from '@/services/deviceService';
+import { FloatingLabelInput } from '@/components/FloatingLabelInput';
+import { ScreenWrapper } from '@/components/ScreenWrapper';
+import { ScreenHeader } from '@/components/ScreenHeader';
+import { PrimaryButton } from '@/components/PrimaryButton';
+import Logger from '@/utils/logger';
+
+// ==========================================
+// 📱 LAYER: View (Screen)
+// Purpose: WiFi Configuration Screen (Re-config)
+// ==========================================
+export default function WifiConfig() {
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const params = useLocalSearchParams();
+  const deviceCode = params.deviceCode as string;
+
+  // ==========================================
+  // 🧩 LAYER: Logic (Local State)
+  // ==========================================
+  const [ssid, setSsid] = useState('');
+  const [password, setPassword] = useState('');
+
+  // ==========================================
+  // ⚙️ LAYER: Logic (Mutation)
+  // ==========================================
+  const configureMutation = useMutation({
+    mutationFn: (data: { ssid: string; password: string }) =>
+      configureWifi(deviceCode, { ssid: data.ssid, wifiPassword: data.password }),
+    onSuccess: () => {
+      Alert.alert(
+        'สำเร็จ',
+        'ส่งข้อมูลการตั้งค่า WiFi ไปยังอุปกรณ์แล้ว',
+        [
+          {
+            text: 'ตกลง',
+            onPress: () => router.back(),
+          },
+        ]
+      );
+    },
+    onError: (error: any) => {
+      Logger.error('Error configuring WiFi:', error);
+      Alert.alert('ข้อผิดพลาด', error.message || 'ไม่สามารถเชื่อมต่อ WiFi ได้');
+    },
+  });
+
+  const handleConnect = () => {
+    if (!ssid.trim()) {
+      Alert.alert('กรุณากรอกข้อมูล', 'กรุณากรอกชื่อ WiFi (SSID)');
+      return;
+    }
+    configureMutation.mutate({ ssid, password });
+  };
+
+  return (
+    <ScreenWrapper contentContainerStyle={{ paddingBottom: 100, flexGrow: 1 }} useScrollView={false}>
+      {/* Header */}
+      <ScreenHeader title="ตั้งค่า WiFi ใหม่" onBack={() => router.back()} />
+
+      <View className="px-6">
+        {/* Title */}
+        <Text style={{ fontSize: 20, fontWeight: '600' }} className="font-kanit text-gray-900 mb-2 mt-4">
+          ตั้งค่าเครือข่าย WiFi สำหรับอุปกรณ์
+        </Text>
+        <Text style={{ fontSize: 14 }} className="font-kanit text-gray-600 mb-6">
+          กรุณากรอกชื่อ WiFi (SSID) และรหัสผ่านเพื่อเชื่อมต่ออุปกรณ์กับอินเทอร์เน็ต
+        </Text>
+
+        <View className="bg-blue-50 rounded-2xl p-4 mb-6">
+          <Text style={{ fontSize: 14 }} className="font-kanit text-blue-700">
+            รองรับเฉพาะ WiFi 2.4GHz เท่านั้น
+          </Text>
+        </View>
+
+        <View className="mb-4">
+          <FloatingLabelInput
+            label="ชื่อ WiFi (SSID)"
+            value={ssid}
+            onChangeText={setSsid}
+            autoCorrect={false}
+            autoCapitalize="none"
+          />
+        </View>
+
+        <View className="mb-6">
+          <FloatingLabelInput
+            label="รหัสผ่าน WiFi"
+            value={password}
+            onChangeText={setPassword}
+            isPassword
+            autoCorrect={false}
+            autoCapitalize="none"
+            textContentType="password"
+          />
+        </View>
+
+        <PrimaryButton
+          title="เชื่อมต่อ"
+          onPress={handleConnect}
+          loading={configureMutation.isPending}
+          style={{ marginBottom: 16 }}
+        />
+      </View>
+
+      {/* Connecting Modal */}
+      <Modal visible={configureMutation.isPending} transparent>
+        <View className="flex-1 bg-black/50 justify-center items-center p-6">
+          <View className="bg-white rounded-3xl p-8 items-center">
+            <ActivityIndicator size="large" color="#16AD78" />
+            <Text style={{ fontSize: 16 }} className="text-gray-900 mt-4 font-kanit">
+              กำลังเชื่อมต่อ WiFi กับอุปกรณ์...
+            </Text>
+          </View>
+        </View>
+      </Modal>
+    </ScreenWrapper>
+  );
+}

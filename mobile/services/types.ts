@@ -50,7 +50,7 @@ export type Elder = {
   bloodType?: string | null;
   allergies?: string[];
   medications?: string[];
-  notes?: string | null;
+  address?: string | null;
   isActive?: boolean;
   createdAt?: string;
   updatedAt?: string;
@@ -116,7 +116,7 @@ export type EmergencyContact = {
   phone: string;
   relationship?: string | null;
   priority: number;
-  isActive?: boolean;
+
   createdAt?: string;
   updatedAt?: string;
 };

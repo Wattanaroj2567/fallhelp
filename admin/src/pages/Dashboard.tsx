@@ -10,6 +10,7 @@ export default function Dashboard() {
             const response = await api.get('/admin/dashboard');
             return response.data.data;
         },
+        refetchInterval: 5000, // Auto-refresh every 5 seconds
     });
 
     if (isLoading) return <div className="text-center py-10">Loading stats...</div>;
@@ -30,7 +31,7 @@ export default function Dashboard() {
         },
         {
             label: 'Active Devices',
-            value: `${data.onlineDevices || 0} / ${data.totalDevices || 0}`,
+            value: `${data.activeDevices || 0} / ${data.totalDevices || 0}`,
             icon: Smartphone,
             color: 'bg-green-500',
         },

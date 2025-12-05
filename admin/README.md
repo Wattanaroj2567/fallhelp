@@ -10,6 +10,7 @@ The web-based administration interface for the FallHelp system. Built with React
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - Node.js (LTS version)
 - Backend server running (usually on port 3000)
 
@@ -42,4 +43,5 @@ Access the admin panel at `http://localhost:5173`.
 - **Dashboard:** Real-time overview of system status.
 - **Elder Management:** View and manage elderly profiles.
 - **Device Management:** Monitor and configure IoT devices.
+- **Notification Management:** View system-wide notifications.
 - **User Management:** Manage system access.

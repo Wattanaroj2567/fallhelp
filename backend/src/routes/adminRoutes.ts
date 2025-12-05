@@ -18,6 +18,7 @@ router.get('/elders', adminController.getAllElders);
 router.post('/devices', adminController.createDevice);
 router.get('/devices', adminController.getAllDevices);
 router.delete('/devices/:id', adminController.deleteDevice);
+router.post('/devices/:id/unpair', adminController.forceUnpairDevice);
 router.get('/events', adminController.getSystemEvents);
 router.get('/events/stats', adminController.getEventStatistics);
 

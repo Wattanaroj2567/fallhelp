@@ -21,8 +21,8 @@ export type UpdatePushTokenPayload = {
 
 export async function getProfile(): Promise<UserProfile> {
   try {
-    const { data } = await apiClient.get<UserProfile>('/api/users/profile');
-    return data;
+    const response = await apiClient.get<{ data: UserProfile; success: boolean }>('/api/users/profile');
+    return response.data.data;
   } catch (error) {
     throw toApiError(error);
   }
@@ -30,8 +30,8 @@ export async function getProfile(): Promise<UserProfile> {
 
 export async function updateProfile(payload: UpdateProfilePayload): Promise<UserProfile> {
   try {
-    const { data } = await apiClient.put<UserProfile>('/api/users/profile', payload);
-    return data;
+    const response = await apiClient.put<{ data: UserProfile; success: boolean }>('/api/users/profile', payload);
+    return response.data.data;
   } catch (error) {
     throw toApiError(error);
   }
@@ -55,8 +55,16 @@ export async function updatePushToken(payload: UpdatePushTokenPayload) {
 
 export async function getUserElders(): Promise<Elder[]> {
   try {
-    const { data } = await apiClient.get<Elder[]>('/api/users/elders');
-    return data;
+    const response = await apiClient.get<{ data: Elder[]; success: boolean }>('/api/users/elders');
+    return response.data.data || [];
+  } catch (error) {
+    throw toApiError(error);
+  }
+}
+
+export async function deleteAccount(): Promise<void> {
+  try {
+    await apiClient.delete('/api/users/me');
   } catch (error) {
     throw toApiError(error);
   }

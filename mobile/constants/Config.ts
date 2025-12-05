@@ -6,7 +6,7 @@ const extra = Constants.expoConfig?.extra ?? {};
 
 const API_URL =
   (typeof extra === 'object' && typeof extra?.apiUrl === 'string' && extra.apiUrl) ||
-  'http://192.168.1.100:3000';
+  'http://192.168.1.103:3000';
 
 const SOCKET_URL =
   (typeof extra === 'object' && typeof extra?.socketUrl === 'string' && extra.socketUrl) ||

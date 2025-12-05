@@ -186,6 +186,30 @@ export const unpairDevice = async (userId: string, deviceId: string) => {
 };
 
 /**
+ * Force Unpair device (Admin only - bypass ownership check)
+ */
+export const forceUnpairDevice = async (deviceId: string) => {
+  const device = await prisma.device.findUnique({
+    where: { id: deviceId },
+  });
+
+  if (!device) {
+    throw new Error('Device not found');
+  }
+
+  // Unpair device regardless of current status
+  const unpaired = await prisma.device.update({
+    where: { id: deviceId },
+    data: {
+      elderId: null,
+      status: 'UNPAIRED',
+    },
+  });
+
+  return unpaired;
+};
+
+/**
  * Configure WiFi
  */
 export const configureWiFi = async (

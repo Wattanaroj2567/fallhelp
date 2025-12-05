@@ -29,8 +29,8 @@ export type InviteMemberPayload = {
 
 export async function createElder(payload: CreateElderPayload): Promise<Elder> {
   try {
-    const { data } = await apiClient.post<Elder>('/api/elders', payload);
-    return data;
+    const response = await apiClient.post<{ data: Elder; success: boolean }>('/api/elders', payload);
+    return response.data.data;
   } catch (error) {
     throw toApiError(error);
   }
@@ -38,8 +38,8 @@ export async function createElder(payload: CreateElderPayload): Promise<Elder> {
 
 export async function listElders(): Promise<Elder[]> {
   try {
-    const { data } = await apiClient.get<Elder[]>('/api/elders');
-    return data;
+    const response = await apiClient.get<{ data: Elder[]; success: boolean }>('/api/elders');
+    return response.data.data || [];
   } catch (error) {
     throw toApiError(error);
   }
@@ -47,8 +47,8 @@ export async function listElders(): Promise<Elder[]> {
 
 export async function getElder(elderId: string): Promise<Elder> {
   try {
-    const { data } = await apiClient.get<Elder>(`/api/elders/${elderId}`);
-    return data;
+    const response = await apiClient.get<{ data: Elder; success: boolean }>(`/api/elders/${elderId}`);
+    return response.data.data;
   } catch (error) {
     throw toApiError(error);
   }
@@ -56,8 +56,8 @@ export async function getElder(elderId: string): Promise<Elder> {
 
 export async function updateElder(elderId: string, payload: UpdateElderPayload): Promise<Elder> {
   try {
-    const { data } = await apiClient.put<Elder>(`/api/elders/${elderId}`, payload);
-    return data;
+    const response = await apiClient.put<{ data: Elder; success: boolean }>(`/api/elders/${elderId}`, payload);
+    return response.data.data;
   } catch (error) {
     throw toApiError(error);
   }
@@ -67,6 +67,14 @@ export async function deactivateElder(elderId: string): Promise<Elder> {
   try {
     const { data } = await apiClient.patch<Elder>(`/api/elders/${elderId}/deactivate`);
     return data;
+  } catch (error) {
+    throw toApiError(error);
+  }
+}
+
+export async function deleteElder(elderId: string): Promise<void> {
+  try {
+    await apiClient.delete(`/api/elders/${elderId}`);
   } catch (error) {
     throw toApiError(error);
   }

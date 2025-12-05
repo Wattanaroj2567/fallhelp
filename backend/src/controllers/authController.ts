@@ -33,9 +33,20 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
  * POST /api/auth/login
  */
 export const login = asyncHandler(async (req: Request, res: Response) => {
-  const { email, password } = req.body;
+  const { email, identifier, password } = req.body;
 
-  const result = await authService.login(email, password);
+  // Support both 'email' and 'identifier' fields for backward compatibility
+  const loginIdentifier = identifier || email;
+
+  if (!loginIdentifier) {
+    res.status(400).json({
+      success: false,
+      error: 'Email or Phone number is required',
+    });
+    return;
+  }
+
+  const result = await authService.login(loginIdentifier, password);
 
   res.json({
     success: true,

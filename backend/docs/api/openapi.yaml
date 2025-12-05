@@ -51,6 +51,8 @@ tags:
     description: Emergency contact management
   - name: Feedback
     description: User feedback and suggestions
+  - name: Notifications
+    description: Notification management
   - name: Admin
     description: Admin dashboard and management
 paths:
@@ -62,7 +64,7 @@ paths:
       description: Check if the API is running
       security: []
       responses:
-        '200':
+        "200":
           description: API is running successfully
           content:
             application/json:
@@ -111,7 +113,7 @@ paths:
                 phone:
                   type: string
       responses:
-        '201':
+        "201":
           description: User registered successfully
           content:
             application/json:
@@ -129,12 +131,12 @@ paths:
                         type: string
                       token:
                         type: string
-        '400':
+        "400":
           description: Bad request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
   /auth/login:
     post:
       tags:
@@ -158,7 +160,7 @@ paths:
                 password:
                   type: string
       responses:
-        '200':
+        "200":
           description: Login successful
           content:
             application/json:
@@ -174,12 +176,12 @@ paths:
                         type: string
                       user:
                         type: object
-        '401':
+        "401":
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
   /auth/request-otp:
     post:
       tags:
@@ -204,12 +206,12 @@ paths:
                   type: string
                   enum: [PASSWORD_RESET, EMAIL_VERIFICATION]
       responses:
-        '200':
+        "200":
           description: OTP sent successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Success'
+                $ref: "#/components/schemas/Success"
   /auth/verify-otp:
     post:
       tags:
@@ -235,12 +237,12 @@ paths:
                 purpose:
                   type: string
       responses:
-        '200':
+        "200":
           description: OTP verified successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Success'
+                $ref: "#/components/schemas/Success"
   /auth/reset-password:
     post:
       tags:
@@ -266,12 +268,12 @@ paths:
                 newPassword:
                   type: string
       responses:
-        '200':
+        "200":
           description: Password reset successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Success'
+                $ref: "#/components/schemas/Success"
   /auth/me:
     get:
       tags:
@@ -279,7 +281,7 @@ paths:
       summary: Get current user
       description: Get authenticated user information
       responses:
-        '200':
+        "200":
           description: User information retrieved
           content:
             application/json:
@@ -297,7 +299,7 @@ paths:
       summary: Get user profile
       description: Get current user profile
       responses:
-        '200':
+        "200":
           description: Profile retrieved successfully
           content:
             application/json:
@@ -327,12 +329,12 @@ paths:
                 phone:
                   type: string
       responses:
-        '200':
+        "200":
           description: Profile updated successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Success'
+                $ref: "#/components/schemas/Success"
   /users/password:
     put:
       tags:
@@ -354,12 +356,12 @@ paths:
                 newPassword:
                   type: string
       responses:
-        '200':
+        "200":
           description: Password changed successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Success'
+                $ref: "#/components/schemas/Success"
   /users/push-token:
     put:
       tags:
@@ -379,12 +381,12 @@ paths:
                   type: string
                   description: Expo Push Token (format ExponentPushToken[...])
       responses:
-        '200':
+        "200":
           description: Push token updated successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Success'
+                $ref: "#/components/schemas/Success"
   /users/elders:
     get:
       tags:
@@ -392,7 +394,7 @@ paths:
       summary: Get user's elders
       description: Get all elders managed by current user
       responses:
-        '200':
+        "200":
           description: Elders retrieved successfully
           content:
             application/json:
@@ -426,13 +428,24 @@ paths:
                   type: string
                 lastName:
                   type: string
+                gender:
+                  type: string
+                  enum: [MALE, FEMALE, OTHER]
                 dateOfBirth:
                   type: string
                   format: date
-                notes:
+                height:
+                  type: number
+                weight:
+                  type: number
+                diseases:
+                  type: array
+                  items:
+                    type: string
+                address:
                   type: string
       responses:
-        '201':
+        "201":
           description: Elder created successfully
           content:
             application/json:
@@ -449,7 +462,7 @@ paths:
       summary: Get all elders
       description: Get all elders for current user
       responses:
-        '200':
+        "200":
           description: Elders retrieved successfully
           content:
             application/json:
@@ -475,7 +488,7 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Elder retrieved successfully
           content:
             application/json:
@@ -508,15 +521,15 @@ paths:
                   type: string
                 lastName:
                   type: string
-                notes:
+                address:
                   type: string
       responses:
-        '200':
+        "200":
           description: Elder updated successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Success'
+                $ref: "#/components/schemas/Success"
   /elders/{elderId}/deactivate:
     patch:
       tags:
@@ -530,12 +543,12 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Elder deactivated successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Success'
+                $ref: "#/components/schemas/Success"
   /devices/qr/{deviceCode}:
     get:
       tags:
@@ -550,7 +563,7 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: QR code retrieved successfully
           content:
             image/png:
@@ -578,12 +591,12 @@ paths:
                 elderId:
                   type: string
       responses:
-        '200':
+        "200":
           description: Device paired successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Success'
+                $ref: "#/components/schemas/Success"
   /devices/{deviceId}/unpair:
     delete:
       tags:
@@ -597,12 +610,12 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Device unpaired successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Success'
+                $ref: "#/components/schemas/Success"
   /events:
     get:
       tags:
@@ -625,7 +638,7 @@ paths:
             type: integer
             default: 10
       responses:
-        '200':
+        "200":
           description: Events retrieved successfully
           content:
             application/json:
@@ -653,7 +666,7 @@ paths:
             type: integer
             default: 5
       responses:
-        '200':
+        "200":
           description: Recent events retrieved successfully
           content:
             application/json:
@@ -685,7 +698,7 @@ paths:
             default: 7
           description: Number of days to retrieve (default 7)
       responses:
-        '200':
+        "200":
           description: Daily statistics retrieved successfully
           content:
             application/json:
@@ -725,7 +738,7 @@ paths:
             maximum: 12
           description: Month for statistics (1-12)
       responses:
-        '200':
+        "200":
           description: Monthly statistics retrieved successfully
           content:
             application/json:
@@ -755,7 +768,7 @@ paths:
             type: string
             format: date-time
       responses:
-        '200':
+        "200":
           description: Event retrieved successfully
           content:
             application/json:
@@ -791,12 +804,111 @@ paths:
                   type: string
                   format: date-time
       responses:
-        '200':
+        "200":
           description: Event cancelled successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Success'
+                $ref: "#/components/schemas/Success"
+  /notifications:
+    get:
+      tags:
+        - Notifications
+      summary: List notifications
+      description: Get paginated list of notifications
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: isRead
+          in: query
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Notifications retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      type: object
+                  pagination:
+                    type: object
+    delete:
+      tags:
+        - Notifications
+      summary: Clear all notifications
+      description: Delete all notifications for current user
+      responses:
+        "200":
+          description: Notifications cleared successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Success"
+  /notifications/unread-count:
+    get:
+      tags:
+        - Notifications
+      summary: Get unread count
+      description: Get number of unread notifications
+      responses:
+        "200":
+          description: Count retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  count:
+                    type: integer
+  /notifications/{id}/read:
+    patch:
+      tags:
+        - Notifications
+      summary: Mark as read
+      description: Mark a specific notification as read
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Marked as read successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Success"
+  /notifications/read-all:
+    patch:
+      tags:
+        - Notifications
+      summary: Mark all as read
+      description: Mark all notifications as read
+      responses:
+        "200":
+          description: Marked all as read successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Success"
   /elders/{elderId}/emergency-contacts:
     get:
       tags:
@@ -810,7 +922,7 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Emergency contacts retrieved successfully
           content:
             application/json:
@@ -855,7 +967,7 @@ paths:
                 priority:
                   type: integer
       responses:
-        '201':
+        "201":
           description: Emergency contact created successfully
           content:
             application/json:
@@ -892,12 +1004,12 @@ paths:
                 priority:
                   type: integer
       responses:
-        '200':
+        "200":
           description: Emergency contact updated successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Success'
+                $ref: "#/components/schemas/Success"
     delete:
       tags:
         - Emergency Contacts
@@ -910,12 +1022,12 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Emergency contact deleted successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Success'
+                $ref: "#/components/schemas/Success"
   /admin/dashboard:
     get:
       tags:
@@ -923,7 +1035,7 @@ paths:
       summary: Get admin dashboard
       description: Get admin dashboard statistics
       responses:
-        '200':
+        "200":
           description: Dashboard data retrieved successfully
           content:
             application/json:
@@ -941,7 +1053,7 @@ paths:
       summary: Get all devices
       description: Get all devices (admin only)
       responses:
-        '200':
+        "200":
           description: Devices retrieved successfully
           content:
             application/json:
@@ -974,7 +1086,7 @@ paths:
                 firmwareVersion:
                   type: string
       responses:
-        '201':
+        "201":
           description: Device created successfully
           content:
             application/json:
@@ -1003,7 +1115,7 @@ paths:
             type: integer
             default: 20
       responses:
-        '200':
+        "200":
           description: Users retrieved successfully
           content:
             application/json:
@@ -1036,7 +1148,7 @@ paths:
             type: integer
             default: 20
       responses:
-        '200':
+        "200":
           description: Elders retrieved successfully
           content:
             application/json:
@@ -1074,7 +1186,7 @@ paths:
             type: string
             enum: [FALL_DETECTED, HEART_RATE_ABNORMAL, DEVICE_OFFLINE]
       responses:
-        '200':
+        "200":
           description: Events retrieved successfully
           content:
             application/json:
@@ -1102,7 +1214,7 @@ paths:
             type: integer
             default: 30
       responses:
-        '200':
+        "200":
           description: Statistics retrieved successfully
           content:
             application/json:
@@ -1138,7 +1250,7 @@ paths:
                 message:
                   type: string
       responses:
-        '201':
+        "201":
           description: Feedback submitted successfully
           content:
             application/json:
@@ -1172,7 +1284,7 @@ paths:
             type: integer
             default: 20
       responses:
-        '200':
+        "200":
           description: Feedback retrieved successfully
           content:
             application/json:
@@ -1214,7 +1326,7 @@ paths:
                 adminNote:
                   type: string
       responses:
-        '200':
+        "200":
           description: Feedback status updated successfully
           content:
             application/json:
@@ -1225,5 +1337,3 @@ paths:
                     type: boolean
                   data:
                     type: object
-
-
