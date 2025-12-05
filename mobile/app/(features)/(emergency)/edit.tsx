@@ -202,7 +202,10 @@ export default function EditEmergencyContact() {
 
         {/* Name Field */}
         <View className="mb-4">
-          <Text style={{ fontSize: 12 }} className="font-kanit text-gray-500 mb-2 ml-1">
+          <Text
+            style={{ fontSize: 12 }}
+            className="font-kanit text-gray-500 mb-2 ml-1"
+          >
             ชื่อผู้ติดต่อ *
           </Text>
           <TextInput
@@ -217,7 +220,10 @@ export default function EditEmergencyContact() {
 
         {/* Phone Field */}
         <View className="mb-4">
-          <Text style={{ fontSize: 12 }} className="font-kanit text-gray-500 mb-2 ml-1">
+          <Text
+            style={{ fontSize: 12 }}
+            className="font-kanit text-gray-500 mb-2 ml-1"
+          >
             เบอร์ติดต่อ *
           </Text>
           <TextInput
@@ -239,7 +245,10 @@ export default function EditEmergencyContact() {
 
         {/* Relationship Field */}
         <View className="mb-8">
-          <Text style={{ fontSize: 12 }} className="font-kanit text-gray-500 mb-2 ml-1">
+          <Text
+            style={{ fontSize: 12 }}
+            className="font-kanit text-gray-500 mb-2 ml-1"
+          >
             ความสัมพันธ์
           </Text>
           <TextInput
