@@ -1,19 +1,36 @@
 import { Request, Response, NextFunction } from 'express';
 import { Prisma } from '../generated/prisma/client.js';
 import createDebug from 'debug';
+import { AppError } from '../utils/AppError.js';
 
 const log = createDebug('fallhelp:error');
 
 /**
  * Global error handler middleware
  */
+
 export const errorHandler = (
   error: Error,
   req: Request,
   res: Response,
   next: NextFunction
 ): void => {
-  log('[Error]: %O', error);
+  if (error instanceof AppError && error.isOperational) {
+    // Log only message for operational errors to avoid clutter
+    log('[Warn]: %s', error.message);
+  } else {
+    // Log full error for unexpected crashes
+    log('[Error]: %O', error);
+  }
+
+  // AppError
+  if (error instanceof AppError) {
+    res.status(error.statusCode).json({
+      success: false,
+      error: error.message,
+    });
+    return;
+  }
 
   // Prisma errors
   if (error instanceof Prisma.PrismaClientKnownRequestError) {

@@ -20,12 +20,15 @@ import Logger from "@/utils/logger";
 import { FloatingLabelInput } from "@/components/FloatingLabelInput";
 import { ScreenWrapper } from "@/components/ScreenWrapper";
 import { PrimaryButton } from "@/components/PrimaryButton";
+import { useAuth } from "@/context/AuthContext"; // Import hook
 
 // ==========================================
 // 📱 LAYER: View (Component)
 // Purpose: Login Screen
 // ==========================================
 export default function LoginScreen() {
+  const { signIn, signOut } = useAuth(); // Use context
+
   // ==========================================
   // 🧩 LAYER: Logic (Local State)
   // Purpose: Manage form inputs and focus state
@@ -36,21 +39,12 @@ export default function LoginScreen() {
 
   const router = useRouter();
 
-  // ==========================================
-  // 🎨 LAYER: View (Animation)
-  // Purpose: Handle floating label animations
-  // ==========================================
-
-  // ==========================================
-  // ⚙️ LAYER: Logic (Mutation)
-  // Purpose: Handle login API call
-  // ==========================================
   const loginMutation = useMutation({
     mutationFn: async () => {
-      // @ts-ignore - API service needs update to accept identifier, but backend handles it
+      // @ts-ignore
       return await login({ identifier, password });
     },
-    onSuccess: (response) => {
+    onSuccess: async (response) => {
       // ตรวจสอบ role - Admin ไม่ควรใช้ Mobile app
       if (response.user?.role === "ADMIN") {
         Alert.alert(
@@ -58,20 +52,31 @@ export default function LoginScreen() {
           "บัญชีผู้ดูแลระบบ (Admin) ไม่สามารถใช้งานแอปพลิเคชันนี้ได้ กรุณาใช้ Admin Panel แทน",
           [{ text: "ตกลง" }]
         );
-        // Logout เพื่อลบ token ที่เพิ่ง set ไป
-        import("@/services/authService").then(({ logout }) => logout());
+        // Force logout via context just in case
+        await signOut();
         return;
       }
 
+      Logger.info("Login success, updating context");
+
+      // ✅ CRITICAL FIX: Update Context State FIRST!
+      // This will trigger the RootLayout effect to redirect automatically.
+      await signIn(response.token);
+
       Alert.alert("เข้าสู่ระบบสำเร็จ", "ยินดีต้อนรับกลับ");
-      Logger.info("Login success, redirecting to dashboard");
-      // ✅ FIX: Redirect to tabs root - the initialRouteName="index" in TabLayout will handle the rest
-      router.replace("/(tabs)");
     },
     onError: (error: any) => {
       Logger.error("Login error:", error);
-      const message =
-        error.response?.data?.message || error.message || "เกิดข้อผิดพลาด";
+
+      let message = error.response?.data?.error || error.message || "เกิดข้อผิดพลาด";
+
+      // 🇹🇭 Translate common error messages to Thai
+      if (message.includes("Invalid email") || message.includes("password")) {
+        message = "อีเมลหรือรหัสผ่านไม่ถูกต้อง";
+      } else if (message.includes("deactivated")) {
+        message = "บัญชีนี้ถูกระงับการใช้งาน กรุณาติดต่อผู้ดูแลระบบ";
+      }
+
       Alert.alert("เข้าสู่ระบบล้มเหลว", message);
     },
   });
@@ -102,10 +107,13 @@ export default function LoginScreen() {
   // ==========================================
   return (
     <ScreenWrapper
+      useScrollView={false} // ห้ามเลื่อนหน้าตามที่ขอ
       contentContainerStyle={{
-        paddingHorizontal: 32,
-        paddingTop: 80,
-        paddingBottom: 40,
+        paddingHorizontal: 24, // ปรับให้เท่ากับหน้า Register
+        flex: 1,
+        // justifyContent: 'center', // ❌ เอาออกเพราะทำให้จอกระตุกเวลาคีย์บอร์ดขึ้น
+        justifyContent: 'flex-start', // ✅ จัดเริ่มจากด้านบนแทน
+        paddingTop: 100, // ✅ ดันลงมาหน่อยให้อยู่ในตำแหน่งที่สวยงาม (สูงกว่าเดิม)
       }}
     >
       <View>

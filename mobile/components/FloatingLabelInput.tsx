@@ -1,36 +1,22 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   View,
-  TextInput,
-  TextInputProps,
+  Text,
   StyleProp,
   ViewStyle,
-  Text,
-  TouchableOpacity,
   TextStyle,
+  Platform,
 } from "react-native";
-import Animated, {
-  interpolate,
-  useAnimatedStyle,
-  useDerivedValue,
-  withTiming,
-  interpolateColor,
-} from "react-native-reanimated";
-import { MaterialIcons } from "@expo/vector-icons";
-
-// Constants from user reference
-const INPUT_HEIGHT = 60;
-const LABEL_FONT_LARGE = 15; // Adjusted from 16 to 15 per snippet
-const LABEL_FONT_SMALL = 12;
-const LABEL_TOP_START = 18;
-const LABEL_TOP_END = -10; // Slightly adjusted for border overlap
-const PASSWORD_ICON_SIZE = 22;
+import { TextInput, MD3LightTheme } from "react-native-paper";
 
 const PRIMARY_COLOR = "#16AD78";
 const ERROR_COLOR = "#EF4444";
-const BORDER_DEFAULT = "#E5E7EB"; // gray-200/300 equivalent
+// ปรับโทนสีเทาให้นุ่มนวลขึ้นตามที่ขอ
+const TEXT_COLOR = "#374151"; // Gray-700 (สีเทาเข้ม สำหรับข้อความที่พิมพ์)
+const INACTIVE_COLOR = "#a3a6af"; // Gray-500 (สีเทากลาง สำหรับ Label/Placeholder) - 
 
-interface FloatingLabelInputProps extends TextInputProps {
+interface FloatingLabelInputProps
+  extends Omit<React.ComponentProps<typeof TextInput>, "error"> {
   label: string;
   error?: string;
   containerStyle?: StyleProp<ViewStyle>;
@@ -43,125 +29,95 @@ export const FloatingLabelInput: React.FC<FloatingLabelInputProps> = ({
   containerStyle,
   isPassword = false,
   value,
-  onFocus,
-  onBlur,
-  multiline,
   style,
+  multiline,
   ...props
 }) => {
-  const [isFocused, setIsFocused] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword, setShowPassword] = React.useState(false);
 
-  // Animation Logic
-  const progress = useDerivedValue(() => {
-    return withTiming(isFocused || !!value ? 1 : 0, { duration: 200 });
-  }, [isFocused, value]);
-
-  const labelContainerStyle = useAnimatedStyle(() => ({
-    top: interpolate(
-      progress.value,
-      [0, 1],
-      [multiline ? 18 : LABEL_TOP_START, LABEL_TOP_END]
-    ),
-    backgroundColor: progress.value > 0.5 ? "#FFFFFF" : "transparent",
-    paddingHorizontal: 4,
-    zIndex: 1,
-    left: 12,
-    position: "absolute",
-  }));
-
-  const labelTextStyle = useAnimatedStyle(() => ({
-    fontSize: interpolate(
-      progress.value,
-      [0, 1],
-      [LABEL_FONT_LARGE, LABEL_FONT_SMALL]
-    ),
-    color: interpolateColor(
-      progress.value,
-      [0, 1],
-      ["#9CA3AF", isFocused ? "#16AD78" : "#9CA3AF"]
-    ),
-  }));
-
-  const handleFocus = (e: any) => {
-    setIsFocused(true);
-    onFocus?.(e);
-  };
-
-  const handleBlur = (e: any) => {
-    setIsFocused(false);
-    onBlur?.(e);
-  };
+  // คำนวณความสูง: 
+  // - Multiline: เริ่มต้น 120px 
+  // - Single Line: 56px (Standard Material Design)
+  const inputHeight = multiline ? 120 : 56;
 
   return (
-    <View style={[{ marginBottom: 0, flexGrow: 0 }, containerStyle]}>
-      <View
-        style={{
-          height: multiline ? undefined : INPUT_HEIGHT,
-          minHeight: INPUT_HEIGHT,
-          position: "relative",
+    <View style={[{ marginBottom: 16 }, containerStyle]}>
+      <TextInput
+        mode="outlined"
+        label={label}
+        value={value}
+        error={!!error}
+        secureTextEntry={isPassword && !showPassword}
+
+        // 🎨 จัดการสี: ใช้สีเทาที่กำหนดไว้
+        activeOutlineColor={error ? ERROR_COLOR : PRIMARY_COLOR}
+        outlineColor={error ? ERROR_COLOR : "#E5E7EB"} // gray-200 (ขอบปกติสีจาง)
+        textColor={TEXT_COLOR}
+        placeholderTextColor={INACTIVE_COLOR}
+
+        selectionColor={PRIMARY_COLOR}
+        cursorColor={PRIMARY_COLOR}
+        style={[
+          {
+            backgroundColor: "#FFFFFF",
+            fontFamily: "Kanit",
+            fontSize: 16,
+            height: multiline ? undefined : inputHeight,
+            minHeight: inputHeight,
+          },
+          style,
+        ]}
+
+        contentStyle={[
+          multiline
+            ? {
+              paddingTop: 16,
+              paddingBottom: 16,
+              textAlignVertical: "top",
+            }
+            : {
+              height: inputHeight,
+              justifyContent: 'center',
+            }
+        ] as StyleProp<TextStyle>}
+
+        theme={{
+          ...MD3LightTheme,
+          roundness: 12,
+          colors: {
+            ...MD3LightTheme.colors,
+            primary: PRIMARY_COLOR,
+            onSurface: TEXT_COLOR, // สีตัวหนังสือตอนพิมพ์ (Gray-700)
+            onSurfaceVariant: INACTIVE_COLOR, // สี Label ตอนปกติ (Gray-500)
+            error: ERROR_COLOR,
+            background: '#FFFFFF',
+          },
+          fonts: {
+            // ✅ ใช้ความหนา 400 (Regular) เท่ากันหมดตามที่แจ้ง
+            bodyLarge: { fontFamily: "Kanit", fontWeight: "400" },
+            bodyMedium: { fontFamily: "Kanit", fontWeight: "400" },
+            bodySmall: { fontFamily: "Kanit", fontWeight: "400" },
+            labelLarge: { fontFamily: "Kanit", fontWeight: "400" },
+            labelMedium: { fontFamily: "Kanit", fontWeight: "400" },
+            labelSmall: { fontFamily: "Kanit", fontWeight: "400" },
+            default: { fontFamily: "Kanit", fontWeight: "400" },
+          },
         }}
-      >
-        {/* Floating Label */}
-        <Animated.View style={labelContainerStyle} pointerEvents="none">
-          <Animated.Text
-            className="font-kanit"
-            style={labelTextStyle as StyleProp<TextStyle>}
-          >
-            {label}
-          </Animated.Text>
-        </Animated.View>
+        multiline={multiline}
+        numberOfLines={multiline ? 4 : 1}
 
-        {/* Input Field */}
-        <TextInput
-          className={`font-kanit rounded-2xl px-4 border ${
-            error
-              ? "border-red-500"
-              : isFocused
-              ? "border-[#16AD78]"
-              : "border-gray-300"
-          } bg-white text-[16px]`}
-          style={[
-            {
-              height: multiline ? undefined : "100%",
-              minHeight: INPUT_HEIGHT,
-              paddingTop: multiline ? 18 : 0,
-              paddingBottom: multiline ? 18 : 0,
-              textAlignVertical: multiline ? "top" : "center",
-              color: "#111827",
-            },
-            style,
-          ]}
-          value={value}
-          onFocus={handleFocus}
-          onBlur={handleBlur}
-          secureTextEntry={isPassword && !showPassword}
-          autoCapitalize="none"
-          multiline={multiline}
-          cursorColor={PRIMARY_COLOR}
-          placeholder=""
-          {...props}
-        />
-
-        {/* Password Toggle */}
-        {isPassword && (
-          <TouchableOpacity
-            style={{
-              position: "absolute",
-              right: 16,
-              height: "100%",
-              justifyContent: "center",
-            }}
-            onPress={() => setShowPassword(!showPassword)}
-          >
-            <MaterialIcons
-              name={showPassword ? "visibility-off" : "visibility"}
-              size={PASSWORD_ICON_SIZE}
-              color="#9CA3AF"
+        right={
+          isPassword ? (
+            <TextInput.Icon
+              icon={showPassword ? "eye-off" : "eye"}
+              color={INACTIVE_COLOR}
+              onPress={() => setShowPassword(!showPassword)}
+              forceTextInputFocus={false}
             />
-          </TouchableOpacity>
-        )}
-      </View>
+          ) : null
+        }
+        {...props}
+      />
 
       {/* Error Message */}
       {error && (

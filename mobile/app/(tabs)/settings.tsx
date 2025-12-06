@@ -1,9 +1,9 @@
 import { useRouter } from 'expo-router';
-import { Text, View, TouchableOpacity, Alert, ScrollView } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Text, View, TouchableOpacity, Alert } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useMutation } from '@tanstack/react-query';
 import { logout } from '@/services/authService';
+import { useAuth } from '@/context/AuthContext';
 import { ScreenWrapper } from '@/components/ScreenWrapper';
 import { ScreenHeader } from '@/components/ScreenHeader';
 
@@ -15,16 +15,20 @@ export default function SettingsScreen() {
   const router = useRouter();
 
   // ==========================================
+  // ⚙️ LAYER: Logic (Context)
+  // Purpose: Use global auth context
+  // ==========================================
+  const { signOut } = useAuth(); // <--- Use context
+
+  // ==========================================
   // ⚙️ LAYER: Logic (Mutation)
-  // Purpose: Handle logout API call
+  // Purpose: Handle logout
   // ==========================================
   const logoutMutation = useMutation({
     mutationFn: async () => {
-      await logout();
+      await signOut(); // <--- Update state globally
     },
-    onSuccess: () => {
-      router.replace('/(auth)/login');
-    },
+    // onSuccess is handled by AuthProvider's effect, redirecting automatically
     onError: () => {
       Alert.alert('ผิดพลาด', 'ไม่สามารถออกจากระบบได้');
     },

@@ -3,6 +3,7 @@ import { hashPassword, comparePassword, generateOtp } from '../utils/password.js
 import { generateToken, JwtPayload } from '../utils/jwt.js';
 import { addMinutes } from '../utils/time.js';
 import { sendOtpEmail, sendWelcomeEmail } from '../utils/email.js';
+import { AppError } from '../utils/AppError.js';
 import createDebug from 'debug';
 import prisma from '../prisma.js';
 
@@ -87,18 +88,18 @@ export const login = async (
   });
 
   if (!user) {
-    throw new Error('Invalid email/phone or password');
+    throw new AppError('Invalid email/phone or password', 401);
   }
 
   // Check if user is active
   if (!user.isActive) {
-    throw new Error('Account is deactivated');
+    throw new AppError('Account is deactivated', 403);
   }
 
   // Verify password
   const isPasswordValid = await comparePassword(password, user.password);
   if (!isPasswordValid) {
-    throw new Error('Invalid email or password');
+    throw new AppError('Invalid email or password', 401);
   }
 
   // Generate JWT token

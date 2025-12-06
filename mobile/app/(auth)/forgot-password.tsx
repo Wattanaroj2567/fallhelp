@@ -102,9 +102,15 @@ export default function ForgotPasswordScreen() {
   // Purpose: Render forgot password form
   // ==========================================
   return (
-    <ScreenWrapper contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 100, flexGrow: 1 }}>
-      <ScreenHeader title="ลืมรหัสผ่าน" onBack={router.back} />
-
+    <ScreenWrapper
+      useScrollView={false} // ห้ามเลื่อนหน้าตามที่ขอ
+      contentContainerStyle={{
+        paddingHorizontal: 24,
+        flex: 1,
+        justifyContent: 'flex-start',
+      }}
+      header={<ScreenHeader title="ลืมรหัสผ่าน" onBack={router.back} />}
+    >
       <View>
         {/* Description Section */}
         <Text className="font-kanit" style={{ fontSize: 14, color: '#6B7280', marginBottom: 32 }}>

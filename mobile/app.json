@@ -40,7 +40,10 @@
           "defaultChannel": "default",
           "sounds": []
         }
-      ]
+      ],
+      "expo-secure-store",
+      "expo-web-browser",
+      "expo-font"
     ],
     "extra": {
       "apiUrl": "http://192.168.1.103:3000",

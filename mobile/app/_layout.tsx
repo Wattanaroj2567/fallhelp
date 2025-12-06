@@ -11,12 +11,13 @@ import {
   useSegments,
   useNavigationContainerRef,
 } from "expo-router";
-import { useEffect, useState } from "react";
-import { SafeAreaProvider } from "react-native-safe-area-context";
+import { useEffect } from "react";
+import { PaperProvider, MD3LightTheme } from "react-native-paper";
+
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { View, ActivityIndicator } from "react-native";
-import { getToken } from "@/services/tokenStorage";
 import Logger from "@/utils/logger";
+import { AuthProvider, useAuth } from "@/context/AuthContext";
 
 const queryClient = new QueryClient();
 
@@ -29,105 +30,34 @@ SplashScreen.preventAutoHideAsync();
  * Handles auth state and routes to correct flow
  */
 function RootLayoutNav() {
+  const { isSignedIn, isLoading } = useAuth();
   const segments = useSegments();
   const router = useRouter();
   const navigationRef = useNavigationContainerRef();
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSignedIn, setIsSignedIn] = useState(false);
-  const [hasRedirected, setHasRedirected] = useState(false);
-
-  useEffect(() => {
-    const bootstrap = async () => {
-      try {
-        // Check if user has valid token
-        const token = await getToken();
-        setIsSignedIn(!!token);
-        Logger.info(
-          "Auth check:",
-          !!token ? "Authenticated" : "Not authenticated"
-        );
-      } catch (e) {
-        Logger.error("Error checking auth state:", e);
-        setIsSignedIn(false);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    bootstrap();
-  }, []);
 
   useEffect(() => {
     if (isLoading) return;
 
-    // ✅ CRITICAL FIX: Wait for navigation to be ready
     if (!navigationRef.isReady()) {
-      Logger.debug("Navigation not ready yet, skipping redirect");
       return;
     }
 
     const currentRoot = segments[0];
     const inAuthGroup = currentRoot === "(auth)" || currentRoot === "(setup)";
     const inTabsGroup = currentRoot === "(tabs)";
-    const inFeaturesGroup = currentRoot === "(features)";
 
-    Logger.debug("Navigation check:", {
-      segments: segments.join("/"),
-      inAuthGroup,
-      inTabsGroup,
-      inFeaturesGroup,
-      isSignedIn,
-      hasRedirected,
-    });
+    Logger.debug("Auth State Change:", { isSignedIn, currentRoot });
 
-    // Route based on auth state
     if (!isSignedIn && !inAuthGroup) {
-      // User not signed in and trying to access protected routes
-      Logger.warn("User not authenticated, redirecting to login");
-      if (!hasRedirected) {
-        setHasRedirected(true);
-        setTimeout(() => {
-          try {
-            router.replace("/(auth)/login");
-          } catch (e) {
-            Logger.error("Navigation error:", e);
-          }
-        }, 0);
-      }
-    } else if (isSignedIn && inAuthGroup && !hasRedirected) {
-      // User signed in but on auth screens, redirect to dashboard
-      Logger.info("User authenticated, redirecting from auth to dashboard");
-      setHasRedirected(true);
-      setTimeout(() => {
-        try {
-          // ✅ FIX: Use explicit index route to prevent wrong screen resolution
-          router.replace({ pathname: "/(tabs)", params: {} });
-        } catch (e) {
-          Logger.error("Navigation error:", e);
-          setHasRedirected(false); // Allow retry on error
-        }
-      }, 100); // Increase timeout slightly for better stability
-    } else if (isSignedIn && inFeaturesGroup && !navigationRef.canGoBack()) {
-      // เปิดแอปแล้วหลุดเข้าหน้า features โดยไม่มีประวัติ stack ให้ย้อนกลับ → ส่งกลับแท็บหลักเป็น default
-      if (!hasRedirected) {
-        Logger.info(
-          "No history and landed in features, redirecting to tabs as initial screen"
-        );
-        setHasRedirected(true);
-        setTimeout(() => {
-          try {
-            router.replace({ pathname: "/(tabs)", params: {} });
-          } catch (e) {
-            Logger.error("Navigation error:", e);
-            setHasRedirected(false);
-          }
-        }, 50);
-      }
-    } else if (inTabsGroup) {
-      // Reset only when in tabs root to avoid flip-flop in features
-      if (hasRedirected) setHasRedirected(false);
+      // User is NOT signed in, but trying to access a protected route
+      // Redirect to Login
+      router.replace("/(auth)/login");
+    } else if (isSignedIn && inAuthGroup) {
+      // User IS signed in, but is on an auth screen (login/register)
+      // Redirect to Home
+      router.replace("/(tabs)");
     }
-  }, [isSignedIn, segments, isLoading, navigationRef, hasRedirected]);
+  }, [isSignedIn, segments, isLoading, navigationRef]);
 
   if (isLoading) {
     return (
@@ -169,12 +99,14 @@ export default function RootLayout() {
   }
 
   return (
-    <SafeAreaProvider>
+    <AuthProvider>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider value={DefaultTheme}>
-          <RootLayoutNav />
+          <PaperProvider theme={{ ...MD3LightTheme, colors: { ...MD3LightTheme.colors, primary: '#16AD78' } }}>
+            <RootLayoutNav />
+          </PaperProvider>
         </ThemeProvider>
       </QueryClientProvider>
-    </SafeAreaProvider>
+    </AuthProvider>
   );
 }

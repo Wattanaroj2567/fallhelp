@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   TextInput,
   TouchableOpacity,
@@ -10,8 +10,10 @@ import {
   Text,
   Alert,
   Modal,
-  Pressable
+  Pressable,
+  Keyboard
 } from 'react-native';
+import { TextInput as PaperTextInput } from 'react-native-paper';
 import { useRouter } from 'expo-router';
 import { useMutation } from '@tanstack/react-query';
 import { register } from '@/services/authService';
@@ -41,11 +43,25 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [showGenderPicker, setShowGenderPicker] = useState(false);
+  const [isScrollEnabled, setIsScrollEnabled] = useState(false); // Default to fixed
 
   const router = useRouter();
   const scrollViewRef = useRef<ScrollView>(null);
 
+  // Toggle scroll based on keyboard visibility
+  useEffect(() => {
+    const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
+      setIsScrollEnabled(true);
+    });
+    const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {
+      setIsScrollEnabled(false);
+    });
 
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
 
   // ==========================================
   // ⚙️ LAYER: Logic (Mutation)
@@ -103,49 +119,22 @@ export default function RegisterScreen() {
     });
   };
 
-  const GenderPickerModal = () => (
-    <Modal
-      transparent={true}
-      visible={showGenderPicker}
-      animationType="fade"
-      onRequestClose={() => setShowGenderPicker(false)}
-    >
-      <Pressable
-        className="flex-1 bg-black/50 justify-center items-center px-6"
-        onPress={() => setShowGenderPicker(false)}
-      >
-        <View className="bg-white w-full rounded-2xl p-4">
-          <Text className="font-kanit text-lg font-bold mb-4 text-center">เลือกเพศ</Text>
-          {['ชาย', 'หญิง', 'อื่นๆ'].map((option) => (
-            <TouchableOpacity
-              key={option}
-              className="py-4 border-b border-gray-100"
-              onPress={() => {
-                setGender(option);
-                setShowGenderPicker(false);
-              }}
-            >
-              <Text className={`font-kanit text-center text-base ${gender === option ? 'text-[#16AD78] font-bold' : 'text-gray-700'}`}>
-                {option}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </Pressable>
-    </Modal>
-  );
-
   // ==========================================
   // 🖼️ LAYER: View (Main Render)
   // Purpose: Render registration form
   // ==========================================
   return (
     <ScreenWrapper
-      contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 100, flexGrow: 1 }}
+      contentContainerStyle={{ paddingHorizontal: 24, flexGrow: 1 }}
       keyboardAvoiding
+      scrollViewProps={{
+        bounces: false, // iOS: ห้ามเด้งดึ๋ง
+        overScrollMode: 'never', // Android: ห้ามเด้งแสง
+        scrollEnabled: isScrollEnabled, // ✅ Only scroll when keyboard is open
+      }}
+      scrollViewRef={scrollViewRef} // Pass ref correctly
+      header={<ScreenHeader title="ลงทะเบียน" onBack={router.back} />}
     >
-      <ScreenHeader title="ลงทะเบียน" onBack={router.back} />
-
       <View>
         <Text className="font-kanit" style={{ fontSize: 14, color: '#6B7280', marginBottom: 32, textAlign: 'left' }}>
           กรุณากรอกรายละเอียดของคุณเพื่อเข้าใช้งาน
@@ -172,28 +161,34 @@ export default function RegisterScreen() {
             />
           </View>
 
-          {/* Row 2: Gender (Dropdown Style) */}
-          <View className="mb-3" style={{ height: 60 }}>
-            <TouchableOpacity
-              activeOpacity={0.7}
+          {/* Row 2: Gender */}
+          {/* Row 2: Gender */}
+          <View className="mb-0 relative">
+            <View pointerEvents="none">
+              <FloatingLabelInput
+                label="เพศ"
+                value={gender === 'MALE' ? 'ชาย' : gender === 'FEMALE' ? 'หญิง' : gender === 'OTHER' ? 'อื่นๆ' : ''}
+                editable={false}
+                right={
+                  <PaperTextInput.Icon
+                    icon="chevron-down"
+                    color="#6B7280"
+                    forceTextInputFocus={false}
+                  />
+                }
+              />
+            </View>
+            <Pressable
               onPress={() => setShowGenderPicker(true)}
-              className="h-full justify-center rounded-2xl border border-gray-300 px-4 bg-white relative"
-            >
-              {gender ? (
-                <View className="absolute -top-2.5 left-3 bg-white px-1 z-10">
-                  <Text className="font-kanit" style={{ fontSize: 12, color: '#9CA3AF' }}>เพศ</Text>
-                </View>
-              ) : null}
-
-              <View className="flex-row justify-between items-center">
-                <Text
-                  className={`font-kanit text-[16px] ${gender ? 'text-gray-900' : 'text-gray-400'}`}
-                >
-                  {gender || 'เพศ'}
-                </Text>
-                <MaterialIcons name="keyboard-arrow-down" size={20} color="#6B7280" />
-              </View>
-            </TouchableOpacity>
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                zIndex: 10
+              }}
+            />
           </View>
 
           {/* Row 3: Phone */}
@@ -247,13 +242,23 @@ export default function RegisterScreen() {
           />
 
           {/* Requirements */}
-          <View className="mb-8 ml-2">
-            <Text className="font-kanit" style={{ fontSize: 12, color: '#6B7280', marginBottom: 2 }}>
-              • อย่างน้อย 8 ตัวอักษร
+          {/* Requirements */}
+          <View className="bg-blue-50 rounded-2xl p-4 mb-8">
+            <Text style={{ fontSize: 12, fontWeight: '600' }} className="font-kanit text-blue-700 mb-2">
+              ข้อกำหนดรหัสผ่าน:
             </Text>
-            <Text className="font-kanit" style={{ fontSize: 12, color: '#6B7280' }}>
-              • มีตัวอักษรพิมพ์ใหญ่-เล็กและตัวเลข
-            </Text>
+            <View className="flex-row items-start mb-1">
+              <Text style={{ fontSize: 12 }} className="font-kanit text-blue-700 mr-2">•</Text>
+              <Text style={{ fontSize: 12 }} className="font-kanit text-blue-700 flex-1">
+                อย่างน้อย 8 ตัวอักษร
+              </Text>
+            </View>
+            <View className="flex-row items-start">
+              <Text style={{ fontSize: 12 }} className="font-kanit text-blue-700 mr-2">•</Text>
+              <Text style={{ fontSize: 12 }} className="font-kanit text-blue-700 flex-1">
+                มีตัวอักษรพิมพ์ใหญ่-เล็กและตัวเลข
+              </Text>
+            </View>
           </View>
 
           {/* Register Button */}
@@ -277,6 +282,42 @@ export default function RegisterScreen() {
           </View>
         </View>
       </View>
+
+      {/* Gender Picker Modal */}
+      <Modal
+        transparent={true}
+        visible={showGenderPicker}
+        animationType="fade"
+        onRequestClose={() => setShowGenderPicker(false)}
+      >
+        <Pressable
+          className="flex-1 bg-black/50 justify-center items-center px-6"
+          onPress={() => setShowGenderPicker(false)}
+        >
+          <View className="bg-white w-full rounded-2xl p-4">
+            <Text className="font-kanit text-lg font-bold mb-4 text-center">เลือกเพศ</Text>
+            {['ชาย', 'หญิง', 'อื่นๆ'].map((optionLabel) => {
+              const value = optionLabel === 'ชาย' ? 'MALE' : optionLabel === 'หญิง' ? 'FEMALE' : 'OTHER';
+              return (
+                <TouchableOpacity
+                  key={value}
+                  className="py-4 border-b border-gray-100"
+                  onPress={() => {
+                    setGender(value);
+                    setShowGenderPicker(false);
+                  }}
+                >
+                  <Text className={`font-kanit text-center text-base ${gender === value ? 'text-[#16AD78] font-bold' : 'text-gray-700'}`}>
+                    {optionLabel}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </Pressable>
+      </Modal>
+
+      {/* Date Picker (if any) would go here */}
     </ScreenWrapper>
   );
 }

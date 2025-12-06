@@ -20,7 +20,7 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
 
     return (
         <View
-            className={`${transparent ? 'bg-black/30' : 'bg-white'} rounded-b-[32px] overflow-hidden pb-4 mb-4`}
+            className={`${transparent ? 'bg-black/30' : 'bg-white'} rounded-b-[32px] overflow-hidden pb-2`}
             style={{ paddingTop: transparent ? insets.top : 0 }}
         >
             <View className="flex-row items-center justify-between px-4 py-4">
@@ -39,7 +39,7 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
 
                 {/* Center: Title */}
                 <Text
-                    className={`font-kanit text-xl font-bold ${transparent ? 'text-white' : 'text-gray-900'
+                    className={`font-kanit text-xl ${transparent ? 'text-white' : 'text-gray-900'
                         } text-center flex-1`}
                     numberOfLines={1}
                 >
