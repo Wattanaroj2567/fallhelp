@@ -32,6 +32,10 @@ import { ScreenWrapper } from "@/components/ScreenWrapper";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import {
+  ThaiAddressAutocomplete,
+  AddressData,
+} from "@/components/ThaiAddressAutocomplete";
 
 const FORM_STORAGE_KEY = "setup_step1_form_data";
 
@@ -42,7 +46,7 @@ const FORM_STORAGE_KEY = "setup_step1_form_data";
 export default function Step1() {
   const router = useRouter();
   const theme = useTheme();
-  // Removed manual scroll refs as ScreenWrapper handles it
+  const scrollViewRef = useRef<any>(null);
 
   // ==========================================
   // 🧩 LAYER: Logic (Local State)
@@ -58,7 +62,9 @@ export default function Step1() {
   const [height, setHeight] = useState("");
   const [weight, setWeight] = useState("");
   const [medicalCondition, setMedicalCondition] = useState("");
-  const [address, setAddress] = useState("");
+  const [houseNumber, setHouseNumber] = useState("");
+  const [village, setVillage] = useState("");
+  const [address, setAddress] = useState<AddressData | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [initialData, setInitialData] = useState<any>(null);
 
@@ -84,7 +90,7 @@ export default function Step1() {
           );
           setLastName(
             parsed.lastName ||
-            (parsed.name ? parsed.name.split(" ").slice(1).join(" ") : "")
+              (parsed.name ? parsed.name.split(" ").slice(1).join(" ") : "")
           );
           setGender(parsed.gender || "");
           setDateOfBirth(
@@ -93,7 +99,20 @@ export default function Step1() {
           setHeight(parsed.height || "");
           setWeight(parsed.weight || "");
           setMedicalCondition(parsed.medicalCondition || "");
-          setAddress(parsed.address || "");
+
+          // Validate address format before setting
+          const addr = parsed.address;
+          if (
+            addr &&
+            addr.district &&
+            addr.amphoe &&
+            addr.province &&
+            addr.zipcode
+          ) {
+            setAddress(addr);
+          } else {
+            setAddress(null); // Invalid or old format - clear it
+          }
 
           if (existingElderId) {
             setInitialData(parsed);
@@ -123,6 +142,8 @@ export default function Step1() {
           height,
           weight,
           medicalCondition,
+          houseNumber,
+          village,
           address,
         };
         await AsyncStorage.setItem(
@@ -143,6 +164,8 @@ export default function Step1() {
     height,
     weight,
     medicalCondition,
+    houseNumber,
+    village,
     address,
     isLoaded,
   ]);
@@ -240,9 +263,21 @@ export default function Step1() {
       return;
     }
 
+    // Validate House Number (Required)
+    if (!houseNumber.trim()) {
+      Alert.alert("กรุณากรอกข้อมูล", "กรุณากรอกบ้านเลขที่");
+      return;
+    }
+
+    // Validate Village (Required)
+    if (!village.trim()) {
+      Alert.alert("กรุณากรอกข้อมูล", "กรุณากรอกหมู่ที่/หมู่บ้าน");
+      return;
+    }
+
     // Validate Address (Required)
-    if (!address.trim()) {
-      Alert.alert("กรุณากรอกข้อมูล", "กรุณากรอกที่อยู่");
+    if (!address || !address.district || !address.province) {
+      Alert.alert("กรุณากรอกข้อมูล", "กรุณาเลือกที่อยู่");
       return;
     }
 
@@ -255,11 +290,16 @@ export default function Step1() {
       weight: Number(weight),
       diseases: medicalCondition
         ? medicalCondition
-          .split(",")
-          .map((d) => d.trim())
-          .filter((d) => d)
+            .split(",")
+            .map((d) => d.trim())
+            .filter((d) => d)
         : [],
-      address: address.trim(),
+      houseNumber: houseNumber.trim(),
+      village: village.trim(),
+      subdistrict: address.district,
+      district: address.amphoe,
+      province: address.province,
+      zipcode: address.zipcode,
     };
 
     // Check if data is unchanged and we have an existing elderId
@@ -267,69 +307,121 @@ export default function Step1() {
     if (
       existingElderId &&
       existingElderId !== "undefined" &&
-      existingElderId !== "null" &&
-      initialData
+      existingElderId !== "null"
     ) {
-      // Reconstruct initial data
-      const initialDataFormatted = {
-        firstName:
-          initialData.firstName ||
-          (initialData.name ? initialData.name.split(" ")[0] : ""),
-        lastName:
-          initialData.lastName ||
-          (initialData.name
-            ? initialData.name.split(" ").slice(1).join(" ")
-            : ""),
-        gender: initialData.gender,
-        dateOfBirth: initialData.dateOfBirth
-          ? new Date(initialData.dateOfBirth).toISOString()
-          : null,
-        height: Number(initialData.height),
-        weight: Number(initialData.weight),
-        diseases: initialData.medicalCondition
-          ? initialData.medicalCondition
-            .split(",")
-            .map((d: string) => d.trim())
-            .filter((d: string) => d)
-          : [],
-        address: initialData.address?.trim(),
-      };
+      // Elder already exists - check if data changed
+      if (initialData) {
+        // Reconstruct initial data
+        const initialDataFormatted = {
+          firstName:
+            initialData.firstName ||
+            (initialData.name ? initialData.name.split(" ")[0] : ""),
+          lastName:
+            initialData.lastName ||
+            (initialData.name
+              ? initialData.name.split(" ").slice(1).join(" ")
+              : ""),
+          gender: initialData.gender,
+          dateOfBirth: initialData.dateOfBirth
+            ? new Date(initialData.dateOfBirth).toISOString()
+            : null,
+          height: Number(initialData.height),
+          weight: Number(initialData.weight),
+          diseases: initialData.medicalCondition
+            ? initialData.medicalCondition
+                .split(",")
+                .map((d: string) => d.trim())
+                .filter((d: string) => d)
+            : [],
+          houseNumber: initialData.houseNumber || "",
+          village: initialData.village || "",
+          subdistrict: initialData.address?.district || "",
+          district: initialData.address?.amphoe || "",
+          province: initialData.address?.province || "",
+          zipcode: initialData.address?.zipcode || "",
+        };
 
-      if (
-        JSON.stringify(currentData) === JSON.stringify(initialDataFormatted)
-      ) {
-        Logger.debug("Data unchanged, skipping update");
+        if (
+          JSON.stringify(currentData) === JSON.stringify(initialDataFormatted)
+        ) {
+          // Data unchanged, skip mutation and go directly to Step 2
+          Logger.info("Data unchanged, skipping update and going to Step 2");
+          await SecureStore.setItemAsync("setup_step", "2");
+          router.push("/(setup)/step2-device-pairing");
+          return;
+        }
+      } else {
+        // No initialData loaded yet, but have elderId
+        // This means user came back from Step 2 without loading
+        // Safe to proceed to Step 2 without updating
+        Logger.info("Elder exists but no initialData, proceeding to Step 2");
         await SecureStore.setItemAsync("setup_step", "2");
         router.push("/(setup)/step2-device-pairing");
         return;
       }
     }
 
+    // Either no elder yet, or data changed - proceed with mutation
     saveElderMutation.mutate(currentData);
   };
 
   const handleBack = async () => {
     try {
-      // Auto-Delete Elder: Undo Step 1 if user goes back to empty state
+      // Check if we have a paired device - if yes, DON'T delete elder
+      const deviceId = await SecureStore.getItemAsync("setup_deviceId");
+      if (deviceId) {
+        // User has paired device, just go back to empty-state without deleting
+        Logger.info("Device paired, keeping elder data on back navigation");
+        router.replace("/(setup)/empty-state");
+        return;
+      }
+
+      // No device paired yet - ask confirmation before deleting
       const elderId = await SecureStore.getItemAsync("setup_elderId");
       if (elderId) {
-        try {
-          await deleteElder(elderId);
-          Logger.info("Auto-deleted elder on back to empty state:", elderId);
-        } catch (deleteError) {
-          // Ignore delete errors (e.g. 500 if not owner, or network fail)
-          // We just want to clear local state and return to empty state
-          Logger.warn("Could not auto-delete elder (ignoring):", deleteError);
-        }
+        Alert.alert(
+          "ยกเลิกการสร้างข้อมูล",
+          "ข้อมูลผู้สูงอายุที่กรอกจะถูกลบ ต้องการย้อนกลับหรือไม่?",
+          [
+            {
+              text: "ยกเลิก",
+              style: "cancel",
+            },
+            {
+              text: "ย้อนกลับ",
+              style: "destructive",
+              onPress: async () => {
+                try {
+                  await deleteElder(elderId);
+                  Logger.info(
+                    "Auto-deleted elder on back to empty state:",
+                    elderId
+                  );
+                } catch (deleteError) {
+                  // Ignore delete errors (e.g. 500 if not owner, or network fail)
+                  Logger.warn(
+                    "Could not auto-delete elder (ignoring):",
+                    deleteError
+                  );
+                }
 
-        // Always clear local storage if we had an elderId
-        await SecureStore.deleteItemAsync("setup_elderId");
-        await AsyncStorage.removeItem(FORM_STORAGE_KEY);
+                // Always clear local storage
+                await SecureStore.deleteItemAsync("setup_elderId");
+                await AsyncStorage.removeItem(FORM_STORAGE_KEY);
+                router.replace("/(setup)/empty-state");
+              },
+            },
+          ]
+        );
+        return;
       }
+
+      // No elder created yet, just go back
+      router.replace("/(setup)/empty-state");
     } catch (error) {
       Logger.error("Failed to handle back navigation cleanup:", error);
+      router.replace("/(setup)/empty-state");
     }
-    router.replace("/(setup)/empty-state");
   };
 
   const onDateChange = (event: any, selectedDate?: Date) => {
@@ -362,86 +454,88 @@ export default function Step1() {
   // ==========================================
   return (
     <ScreenWrapper
+      header={
+        <View>
+          <ScreenHeader title="ข้อมูลผู้สูงอายุ" onBack={handleBack} />
+          {/* Progress Bar (Sticky) */}
+          <View className="px-6 pb-2 mb-2">
+            <View className="relative">
+              {/* Connecting Line (Background) */}
+              <View
+                className="absolute top-4 left-[16%] right-[16%] h-[2px] bg-gray-200"
+                style={{ zIndex: 0 }}
+              />
+              {/* Active Line (None for Step 1 start) */}
+
+              {/* Steps (Foreground) */}
+              <View className="flex-row justify-between">
+                {/* Step 1 */}
+                <View className="flex-1 items-center">
+                  <View className="w-8 h-8 rounded-full bg-blue-500 items-center justify-center z-10 mb-2 shadow-sm border border-blue-400">
+                    <Text
+                      style={{ fontSize: 14, fontWeight: "600" }}
+                      className="text-white font-kanit"
+                    >
+                      1
+                    </Text>
+                  </View>
+                  <Text
+                    style={{ fontSize: 12 }}
+                    className="text-blue-600 text-center font-kanit"
+                  >
+                    กรอกข้อมูล{"\n"}ผู้สูงอายุ
+                  </Text>
+                </View>
+
+                {/* Step 2 */}
+                <View className="flex-1 items-center">
+                  <View className="w-8 h-8 rounded-full bg-white border-2 border-gray-200 items-center justify-center z-10 mb-2">
+                    <Text
+                      style={{ fontSize: 14, fontWeight: "600" }}
+                      className="text-gray-400 font-kanit"
+                    >
+                      2
+                    </Text>
+                  </View>
+                  <Text
+                    style={{ fontSize: 12 }}
+                    className="text-gray-400 text-center font-kanit"
+                  >
+                    ติดตั้งอุปกรณ์
+                  </Text>
+                </View>
+
+                {/* Step 3 */}
+                <View className="flex-1 items-center">
+                  <View className="w-8 h-8 rounded-full bg-white border-2 border-gray-200 items-center justify-center z-10 mb-2">
+                    <Text
+                      style={{ fontSize: 14, fontWeight: "600" }}
+                      className="text-gray-400 font-kanit"
+                    >
+                      3
+                    </Text>
+                  </View>
+                  <Text
+                    style={{ fontSize: 12 }}
+                    className="text-gray-400 text-center font-kanit"
+                  >
+                    ตั้งค่า WiFi
+                  </Text>
+                </View>
+              </View>
+            </View>
+          </View>
+        </View>
+      }
       contentContainerStyle={{ paddingHorizontal: 24, flexGrow: 1 }}
       keyboardAvoiding
       edges={["top", "left", "right"]}
       scrollViewProps={{
-        bounces: false,
-        overScrollMode: "never",
+        bounces: true,
+        overScrollMode: "always",
       }}
+      scrollViewRef={scrollViewRef}
     >
-      {/* Header - Matched Register Screen */}
-      <ScreenHeader title="ข้อมูลผู้สูงอายุ" onBack={handleBack} />
-
-      {/* Progress Bar */}
-      <View className="px-6 pb-4 mb-4">
-        <View className="relative">
-          {/* Connecting Line (Background) */}
-          <View
-            className="absolute top-4 left-[16%] right-[16%] h-[2px] bg-gray-200"
-            style={{ zIndex: 0 }}
-          />
-          {/* Active Line (None for Step 1 start) */}
-
-          {/* Steps (Foreground) */}
-          <View className="flex-row justify-between">
-            {/* Step 1 */}
-            <View className="flex-1 items-center">
-              <View className="w-8 h-8 rounded-full bg-blue-500 items-center justify-center z-10 mb-2 shadow-sm border border-blue-400">
-                <Text
-                  style={{ fontSize: 14, fontWeight: "600" }}
-                  className="text-white font-kanit"
-                >
-                  1
-                </Text>
-              </View>
-              <Text
-                style={{ fontSize: 12 }}
-                className="text-blue-600 text-center font-kanit"
-              >
-                กรอกข้อมูล{"\n"}ผู้สูงอายุ
-              </Text>
-            </View>
-
-            {/* Step 2 */}
-            <View className="flex-1 items-center">
-              <View className="w-8 h-8 rounded-full bg-white border-2 border-gray-200 items-center justify-center z-10 mb-2">
-                <Text
-                  style={{ fontSize: 14, fontWeight: "600" }}
-                  className="text-gray-400 font-kanit"
-                >
-                  2
-                </Text>
-              </View>
-              <Text
-                style={{ fontSize: 12 }}
-                className="text-gray-400 text-center font-kanit"
-              >
-                ติดตั้งอุปกรณ์
-              </Text>
-            </View>
-
-            {/* Step 3 */}
-            <View className="flex-1 items-center">
-              <View className="w-8 h-8 rounded-full bg-white border-2 border-gray-200 items-center justify-center z-10 mb-2">
-                <Text
-                  style={{ fontSize: 14, fontWeight: "600" }}
-                  className="text-gray-400 font-kanit"
-                >
-                  3
-                </Text>
-              </View>
-              <Text
-                style={{ fontSize: 12 }}
-                className="text-gray-400 text-center font-kanit"
-              >
-                ตั้งค่า WiFi
-              </Text>
-            </View>
-          </View>
-        </View>
-      </View>
-
       <View className="flex-1">
         {/* Info Note */}
         <View className="bg-blue-50 rounded-2xl p-4 mb-6 mt-6">
@@ -454,14 +548,22 @@ export default function Step1() {
         <View className="flex-row gap-3">
           {/* First Name */}
           <FloatingLabelInput
-            label="ชื่อ *"
+            label={
+              <Text className="font-kanit">
+                ชื่อ <Text style={{ color: "#EF4444" }}>*</Text>
+              </Text>
+            }
             value={firstName}
             onChangeText={setFirstName}
             containerStyle={{ flex: 1 }}
           />
           {/* Last Name */}
           <FloatingLabelInput
-            label="นามสกุล *"
+            label={
+              <Text className="font-kanit">
+                นามสกุล <Text style={{ color: "#EF4444" }}>*</Text>
+              </Text>
+            }
             value={lastName}
             onChangeText={setLastName}
             containerStyle={{ flex: 1 }}
@@ -484,8 +586,7 @@ export default function Step1() {
                   className="font-kanit"
                   style={{ fontSize: 12, color: "#a3a6af" }}
                 >
-                  วัน/เดือน/ปีเกิด{" "}
-                  <Text style={{ color: theme.colors.error }}>*</Text>
+                  วัน/เดือน/ปีเกิด <Text style={{ color: "#EF4444" }}>*</Text>
                 </Text>
               </View>
             ) : null}
@@ -495,8 +596,13 @@ export default function Step1() {
                 color: dateOfBirth ? theme.colors.onSurface : "#a3a6af",
               }}
             >
-              {formatDate(dateOfBirth)}
-              {!dateOfBirth && " *"}
+              {dateOfBirth ? (
+                formatDate(dateOfBirth)
+              ) : (
+                <>
+                  วัน/เดือน/ปีเกิด <Text style={{ color: "#EF4444" }}>*</Text>
+                </>
+              )}
             </Text>
 
             <View className="absolute right-4 top-5">
@@ -509,7 +615,11 @@ export default function Step1() {
         <View className="flex-row gap-3 mb-2">
           <View className="flex-1">
             <FloatingLabelInput
-              label="ส่วนสูง (cm) *"
+              label={
+                <Text className="font-kanit">
+                  ส่วนสูง (cm) <Text style={{ color: "#EF4444" }}>*</Text>
+                </Text>
+              }
               value={height}
               onChangeText={setHeight}
               keyboardType="numeric"
@@ -517,7 +627,11 @@ export default function Step1() {
           </View>
           <View className="flex-1">
             <FloatingLabelInput
-              label="น้ำหนัก (kg) *"
+              label={
+                <Text className="font-kanit">
+                  น้ำหนัก (kg) <Text style={{ color: "#EF4444" }}>*</Text>
+                </Text>
+              }
               value={weight}
               onChangeText={setWeight}
               keyboardType="numeric"
@@ -533,14 +647,37 @@ export default function Step1() {
           containerStyle={{ marginBottom: 16 }}
         />
 
-        {/* Address - Multiline */}
-        <FloatingLabelInput
-          label="ที่อยู่ *"
+        {/* House Number and Village */}
+        <View className="flex-row gap-3 mb-2">
+          <View className="flex-1">
+            <FloatingLabelInput
+              label={
+                <Text className="font-kanit">
+                  บ้านเลขที่ <Text style={{ color: "#EF4444" }}>*</Text>
+                </Text>
+              }
+              value={houseNumber}
+              onChangeText={setHouseNumber}
+            />
+          </View>
+          <View className="flex-1">
+            <FloatingLabelInput
+              label={
+                <Text className="font-kanit">
+                  หมู่ที่/หมู่บ้าน <Text style={{ color: "#EF4444" }}>*</Text>
+                </Text>
+              }
+              value={village}
+              onChangeText={setVillage}
+            />
+          </View>
+        </View>
+
+        {/* Address - Autocomplete Search */}
+        <ThaiAddressAutocomplete
           value={address}
-          onChangeText={setAddress}
-          multiline
-          containerStyle={{ marginBottom: 24, minHeight: 120 }}
-          style={{ maxHeight: 120 }}
+          onChange={setAddress}
+          isRequired
         />
 
         {/* Next Button */}

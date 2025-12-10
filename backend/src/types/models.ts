@@ -62,6 +62,13 @@ export interface CreateElderRequest {
   medications?: string[];
   notes?: string;
   profileImage?: string;
+  // Structured address fields
+  houseNumber?: string;
+  village?: string;
+  subdistrict?: string;
+  district?: string;
+  province?: string;
+  zipcode?: string;
 }
 
 export interface UpdateElderRequest extends Partial<CreateElderRequest> {}

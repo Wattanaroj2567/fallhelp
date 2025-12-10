@@ -41,14 +41,29 @@ apiClient.interceptors.response.use(
     // Logger.debug(`Response: ${response.status} ${response.config.url}`, response.data);
     return response;
   },
-  (error) => {
+  async (error) => {
     const apiError = toApiError(error);
-    // Silence 401 errors as they are handled globally
+    
+    // Handle 401 Unauthorized
     if (error.response?.status === 401) {
       Logger.debug(`API 401 (Session Expired): ${error.config?.method?.toUpperCase()} ${error.config?.url}`);
-    } else {
+    } 
+    // Handle 500 "User not found" - invalid token with non-existent userId
+    else if (
+      error.response?.status === 500 && 
+      error.config?.url?.includes('/api/users/profile') &&
+      error.response?.data?.error === 'User not found'
+    ) {
+      Logger.warn('User not found in database - clearing invalid token');
+      // Clear token to force re-login
+      const { clearToken } = await import('./tokenStorage');
+      await clearToken();
+    } 
+    // Log other errors
+    else {
       Logger.error(`API Error: ${error.config?.method?.toUpperCase()} ${error.config?.url}`, apiError);
     }
+    
     return Promise.reject(apiError);
   }
 );

@@ -19,6 +19,13 @@ export type CreateElderPayload = {
   allergies?: string[];
   medications?: string[];
   notes?: string;
+  // Address fields
+  houseNumber?: string;
+  village?: string;
+  subdistrict?: string;
+  district?: string;
+  province?: string;
+  zipcode?: string;
 };
 
 export type UpdateElderPayload = Partial<CreateElderPayload>;

@@ -72,7 +72,15 @@ model Elder {
   height       Float? // ส่วนสูง (cm)
   weight       Float? // น้ำหนัก (kg)
   diseases     String[] // โรคประจำตัว
-  address      String?  // ที่อยู่
+  
+  // ที่อยู่แบบแยกฟิลด์
+  houseNumber  String?  // บ้านเลขที่
+  village      String?  // หมู่บ้าน/อาคาร
+  subdistrict  String?  // ตำบล/แขวง
+  district     String?  // อำเภอ/เขต
+  province     String?  // จังหวัด
+  zipcode      String?  // รหัสไปรษณีย์
+  
   profileImage String?
   bloodType    String?
   allergies    String[]

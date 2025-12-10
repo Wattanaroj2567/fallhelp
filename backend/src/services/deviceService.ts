@@ -3,8 +3,15 @@ import { generateDevicePairingQR, generateWiFiQR } from '../utils/qrcode.js';
 import crypto from 'crypto';
 import prisma from '../prisma.js';
 import createDebug from 'debug';
+import { AppError } from '../utils/AppError.js';
 
 const log = createDebug('fallhelp:device');
+
+// ... (skipping unchanged parts)
+
+// ...
+
+
 
 // ==========================================
 // ⚙️ LAYER: Business Logic (Service)
@@ -90,7 +97,7 @@ export const pairDevice = async (
   log(`[PairDevice] Access record found:`, access);
 
   if (!access || access.accessLevel !== 'OWNER') {
-    throw new Error('Only owner can pair devices');
+    throw new AppError('Only owner can pair devices', 403);
   }
 
   // Find device
@@ -99,12 +106,12 @@ export const pairDevice = async (
   });
 
   if (!device) {
-    throw new Error('Device not found');
+    throw new AppError('Device not found', 404);
   }
 
   // Check if device is already paired
   if (device.elderId) {
-    throw new Error('Device is already paired with another elder');
+    throw new AppError('Device is already paired with another elder', 409);
   }
 
   // Check if elder already has a device
@@ -113,7 +120,7 @@ export const pairDevice = async (
   });
 
   if (elderDevice) {
-    throw new Error('Elder already has a paired device');
+    throw new AppError('Elder already has a paired device', 409);
   }
 
   // Pair device

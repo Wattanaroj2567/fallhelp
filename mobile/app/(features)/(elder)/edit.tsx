@@ -24,6 +24,10 @@ import { ScreenHeader } from "@/components/ScreenHeader";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { GenderSelect } from "@/components/GenderSelect";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import {
+  ThaiAddressAutocomplete,
+  AddressData,
+} from "@/components/ThaiAddressAutocomplete";
 
 // ==========================================
 // 📱 LAYER: View (Component)
@@ -33,7 +37,7 @@ export default function EditElderInfo() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const theme = useTheme();
-  const scrollViewRef = useRef<ScrollView>(null);
+  const scrollViewRef = useRef<any>(null);
   // Keyboard listener removed to allow always-scroll
 
   // ==========================================
@@ -49,7 +53,9 @@ export default function EditElderInfo() {
   const [height, setHeight] = useState("");
   const [weight, setWeight] = useState("");
   const [medicalCondition, setMedicalCondition] = useState("");
-  const [address, setAddress] = useState("");
+  const [houseNumber, setHouseNumber] = useState("");
+  const [village, setVillage] = useState("");
+  const [address, setAddress] = useState<AddressData | null>(null);
 
   // ==========================================
   // ⚙️ LAYER: Logic (Data Fetching)
@@ -80,7 +86,23 @@ export default function EditElderInfo() {
       setHeight(elder.height ? elder.height.toString() : "");
       setWeight(elder.weight ? elder.weight.toString() : "");
       setMedicalCondition(elder.diseases ? elder.diseases.join(", ") : "");
-      setAddress(elder.address || "");
+      setHouseNumber(elder.houseNumber || "");
+      setVillage(elder.village || "");
+
+      // Parse address from backend format
+      if (
+        elder.subdistrict &&
+        elder.district &&
+        elder.province &&
+        elder.zipcode
+      ) {
+        setAddress({
+          district: elder.subdistrict,
+          amphoe: elder.district,
+          province: elder.province,
+          zipcode: elder.zipcode,
+        });
+      }
     }
   }, [elder]);
 
@@ -157,9 +179,21 @@ export default function EditElderInfo() {
       return;
     }
 
+    // Validate House Number (Required)
+    if (!houseNumber.trim()) {
+      Alert.alert("กรุณากรอกข้อมูล", "กรุณากรอกบ้านเลขที่");
+      return;
+    }
+
+    // Validate Village (Required)
+    if (!village.trim()) {
+      Alert.alert("กรุณากรอกข้อมูล", "กรุณากรอกหมู่ที่/หมู่บ้าน");
+      return;
+    }
+
     // Validate Address (Required)
-    if (!address.trim()) {
-      Alert.alert("กรุณากรอกข้อมูล", "กรุณากรอกที่อยู่");
+    if (!address || !address.district || !address.province) {
+      Alert.alert("กรุณากรอกข้อมูล", "กรุณาเลือกที่อยู่");
       return;
     }
 
@@ -176,7 +210,12 @@ export default function EditElderInfo() {
             .map((d) => d.trim())
             .filter((d) => d)
         : [],
-      address: address.trim(),
+      houseNumber: houseNumber.trim(),
+      village: village.trim(),
+      subdistrict: address.district,
+      district: address.amphoe,
+      province: address.province,
+      zipcode: address.zipcode,
     };
 
     updateMutation.mutate(payload);
@@ -274,8 +313,7 @@ export default function EditElderInfo() {
                     className="font-kanit"
                     style={{ fontSize: 12, color: "#a3a6af" }}
                   >
-                    วัน/เดือน/ปีเกิด{" "}
-                    <Text style={{ color: theme.colors.error }}>*</Text>
+                    วัน/เดือน/ปีเกิด <Text style={{ color: "#EF4444" }}>*</Text>
                   </Text>
                 </View>
               ) : null}
@@ -285,8 +323,13 @@ export default function EditElderInfo() {
                   color: dateOfBirth ? theme.colors.onSurface : "#a3a6af",
                 }}
               >
-                {formatDate(dateOfBirth)}
-                {!dateOfBirth && " *"}
+                {dateOfBirth ? (
+                  formatDate(dateOfBirth)
+                ) : (
+                  <>
+                    วัน/เดือน/ปีเกิด <Text style={{ color: "#EF4444" }}>*</Text>
+                  </>
+                )}
               </Text>
 
               <View className="absolute right-4 top-5">
@@ -329,16 +372,40 @@ export default function EditElderInfo() {
             containerStyle={{ marginBottom: 16 }}
           />
 
-          {/* Address - Multiline but Auto-expanding */}
-          <FloatingLabelInput
-            label="ที่อยู่"
-            value={address}
-            onChangeText={setAddress}
-            multiline
-            isRequired={true}
-            containerStyle={{ marginBottom: 24 }}
-            style={{ maxHeight: 120 }} // Limit max height if needed, but let it grow
-          />
+          {/* House Number and Village */}
+          <View className="flex-row gap-3 mb-2">
+            <View className="flex-1">
+              <FloatingLabelInput
+                label={
+                  <Text className="font-kanit">
+                    บ้านเลขที่ <Text style={{ color: "#EF4444" }}>*</Text>
+                  </Text>
+                }
+                value={houseNumber}
+                onChangeText={setHouseNumber}
+              />
+            </View>
+            <View className="flex-1">
+              <FloatingLabelInput
+                label={
+                  <Text className="font-kanit">
+                    หมู่ที่/หมู่บ้าน <Text style={{ color: "#EF4444" }}>*</Text>
+                  </Text>
+                }
+                value={village}
+                onChangeText={setVillage}
+              />
+            </View>
+          </View>
+
+          {/* Address - Autocomplete Search */}
+          <View className="mb-6">
+            <ThaiAddressAutocomplete
+              value={address}
+              onChange={setAddress}
+              isRequired
+            />
+          </View>
 
           {/* Save Button */}
           <PrimaryButton

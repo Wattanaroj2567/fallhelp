@@ -50,6 +50,14 @@ export type Elder = {
   bloodType?: string | null;
   allergies?: string[];
   medications?: string[];
+  // Address fields (separated)
+  houseNumber?: string | null;
+  village?: string | null;
+  subdistrict?: string | null;
+  district?: string | null;
+  province?: string | null;
+  zipcode?: string | null;
+  // Legacy field for backward compatibility
   address?: string | null;
   isActive?: boolean;
   createdAt?: string;

@@ -11,7 +11,7 @@ import { TextInput, useTheme } from "react-native-paper";
 
 interface FloatingLabelInputProps
   extends Omit<React.ComponentProps<typeof TextInput>, "error" | "label"> {
-  label: string | React.ReactNode; 
+  label: string | React.ReactNode;
   error?: string;
   containerStyle?: StyleProp<ViewStyle>;
   isPassword?: boolean;
@@ -52,7 +52,7 @@ export const FloatingLabelInput: React.FC<FloatingLabelInputProps> = ({
   // Construct Label with Red Asterisk if required
   const labelNode = isRequired ? (
     <Text style={{ color: labelColor }}>
-      {label} <Text style={{ color: theme.colors.error }}>*</Text>
+      {label} <Text style={{ color: "#EF4444" }}>*</Text>
     </Text>
   ) : (
     <Text style={{ color: labelColor }}>{label}</Text>
