@@ -11,6 +11,9 @@ import { ScreenWrapper } from '@/components/ScreenWrapper';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { PrimaryButton } from '@/components/PrimaryButton';
 
+import { GenderSelect } from '@/components/GenderSelect';
+import { Gender } from '@/services/types';
+
 // ==========================================
 // 📱 LAYER: View (Component)
 // Purpose: Edit Name Screen (ชื่อ-นามสกุล only)
@@ -25,6 +28,7 @@ export default function EditUserInfo() {
   // ==========================================
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [gender, setGender] = useState<Gender | null>(null);
 
   // Animation Hooks
 
@@ -46,6 +50,7 @@ export default function EditUserInfo() {
     if (profile) {
       setFirstName(profile.firstName || '');
       setLastName(profile.lastName || '');
+      setGender(profile.gender || null);
     }
   }, [profile]);
 
@@ -54,7 +59,7 @@ export default function EditUserInfo() {
   // Purpose: Update profile
   // ==========================================
   const updateMutation = useMutation({
-    mutationFn: async (data: { firstName: string; lastName: string }) => {
+    mutationFn: async (data: { firstName: string; lastName: string; gender?: Gender | null }) => {
       await updateProfile(data);
     },
     onSuccess: () => {
@@ -89,6 +94,7 @@ export default function EditUserInfo() {
     updateMutation.mutate({
       firstName: firstName.trim(),
       lastName: lastName.trim(),
+      gender: gender,
     });
   };
 
@@ -108,32 +114,47 @@ export default function EditUserInfo() {
   // Purpose: Render the form UI
   // ==========================================
   return (
-    <ScreenWrapper contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 100, flexGrow: 1 }} useScrollView={false}>
-      {/* Header */}
-      <ScreenHeader title="แก้ไขชื่อ-นามสกุล" onBack={() => router.back()} />
-
-      <View className="px-6">
-        <Text className="font-kanit" style={{ fontSize: 14, color: '#6B7280', marginBottom: 32, textAlign: 'left' }}>
+    <ScreenWrapper
+      contentContainerStyle={{ paddingHorizontal: 24, flexGrow: 1 }}
+      header={
+        <ScreenHeader title="แก้ไขชื่อ-นามสกุล" onBack={() => router.back()} />
+      }
+    >
+      <View>
+        <Text
+          className="font-kanit"
+          style={{
+            fontSize: 14,
+            color: "#6B7280",
+            marginBottom: 24,
+            textAlign: "left",
+          }}
+        >
           กรุณากรอกชื่อและนามสกุลของคุณ
         </Text>
 
         {/* First Name & Last Name */}
-        <View className="flex-row mb-8">
-          <View className="flex-1 mr-2">
-            <FloatingLabelInput
-              label="ชื่อ"
-              value={firstName}
-              onChangeText={setFirstName}
-            />
-          </View>
-          <View className="flex-1 ml-2">
-            <FloatingLabelInput
-              label="นามสกุล"
-              value={lastName}
-              onChangeText={setLastName}
-            />
-          </View>
+        <View className="flex-row gap-4 mb-4">
+          <FloatingLabelInput
+            label="ชื่อ"
+            value={firstName}
+            onChangeText={setFirstName}
+            containerStyle={{ flex: 1 }}
+          />
+          <FloatingLabelInput
+            label="นามสกุล"
+            value={lastName}
+            onChangeText={setLastName}
+            containerStyle={{ flex: 1 }}
+          />
         </View>
+
+        {/* Gender Selection */}
+        <GenderSelect
+          value={(gender as string) || ""}
+          onChange={(val) => setGender((val as Gender) || null)}
+          isRequired={false}
+        />
 
         {/* Save Button */}
         <PrimaryButton

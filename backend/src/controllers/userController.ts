@@ -26,13 +26,14 @@ export const getProfile = asyncHandler(async (req: Request, res: Response) => {
  */
 export const updateProfile = asyncHandler(async (req: Request, res: Response) => {
   const userId = req.user!.userId;
-  const { firstName, lastName, phone, profileImage } = req.body;
+  const { firstName, lastName, phone, profileImage, gender } = req.body;
 
   const user = await userService.updateUserProfile(userId, {
     firstName,
     lastName,
     phone,
     profileImage,
+    gender,
   });
 
   res.json({

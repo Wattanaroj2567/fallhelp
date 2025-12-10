@@ -19,13 +19,15 @@ export type BackendAuthResponse = {
 };
 
 export type LoginPayload = {
-  email: string;
+  email?: string;
+  identifier?: string;
   password: string;
 };
 
 export type RegisterPayload = LoginPayload & {
   firstName: string;
   lastName: string;
+  gender: string;
   phone?: string;
 };
 

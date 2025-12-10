@@ -1,4 +1,4 @@
-import { User } from '../generated/prisma/client.js';
+import { User, Gender } from '../generated/prisma/client.js';
 import { hashPassword, comparePassword } from '../utils/password.js';
 import prisma from '../prisma.js';
 
@@ -33,11 +33,15 @@ export const updateUserProfile = async (
     lastName?: string;
     phone?: string;
     profileImage?: string;
+    gender?: string;
   }
 ): Promise<Omit<User, 'password'>> => {
   const user = await prisma.user.update({
     where: { id: userId },
-    data,
+    data: {
+      ...data,
+      gender: data.gender as Gender, // Use Gender enum
+    },
   });
 
   const { password, ...userWithoutPassword } = user;

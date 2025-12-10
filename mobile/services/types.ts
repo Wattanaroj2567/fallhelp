@@ -62,6 +62,7 @@ export type UserProfile = {
   email: string;
   firstName: string;
   lastName: string;
+  gender?: Gender | null;
   phone?: string | null;
   role: UserRole;
   profileImage?: string | null;

@@ -11,7 +11,7 @@ import { asyncHandler } from '../middlewares/errorHandler';
  * POST /api/auth/register
  */
 export const register = asyncHandler(async (req: Request, res: Response) => {
-  const { email, password, firstName, lastName, phone, role } = req.body;
+  const { email, password, firstName, lastName, phone, role, gender } = req.body;
 
   const result = await authService.register({
     email,
@@ -20,6 +20,7 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
     lastName,
     phone,
     role,
+    gender,
   });
 
   res.status(201).json({

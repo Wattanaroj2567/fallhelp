@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { View, Text, TouchableOpacity, Alert, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useMutation } from '@tanstack/react-query';
@@ -12,6 +11,7 @@ import { ScreenHeader } from '@/components/ScreenHeader';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import Logger from '@/utils/logger';
+import { showErrorMessage } from '@/utils/errorHelper';
 
 // ==========================================
 // 📱 LAYER: View (Component)
@@ -20,7 +20,6 @@ import Logger from '@/utils/logger';
 export default function DevicePairing() {
   const router = useRouter();
   const [permission, requestPermission] = useCameraPermissions();
-  const insets = useSafeAreaInsets();
 
   // ==========================================
   // 🧩 LAYER: Logic (Local State)
@@ -80,15 +79,16 @@ export default function DevicePairing() {
       );
     },
     onError: (error: any) => {
-      Logger.error('Error pairing device:', error);
       isScanning.current = false;
-
+      
       const errorMessage = error.data?.error || error.message || JSON.stringify(error);
-      const isAlreadyPaired = errorMessage.includes('already paired') ||
+      
+      // Special handling for already paired devices to offer redirection
+      if (
+        errorMessage.includes('already paired') ||
         errorMessage.includes('Device is already paired') ||
-        (error.data && JSON.stringify(error.data).includes('already paired'));
-
-      if (isAlreadyPaired) {
+        (error.data && JSON.stringify(error.data).includes('already paired'))
+      ) {
         Alert.alert(
           'อุปกรณ์ถูกเชื่อมต่อแล้ว',
           'อุปกรณ์นี้ถูกเชื่อมต่อแล้ว คุณต้องการไปตั้งค่า WiFi หรือไม่?',
@@ -96,9 +96,6 @@ export default function DevicePairing() {
             {
               text: 'ยกเลิก',
               style: 'cancel',
-              onPress: () => {
-                isScanning.current = false;
-              }
             },
             {
               text: 'ไปตั้งค่า WiFi',
@@ -111,18 +108,8 @@ export default function DevicePairing() {
         return;
       }
 
-      Alert.alert(
-        'ข้อผิดพลาด',
-        errorMessage || 'ไม่สามารถเชื่อมต่ออุปกรณ์ได้',
-        [
-          {
-            text: 'ตกลง',
-            onPress: () => {
-              isScanning.current = false;
-            }
-          }
-        ]
-      );
+      // Standard error handling
+      showErrorMessage('ข้อผิดพลาด', error);
     },
   });
 

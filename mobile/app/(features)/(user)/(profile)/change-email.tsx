@@ -93,21 +93,35 @@ export default function ChangeEmail() {
   }
 
   return (
-    <ScreenWrapper contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 100, flexGrow: 1 }} useScrollView={false}>
-      {/* Header */}
-      <ScreenHeader title="แก้ไขอีเมล" onBack={() => router.back()} />
-
-      <View className="px-6">
-        <Text className="font-kanit" style={{ fontSize: 14, color: '#6B7280', marginBottom: 32, textAlign: 'left' }}>
+    <ScreenWrapper
+      contentContainerStyle={{ paddingHorizontal: 24, flexGrow: 1 }}
+      header={<ScreenHeader title="แก้ไขอีเมล" onBack={() => router.back()} />}
+    >
+      <View>
+        <Text
+          className="font-kanit"
+          style={{
+            fontSize: 14,
+            color: "#6B7280",
+            marginBottom: 24,
+            textAlign: "left",
+          }}
+        >
           กรุณากรอกอีเมลใหม่ของคุณ
         </Text>
 
         {/* Current Email (Read-only) */}
         <View className="mb-4">
-          <Text style={{ fontSize: 12 }} className="font-kanit text-gray-500 mb-2 ml-1">
+          <Text
+            style={{ fontSize: 12 }}
+            className="font-kanit text-gray-500 mb-2 ml-1"
+          >
             อีเมลปัจจุบัน
           </Text>
-          <View className="bg-gray-100 rounded-2xl px-4 border border-gray-200 justify-center" style={{ height: 60 }}>
+          <View
+            className="bg-gray-100 rounded-2xl px-4 border border-gray-200 justify-center"
+            style={{ height: 60 }}
+          >
             <Text style={{ fontSize: 16 }} className="font-kanit text-gray-500">
               {currentEmail}
             </Text>
@@ -122,9 +136,9 @@ export default function ChangeEmail() {
             onChangeText={(text) => {
               setNewEmail(text);
               if (/[ก-๙]/.test(text)) {
-                setEmailError('กรุณากรอกอีเมลเป็นภาษาอังกฤษ');
+                setEmailError("กรุณากรอกอีเมลเป็นภาษาอังกฤษ");
               } else {
-                setEmailError('');
+                setEmailError("");
               }
             }}
             error={emailError}
@@ -135,8 +149,16 @@ export default function ChangeEmail() {
 
         {/* Info Box */}
         <View className="bg-blue-50 rounded-2xl p-4 mb-8 flex-row">
-          <MaterialIcons name="info" size={20} color="#3B82F6" style={{ marginTop: 2 }} />
-          <Text style={{ fontSize: 12 }} className="font-kanit text-blue-700 flex-1 ml-2">
+          <MaterialIcons
+            name="info"
+            size={20}
+            color="#3B82F6"
+            style={{ marginTop: 2 }}
+          />
+          <Text
+            style={{ fontSize: 12 }}
+            className="font-kanit text-blue-700 flex-1 ml-2"
+          >
             คุณจะต้องใช้อีเมลใหม่ในการเข้าสู่ระบบครั้งถัดไป
           </Text>
         </View>

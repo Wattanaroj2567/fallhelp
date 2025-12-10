@@ -188,19 +188,38 @@ export default function Profile() {
 
         {/* Profile Fields - Box with Border */}
         <View className="bg-white rounded-3xl border border-gray-200 overflow-hidden mb-4">
-          {/* Name (ชื่อ-นามสกุล) */}
+          {/* Name & Gender Group */}
           <TouchableOpacity
             onPress={() => router.push('/(features)/(user)/(profile)/edit-info')}
             className="flex-row items-center justify-between p-5 border-b border-gray-100"
             activeOpacity={0.6}
           >
             <View className="flex-1">
-              <Text style={{ fontSize: 12 }} className="font-kanit text-gray-500 mb-1">
-                ชื่อ-นามสกุล
-              </Text>
-              <Text style={{ fontSize: 16 }} className="font-kanit text-gray-900">
-                {profile.firstName} {profile.lastName}
-              </Text>
+              {/* Name */}
+              <View className="mb-3">
+                <Text style={{ fontSize: 12 }} className="font-kanit text-gray-500 mb-1">
+                  ชื่อ-นามสกุล
+                </Text>
+                <Text style={{ fontSize: 16 }} className="font-kanit text-gray-900">
+                  {profile.firstName} {profile.lastName}
+                </Text>
+              </View>
+
+              {/* Gender */}
+              <View>
+                <Text style={{ fontSize: 12 }} className="font-kanit text-gray-500 mb-1">
+                  เพศ
+                </Text>
+                <Text style={{ fontSize: 16 }} className="font-kanit text-gray-900">
+                  {profile.gender === 'MALE'
+                    ? 'ชาย'
+                    : profile.gender === 'FEMALE'
+                      ? 'หญิง'
+                      : profile.gender === 'OTHER'
+                        ? 'อื่นๆ'
+                        : 'ไม่ระบุ'}
+                </Text>
+              </View>
             </View>
             <Text style={{ fontSize: 14, fontWeight: '600' }} className="font-kanit text-gray-400">
               แก้ไข

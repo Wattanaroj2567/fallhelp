@@ -18,6 +18,7 @@ model User {
   password     String
   firstName    String
   lastName     String
+  gender       Gender? // Added Gender field
   phone        String?
   profileImage String?
   pushToken    String? // Expo Push Token for push notifications

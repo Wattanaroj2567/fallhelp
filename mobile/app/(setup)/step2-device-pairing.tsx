@@ -1,18 +1,18 @@
-
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, Modal, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import { MaterialIcons } from '@expo/vector-icons';
-import { useMutation } from '@tanstack/react-query';
-import { pairDevice } from '@/services/deviceService';
-import * as SecureStore from 'expo-secure-store';
-import Logger from '@/utils/logger';
-import { FloatingLabelInput } from '@/components/FloatingLabelInput';
-import { ScreenWrapper } from '@/components/ScreenWrapper';
-import { ScreenHeader } from '@/components/ScreenHeader';
-import { PrimaryButton } from '@/components/PrimaryButton';
-import { CameraView, useCameraPermissions } from 'expo-camera';
+import React, { useState } from "react";
+import { View, Text, TouchableOpacity, Alert, StyleSheet } from "react-native";
+import { useRouter } from "expo-router";
+import { MaterialIcons } from "@expo/vector-icons";
+import { useMutation } from "@tanstack/react-query";
+import { pairDevice } from "@/services/deviceService";
+import { getUserElders } from "@/services/userService";
+import * as SecureStore from "expo-secure-store";
+import Logger from "@/utils/logger";
+import { FloatingLabelInput } from "@/components/FloatingLabelInput";
+import { ScreenWrapper } from "@/components/ScreenWrapper";
+import { ScreenHeader } from "@/components/ScreenHeader";
+import { PrimaryButton } from "@/components/PrimaryButton";
+import { CameraView, useCameraPermissions } from "expo-camera";
+import { showErrorMessage } from "@/utils/errorHelper";
 
 // ==========================================
 // 📱 LAYER: View (Component)
@@ -21,14 +21,13 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 export default function Step2() {
   const router = useRouter();
   const [permission, requestPermission] = useCameraPermissions();
-  const insets = useSafeAreaInsets();
 
   // ==========================================
   // 🧩 LAYER: Logic (Local State)
   // Purpose: Manage pairing state
   // ==========================================
   const [showManualEntry, setShowManualEntry] = useState(false);
-  const [macAddress, setMacAddress] = useState('');
+  const [macAddress, setMacAddress] = useState("");
   // showCamera is no longer needed as state, we default to camera view
 
   // Request permission on mount
@@ -40,11 +39,9 @@ export default function Step2() {
     }
   }, [permission]);
 
-
-
   // Format device code: 8 alphanumeric characters only
   const formatDeviceCode = (text: string) => {
-    const cleaned = text.replace(/[^0-9A-Za-z]/g, '');
+    const cleaned = text.replace(/[^0-9A-Za-z]/g, "");
     return cleaned.toUpperCase().slice(0, 8);
   };
 
@@ -61,32 +58,34 @@ export default function Step2() {
   // ==========================================
   const pairMutation = useMutation({
     mutationFn: async (deviceCode: string) => {
-      let elderId = await SecureStore.getItemAsync('setup_elderId');
-      Logger.debug('Step 2: Retrieved elderId from store:', elderId);
+      let elderId = await SecureStore.getItemAsync("setup_elderId");
+      Logger.debug("Step 2: Retrieved elderId from store:", elderId);
 
       // Check for invalid values
-      if (!elderId || elderId === 'undefined' || elderId === 'null') {
-        Logger.debug('Step 2: Invalid elderId, attempting fallback fetch...');
+      if (!elderId || elderId === "undefined" || elderId === "null") {
+        Logger.debug("Step 2: Invalid elderId, attempting fallback fetch...");
         // Fallback: Fetch from API
         try {
-          const { getUserElders } = require('../../services/userService');
           const response = await getUserElders();
           // Handle both direct array and { data: [] } structure
-          const eldersList = Array.isArray(response) ? response : (response.data || []);
+          // @ts-ignore
+          const eldersList = Array.isArray(response)
+            ? response
+            : (response as any).data || [];
 
           if (eldersList && eldersList.length > 0) {
             elderId = String(eldersList[0].id);
-            Logger.debug('Step 2: Fallback fetched elderId:', elderId);
+            Logger.debug("Step 2: Fallback fetched elderId:", elderId);
             // Save it correctly this time
-            await SecureStore.setItemAsync('setup_elderId', elderId);
+            await SecureStore.setItemAsync("setup_elderId", elderId);
           }
         } catch (e) {
-          Logger.error('Step 2: Fallback fetch failed:', e);
+          Logger.error("Step 2: Fallback fetch failed:", e);
         }
       }
 
-      if (!elderId || elderId === 'undefined' || elderId === 'null') {
-        throw new Error('ไม่พบข้อมูลผู้สูงอายุ กรุณากลับไปทำขั้นตอนที่ 1 ใหม่');
+      if (!elderId || elderId === "undefined" || elderId === "null") {
+        throw new Error("ไม่พบข้อมูลผู้สูงอายุ กรุณากลับไปทำขั้นตอนที่ 1 ใหม่");
       }
 
       Logger.info(`Step 2: Pairing device ${deviceCode} with elder ${elderId}`);
@@ -94,62 +93,55 @@ export default function Step2() {
     },
     onSuccess: async (device) => {
       isScanning.current = false; // ✅ Release lock after successful pairing
-      await SecureStore.setItemAsync('setup_deviceId', String(device.id));
-      await SecureStore.setItemAsync('setup_step', '3');
-      Alert.alert(
-        'เชื่อมต่ออุปกรณ์สำเร็จ',
-        'เชื่อมต่ออุปกรณ์เรียบร้อยแล้ว',
-        [{ text: 'ตกลง', onPress: () => router.push('/(setup)/step3-wifi-setup') }]
-      );
+      await SecureStore.setItemAsync("setup_deviceId", String(device.id));
+      await SecureStore.setItemAsync("setup_step", "3");
+      Alert.alert("เชื่อมต่ออุปกรณ์สำเร็จ", "เชื่อมต่ออุปกรณ์เรียบร้อยแล้ว", [
+        {
+          text: "ตกลง",
+          onPress: () => router.push("/(setup)/step3-wifi-setup"),
+        },
+      ]);
     },
     onError: (error: any) => {
-      Logger.error('Error pairing device:', error);
       // Do NOT release lock immediately to prevent rapid re-scanning
-      // isScanning.current = false; 
+      // isScanning.current = false;
 
-      const errorMessage = error.data?.error || error.message || JSON.stringify(error);
-      const isAlreadyPaired = errorMessage.includes('already paired') ||
-        errorMessage.includes('Device is already paired') ||
-        (error.data && JSON.stringify(error.data).includes('already paired'));
+      const errorMessage =
+        error.data?.error || error.message || JSON.stringify(error);
+      const isAlreadyPaired =
+        errorMessage.includes("already paired") ||
+        errorMessage.includes("Device is already paired") ||
+        (error.data && JSON.stringify(error.data).includes("already paired"));
 
       // If already paired, check if we can proceed
       if (isAlreadyPaired) {
         Alert.alert(
-          'อุปกรณ์ถูกเชื่อมต่อแล้ว',
-          'อุปกรณ์นี้ถูกเชื่อมต่อแล้ว คุณต้องการไปขั้นตอนถัดไปเลยหรือไม่?',
+          "อุปกรณ์ถูกเชื่อมต่อแล้ว",
+          "อุปกรณ์นี้ถูกเชื่อมต่อแล้ว คุณต้องการไปขั้นตอนถัดไปเลยหรือไม่?",
           [
             {
-              text: 'ยกเลิก',
-              style: 'cancel',
+              text: "ยกเลิก",
+              style: "cancel",
               onPress: () => {
                 isScanning.current = false; // Release lock only on cancel
-              }
+              },
             },
             {
-              text: 'ไปขั้นตอนถัดไป',
+              text: "ไปขั้นตอนถัดไป",
               onPress: async () => {
                 // Keep locked as we navigate away
-                await SecureStore.setItemAsync('setup_step', '3');
-                router.push('/(setup)/step3-wifi-setup');
-              }
-            }
+                await SecureStore.setItemAsync("setup_step", "3");
+                router.push("/(setup)/step3-wifi-setup");
+              },
+            },
           ]
         );
         return;
       }
 
-      Alert.alert(
-        'ข้อผิดพลาด',
-        errorMessage || 'ไม่สามารถเชื่อมต่ออุปกรณ์ได้',
-        [
-          {
-            text: 'ตกลง',
-            onPress: () => {
-              isScanning.current = false; // Release lock on dismissal
-            }
-          }
-        ]
-      );
+      // Standard error handling
+      showErrorMessage("ข้อผิดพลาด", error);
+      isScanning.current = false;
     },
   });
 
@@ -159,14 +151,14 @@ export default function Step2() {
   // ==========================================
   const handleManualPairing = async () => {
     // Get clean 8 character device code
-    const cleanCode = macAddress.replace(/[^0-9A-Za-z]/g, '').toUpperCase();
+    const cleanCode = macAddress.replace(/[^0-9A-Za-z]/g, "").toUpperCase();
 
     if (!cleanCode || cleanCode.length !== 8) {
-      Alert.alert('ข้อมูลไม่ครบถ้วน', 'กรุณากรอกรหัสอุปกรณ์ 8 หลัก');
+      Alert.alert("ข้อมูลไม่ครบถ้วน", "กรุณากรอกรหัสอุปกรณ์ 8 หลัก");
       return;
     }
 
-    Logger.info('Manual pairing with device code:', cleanCode);
+    Logger.info("Manual pairing with device code:", cleanCode);
     // Manual pairing shouldn't be blocked by camera scanning lock
     // We rely on pairMutation.isPending for button disable state
     pairMutation.mutate(cleanCode);
@@ -176,7 +168,7 @@ export default function Step2() {
     // Prevent multiple scans
     if (isScanning.current || pairMutation.isPending) return;
     isScanning.current = true;
-    Logger.info('Scanned QR:', data);
+    Logger.info("Scanned QR:", data);
     pairMutation.mutate(data);
   };
 
@@ -188,15 +180,13 @@ export default function Step2() {
       setShowManualEntry(false);
       isScanning.current = false; // Reset lock when going back to camera
     } else {
-
-
       // Clear the saved step
-      await SecureStore.deleteItemAsync('setup_step');
+      await SecureStore.deleteItemAsync("setup_step");
       // Use back() to support native swipe gesture and history
       if (router.canGoBack()) {
         router.back();
       } else {
-        router.replace('/(setup)/step1-elder-info');
+        router.replace("/(setup)/step1-elder-info");
       }
     }
   };
@@ -205,25 +195,43 @@ export default function Step2() {
   // 🎨 LAYER: UI Components (Shared)
   // ==========================================
 
-
   // ==========================================
   // 📝 LAYER: View (Manual Entry Mode)
   // ==========================================
   if (showManualEntry) {
     return (
-      <ScreenWrapper contentContainerStyle={{ paddingBottom: 40, flexGrow: 1 }}>
-        <ScreenHeader title="ติดตั้งอุปกรณ์" />
-
+      <ScreenWrapper
+        contentContainerStyle={{
+          paddingHorizontal: 24,
+          paddingBottom: 40,
+          flexGrow: 1,
+        }}
+        keyboardAvoiding
+        scrollViewProps={{
+          bounces: true,
+          overScrollMode: "always",
+        }}
+        header={<ScreenHeader title="ผูกอุปกรณ์" />}
+      >
         <View>
           {/* Info Note */}
           <View className="bg-blue-50 rounded-2xl p-4 mb-6 mt-2">
-            <Text className="font-kanit text-blue-600 font-medium" style={{ fontSize: 15 }}>
+            <Text
+              className="font-kanit text-blue-600 font-medium"
+              style={{ fontSize: 15 }}
+            >
               กรุณากรอกรหัสอุปกรณ์ 8 หลัก
             </Text>
-            <Text className="font-kanit text-blue-600" style={{ fontSize: 15, marginTop: 2 }}>
+            <Text
+              className="font-kanit text-blue-600"
+              style={{ fontSize: 15, marginTop: 2 }}
+            >
               ที่ติดบนสติ๊กเกอร์ของอุปกรณ์
             </Text>
-            <Text className="font-kanit text-gray-500 mt-2" style={{ fontSize: 14 }}>
+            <Text
+              className="font-kanit text-gray-500 mt-2"
+              style={{ fontSize: 14 }}
+            >
               ตัวอย่าง: 832CE051
             </Text>
           </View>
@@ -257,6 +265,7 @@ export default function Step2() {
               autoCapitalize="characters"
               maxLength={8}
               style={{ fontSize: 18, letterSpacing: 3 }}
+              containerStyle={{ marginBottom: 0 }}
             />
           </View>
 
@@ -286,7 +295,7 @@ export default function Step2() {
             </View>
           </TouchableOpacity>
         </View>
-      </ScreenWrapper >
+      </ScreenWrapper>
     );
   }
 
@@ -294,72 +303,126 @@ export default function Step2() {
   // 📸 LAYER: View (Camera Mode)
   // ==========================================
   return (
-    <View className="flex-1 bg-black">
-      {/* Background Camera Layer */}
-      {permission?.granted && (
-        <CameraView
-          style={[StyleSheet.absoluteFill]}
-          facing="back"
-          onBarcodeScanned={handleBarCodeScanned}
-        />
-      )}
+    <ScreenWrapper
+      useScrollView={false} // Disable scrolling for Camera view
+      contentContainerStyle={{ flex: 1, backgroundColor: "#000" }} // Full height, black bg for camera frame
+      header={<ScreenHeader title="ผูกอุปกรณ์" onBack={handleBack} />}
+    >
+      {/* Progress Bar - Matched Step 1 */}
+      <View className="px-6 pb-4 mb-4 bg-white pt-4">
+        <View className="relative">
+          {/* Connecting Line (Background) */}
+          <View
+            className="absolute top-4 left-[16%] right-[16%] h-[2px] bg-gray-200"
+            style={{ zIndex: 0 }}
+          />
 
-      {/* UI Overlay Layer */}
-      <View className="flex-1" style={{ zIndex: 10 }} pointerEvents="box-none">
-
-        <ScreenHeader title="ติดตั้งอุปกรณ์" onBack={handleBack} transparent />
-
-        {/* Camera Overlay Content */}
-        <View className="flex-1 justify-between pb-10">
-          {/* Center Scanning Area */}
-          <View className="flex-1 items-center justify-center">
-            {!permission?.granted ? (
-              <View className="items-center px-6">
-                <Text className="font-kanit text-white text-center mb-6 text-lg">
-                  ต้องการสิทธิ์การเข้าถึงกล้องเพื่อสแกน QR Code
-                </Text>
-                <TouchableOpacity
-                  onPress={requestPermission}
-                  className="bg-[#16AD78] px-8 py-3 rounded-full shadow-lg"
-                >
-                  <Text className="font-kanit text-white font-bold text-base">อนุญาตให้ใช้กล้อง</Text>
-                </TouchableOpacity>
+          {/* Steps (Foreground) */}
+          <View className="flex-row justify-between">
+            {/* Step 1 */}
+            <View className="flex-1 items-center">
+              <View className="w-8 h-8 rounded-full bg-blue-500 items-center justify-center z-10 mb-2 border border-blue-500">
+                <MaterialIcons name="check" size={16} color="white" />
               </View>
-            ) : (
-              <>
-                <View className="w-72 h-72 relative">
-                  {/* Corner Borders */}
-                  <View className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-[#16AD78] rounded-tl-2xl" />
-                  <View className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-[#16AD78] rounded-tr-2xl" />
-                  <View className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-[#16AD78] rounded-bl-2xl" />
-                  <View className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-[#16AD78] rounded-br-2xl" />
+              <Text
+                style={{ fontSize: 12 }}
+                className="text-blue-600 text-center font-kanit"
+              >
+                กรอกข้อมูล{"\n"}ผู้สูงอายุ
+              </Text>
+            </View>
 
-                  {/* Scanning Animation Line */}
-                  <View className="absolute top-1/2 left-4 right-4 h-[1px] bg-[#16AD78]/50" />
-                </View>
+            {/* Step 2 */}
+            <View className="flex-1 items-center">
+              <View className="w-8 h-8 rounded-full bg-blue-500 items-center justify-center z-10 mb-2 shadow-sm border border-blue-400">
+                <Text
+                  style={{ fontSize: 14, fontWeight: "600" }}
+                  className="text-white font-kanit"
+                >
+                  2
+                </Text>
+              </View>
+              <Text
+                style={{ fontSize: 12 }}
+                className="text-blue-600 text-center font-kanit"
+              >
+                ติดตั้งอุปกรณ์
+              </Text>
+            </View>
 
-                <View className="mt-8 bg-black/60 px-6 py-3 rounded-2xl backdrop-blur-md">
-                  <Text className="font-kanit text-white text-lg text-center font-semibold">
-                    สแกน QR Code
-                  </Text>
-                  <Text className="font-kanit text-gray-200 text-sm text-center mt-1">
-                    วาง QR Code ให้อยู่ในกรอบเพื่อเชื่อมต่อ
-                  </Text>
-                  {pairMutation.isError && (
-                    <Text className="font-kanit text-red-400 text-sm text-center mt-2">
-                      ไม่สามารถเชื่อมต่อได้ กรุณาลองใหม่
-                    </Text>
-                  )}
-                </View>
-              </>
+            {/* Step 3 */}
+            <View className="flex-1 items-center">
+              <View className="w-8 h-8 rounded-full bg-white border-2 border-gray-200 items-center justify-center z-10 mb-2">
+                <Text
+                  style={{ fontSize: 14, fontWeight: "600" }}
+                  className="text-gray-400 font-kanit"
+                >
+                  3
+                </Text>
+              </View>
+              <Text
+                style={{ fontSize: 12 }}
+                className="text-gray-400 text-center font-kanit"
+              >
+                ตั้งค่า WiFi
+              </Text>
+            </View>
+          </View>
+        </View>
+      </View>
+
+      {/* Camera Section */}
+      <View className="flex-1 bg-black relative rounded-t-[30px] overflow-hidden">
+        {permission?.granted ? (
+          <CameraView
+            style={[StyleSheet.absoluteFill]}
+            facing="back"
+            onBarcodeScanned={handleBarCodeScanned}
+          />
+        ) : (
+          <View className="flex-1 items-center justify-center bg-gray-900">
+            <Text className="font-kanit text-white text-center mb-6 text-lg px-6">
+              ต้องการสิทธิ์การเข้าถึงกล้องเพื่อสแกน QR Code
+            </Text>
+            <TouchableOpacity
+              onPress={requestPermission}
+              className="bg-[#16AD78] px-8 py-3 rounded-full shadow-lg"
+            >
+              <Text className="font-kanit text-white font-bold text-base">
+                อนุญาตให้ใช้กล้อง
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* Overlay Content */}
+        <View className="flex-1 justify-between py-10" pointerEvents="box-none">
+          {/* Scanning Frame Marker */}
+          <View className="items-center">
+            {permission?.granted && (
+              <View className="w-64 h-64 relative">
+                {/* Corner Borders */}
+                <View className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-[#16AD78] rounded-tl-2xl" />
+                <View className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-[#16AD78] rounded-tr-2xl" />
+                <View className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-[#16AD78] rounded-bl-2xl" />
+                <View className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-[#16AD78] rounded-br-2xl" />
+                {/* Scanning Animation Line */}
+                <View className="absolute top-1/2 left-4 right-4 h-[1px] bg-[#16AD78]/50" />
+              </View>
             )}
+            <Text className="font-kanit text-white text-lg text-center font-semibold mt-8 drop-shadow-md">
+              สแกน QR Code
+            </Text>
+            <Text className="font-kanit text-gray-200 text-sm text-center mt-1 drop-shadow-md">
+              วาง QR Code ให้อยู่ในกรอบเพื่อเชื่อมต่อ
+            </Text>
           </View>
 
-          {/* Bottom Action */}
+          {/* Manual Entry Button */}
           <View className="px-6 items-center">
             <TouchableOpacity
               onPress={() => {
-                isScanning.current = false; // Reset lock when entering manual mode
+                isScanning.current = false;
                 setShowManualEntry(true);
               }}
               className="flex-row items-center bg-white/20 px-6 py-4 rounded-full border border-white/30 backdrop-blur-md shadow-lg active:bg-white/30"
@@ -372,6 +435,6 @@ export default function Step2() {
           </View>
         </View>
       </View>
-    </View>
+    </ScreenWrapper>
   );
 }

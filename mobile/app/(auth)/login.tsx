@@ -1,26 +1,14 @@
 import React, { useState } from "react";
-import {
-  Text,
-  TextInput,
-  TouchableOpacity,
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  View,
-  Image,
-  Alert,
-} from "react-native";
+import { Text, TouchableOpacity, View, Image, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { useMutation } from "@tanstack/react-query";
 import { login } from "@/services/authService";
-import { MaterialIcons } from "@expo/vector-icons";
-import { SafeAreaView } from "react-native-safe-area-context";
 import Logger from "@/utils/logger";
 import { FloatingLabelInput } from "@/components/FloatingLabelInput";
 import { ScreenWrapper } from "@/components/ScreenWrapper";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { useAuth } from "@/context/AuthContext"; // Import hook
+import { getErrorMessage } from "@/utils/errorHelper";
 
 // ==========================================
 // 📱 LAYER: View (Component)
@@ -36,12 +24,12 @@ export default function LoginScreen() {
   const [identifier, setIdentifier] = useState("");
   const [identifierError, setIdentifierError] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
 
   const router = useRouter();
 
   const loginMutation = useMutation({
     mutationFn: async () => {
-      // @ts-ignore
       return await login({ identifier, password });
     },
     onSuccess: async (response) => {
@@ -66,17 +54,8 @@ export default function LoginScreen() {
       Alert.alert("เข้าสู่ระบบสำเร็จ", "ยินดีต้อนรับกลับ");
     },
     onError: (error: any) => {
+      const message = getErrorMessage(error);
       Logger.error("Login error:", error);
-
-      let message = error.response?.data?.error || error.message || "เกิดข้อผิดพลาด";
-
-      // 🇹🇭 Translate common error messages to Thai
-      if (message.includes("Invalid email") || message.includes("password")) {
-        message = "อีเมลหรือรหัสผ่านไม่ถูกต้อง";
-      } else if (message.includes("deactivated")) {
-        message = "บัญชีนี้ถูกระงับการใช้งาน กรุณาติดต่อผู้ดูแลระบบ";
-      }
-
       Alert.alert("เข้าสู่ระบบล้มเหลว", message);
     },
   });
@@ -112,8 +91,8 @@ export default function LoginScreen() {
         paddingHorizontal: 24, // ปรับให้เท่ากับหน้า Register
         flex: 1,
         // justifyContent: 'center', // ❌ เอาออกเพราะทำให้จอกระตุกเวลาคีย์บอร์ดขึ้น
-        justifyContent: 'flex-start', // ✅ จัดเริ่มจากด้านบนแทน
-        paddingTop: 100, // ✅ ดันลงมาหน่อยให้อยู่ในตำแหน่งที่สวยงาม (สูงกว่าเดิม)
+        justifyContent: "flex-start", // ✅ จัดเริ่มจากด้านบนแทน
+        paddingTop: 40, // ✅ ปรับขึ้นมาให้ระยะสวยงาม (จากเดิม 100)
       }}
     >
       <View>
@@ -131,6 +110,7 @@ export default function LoginScreen() {
           {/* Identifier Input with Floating Label */}
           {/* Identifier Input with Floating Label */}
           <FloatingLabelInput
+            testID="email-input"
             label="อีเมลหรือเบอร์โทรศัพท์"
             value={identifier}
             onChangeText={(text) => {
@@ -150,6 +130,7 @@ export default function LoginScreen() {
           {/* Password Input with Floating Label */}
           {/* Password Input with Floating Label */}
           <FloatingLabelInput
+            testID="password-input"
             label="รหัสผ่าน"
             value={password}
             onChangeText={setPassword}
@@ -164,16 +145,14 @@ export default function LoginScreen() {
             onPress={() => router.push("/(auth)/forgot-password")}
             activeOpacity={0.7}
           >
-            <Text
-              className="font-kanit"
-              style={{ fontSize: 14, color: "#6B7280" }}
-            >
+            <Text style={{ fontSize: 14 }} className="font-kanit text-gray-500">
               ลืมรหัสผ่าน ?
             </Text>
           </TouchableOpacity>
 
           {/* Login Button */}
           <PrimaryButton
+            testID="login-button"
             title="เข้าสู่ระบบ"
             onPress={handleLogin}
             loading={loginMutation.isPending}
@@ -182,10 +161,7 @@ export default function LoginScreen() {
 
           {/* Register Link */}
           <View className="flex-row justify-center items-center">
-            <Text
-              className="font-kanit"
-              style={{ fontSize: 14, color: "#6B7280" }}
-            >
+            <Text className="font-kanit text-gray-500" style={{ fontSize: 14 }}>
               ยังไม่มีบัญชี ?{" "}
             </Text>
             <TouchableOpacity
@@ -193,8 +169,8 @@ export default function LoginScreen() {
               activeOpacity={0.7}
             >
               <Text
-                className="font-kanit"
-                style={{ fontSize: 14, color: "#EB6A6A", fontWeight: "600" }}
+                className="font-kanit text-primary font-semibold"
+                style={{ fontSize: 14, color: "#EB6A6A" }}
               >
                 สมัครสมาชิก
               </Text>

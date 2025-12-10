@@ -7,20 +7,16 @@ import {
   TextStyle,
   Platform,
 } from "react-native";
-import { TextInput, MD3LightTheme } from "react-native-paper";
-
-const PRIMARY_COLOR = "#16AD78";
-const ERROR_COLOR = "#EF4444";
-// ปรับโทนสีเทาให้นุ่มนวลขึ้นตามที่ขอ
-const TEXT_COLOR = "#374151"; // Gray-700 (สีเทาเข้ม สำหรับข้อความที่พิมพ์)
-const INACTIVE_COLOR = "#a3a6af"; // Gray-500 (สีเทากลาง สำหรับ Label/Placeholder) - 
+import { TextInput, useTheme } from "react-native-paper";
 
 interface FloatingLabelInputProps
-  extends Omit<React.ComponentProps<typeof TextInput>, "error"> {
-  label: string;
+  extends Omit<React.ComponentProps<typeof TextInput>, "error" | "label"> {
+  label: string | React.ReactNode; 
   error?: string;
   containerStyle?: StyleProp<ViewStyle>;
   isPassword?: boolean;
+  isRequired?: boolean; // ✅ Add support for required asterisks
+  testID?: string;
 }
 
 export const FloatingLabelInput: React.FC<FloatingLabelInputProps> = ({
@@ -28,89 +24,96 @@ export const FloatingLabelInput: React.FC<FloatingLabelInputProps> = ({
   error,
   containerStyle,
   isPassword = false,
+  isRequired = false,
   value,
   style,
   multiline,
   ...props
 }) => {
+  const theme = useTheme();
   const [showPassword, setShowPassword] = React.useState(false);
+  const [isFocused, setIsFocused] = React.useState(false);
 
-  // คำนวณความสูง: 
-  // - Multiline: เริ่มต้น 120px 
+  // คำนวณความสูง:
+  // - Multiline: เริ่มต้น 120px
   // - Single Line: 56px (Standard Material Design)
   const inputHeight = multiline ? 120 : 56;
+
+  // ✅ 3-State Label Color Logic:
+  // 1. Empty (no value) → onSurfaceVariant (#a3a6af) - Gray
+  // 2. Focused (typing) → primary (#16AD78) - Green
+  // 3. Filled + Blur → #a3a6af - Gray
+  const labelColor = isFocused
+    ? theme.colors.primary
+    : value
+    ? "#a3a6af"
+    : theme.colors.onSurfaceVariant;
+
+  // Construct Label with Red Asterisk if required
+  const labelNode = isRequired ? (
+    <Text style={{ color: labelColor }}>
+      {label} <Text style={{ color: theme.colors.error }}>*</Text>
+    </Text>
+  ) : (
+    <Text style={{ color: labelColor }}>{label}</Text>
+  );
 
   return (
     <View style={[{ marginBottom: 16 }, containerStyle]}>
       <TextInput
+        testID={props.testID || "floating-label-input"}
         mode="outlined"
-        label={label}
+        label={labelNode as any} // Cast to any to avoid strict type conflict
         value={value}
         error={!!error}
         secureTextEntry={isPassword && !showPassword}
-
-        // 🎨 จัดการสี: ใช้สีเทาที่กำหนดไว้
-        activeOutlineColor={error ? ERROR_COLOR : PRIMARY_COLOR}
-        outlineColor={error ? ERROR_COLOR : "#E5E7EB"} // gray-200 (ขอบปกติสีจาง)
-        textColor={TEXT_COLOR}
-        placeholderTextColor={INACTIVE_COLOR}
-
-        selectionColor={PRIMARY_COLOR}
-        cursorColor={PRIMARY_COLOR}
+        onFocus={(e) => {
+          setIsFocused(true);
+          props.onFocus?.(e);
+        }}
+        onBlur={(e) => {
+          setIsFocused(false);
+          props.onBlur?.(e);
+        }}
+        // 🎨 จัดการสี: ใช้สีจาก theme
+        activeOutlineColor={error ? theme.colors.error : theme.colors.primary}
+        outlineColor={error ? theme.colors.error : "#E5E7EB"} // gray-200 (ขอบปกติสีจาง)
+        cursorColor={error ? theme.colors.error : theme.colors.primary}
+        textColor={theme.colors.onSurface}
+        placeholderTextColor={theme.colors.onSurfaceVariant}
         style={[
           {
             backgroundColor: "#FFFFFF",
-            fontFamily: "Kanit",
             fontSize: 16,
+            lineHeight: 24, // ✅ Fix cursor jumping on iOS for Thai font
+            paddingVertical: 0, // ✅ Fix default padding on Android
             height: multiline ? undefined : inputHeight,
             minHeight: inputHeight,
+            includeFontPadding: false, // ✅ Fix text vertical alignment on Android
           },
           style,
         ]}
-
-        contentStyle={[
-          multiline
-            ? {
-              paddingTop: 16,
-              paddingBottom: 16,
-              textAlignVertical: "top",
-            }
-            : {
-              height: inputHeight,
-              justifyContent: 'center',
-            }
-        ] as StyleProp<TextStyle>}
-
-        theme={{
-          ...MD3LightTheme,
-          roundness: 12,
-          colors: {
-            ...MD3LightTheme.colors,
-            primary: PRIMARY_COLOR,
-            onSurface: TEXT_COLOR, // สีตัวหนังสือตอนพิมพ์ (Gray-700)
-            onSurfaceVariant: INACTIVE_COLOR, // สี Label ตอนปกติ (Gray-500)
-            error: ERROR_COLOR,
-            background: '#FFFFFF',
-          },
-          fonts: {
-            // ✅ ใช้ความหนา 400 (Regular) เท่ากันหมดตามที่แจ้ง
-            bodyLarge: { fontFamily: "Kanit", fontWeight: "400" },
-            bodyMedium: { fontFamily: "Kanit", fontWeight: "400" },
-            bodySmall: { fontFamily: "Kanit", fontWeight: "400" },
-            labelLarge: { fontFamily: "Kanit", fontWeight: "400" },
-            labelMedium: { fontFamily: "Kanit", fontWeight: "400" },
-            labelSmall: { fontFamily: "Kanit", fontWeight: "400" },
-            default: { fontFamily: "Kanit", fontWeight: "400" },
-          },
-        }}
+        contentStyle={
+          [
+            multiline
+              ? {
+                  paddingTop: 16,
+                  paddingBottom: 16,
+                  textAlignVertical: "top",
+                }
+              : {
+                  textAlignVertical: "center", // ✅ Fix cursor jumping for Thai
+                },
+          ] as StyleProp<TextStyle>
+        }
         multiline={multiline}
         numberOfLines={multiline ? 4 : 1}
-
         right={
           isPassword ? (
             <TextInput.Icon
+              testID="password-toggle-icon"
               icon={showPassword ? "eye-off" : "eye"}
-              color={INACTIVE_COLOR}
+              color={theme.colors.onSurfaceVariant}
               onPress={() => setShowPassword(!showPassword)}
               forceTextInputFocus={false}
             />
@@ -124,7 +127,7 @@ export const FloatingLabelInput: React.FC<FloatingLabelInputProps> = ({
         <Text
           style={{
             fontFamily: "Kanit",
-            color: ERROR_COLOR,
+            color: theme.colors.error,
             fontSize: 12,
             marginTop: 4,
             marginLeft: 4,

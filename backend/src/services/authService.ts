@@ -1,4 +1,4 @@
-import { User, AuthOtp } from '../generated/prisma/client.js';
+import { User, AuthOtp, Gender } from '../generated/prisma/client.js';
 import { hashPassword, comparePassword, generateOtp } from '../utils/password.js';
 import { generateToken, JwtPayload } from '../utils/jwt.js';
 import { addMinutes } from '../utils/time.js';
@@ -26,6 +26,7 @@ export const register = async (data: {
   lastName: string;
   phone?: string;
   role?: 'ADMIN' | 'CAREGIVER';
+  gender?: string;
 }): Promise<{ user: Omit<User, 'password'>; token: string }> => {
   // Check if user already exists
   const existingUser = await prisma.user.findUnique({
@@ -48,6 +49,7 @@ export const register = async (data: {
       lastName: data.lastName,
       phone: data.phone,
       role: data.role || 'CAREGIVER',
+      gender: data.gender as Gender, // Use Gender enum
     },
   });
 

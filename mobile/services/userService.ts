@@ -7,7 +7,7 @@ import { apiClient, toApiError } from './api';
 import type { Elder, UserProfile } from './types';
 
 export type UpdateProfilePayload = Partial<
-  Pick<UserProfile, 'firstName' | 'lastName' | 'phone' | 'profileImage' | 'email'>
+  Pick<UserProfile, 'firstName' | 'lastName' | 'phone' | 'profileImage' | 'email' | 'gender'>
 >;
 
 export type ChangePasswordPayload = {

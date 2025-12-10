@@ -9,9 +9,11 @@ import {
   Platform,
   Modal,
   Pressable,
+  Keyboard,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
+import { TextInput as PaperTextInput, useTheme } from "react-native-paper";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getUserElders } from "@/services/userService";
 import { updateElder } from "@/services/elderService";
@@ -20,6 +22,7 @@ import { FloatingLabelInput } from "@/components/FloatingLabelInput";
 import { ScreenWrapper } from "@/components/ScreenWrapper";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { PrimaryButton } from "@/components/PrimaryButton";
+import { GenderSelect } from "@/components/GenderSelect";
 import DateTimePicker from "@react-native-community/datetimepicker";
 
 // ==========================================
@@ -29,18 +32,19 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 export default function EditElderInfo() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  // Scroll logic removed for static layout request
-
+  const theme = useTheme();
+  const scrollViewRef = useRef<ScrollView>(null);
+  // Keyboard listener removed to allow always-scroll
 
   // ==========================================
   // 🧩 LAYER: Logic (Local State)
   // Purpose: Manage form inputs
   // ==========================================
-  const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [gender, setGender] = useState("");
   const [dateOfBirth, setDateOfBirth] = useState<Date | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [showGenderPicker, setShowGenderPicker] = useState(false);
 
   const [height, setHeight] = useState("");
   const [weight, setWeight] = useState("");
@@ -65,7 +69,8 @@ export default function EditElderInfo() {
   // ==========================================
   useEffect(() => {
     if (elder) {
-      setName(`${elder.firstName} ${elder.lastName}`.trim());
+      setFirstName(elder.firstName || "");
+      setLastName(elder.lastName || "");
       setGender(elder.gender || "");
 
       if (elder.dateOfBirth) {
@@ -106,8 +111,12 @@ export default function EditElderInfo() {
   // ==========================================
   const handleSave = () => {
     // Validation
-    if (!name.trim()) {
+    if (!firstName.trim()) {
       Alert.alert("กรุณากรอกข้อมูล", "กรุณากรอกชื่อผู้สูงอายุ");
+      return;
+    }
+    if (!lastName.trim()) {
+      Alert.alert("กรุณากรอกข้อมูล", "กรุณากรอกนามสกุลผู้สูงอายุ");
       return;
     }
     if (!gender) {
@@ -155,17 +164,17 @@ export default function EditElderInfo() {
     }
 
     const payload = {
-      firstName: name.split(" ")[0] || name,
-      lastName: name.split(" ").slice(1).join(" ") || "",
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
       gender: gender as "MALE" | "FEMALE" | "OTHER",
       dateOfBirth: dateOfBirth.toISOString(),
       height: Number(height),
       weight: Number(weight),
       diseases: medicalCondition
         ? medicalCondition
-          .split(",")
-          .map((d) => d.trim())
-          .filter((d) => d)
+            .split(",")
+            .map((d) => d.trim())
+            .filter((d) => d)
         : [],
       address: address.trim(),
     };
@@ -189,53 +198,6 @@ export default function EditElderInfo() {
     return `${day} ${month} ${year}`;
   };
 
-  const GenderPickerModal = () => (
-    <Modal
-      transparent={true}
-      visible={showGenderPicker}
-      animationType="fade"
-      onRequestClose={() => setShowGenderPicker(false)}
-    >
-      <Pressable
-        className="flex-1 bg-black/50 justify-center items-center px-6"
-        onPress={() => setShowGenderPicker(false)}
-      >
-        <View className="bg-white w-full rounded-2xl p-4">
-          <Text className="font-kanit text-lg font-bold mb-4 text-center">
-            เลือกเพศ
-          </Text>
-          {["ชาย", "หญิง", "อื่นๆ"].map((optionLabel) => {
-            const value =
-              optionLabel === "ชาย"
-                ? "MALE"
-                : optionLabel === "หญิง"
-                  ? "FEMALE"
-                  : "OTHER";
-            return (
-              <TouchableOpacity
-                key={value}
-                className="py-4 border-b border-gray-100"
-                onPress={() => {
-                  setGender(value);
-                  setShowGenderPicker(false);
-                }}
-              >
-                <Text
-                  className={`font-kanit text-center text-base ${gender === value
-                    ? "text-[#16AD78] font-bold"
-                    : "text-gray-700"
-                    }`}
-                >
-                  {optionLabel}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-      </Pressable>
-    </Modal>
-  );
-
   if (isFetching) {
     return (
       <View className="flex-1 justify-center items-center bg-white">
@@ -250,15 +212,22 @@ export default function EditElderInfo() {
   // ==========================================
   return (
     <ScreenWrapper
-      useScrollView={false}
-      contentContainerStyle={{ paddingBottom: 100, flexGrow: 1 }}
+      contentContainerStyle={{ paddingHorizontal: 24, flexGrow: 1 }}
+      keyboardAvoiding
+      scrollViewProps={{
+        bounces: true, // Allow bounce for better UX
+        overScrollMode: "always",
+        // scrollEnabled: true by default
+      }}
+      scrollViewRef={scrollViewRef}
+      header={
+        <ScreenHeader
+          title="แก้ไขข้อมูลผู้สูงอายุ"
+          onBack={() => router.back()}
+        />
+      }
     >
-      {/* Header align with Step1 */}
-      <ScreenHeader title="ข้อมูลผู้สูงอายุ" onBack={() => router.back()} />
-
-      <View
-        className="flex-1 px-6"
-      >
+      <View>
         {/* Info Note */}
         <View className="bg-blue-50 rounded-2xl p-4 mb-6 mt-2">
           <Text className="font-kanit text-blue-700" style={{ fontSize: 14 }}>
@@ -267,148 +236,119 @@ export default function EditElderInfo() {
           </Text>
         </View>
 
-        {/* Elder Name */}
-        <View
-          className="mb-4"
-        >
-          <FloatingLabelInput
-            label="ชื่อผู้สูงอายุ *"
-            value={name}
-            onChangeText={setName}
-          />
-        </View>
+        <View className="w-full">
+          {/* Elder Name & Lastname - FloatingLabelInput Match Register */}
+          <View className="flex-row gap-3">
+            {/* First Name */}
+            <FloatingLabelInput
+              label="ชื่อ"
+              value={firstName}
+              onChangeText={setFirstName}
+              isRequired={true}
+              containerStyle={{ flex: 1 }}
+            />
 
-        {/* Gender */}
-        <View className="mb-4">
-          <View style={{ height: 60 }}>
+            {/* Last Name */}
+            <FloatingLabelInput
+              label="นามสกุล"
+              value={lastName}
+              onChangeText={setLastName}
+              isRequired={true}
+              containerStyle={{ flex: 1 }}
+            />
+          </View>
+
+          {/* Gender - Replaced with Reusable Component */}
+          <GenderSelect value={gender} onChange={setGender} isRequired={true} />
+
+          {/* Birth Date - Using Theme Colors */}
+          <View className="mb-4">
             <TouchableOpacity
-              activeOpacity={0.7}
-              onPress={() => setShowGenderPicker(true)}
-              className="h-full justify-center rounded-2xl border border-gray-200 px-4 bg-white relative"
+              onPress={() => setShowDatePicker(true)}
+              className="bg-white rounded-2xl px-4 justify-center"
+              style={{ height: 60, borderWidth: 1, borderColor: "#E5E7EB" }}
             >
-              {gender ? (
+              {dateOfBirth ? (
                 <View className="absolute -top-2.5 left-3 bg-white px-1 z-10">
                   <Text
                     className="font-kanit"
-                    style={{ fontSize: 12, color: "#9CA3AF" }}
+                    style={{ fontSize: 12, color: "#a3a6af" }}
                   >
-                    เพศ <Text className="text-red-500">*</Text>
+                    วัน/เดือน/ปีเกิด{" "}
+                    <Text style={{ color: theme.colors.error }}>*</Text>
                   </Text>
                 </View>
               ) : null}
+              <Text
+                className="font-kanit text-[16px]"
+                style={{
+                  color: dateOfBirth ? theme.colors.onSurface : "#a3a6af",
+                }}
+              >
+                {formatDate(dateOfBirth)}
+                {!dateOfBirth && " *"}
+              </Text>
 
-              <View className="flex-row justify-between items-center">
-                <Text
-                  className={`font-kanit text-[16px] ${gender ? "text-gray-900" : "text-gray-400"
-                    }`}
-                >
-                  {gender === "MALE"
-                    ? "ชาย"
-                    : gender === "FEMALE"
-                      ? "หญิง"
-                      : gender === "OTHER"
-                        ? "อื่นๆ"
-                        : "เพศ *"}
-                </Text>
+              <View className="absolute right-4 top-5">
                 <MaterialIcons
-                  name="keyboard-arrow-down"
+                  name="calendar-today"
                   size={20}
-                  color="#6B7280"
+                  color="#a3a6af"
                 />
               </View>
             </TouchableOpacity>
           </View>
-        </View>
 
-        {/* Birth Date */}
-        <View className="mb-4">
-          <TouchableOpacity
-            onPress={() => setShowDatePicker(true)}
-            className="bg-white rounded-2xl px-4 border border-gray-200 justify-center"
-            style={{ height: 60 }}
-          >
-            {dateOfBirth ? (
-              <View className="absolute -top-2.5 left-3 bg-white px-1 z-10">
-                <Text
-                  className="font-kanit"
-                  style={{ fontSize: 12, color: "#9CA3AF" }}
-                >
-                  วัน/เดือน/ปีเกิด <Text className="text-red-500">*</Text>
-                </Text>
-              </View>
-            ) : null}
-            <Text
-              className={`font-kanit text-[16px] ${dateOfBirth ? "text-gray-900" : "text-gray-400"
-                }`}
-            >
-              {formatDate(dateOfBirth)}
-              {!dateOfBirth && " *"}
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Height and Weight */}
-        <View
-          className="flex-row mb-4"
-        >
-          <View className="flex-1 mr-2">
-            <FloatingLabelInput
-              label="ส่วนสูง (cm) *"
-              value={height}
-              onChangeText={setHeight}
-              keyboardType="numeric"
-            />
+          {/* Height and Weight - FloatingLabelInput Match Register */}
+          <View className="flex-row gap-3 mb-2">
+            <View className="flex-1">
+              <FloatingLabelInput
+                label="ส่วนสูง (cm)"
+                value={height}
+                onChangeText={setHeight}
+                keyboardType="numeric"
+                isRequired={true}
+              />
+            </View>
+            <View className="flex-1">
+              <FloatingLabelInput
+                label="น้ำหนัก (kg)"
+                value={weight}
+                onChangeText={setWeight}
+                keyboardType="numeric"
+                isRequired={true}
+              />
+            </View>
           </View>
-          <View className="flex-1 ml-2">
-            <FloatingLabelInput
-              label="น้ำหนัก (kg) *"
-              value={weight}
-              onChangeText={setWeight}
-              keyboardType="numeric"
-            />
-          </View>
-        </View>
 
-        {/* Medical Condition */}
-        <View
-          className="mb-4"
-        >
+          {/* Medical Condition - Changed to Single Line as requested */}
           <FloatingLabelInput
             label="โรคประจำตัว หรือ เคยป่วย (ถ้ามี)"
             value={medicalCondition}
             onChangeText={setMedicalCondition}
-            multiline
-            numberOfLines={3}
-            style={{ minHeight: 120, textAlignVertical: "top", paddingTop: 18 }}
-            containerStyle={{ minHeight: 120 }}
+            containerStyle={{ marginBottom: 16 }}
           />
-        </View>
 
-        {/* Address */}
-        <View
-          className="mb-6"
-        >
+          {/* Address - Multiline but Auto-expanding */}
           <FloatingLabelInput
-            label="ที่อยู่ *"
+            label="ที่อยู่"
             value={address}
             onChangeText={setAddress}
             multiline
-            numberOfLines={4}
-            style={{ minHeight: 140, textAlignVertical: "top", paddingTop: 18 }}
-            containerStyle={{ minHeight: 140 }}
+            isRequired={true}
+            containerStyle={{ marginBottom: 24 }}
+            style={{ maxHeight: 120 }} // Limit max height if needed, but let it grow
+          />
+
+          {/* Save Button */}
+          <PrimaryButton
+            title="บันทึกข้อมูล"
+            onPress={handleSave}
+            loading={updateMutation.isPending}
+            style={{ marginBottom: 32 }}
           />
         </View>
-
-        {/* Save Button */}
-        <PrimaryButton
-          title="บันทึกข้อมูล"
-          onPress={handleSave}
-          loading={updateMutation.isPending}
-          style={{ marginBottom: 32 }}
-        />
       </View>
-
-      <GenderPickerModal />
 
       {/* Date Picker Modal (iOS) or standard (Android) */}
       {Platform.OS === "ios" ? (

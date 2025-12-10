@@ -81,22 +81,15 @@ export default function AddEmergencyContact() {
   // ==========================================
   return (
     <ScreenWrapper
-      useScrollView={false}
-      contentContainerStyle={{ paddingBottom: 120, flexGrow: 1 }}
+      contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 120, flexGrow: 1 }}
+      header={
+        <ScreenHeader
+          title="เพิ่มเบอร์ติดต่อฉุกเฉิน"
+          onBack={() => router.back()}
+        />
+      }
     >
-      {/* Header aligned with other forms */}
-      <ScreenHeader
-        title="เพิ่มเบอร์ติดต่อฉุกเฉิน"
-        onBack={() => router.back()}
-      />
-
-      <ScrollView
-        className="flex-1 px-6"
-        contentContainerStyle={{ paddingBottom: 120, flexGrow: 1 }}
-        keyboardShouldPersistTaps="handled"
-        keyboardDismissMode="on-drag"
-        showsVerticalScrollIndicator={false}
-      >
+      <View>
         {/* Info Note */}
         <View className="bg-blue-50 rounded-2xl p-4 mb-6 mt-2">
           <Text className="font-kanit text-blue-700" style={{ fontSize: 14 }}>
@@ -106,33 +99,18 @@ export default function AddEmergencyContact() {
 
         {/* Name Field */}
         <View className="mb-4">
-          <Text
-            style={{ fontSize: 12 }}
-            className="font-kanit text-gray-500 mb-2 ml-1"
-          >
-            ชื่อผู้ติดต่อ *
-          </Text>
-          <TextInput
-            className="bg-white rounded-xl px-5 border border-gray-300 font-kanit text-gray-900"
-            style={{ height: 56, fontSize: 16 }}
+          <FloatingLabelInput
+            label="ชื่อผู้ติดต่อ"
             value={name}
             onChangeText={setName}
-            placeholder="กรอกชื่อผู้ติดต่อ"
-            placeholderTextColor="#9CA3AF"
+            isRequired={true}
           />
         </View>
 
         {/* Phone Field */}
         <View className="mb-4">
-          <Text
-            style={{ fontSize: 12 }}
-            className="font-kanit text-gray-500 mb-2 ml-1"
-          >
-            เบอร์ติดต่อ *
-          </Text>
-          <TextInput
-            className="bg-white rounded-xl px-5 border border-gray-300 font-kanit text-gray-900"
-            style={{ height: 56, fontSize: 16 }}
+          <FloatingLabelInput
+            label="เบอร์ติดต่อ"
             value={phone}
             onChangeText={(text) => {
               const cleaned = text.replace(/[^0-9]/g, "");
@@ -142,26 +120,17 @@ export default function AddEmergencyContact() {
             }}
             keyboardType="phone-pad"
             maxLength={10}
-            placeholder="กรอกเบอร์โทรศัพท์ 10 หลัก"
-            placeholderTextColor="#9CA3AF"
+            isRequired={true}
           />
         </View>
 
         {/* Relationship Field */}
         <View className="mb-8">
-          <Text
-            style={{ fontSize: 12 }}
-            className="font-kanit text-gray-500 mb-2 ml-1"
-          >
-            ความสัมพันธ์
-          </Text>
-          <TextInput
-            className="bg-white rounded-xl px-5 border border-gray-300 font-kanit text-gray-900"
-            style={{ height: 56, fontSize: 16 }}
+          <FloatingLabelInput
+            label="ความสัมพันธ์ (ถ้ามี)"
             value={relationship}
             onChangeText={setRelationship}
-            placeholder="เช่น บุตร, พี่, น้อง (ถ้ามี)"
-            placeholderTextColor="#9CA3AF"
+            placeholder="เช่น บุตร, พี่, น้อง"
           />
         </View>
 
@@ -172,7 +141,7 @@ export default function AddEmergencyContact() {
           loading={loading}
           style={{ marginBottom: 32 }}
         />
-      </ScrollView>
+      </View>
     </ScreenWrapper>
   );
 }

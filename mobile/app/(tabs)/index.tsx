@@ -259,6 +259,28 @@ export default function Home() {
   // 🖼️ LAYER: View (Render)
   // Purpose: Render the UI JSX
   // ==========================================
+
+  // Show loading spinner while checking elder data
+  if (isLoading) {
+    return (
+      <ScreenWrapper
+        edges={["top"]}
+        useScrollView={false}
+        style={{ backgroundColor: "#FDFDFD" }}
+      >
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color="#16AD78" />
+          <Text className="mt-4 text-gray-500 font-kanit">กำลังโหลด...</Text>
+        </View>
+      </ScreenWrapper>
+    );
+  }
+
+  // If no elder data, don't render (useProtectedRoute will redirect)
+  if (!elderInfo) {
+    return null;
+  }
+
   return (
     <ScreenWrapper
       edges={["top"]}
@@ -268,7 +290,7 @@ export default function Home() {
       {/* Header Section */}
       <View className="flex-row items-center justify-between pt-3 pb-4 bg-white px-6 border-b border-gray-100">
         <View>
-          <Text className="text-sm text-gray-500 font-kanit">สวัสดี,</Text>
+          <Text className="text-sm text-gray-500 font-kanit">สวัสดี, คุณ</Text>
           <Text className="text-xl font-kanit font-bold text-gray-800">
             {userProfile?.firstName}
           </Text>
@@ -318,35 +340,7 @@ export default function Home() {
               กำลังโหลดข้อมูล...
             </Text>
           </View>
-        ) : !elderInfo ? (
-          // Empty State UI
-          <View className="flex-1 items-center justify-center">
-            <MaterialIcons name="person-add" size={80} color="#D1D5DB" />
-            <Text
-              style={{ fontSize: 20, fontWeight: "600" }}
-              className="font-kanit text-gray-900 mt-6"
-            >
-              ยินดีต้อนรับสู่ FallHelp
-            </Text>
-            <Text
-              style={{ fontSize: 14 }}
-              className="font-kanit text-gray-500 mt-2 text-center"
-            >
-              คุณยังไม่มีข้อมูลในระบบ
-            </Text>
-            <TouchableOpacity
-              onPress={() => router.push("/(setup)/empty-state")}
-              className="bg-[#16AD78] rounded-2xl px-8 py-4 mt-8"
-            >
-              <Text
-                style={{ fontSize: 16, fontWeight: "600" }}
-                className="font-kanit text-white"
-              >
-                เพิ่มอุปกรณ์และเริ่มต้นใช้งาน
-              </Text>
-            </TouchableOpacity>
-          </View>
-        ) : (
+        ) : elderInfo ? (
           // Main Dashboard UI
           <>
             <View>
@@ -357,14 +351,17 @@ export default function Home() {
 
               {/* Fall Status Card (Hero - Colorful) */}
               <View
-                className={`p-6 rounded-[24px] shadow-md mb-6 ${fallStatus === "FALL" ? "bg-red-500" : "bg-[#4A90E2]"
-                  }`}
+                className={`p-6 rounded-[24px] shadow-md mb-6 ${
+                  fallStatus === "FALL" ? "bg-red-500" : "bg-[#4A90E2]"
+                }`}
               >
                 <View className="flex-row justify-between items-start mb-6">
                   <View className="flex-row items-center gap-4">
                     <View className="w-12 h-12 rounded-full bg-white/20 items-center justify-center backdrop-blur-sm">
                       <MaterialIcons
-                        name={fallStatus === "FALL" ? "warning" : "accessibility"}
+                        name={
+                          fallStatus === "FALL" ? "warning" : "accessibility"
+                        }
                         size={28}
                         color="white"
                       />
@@ -411,8 +408,9 @@ export default function Home() {
                 <View className="flex-1 bg-white p-5 rounded-[24px] border border-gray-100 shadow-sm mr-1.5">
                   <View className="flex-row justify-between items-start">
                     <View
-                      className={`w-12 h-12 rounded-2xl items-center justify-center ${isConnected ? "bg-green-100" : "bg-gray-100"
-                        }`}
+                      className={`w-12 h-12 rounded-2xl items-center justify-center ${
+                        isConnected ? "bg-green-100" : "bg-gray-100"
+                      }`}
                     >
                       <MaterialIcons
                         name="devices"
@@ -421,8 +419,9 @@ export default function Home() {
                       />
                     </View>
                     <View
-                      className={`w-3 h-3 rounded-full ${isConnected ? "bg-green-500" : "bg-gray-300"
-                        }`}
+                      className={`w-3 h-3 rounded-full ${
+                        isConnected ? "bg-green-500" : "bg-gray-300"
+                      }`}
                     />
                   </View>
 
@@ -431,8 +430,9 @@ export default function Home() {
                       อุปกรณ์
                     </Text>
                     <Text
-                      className={`text-lg font-kanit font-bold ${isConnected ? "text-gray-800" : "text-gray-400"
-                        }`}
+                      className={`text-lg font-kanit font-bold ${
+                        isConnected ? "text-gray-800" : "text-gray-400"
+                      }`}
                     >
                       {isConnected ? "เชื่อมต่อ" : "หลุด"}
                     </Text>
@@ -446,19 +446,25 @@ export default function Home() {
                       style={heartAnimatedStyle}
                       className="w-12 h-12 rounded-2xl bg-rose-100 items-center justify-center"
                     >
-                      <MaterialIcons name="favorite" size={24} color="#E11D48" />
+                      <MaterialIcons
+                        name="favorite"
+                        size={24}
+                        color="#E11D48"
+                      />
                     </Animated.View>
                     {(heartRate || 0) > 0 &&
-                      ((heartRate || 0) < 60 || (heartRate || 0) > 100) ? (
+                    ((heartRate || 0) < 60 || (heartRate || 0) > 100) ? (
                       <View
-                        className={`px-2 py-1 rounded-md ${(heartRate || 0) > 100 ? "bg-red-100" : "bg-blue-100"
-                          }`}
+                        className={`px-2 py-1 rounded-md ${
+                          (heartRate || 0) > 100 ? "bg-red-100" : "bg-blue-100"
+                        }`}
                       >
                         <Text
-                          className={`text-[10px] font-bold ${(heartRate || 0) > 100
-                            ? "text-red-600"
-                            : "text-blue-600"
-                            }`}
+                          className={`text-[10px] font-bold ${
+                            (heartRate || 0) > 100
+                              ? "text-red-600"
+                              : "text-blue-600"
+                          }`}
                         >
                           {(heartRate || 0) > 100 ? "สูง" : "ต่ำ"}
                         </Text>
@@ -487,16 +493,18 @@ export default function Home() {
                 <TouchableOpacity className="bg-white p-6 rounded-[28px] border border-gray-100 shadow-sm flex-row items-center justify-between active:bg-gray-50">
                   <View className="flex-row items-center gap-5">
                     <View className="w-16 h-16 bg-blue-50 rounded-full items-center justify-center border border-blue-100 overflow-hidden shadow-sm">
-                      {/* @ts-ignore: imageProfile might not be in type yet */}
-                      {elderInfo?.imageProfile ? (
+                      {elderInfo?.profileImage ? (
                         <Image
-                          // @ts-ignore
-                          source={{ uri: elderInfo.imageProfile }}
+                          source={{ uri: elderInfo.profileImage }}
                           className="w-full h-full rounded-full"
                           resizeMode="cover"
                         />
                       ) : (
-                        <MaterialIcons name="elderly" size={40} color="#4A90E2" />
+                        <MaterialIcons
+                          name="elderly"
+                          size={40}
+                          color="#4A90E2"
+                        />
                       )}
                     </View>
                     <View>
@@ -512,29 +520,29 @@ export default function Home() {
                         })()}
                       </Text>
                       <View className="flex-row space-x-2">
-                        {/* @ts-ignore: Gender enum mismatch */}
                         <View
-                          className={`px-3 py-1 rounded-full ${elderInfo?.gender === "MALE"
-                            ? "bg-blue-100"
-                            : elderInfo?.gender === "FEMALE"
+                          className={`px-3 py-1 rounded-full ${
+                            elderInfo?.gender === "MALE"
+                              ? "bg-blue-100"
+                              : elderInfo?.gender === "FEMALE"
                               ? "bg-pink-100"
                               : "bg-gray-100"
-                            }`}
+                          }`}
                         >
                           <Text
-                            className={`text-xs font-bold font-kanit ${elderInfo?.gender === "MALE"
-                              ? "text-blue-600"
-                              : elderInfo?.gender === "FEMALE"
+                            className={`text-xs font-bold font-kanit ${
+                              elderInfo?.gender === "MALE"
+                                ? "text-blue-600"
+                                : elderInfo?.gender === "FEMALE"
                                 ? "text-pink-600"
                                 : "text-gray-600"
-                              }`}
+                            }`}
                           >
-                            {/* @ts-ignore: Gender enum mismatch */}
                             {elderInfo?.gender === "MALE"
                               ? "ชาย"
                               : elderInfo?.gender === "FEMALE"
-                                ? "หญิง"
-                                : "ไม่ระบุ"}
+                              ? "หญิง"
+                              : "ไม่ระบุ"}
                           </Text>
                         </View>
                         <View className="bg-gray-100 px-3 py-1 rounded-full">
@@ -571,7 +579,7 @@ export default function Home() {
               </TouchableOpacity>
             </Link>
           </>
-        )}
+        ) : null}
       </View>
     </ScreenWrapper>
   );

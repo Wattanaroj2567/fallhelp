@@ -246,9 +246,19 @@ export const deleteElder = async (userId: string, elderId: string) => {
 
   // Delete elder (Cascade delete will handle related records if configured in schema, otherwise might need manual cleanup)
   // Assuming Prisma schema has onDelete: Cascade for relations
-  await prisma.elder.delete({
-    where: { id: elderId },
-  });
+  try {
+    await prisma.elder.delete({
+      where: { id: elderId },
+    });
+  } catch (error: any) {
+    if (error.code === 'P2025') {
+      // Record already deleted, consider it a success
+      return {
+        message: 'Elder deleted successfully (already deleted)',
+      };
+    }
+    throw error;
+  }
 
   return {
     message: 'Elder deleted successfully',

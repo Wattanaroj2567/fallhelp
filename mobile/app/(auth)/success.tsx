@@ -1,8 +1,8 @@
-import React, { useEffect } from 'react';
-import { View, Text } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { MaterialIcons } from '@expo/vector-icons';
+import React, { useEffect } from "react";
+import { View, Text } from "react-native";
+import { useRouter, useLocalSearchParams } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { MaterialIcons } from "@expo/vector-icons";
 
 // ==========================================
 // 📱 LAYER: View (Component)
@@ -14,14 +14,14 @@ export default function AuthSuccessScreen() {
   const type = params.type as string; // 'register' | 'reset_password'
 
   // Config ตามรูป
-  const isReset = type === 'reset_password';
-  const title = isReset ? 'ตั้งรหัสผ่านใหม่เรียบร้อยแล้ว' : 'ลงทะเบียนสำเร็จ!';
+  const isReset = type === "reset_password";
+  const title = isReset ? "ตั้งรหัสผ่านใหม่เรียบร้อยแล้ว" : "ลงทะเบียนสำเร็จ!";
   const description = isReset
-    ? 'รอสักครู่ ! ระบบกำลังพาท่านไปหน้าเข้าสู่ระบบ'
-    : 'ยินดีต้อนรับสู่ FallHelp\nบัญชีของคุณถูกสร้างเรียบร้อยแล้ว';
+    ? "รอสักครู่ ! ระบบกำลังพาท่านไปหน้าเข้าสู่ระบบ"
+    : "ยินดีต้อนรับสู่ FallHelp\nบัญชีของคุณถูกสร้างเรียบร้อยแล้ว";
 
-  const iconColor = '#16AD78'; // สีเขียว
-  const titleColor = '#16AD78'; // สีเขียวตามรูป
+  const iconColor = "#16AD78"; // สีเขียว
+  const titleColor = "#16AD78"; // สีเขียวตามรูป
 
   // Auto Redirect Logic
   // ==========================================
@@ -30,12 +30,12 @@ export default function AuthSuccessScreen() {
   // ==========================================
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (type === 'register') {
+      if (type === "register") {
         // Go to setup flow
-        router.replace('/(setup)/empty-state');
+        router.replace("/(setup)/empty-state");
       } else {
         // Reset stack and go to login
-        router.replace('/(auth)/login');
+        router.replace("/(auth)/login");
       }
     }, 3000); // 3 วินาที
 
@@ -48,17 +48,17 @@ export default function AuthSuccessScreen() {
   // ==========================================
   return (
     <SafeAreaView className="flex-1 bg-white items-center justify-center px-8">
-
       {/* Success Icon */}
       <View className="mb-6 items-center justify-center">
         <View
+          testID="success-icon"
           style={{
             width: 80,
             height: 80,
             borderRadius: 40,
             backgroundColor: iconColor,
-            alignItems: 'center',
-            justifyContent: 'center'
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
           <MaterialIcons name="check" size={50} color="white" />
@@ -73,13 +73,9 @@ export default function AuthSuccessScreen() {
         {title}
       </Text>
 
-      <Text
-        className="font-kanit text-base text-gray-500 text-center leading-6"
-
-      >
+      <Text className="font-kanit text-base text-gray-500 text-center leading-6">
         {description}
       </Text>
-
     </SafeAreaView>
   );
 }

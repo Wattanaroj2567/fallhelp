@@ -1,28 +1,17 @@
-import React, { useState } from 'react';
-import {
-  TextInput,
-  TouchableOpacity,
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  View,
-  Text,
-  Alert
-} from 'react-native';
-import { useRouter } from 'expo-router';
-import { useMutation } from '@tanstack/react-query';
-import { requestOtp } from '@/services/authService';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { MaterialIcons } from '@expo/vector-icons';
-import Logger from '@/utils/logger';
-import { FloatingLabelInput } from '@/components/FloatingLabelInput';
-import { ScreenWrapper } from '@/components/ScreenWrapper';
-import { ScreenHeader } from '@/components/ScreenHeader';
-import { PrimaryButton } from '@/components/PrimaryButton';
+import React, { useState } from "react";
+import { View, Text, Alert } from "react-native";
+import { useRouter } from "expo-router";
+import { useMutation } from "@tanstack/react-query";
+import { requestOtp } from "@/services/authService";
+import Logger from "@/utils/logger";
+import { FloatingLabelInput } from "@/components/FloatingLabelInput";
+import { ScreenWrapper } from "@/components/ScreenWrapper";
+import { ScreenHeader } from "@/components/ScreenHeader";
+import { PrimaryButton } from "@/components/PrimaryButton";
+import { showErrorMessage } from "@/utils/errorHelper";
 
 // สีปุ่มตามรูปภาพอ้างอิง (สีแดงอมชมพู/ส้ม)
-const BUTTON_COLOR = '#EB6A6A';
+const BUTTON_COLOR = "#EB6A6A";
 
 // ==========================================
 // 📱 LAYER: View (Component)
@@ -33,8 +22,8 @@ export default function ForgotPasswordScreen() {
   // 🧩 LAYER: Logic (Local State)
   // Purpose: Manage form inputs
   // ==========================================
-  const [email, setEmail] = useState('');
-  const [emailError, setEmailError] = useState('');
+  const [email, setEmail] = useState("");
+  const [emailError, setEmailError] = useState("");
 
   const router = useRouter();
 
@@ -43,33 +32,30 @@ export default function ForgotPasswordScreen() {
   // Purpose: Handle floating label animations
   // ==========================================
 
-
   // ==========================================
   // ⚙️ LAYER: Logic (Mutation)
   // Purpose: Request OTP for password reset
   // ==========================================
   const requestOtpMutation = useMutation({
     mutationFn: async () => {
-      return await requestOtp({ email, purpose: 'PASSWORD_RESET' });
+      return await requestOtp({ email, purpose: "PASSWORD_RESET" });
     },
     onSuccess: () => {
-      Alert.alert('ส่งรหัสสำเร็จ', `รหัส OTP ถูกส่งไปยัง ${email} แล้ว`, [
+      Alert.alert("ส่งรหัสสำเร็จ", `รหัส OTP ถูกส่งไปยัง ${email} แล้ว`, [
         {
-          text: 'ตกลง',
+          text: "ตกลง",
           onPress: () => {
             // ส่ง email ไปยังหน้าถัดไปเพื่อใช้ verify
             router.push({
-              pathname: '/(auth)/verify-otp',
-              params: { email }
+              pathname: "/(auth)/verify-otp",
+              params: { email },
             });
-          }
-        }
+          },
+        },
       ]);
     },
     onError: (error: any) => {
-      Logger.error('Request OTP error:', error);
-      const message = error.response?.data?.message || error.message || 'เกิดข้อผิดพลาดในการส่ง OTP';
-      Alert.alert('ส่งรหัสไม่สำเร็จ', message);
+      showErrorMessage("ส่งรหัสไม่สำเร็จ", error);
     },
   });
 
@@ -79,18 +65,18 @@ export default function ForgotPasswordScreen() {
   // ==========================================
   const handleSendOtp = async () => {
     if (!email) {
-      Alert.alert('กรุณากรอกข้อมูล', 'โปรดกรอกอีเมลของคุณ');
+      Alert.alert("กรุณากรอกข้อมูล", "โปรดกรอกอีเมลของคุณ");
       return;
     }
     if (emailError) {
-      Alert.alert('อีเมลไม่ถูกต้อง', 'กรุณากรอกอีเมลเป็นภาษาอังกฤษ');
+      Alert.alert("อีเมลไม่ถูกต้อง", "กรุณากรอกอีเมลเป็นภาษาอังกฤษ");
       return;
     }
 
     // Simple email validation regex
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      Alert.alert('รูปแบบไม่ถูกต้อง', 'กรุณากรอกอีเมลให้ถูกต้อง');
+      Alert.alert("รูปแบบไม่ถูกต้อง", "กรุณากรอกอีเมลให้ถูกต้อง");
       return;
     }
 
@@ -107,31 +93,34 @@ export default function ForgotPasswordScreen() {
       contentContainerStyle={{
         paddingHorizontal: 24,
         flex: 1,
-        justifyContent: 'flex-start',
+        justifyContent: "flex-start",
       }}
       header={<ScreenHeader title="ลืมรหัสผ่าน" onBack={router.back} />}
     >
       <View>
         {/* Description Section */}
-        <Text className="font-kanit" style={{ fontSize: 14, color: '#6B7280', marginBottom: 32 }}>
-          กรุณากรอกอีเมลที่คุณใช้ลงทะเบียน{'\n'}
+        <Text
+          className="font-kanit"
+          style={{ fontSize: 14, color: "#6B7280", marginBottom: 32 }}
+        >
+          กรุณากรอกอีเมลที่คุณใช้ลงทะเบียน{"\n"}
           ระบบจะส่งรหัส OTP 6 หลักไปยังอีเมลคุณ
         </Text>
 
         {/* Form Section */}
         <View className="w-full max-w-md mx-auto">
-
           {/* Email Input with Floating Label */}
           <View className="mb-8">
             <FloatingLabelInput
+              testID="email-input"
               label="อีเมล"
               value={email}
               onChangeText={(text) => {
                 setEmail(text);
                 if (/[ก-๙]/.test(text)) {
-                  setEmailError('กรุณากรอกอีเมลเป็นภาษาอังกฤษ');
+                  setEmailError("กรุณากรอกอีเมลเป็นภาษาอังกฤษ");
                 } else {
-                  setEmailError('');
+                  setEmailError("");
                 }
               }}
               error={emailError}
@@ -142,14 +131,14 @@ export default function ForgotPasswordScreen() {
 
           {/* Submit Button */}
           <PrimaryButton
+            testID="send-otp-button"
             title="ส่งรหัส OTP"
             onPress={handleSendOtp}
             loading={requestOtpMutation.isPending}
             style={{ backgroundColor: BUTTON_COLOR }}
           />
-
         </View>
       </View>
-    </ScreenWrapper >
+    </ScreenWrapper>
   );
 }

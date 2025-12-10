@@ -103,12 +103,22 @@ export default function EditPhone() {
   // Purpose: Render the form UI
   // ==========================================
   return (
-    <ScreenWrapper contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 100, flexGrow: 1 }} useScrollView={false}>
-      {/* Header */}
-      <ScreenHeader title="แก้ไขเบอร์โทรศัพท์" onBack={() => router.back()} />
-
-      <View className="px-6">
-        <Text className="font-kanit" style={{ fontSize: 14, color: '#6B7280', marginBottom: 32, textAlign: 'left' }}>
+    <ScreenWrapper
+      contentContainerStyle={{ paddingHorizontal: 24, flexGrow: 1 }}
+      header={
+        <ScreenHeader title="แก้ไขเบอร์โทรศัพท์" onBack={() => router.back()} />
+      }
+    >
+      <View>
+        <Text
+          className="font-kanit"
+          style={{
+            fontSize: 14,
+            color: "#6B7280",
+            marginBottom: 24,
+            textAlign: "left",
+          }}
+        >
           กรุณากรอกเบอร์โทรศัพท์ของคุณ (10 หลัก)
         </Text>
 
@@ -118,7 +128,7 @@ export default function EditPhone() {
             label="เบอร์โทรศัพท์"
             value={phone}
             onChangeText={(text) => {
-              const cleaned = text.replace(/[^0-9]/g, '');
+              const cleaned = text.replace(/[^0-9]/g, "");
               if (cleaned.length <= 10) {
                 setPhone(cleaned);
               }
@@ -130,8 +140,16 @@ export default function EditPhone() {
 
         {/* Info Box */}
         <View className="bg-blue-50 rounded-2xl p-4 mb-8 flex-row">
-          <MaterialIcons name="info" size={20} color="#3B82F6" style={{ marginTop: 2 }} />
-          <Text style={{ fontSize: 12 }} className="font-kanit text-blue-700 flex-1 ml-2">
+          <MaterialIcons
+            name="info"
+            size={20}
+            color="#3B82F6"
+            style={{ marginTop: 2 }}
+          />
+          <Text
+            style={{ fontSize: 12 }}
+            className="font-kanit text-blue-700 flex-1 ml-2"
+          >
             คุณจะต้องใช้เบอร์โทรศัพท์ใหม่ในการเข้าสู่ระบบครั้งถัดไป
           </Text>
         </View>
