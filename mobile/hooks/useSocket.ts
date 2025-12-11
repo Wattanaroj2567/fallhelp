@@ -75,7 +75,7 @@ export const useSocket = (elderId: string | undefined, deviceId: string | undefi
         socket.on('connect', () => {
             Logger.info('Socket Connected ID:', socket.id);
             socket.emit('authenticate', { elderId });
-            setIsConnected(true);
+            // Do NOT set isConnected(true) here. It implies Device Connection, not just Server Connection.
         });
 
         const handleOffline = (reason: string) => {
@@ -148,7 +148,7 @@ export const useSocket = (elderId: string | undefined, deviceId: string | undefi
                 if (socket.connected) {
                     Logger.info('Socket is already connected. Re-authenticating and forcing UI update.');
                     socket.emit('authenticate', { elderId });
-                    setIsConnected(true);
+                    // setIsConnected(true); // REMOVED: Don't assume device is online just because app is foregrounded
                 } else {
                     Logger.info('Socket is disconnected. Attempting to reconnect...');
                     connectSocket();

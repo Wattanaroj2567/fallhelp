@@ -114,8 +114,9 @@ export const validateLogin = validate([
 export const validateRegister = validate([
   { field: 'email', required: true, type: 'email' },
   { field: 'password', required: true, type: 'string', minLength: 8 },
-  { field: 'firstName', required: true, type: 'string', minLength: 2 },
-  { field: 'lastName', required: true, type: 'string', minLength: 2 },
+  { field: 'firstName', required: true, type: 'string', minLength: 1 },
+  { field: 'lastName', required: true, type: 'string', minLength: 1 },
+  { field: 'gender', required: false, type: 'string', custom: (value) => ['MALE', 'FEMALE', 'OTHER'].includes(value), message: 'Gender must be MALE, FEMALE, or OTHER' },
   { field: 'phone', required: false, type: 'string', pattern: /^0\d{9}$/, message: 'Phone must be 10 digits starting with 0' },
 ]);
 

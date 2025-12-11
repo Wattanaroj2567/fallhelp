@@ -15,20 +15,32 @@ export const createElder = async (
     firstName: string;
     lastName: string;
     gender?: 'MALE' | 'FEMALE' | 'OTHER';
-    dateOfBirth?: Date;
+    dateOfBirth?: Date | string;
     height?: number;
     weight?: number;
     diseases?: string[];
-    address?: string;
     bloodType?: string;
     allergies?: string[];
     medications?: string[];
     profileImage?: string;
+    // Address fields (separated)
+    houseNumber?: string;
+    village?: string;
+    subdistrict?: string;
+    district?: string;
+    province?: string;
+    zipcode?: string;
   }
 ) => {
+  // Convert dateOfBirth string to Date if needed
+  const processedData = {
+    ...data,
+    dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : undefined,
+  };
+
   const elder = await prisma.elder.create({
     data: {
-      ...data,
+      ...processedData,
       caregivers: {
         create: {
           userId,
@@ -96,11 +108,22 @@ export const getEldersByUser = async (userId: string) => {
     },
   });
 
-  return elders.map((elder) => ({
-    ...elder,
-    accessLevel: elder.caregivers[0]?.accessLevel || 'VIEWER',
-    caregivers: undefined,
-  }));
+  return elders.map((elder) => {
+    // Convert dateOfBirth to Buddhist Era (BE) by adding 543 years
+    let dateOfBirthBE = elder.dateOfBirth;
+    if (elder.dateOfBirth) {
+      const date = new Date(elder.dateOfBirth);
+      date.setFullYear(date.getFullYear() + 543);
+      dateOfBirthBE = date;
+    }
+
+    return {
+      ...elder,
+      dateOfBirth: dateOfBirthBE,
+      accessLevel: elder.caregivers[0]?.accessLevel || 'VIEWER',
+      caregivers: undefined,
+    };
+  });
 };
 
 /**
@@ -166,7 +189,26 @@ export const getElderById = async (userId: string, elderId: string) => {
 export const updateElder = async (
   userId: string,
   elderId: string,
-  data: Partial<Elder>
+  data: {
+    firstName?: string;
+    lastName?: string;
+    gender?: 'MALE' | 'FEMALE' | 'OTHER';
+    dateOfBirth?: Date | string;
+    height?: number;
+    weight?: number;
+    diseases?: string[];
+    bloodType?: string;
+    allergies?: string[];
+    medications?: string[];
+    profileImage?: string;
+    // Address fields (separated)
+    houseNumber?: string;
+    village?: string;
+    subdistrict?: string;
+    district?: string;
+    province?: string;
+    zipcode?: string;
+  }
 ) => {
   // Check access level
   const access = await prisma.userElderAccess.findUnique({
@@ -182,9 +224,15 @@ export const updateElder = async (
     throw new Error('Only owner can update elder information');
   }
 
+  // Convert dateOfBirth string to Date if needed
+  const processedData = {
+    ...data,
+    dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : undefined,
+  };
+
   const elder = await prisma.elder.update({
     where: { id: elderId },
-    data,
+    data: processedData,
     include: {
       device: true,
       emergencyContacts: {

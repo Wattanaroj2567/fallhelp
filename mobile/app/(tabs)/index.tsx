@@ -95,7 +95,11 @@ export default function Home() {
       queryClient.invalidateQueries({ queryKey: ["userProfile"] });
       queryClient.invalidateQueries({ queryKey: ["userElders"] });
       queryClient.invalidateQueries({ queryKey: ["initialEvents"] });
-    }, [queryClient])
+      queryClient.invalidateQueries({ queryKey: ["unreadCount"] });
+
+      // Also trigger refetch to ensure data is fresh
+      refetch();
+    }, [queryClient, refetch])
   );
 
   // 2. Fetch Initial Events (for initial state before socket updates)
@@ -116,8 +120,18 @@ export default function Home() {
   // 3. Fetch Unread Notification Count
   const { data: unreadCount = 0 } = useQuery({
     queryKey: ["unreadCount"],
-    queryFn: getUnreadCount,
+    queryFn: async () => {
+      try {
+        const count = await getUnreadCount();
+        return count ?? 0; // Ensure we return 0 instead of undefined
+      } catch (error) {
+        console.warn("Failed to fetch unread count:", error);
+        return 0;
+      }
+    },
     refetchInterval: 30000, // Poll every 30 seconds
+    retry: 1,
+    staleTime: 10000,
   });
 
   // ==========================================
@@ -139,16 +153,7 @@ export default function Home() {
     setIsConnected,
   } = useSocket(elderInfo?.id, elderInfo?.device?.id);
 
-  // Sync Device Status
-  useEffect(() => {
-    if (elderInfo?.device) {
-      const deviceStatus = elderInfo.device.status;
-      const online = deviceStatus === "ACTIVE" || deviceStatus === "PAIRED";
-      setIsConnected(online);
-    } else {
-      setIsConnected(false);
-    }
-  }, [elderInfo, setIsConnected]);
+
 
   // Sync Initial Event Data
   useEffect(() => {
@@ -351,16 +356,23 @@ export default function Home() {
 
               {/* Fall Status Card (Hero - Colorful) */}
               <View
-                className={`p-6 rounded-[24px] shadow-md mb-6 ${
-                  fallStatus === "FALL" ? "bg-red-500" : "bg-[#4A90E2]"
-                }`}
+                className={`p-6 rounded-[24px] shadow-md mb-6 ${fallStatus === "FALL"
+                  ? "bg-red-500"
+                  : isConnected
+                    ? "bg-[#4A90E2]"
+                    : "bg-gray-400"
+                  }`}
               >
                 <View className="flex-row justify-between items-start mb-6">
                   <View className="flex-row items-center gap-4">
                     <View className="w-12 h-12 rounded-full bg-white/20 items-center justify-center backdrop-blur-sm">
                       <MaterialIcons
                         name={
-                          fallStatus === "FALL" ? "warning" : "accessibility"
+                          fallStatus === "FALL"
+                            ? "warning"
+                            : isConnected
+                              ? "accessibility"
+                              : "signal-wifi-off"
                         }
                         size={28}
                         color="white"
@@ -371,7 +383,7 @@ export default function Home() {
                         สถานะการหกล้ม
                       </Text>
                       <Text className="text-white font-kanit font-bold text-2xl">
-                        {fallStatus === "FALL" ? "ตรวจพบ!" : "ปกติ"}
+                        {fallStatus === "FALL" ? "ตรวจพบ!" : (isConnected ? "ปกติ" : "-")}
                       </Text>
                     </View>
                   </View>
@@ -404,13 +416,20 @@ export default function Home() {
 
               {/* Grid: Device & Heart Rate */}
               <View className="flex-row mb-6">
-                {/* Device Status */}
-                <View className="flex-1 bg-white p-5 rounded-[24px] border border-gray-100 shadow-sm mr-1.5">
+                <TouchableOpacity
+                  onPress={() => {
+                    if (elderInfo?.device) {
+                      router.push("/(features)/(device)/details");
+                    } else {
+                      router.push("/(features)/(device)/pairing");
+                    }
+                  }}
+                  className="flex-1 bg-white p-5 rounded-[24px] border border-gray-100 shadow-sm mr-1.5 active:bg-gray-50"
+                >
                   <View className="flex-row justify-between items-start">
                     <View
-                      className={`w-12 h-12 rounded-2xl items-center justify-center ${
-                        isConnected ? "bg-green-100" : "bg-gray-100"
-                      }`}
+                      className={`w-12 h-12 rounded-2xl items-center justify-center ${isConnected ? "bg-green-100" : "bg-gray-100"
+                        }`}
                     >
                       <MaterialIcons
                         name="devices"
@@ -418,11 +437,13 @@ export default function Home() {
                         color={isConnected ? "#16AD78" : "#9CA3AF"}
                       />
                     </View>
-                    <View
-                      className={`w-3 h-3 rounded-full ${
-                        isConnected ? "bg-green-500" : "bg-gray-300"
-                      }`}
-                    />
+                    <View className="flex-row items-start gap-1">
+                      <View
+                        className={`w-3 h-3 rounded-full mt-1 ${isConnected ? "bg-green-500" : "bg-gray-300"
+                          }`}
+                      />
+                      <MaterialIcons name="chevron-right" size={20} color="#CBD5E1" />
+                    </View>
                   </View>
 
                   <View className="mt-4">
@@ -430,41 +451,39 @@ export default function Home() {
                       อุปกรณ์
                     </Text>
                     <Text
-                      className={`text-lg font-kanit font-bold ${
-                        isConnected ? "text-gray-800" : "text-gray-400"
-                      }`}
+                      className={`text-lg font-kanit font-bold ${isConnected ? "text-gray-800" : "text-gray-400"
+                        }`}
                     >
-                      {isConnected ? "เชื่อมต่อ" : "หลุด"}
+                      {isConnected ? "ออนไลน์" : "ออฟไลน์"}
                     </Text>
                   </View>
-                </View>
+                </TouchableOpacity>
 
                 {/* Heart Rate */}
                 <View className="flex-1 bg-white p-5 rounded-[24px] border border-gray-100 shadow-sm ml-1.5">
                   <View className="flex-row justify-between items-start">
                     <Animated.View
                       style={heartAnimatedStyle}
-                      className="w-12 h-12 rounded-2xl bg-rose-100 items-center justify-center"
+                      className={`w-12 h-12 rounded-2xl items-center justify-center ${isConnected ? "bg-rose-100" : "bg-gray-100"
+                        }`}
                     >
                       <MaterialIcons
                         name="favorite"
                         size={24}
-                        color="#E11D48"
+                        color={isConnected ? "#E11D48" : "#9CA3AF"}
                       />
                     </Animated.View>
                     {(heartRate || 0) > 0 &&
-                    ((heartRate || 0) < 60 || (heartRate || 0) > 100) ? (
+                      ((heartRate || 0) < 60 || (heartRate || 0) > 100) ? (
                       <View
-                        className={`px-2 py-1 rounded-md ${
-                          (heartRate || 0) > 100 ? "bg-red-100" : "bg-blue-100"
-                        }`}
+                        className={`px-2 py-1 rounded-md ${(heartRate || 0) > 100 ? "bg-red-100" : "bg-blue-100"
+                          }`}
                       >
                         <Text
-                          className={`text-[10px] font-bold ${
-                            (heartRate || 0) > 100
-                              ? "text-red-600"
-                              : "text-blue-600"
-                          }`}
+                          className={`text-[10px] font-bold ${(heartRate || 0) > 100
+                            ? "text-red-600"
+                            : "text-blue-600"
+                            }`}
                         >
                           {(heartRate || 0) > 100 ? "สูง" : "ต่ำ"}
                         </Text>
@@ -477,8 +496,11 @@ export default function Home() {
                       ชีพจร
                     </Text>
                     <View className="flex-row items-baseline">
-                      <Text className="text-3xl font-kanit font-bold text-gray-800 mr-1">
-                        {heartRate ? heartRate : "--"}
+                      <Text
+                        className={`text-3xl font-kanit font-bold mr-1 ${isConnected ? "text-gray-800" : "text-gray-400"
+                          }`}
+                      >
+                        {heartRate && isConnected ? heartRate : "--"}
                       </Text>
                       <Text className="text-xs text-gray-400 font-kanit">
                         BPM
@@ -521,28 +543,26 @@ export default function Home() {
                       </Text>
                       <View className="flex-row space-x-2">
                         <View
-                          className={`px-3 py-1 rounded-full ${
-                            elderInfo?.gender === "MALE"
-                              ? "bg-blue-100"
-                              : elderInfo?.gender === "FEMALE"
+                          className={`px-3 py-1 rounded-full ${elderInfo?.gender === "MALE"
+                            ? "bg-blue-100"
+                            : elderInfo?.gender === "FEMALE"
                               ? "bg-pink-100"
                               : "bg-gray-100"
-                          }`}
+                            }`}
                         >
                           <Text
-                            className={`text-xs font-bold font-kanit ${
-                              elderInfo?.gender === "MALE"
-                                ? "text-blue-600"
-                                : elderInfo?.gender === "FEMALE"
+                            className={`text-xs font-bold font-kanit ${elderInfo?.gender === "MALE"
+                              ? "text-blue-600"
+                              : elderInfo?.gender === "FEMALE"
                                 ? "text-pink-600"
                                 : "text-gray-600"
-                            }`}
+                              }`}
                           >
                             {elderInfo?.gender === "MALE"
                               ? "ชาย"
                               : elderInfo?.gender === "FEMALE"
-                              ? "หญิง"
-                              : "ไม่ระบุ"}
+                                ? "หญิง"
+                                : "ไม่ระบุ"}
                           </Text>
                         </View>
                         <View className="bg-gray-100 px-3 py-1 rounded-full">

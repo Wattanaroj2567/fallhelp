@@ -100,3 +100,19 @@ export const deleteUser = asyncHandler(async (req: Request, res: Response) => {
     data: result,
   });
 });
+
+/**
+ * GET /api/users/feedback
+ */
+export const getUserFeedback = asyncHandler(async (req: Request, res: Response) => {
+  const userId = req.user!.userId;
+
+  // Import feedbackService at the top if not already done
+  const feedbackService = await import('../services/feedbackService');
+  const feedbacks = await feedbackService.getUserFeedback(userId);
+
+  res.json({
+    success: true,
+    data: feedbacks,
+  });
+});

@@ -308,6 +308,7 @@ model Feedback {
   userId    String? // Optional: User might send anonymously or if we want to track
   user      User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
   message   String
+  userName  String? // Display name from mobile app (English)
   status    FeedbackStatus @default(PENDING)
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt

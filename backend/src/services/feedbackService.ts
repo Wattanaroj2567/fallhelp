@@ -9,11 +9,12 @@ import prisma from '../prisma.js';
 /**
  * Create new feedback
  */
-export const createFeedback = async (userId: string | null, message: string) => {
+export const createFeedback = async (userId: string | null, message: string, userName?: string) => {
     return prisma.feedback.create({
         data: {
             userId,
             message,
+            userName,
         },
     });
 };
@@ -47,5 +48,19 @@ export const updateFeedbackStatus = async (id: string, status: FeedbackStatus) =
     return prisma.feedback.update({
         where: { id },
         data: { status },
+    });
+};
+
+/**
+ * Get feedbacks for a specific user
+ */
+export const getUserFeedback = async (userId: string) => {
+    return prisma.feedback.findMany({
+        where: {
+            userId,
+        },
+        orderBy: {
+            createdAt: 'desc',
+        },
     });
 };

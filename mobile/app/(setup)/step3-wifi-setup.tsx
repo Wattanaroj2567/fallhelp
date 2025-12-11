@@ -300,34 +300,8 @@ export default function Step3() {
           title="เชื่อมต่อ"
           onPress={handleConnect}
           loading={configureWifiMutation.isPending}
-          style={{ marginBottom: 16 }}
+          style={{ marginBottom: 32 }}
         />
-
-        {/* Change Device Button */}
-        <TouchableOpacity
-          onPress={handleChangeDevice}
-          className="bg-white border border-gray-300 rounded-2xl py-4 items-center mb-3"
-        >
-          <Text
-            style={{ fontSize: 16, fontWeight: "600" }}
-            className="font-kanit text-gray-700"
-          >
-            เปลี่ยนอุปกรณ์
-          </Text>
-        </TouchableOpacity>
-
-        {/* Back to Step 1 Button */}
-        <TouchableOpacity
-          onPress={handleBackToStep1}
-          className="bg-white border border-blue-300 rounded-2xl py-4 items-center mb-4"
-        >
-          <Text
-            style={{ fontSize: 16, fontWeight: "600" }}
-            className="font-kanit text-blue-600"
-          >
-            แก้ไขข้อมูลผู้สูงอายุ
-          </Text>
-        </TouchableOpacity>
       </View>
 
       <Modal visible={configureWifiMutation.isPending} transparent>

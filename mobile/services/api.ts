@@ -59,6 +59,10 @@ apiClient.interceptors.response.use(
       const { clearToken } = await import('./tokenStorage');
       await clearToken();
     } 
+    // Handle 409 Conflict (e.g. Device already paired) - Handled in UI
+    else if (error.response?.status === 409) {
+      Logger.debug(`API 409 (Conflict): ${error.config?.method?.toUpperCase()} ${error.config?.url} - ${apiError.message}`);
+    }
     // Log other errors
     else {
       Logger.error(`API Error: ${error.config?.method?.toUpperCase()} ${error.config?.url}`, apiError);

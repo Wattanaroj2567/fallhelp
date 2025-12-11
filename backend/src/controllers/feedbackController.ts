@@ -8,7 +8,7 @@ import * as feedbackService from '../services/feedbackService';
 // ==========================================
 
 export const submitFeedback = asyncHandler(async (req: Request, res: Response) => {
-    const { message } = req.body;
+    const { message, userName } = req.body;
     const userId = (req as any).user?.id || null;
 
     if (!message) {
@@ -16,7 +16,7 @@ export const submitFeedback = asyncHandler(async (req: Request, res: Response) =
         throw new Error('Message is required');
     }
 
-    const feedback = await feedbackService.createFeedback(userId, message);
+    const feedback = await feedbackService.createFeedback(userId, message, userName);
 
     res.status(201).json({
         success: true,

@@ -6,9 +6,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
-  Image,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useNavigation } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
@@ -240,13 +238,15 @@ export default function ElderInfo() {
                   className="font-kanit text-gray-900"
                 >
                   {formatThaiDate(elder.dateOfBirth)}
-                  {age > 0 && (
-                    <Text className="font-kanit text-gray-500">
-                      {" "}
-                      ({age} ปี)
-                    </Text>
-                  )}
                 </Text>
+                {age > 0 && (
+                  <Text
+                    style={{ fontSize: 14 }}
+                    className="font-kanit text-gray-500 mt-1"
+                  >
+                    ({age} ปี)
+                  </Text>
+                )}
               </View>
             </View>
 
@@ -312,7 +312,24 @@ export default function ElderInfo() {
                 style={{ fontSize: 16 }}
                 className="font-kanit text-gray-900"
               >
-                {elder.address || "ไม่ระบุ"}
+                {(() => {
+                  const addressParts = [];
+                  if (elder.houseNumber)
+                    addressParts.push(`บ้านเลขที่ ${elder.houseNumber}`);
+                  if (elder.village)
+                    addressParts.push(`หมู่ที่ ${elder.village}`);
+                  if (elder.subdistrict)
+                    addressParts.push(`ตำบล${elder.subdistrict}`);
+                  if (elder.district)
+                    addressParts.push(`อำเภอ${elder.district}`);
+                  if (elder.province)
+                    addressParts.push(`จังหวัด${elder.province}`);
+                  if (elder.zipcode) addressParts.push(elder.zipcode);
+
+                  return addressParts.length > 0
+                    ? addressParts.join(" ")
+                    : "ไม่ระบุ";
+                })()}
               </Text>
             </View>
           </View>

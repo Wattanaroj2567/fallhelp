@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LayoutDashboard, Users, Smartphone, LogOut, ChevronLeft, ChevronRight, MessageSquare } from 'lucide-react';
+import { LayoutDashboard, Smartphone, LogOut, ChevronLeft, ChevronRight, MessageSquare } from 'lucide-react';
 
 export default function DashboardLayout() {
     const { logout, user } = useAuth();
@@ -53,17 +53,6 @@ export default function DashboardLayout() {
                         {!isCollapsed && <span>Dashboard</span>}
                     </NavLink>
 
-                    <NavLink
-                        to="/users"
-                        className={({ isActive }) =>
-                            `flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${isActive ? 'bg-green-50 text-primary font-medium' : 'text-gray-600 hover:bg-gray-50'
-                            } ${isCollapsed ? 'justify-center px-2' : ''}`
-                        }
-                        title={isCollapsed ? "Users & Elders" : ""}
-                    >
-                        <Users size={20} />
-                        {!isCollapsed && <span>Users & Elders</span>}
-                    </NavLink>
 
                     <NavLink
                         to="/devices"

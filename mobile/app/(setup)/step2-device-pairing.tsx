@@ -2,38 +2,22 @@ import React, { useState, useRef } from "react";
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   Alert,
-  Modal,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
 } from "react-native";
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useMutation } from "@tanstack/react-query";
 import { pairDevice } from "@/services/deviceService";
 import * as SecureStore from "expo-secure-store";
-import Animated, {
-  interpolate,
-  useAnimatedStyle,
-  useDerivedValue,
-  withTiming,
-} from "react-native-reanimated";
 import { CameraView, useCameraPermissions } from "expo-camera";
-
-const INPUT_HEIGHT = 60;
-const LABEL_FONT_LARGE = 15;
-const LABEL_FONT_SMALL = 12;
-const LABEL_TOP_START = 18;
-const LABEL_TOP_END = -8;
+import { FloatingLabelInput } from "@/components/FloatingLabelInput";
 
 // ==========================================
 // 📱 LAYER: View (Component)
@@ -54,29 +38,16 @@ export default function Step2() {
   // showCamera is no longer needed as state, we default to camera view
   const isScanning = useRef(false);
 
-  // Focus State
-  const [macFocused, setMacFocused] = useState(false);
-
   // Check if device already paired
   React.useEffect(() => {
     const checkExistingDevice = async () => {
       const deviceId = await SecureStore.getItemAsync("setup_deviceId");
       setExistingDeviceId(deviceId);
-      
-      // ✅ Auto-skip to Step 3 if device already paired (user came back from Step 3)
-      if (deviceId) {
-        const currentStep = await SecureStore.getItemAsync("setup_step");
-        if (currentStep === "3" || currentStep === "2") {
-          // User already at Step 3 or coming back - go straight to Step 3
-          Logger.info("✅ Device already paired, skipping to Step 3");
-          router.replace("/(setup)/step3-wifi-setup");
-        }
-      }
+      // ❌ Removed auto-skip: Let user see Step 2 even if device already paired
+      // This allows proper back navigation: Step 3 → Step 2 → Step 1
     };
     checkExistingDevice();
-  }, []);
-
-  // Request permission on mount
+  }, []); // Request permission on mount
   React.useEffect(() => {
     if (permission && !permission.granted && !permission.canAskAgain) {
       // Permission denied permanently
@@ -84,44 +55,6 @@ export default function Step2() {
       requestPermission();
     }
   }, [permission]);
-
-  // Animation Hooks
-  const useInputAnimation = (focused: boolean, value: string) => {
-    const progress = useDerivedValue(
-      () => withTiming(focused || !!value ? 1 : 0, { duration: 200 }),
-      [focused, value]
-    );
-
-    const containerStyle = useAnimatedStyle(() => ({
-      top: interpolate(
-        progress.value,
-        [0, 1],
-        [LABEL_TOP_START, LABEL_TOP_END]
-      ),
-      backgroundColor: progress.value > 0.5 ? "#FFFFFF" : "transparent",
-      paddingHorizontal: 4,
-      zIndex: 1,
-    }));
-
-    const textStyle = useAnimatedStyle(() => ({
-      fontSize: interpolate(
-        progress.value,
-        [0, 1],
-        [LABEL_FONT_LARGE, LABEL_FONT_SMALL]
-      ),
-      color: focused ? "#16AD78" : "#9CA3AF",
-    }));
-
-    return { containerStyle, textStyle };
-  };
-
-  const macAnim = useInputAnimation(macFocused, macAddress);
-
-  const formatMacAddress = (text: string) => {
-    const cleaned = text.replace(/[^0-9A-Fa-f]/g, "");
-    const formatted = cleaned.match(/.{1,2}/g)?.join(":") || cleaned;
-    return formatted.toUpperCase().slice(0, 17);
-  };
 
   // ==========================================
   // ⚙️ LAYER: Logic (Mutation)
@@ -222,9 +155,8 @@ export default function Step2() {
     if (showManualEntry) {
       setShowManualEntry(false);
     } else {
-      // Clear the saved step
-      await SecureStore.deleteItemAsync("setup_step");
-      // Use back() to support native swipe gesture and history
+      // Go back to Step 1
+      await SecureStore.setItemAsync("setup_step", "1");
       if (router.canGoBack()) {
         router.back();
       } else {
@@ -445,50 +377,20 @@ export default function Step2() {
               </View>
             </View>
 
-            <View className="mb-6">
-              <View style={{ height: INPUT_HEIGHT, position: "relative" }}>
-                <Animated.View
-                  style={[
-                    { position: "absolute", left: 16, zIndex: 1 },
-                    macAnim.containerStyle,
-                  ]}
-                >
-                  <Animated.Text
-                    className="font-kanit"
-                    style={[macAnim.textStyle]}
-                  >
-                    รหัสอุปกรณ์ (Device Code)
-                  </Animated.Text>
-                </Animated.View>
-                <TextInput
-                  className={`font-kanit h-[60px] rounded-2xl px-4 border ${
-                    macFocused ? "border-[#16AD78]" : "border-gray-200"
-                  } bg-white text-gray-900 text-[16px]`}
-                  style={{
-                    fontFamily: "Kanit",
-                    height: 60,
-                    paddingTop: 18,
-                    paddingBottom: 18,
-                    textAlignVertical: "center",
-                    includeFontPadding: false,
-                  }}
-                  placeholderTextColor="#9CA3AF"
-                  value={macAddress}
-                  onChangeText={(text) =>
-                    setMacAddress(
-                      text
-                        .toUpperCase()
-                        .replace(/[^A-Z0-9]/g, "")
-                        .slice(0, 8)
-                    )
-                  }
-                  autoCapitalize="characters"
-                  maxLength={8}
-                  onFocus={() => setMacFocused(true)}
-                  onBlur={() => setMacFocused(false)}
-                />
-              </View>
-            </View>
+            <FloatingLabelInput
+              label="รหัสอุปกรณ์ (Device Code)"
+              value={macAddress}
+              onChangeText={(text) =>
+                setMacAddress(
+                  text
+                    .toUpperCase()
+                    .replace(/[^A-Z0-9]/g, "")
+                    .slice(0, 8)
+                )
+              }
+              autoCapitalize="characters"
+              maxLength={8}
+            />
 
             <TouchableOpacity
               onPress={handleManualPairing}
@@ -506,18 +408,6 @@ export default function Step2() {
                   ยืนยัน
                 </Text>
               )}
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => setShowManualEntry(false)}
-              className="items-center py-2"
-            >
-              <Text
-                style={{ fontSize: 14 }}
-                className="font-kanit text-gray-600"
-              >
-                ย้อนกลับไปสแกน QR Code
-              </Text>
             </TouchableOpacity>
           </ScrollView>
         </KeyboardAvoidingView>
@@ -547,66 +437,99 @@ export default function Step2() {
         <View className="flex-1 justify-between pb-10">
           {/* Center Scanning Area */}
           <View className="flex-1 items-center justify-center">
-                {!permission?.granted ? (
-                  <View className="items-center px-6">
-                    <Text className="font-kanit text-white text-center mb-6 text-lg">
-                      ต้องการสิทธิ์การเข้าถึงกล้องเพื่อสแกน QR Code
-                    </Text>
-                    <TouchableOpacity
-                      onPress={requestPermission}
-                      className="bg-[#16AD78] px-8 py-3 rounded-full shadow-lg"
-                    >
-                      <Text className="font-kanit text-white font-bold text-base">
-                        อนุญาตให้ใช้กล้อง
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                ) : (
-                  <>
-                    <View className="w-72 h-72 relative">
-                      {/* Corner Borders */}
-                      <View className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-[#16AD78] rounded-tl-2xl" />
-                      <View className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-[#16AD78] rounded-tr-2xl" />
-                      <View className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-[#16AD78] rounded-bl-2xl" />
-                      <View className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-[#16AD78] rounded-br-2xl" />
-
-                      {/* Scanning Animation Line */}
-                      <View className="absolute top-1/2 left-4 right-4 h-[1px] bg-[#16AD78]/50" />
-                    </View>
-
-                    <View className="mt-8 bg-black/60 px-6 py-3 rounded-2xl backdrop-blur-md">
-                      <Text className="font-kanit text-white text-lg text-center font-semibold">
-                        สแกน QR Code
-                      </Text>
-                      <Text className="font-kanit text-gray-200 text-sm text-center mt-1">
-                        วาง QR Code ให้อยู่ในกรอบเพื่อเชื่อมต่อ
-                      </Text>
-                      {pairMutation.isError && (
-                        <Text className="font-kanit text-red-400 text-sm text-center mt-2">
-                          ไม่สามารถเชื่อมต่อได้ กรุณาลองใหม่
-                        </Text>
-                      )}
-                    </View>
-                  </>
-                )}
-              </View>
-
-              {/* Bottom Action */}
-              <View className="px-6 items-center">
+            {existingDeviceId ? (
+              // Device already paired - show success message
+              <View className="items-center px-6">
+                <View className="w-24 h-24 rounded-full bg-green-500 items-center justify-center mb-6">
+                  <Ionicons name="checkmark-circle" size={64} color="white" />
+                </View>
+                <Text className="font-kanit text-white text-2xl font-bold text-center mb-3">
+                  อุปกรณ์ถูกผูกแล้ว
+                </Text>
+                <Text className="font-kanit text-white/90 text-base text-center mb-8">
+                  คุณสามารถไปขั้นตอนถัดไปได้เลย
+                </Text>
                 <TouchableOpacity
-                  onPress={() => setShowManualEntry(true)}
-                  className="flex-row items-center bg-white/20 px-6 py-4 rounded-full border border-white/30 backdrop-blur-md shadow-lg active:bg-white/30"
+                  onPress={() => router.push("/(setup)/step3-wifi-setup")}
+                  className="bg-white rounded-2xl px-8 py-4 mb-4"
                 >
-                  <Ionicons name="keypad" size={20} color="white" />
-                  <Text className="font-kanit text-white ml-3 font-semibold text-base">
-                    กรอกรหัสอุปกรณ์ด้วยตนเอง
+                  <Text
+                    style={{ fontSize: 16, fontWeight: "600" }}
+                    className="font-kanit text-green-600"
+                  >
+                    ไปขั้นตอนถัดไป
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={handleChangeDevice}
+                  className="bg-white/20 border-2 border-white rounded-2xl px-8 py-4"
+                >
+                  <Text
+                    style={{ fontSize: 16, fontWeight: "600" }}
+                    className="font-kanit text-white"
+                  >
+                    เปลี่ยนอุปกรณ์
                   </Text>
                 </TouchableOpacity>
               </View>
-            </View>
+            ) : !permission?.granted ? (
+              <View className="items-center px-6">
+                <Text className="font-kanit text-white text-center mb-6 text-lg">
+                  ต้องการสิทธิ์การเข้าถึงกล้องเพื่อสแกน QR Code
+                </Text>
+                <TouchableOpacity
+                  onPress={requestPermission}
+                  className="bg-[#16AD78] px-8 py-3 rounded-full shadow-lg"
+                >
+                  <Text className="font-kanit text-white font-bold text-base">
+                    อนุญาตให้ใช้กล้อง
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <>
+                <View className="w-72 h-72 relative">
+                  {/* Corner Borders */}
+                  <View className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-[#16AD78] rounded-tl-2xl" />
+                  <View className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-[#16AD78] rounded-tr-2xl" />
+                  <View className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-[#16AD78] rounded-bl-2xl" />
+                  <View className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-[#16AD78] rounded-br-2xl" />
+
+                  {/* Scanning Animation Line */}
+                  <View className="absolute top-1/2 left-4 right-4 h-[1px] bg-[#16AD78]/50" />
+                </View>
+
+                <View className="mt-8 bg-black/60 px-6 py-3 rounded-2xl backdrop-blur-md">
+                  <Text className="font-kanit text-white text-lg text-center font-semibold">
+                    สแกน QR Code
+                  </Text>
+                  <Text className="font-kanit text-gray-200 text-sm text-center mt-1">
+                    วาง QR Code ให้อยู่ในกรอบเพื่อเชื่อมต่อ
+                  </Text>
+                  {pairMutation.isError && (
+                    <Text className="font-kanit text-red-400 text-sm text-center mt-2">
+                      ไม่สามารถเชื่อมต่อได้ กรุณาลองใหม่
+                    </Text>
+                  )}
+                </View>
+              </>
+            )}
           </View>
-        </CameraView>
-      )}
+
+          {/* Bottom Action */}
+          <View className="px-6 items-center">
+            <TouchableOpacity
+              onPress={() => setShowManualEntry(true)}
+              className="flex-row items-center bg-white/20 px-6 py-4 rounded-full border border-white/30 backdrop-blur-md shadow-lg active:bg-white/30"
+            >
+              <Ionicons name="keypad" size={20} color="white" />
+              <Text className="font-kanit text-white ml-3 font-semibold text-base">
+                กรอกรหัสอุปกรณ์ด้วยตนเอง
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
     </View>
   );
 }

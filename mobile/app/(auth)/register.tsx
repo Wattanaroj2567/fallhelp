@@ -72,9 +72,23 @@ export default function RegisterScreen() {
     },
     onError: (error: any) => {
       Logger.error("Register error:", error);
-      const message =
-        error.response?.data?.message || error.message || "เกิดข้อผิดพลาด";
-      Alert.alert("ลงทะเบียนล้มเหลว", message);
+      // Extract detailed error message from backend
+      const backendError = error.response?.data?.error || error.response?.data?.message;
+      const message = backendError || error.message || "เกิดข้อผิดพลาด";
+
+      // User-friendly error messages
+      let userMessage = message;
+      if (message.includes("already exists")) {
+        userMessage = "อีเมลนี้ถูกใช้งานแล้ว กรุณาใช้อีเมลอื่น";
+      } else if (message.includes("gender") || message.includes("Gender")) {
+        userMessage = "กรุณาเลือกเพศ";
+      } else if (message.includes("email")) {
+        userMessage = "รูปแบบอีเมลไม่ถูกต้อง";
+      } else if (message.includes("password")) {
+        userMessage = "รหัสผ่านไม่ตรงตามเกณฑ์";
+      }
+
+      Alert.alert("ลงทะเบียนล้มเหลว", userMessage);
     },
   });
 
@@ -105,14 +119,17 @@ export default function RegisterScreen() {
       return;
     }
 
-    registerMutation.mutate({
+    const payload = {
       email,
       password,
       firstName,
       lastName,
       gender,
       phone: cleanedPhone || undefined,
-    });
+    };
+
+    Logger.info("Sending registration payload:", payload);
+    registerMutation.mutate(payload);
   };
 
   // ==========================================

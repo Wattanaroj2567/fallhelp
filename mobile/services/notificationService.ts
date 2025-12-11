@@ -38,8 +38,8 @@ export async function listNotifications(filters: NotificationFilters = {}): Prom
 
 export async function getUnreadCount(): Promise<number> {
     try {
-        const { data } = await apiClient.get<{ count: number }>('/api/notifications/unread-count');
-        return data.count;
+        const { data } = await apiClient.get<{ success: boolean; data: { count: number } }>('/api/notifications/unread-count');
+        return data.data.count;
     } catch (error) {
         // Return 0 on error to avoid breaking UI
         return 0;

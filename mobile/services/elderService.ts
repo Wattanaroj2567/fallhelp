@@ -89,8 +89,8 @@ export async function deleteElder(elderId: string): Promise<void> {
 
 export async function listMembers(elderId: string): Promise<Member[]> {
   try {
-    const { data } = await apiClient.get<Member[]>(`/api/elders/${elderId}/members`);
-    return data;
+    const response = await apiClient.get<{ data: Member[]; success: boolean }>(`/api/elders/${elderId}/members`);
+    return response.data.data || [];
   } catch (error) {
     throw toApiError(error);
   }

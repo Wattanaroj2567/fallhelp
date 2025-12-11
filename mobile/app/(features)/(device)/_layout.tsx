@@ -5,6 +5,8 @@ export default function DeviceLayout() {
         <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="pairing" />
             <Stack.Screen name="wifi-config" />
+            <Stack.Screen name="details" />
+            <Stack.Screen name="repair" />
         </Stack>
     );
 }

@@ -1,17 +1,25 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Alert, StyleSheet } from 'react-native';
-import { useRouter } from 'expo-router';
-import { MaterialIcons } from '@expo/vector-icons';
-import { useMutation } from '@tanstack/react-query';
-import { pairDevice } from '@/services/deviceService';
-import { apiClient } from '@/services/api';
-import { FloatingLabelInput } from '@/components/FloatingLabelInput';
-import { ScreenWrapper } from '@/components/ScreenWrapper';
-import { ScreenHeader } from '@/components/ScreenHeader';
-import { PrimaryButton } from '@/components/PrimaryButton';
-import { CameraView, useCameraPermissions } from 'expo-camera';
-import Logger from '@/utils/logger';
-import { showErrorMessage } from '@/utils/errorHelper';
+import React, { useState, useRef } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { pairDevice } from "@/services/deviceService";
+import { apiClient } from "@/services/api";
+import { getUserElders } from "@/services/userService";
+import { CameraView, useCameraPermissions } from "expo-camera";
+import { FloatingLabelInput } from "@/components/FloatingLabelInput";
+import { ScreenHeader } from "@/components/ScreenHeader";
 
 // ==========================================
 // 📱 LAYER: View (Component)
@@ -20,12 +28,14 @@ import { showErrorMessage } from '@/utils/errorHelper';
 export default function DevicePairing() {
   const router = useRouter();
   const [permission, requestPermission] = useCameraPermissions();
+  const insets = useSafeAreaInsets();
 
   // ==========================================
   // 🧩 LAYER: Logic (Local State)
   // ==========================================
   const [showManualEntry, setShowManualEntry] = useState(false);
-  const [macAddress, setMacAddress] = useState('');
+  const [macAddress, setMacAddress] = useState("");
+  const isScanning = useRef(false);
 
   // Request permission on mount
   React.useEffect(() => {
@@ -36,80 +46,71 @@ export default function DevicePairing() {
     }
   }, [permission]);
 
-
-
-  // Format device code: 8 alphanumeric characters only
-  const formatDeviceCode = (text: string) => {
-    const cleaned = text.replace(/[^0-9A-Za-z]/g, '');
-    return cleaned.toUpperCase().slice(0, 8);
-  };
-
-  // Lock to prevent multiple rapid scans
-  const isScanning = React.useRef(false);
-
   // ==========================================
   // ⚙️ LAYER: Logic (Mutation)
   // ==========================================
+  const queryClient = useQueryClient();
+
   const pairMutation = useMutation({
+    mutationKey: ["pairDevice"],
     mutationFn: async (deviceCode: string) => {
-      // Fetch user's elders to get an ID
-      const { data: eldersData } = await apiClient.get('/api/elders');
-      const elderId = eldersData.elders[0]?.id;
+      // Fetch user's elders to get an ID using the service
+      const elders = await getUserElders();
+      const elder = elders && elders.length > 0 ? elders[0] : null;
+      const elderId = elder?.id;
 
       if (!elderId) {
-        throw new Error('ไม่พบข้อมูลผู้สูงอายุ กรุณาสร้างข้อมูลผู้สูงอายุก่อน');
+        throw new Error("ไม่พบข้อมูลผู้สูงอายุ กรุณาสร้างข้อมูลผู้สูงอายุก่อน");
+      }
+
+      // Check if already paired with this device
+      if (elder?.device?.deviceCode === deviceCode) {
+        // Already paired to us - treat as success
+        return elder.device;
       }
 
       return await pairDevice({ deviceCode, elderId });
     },
     onSuccess: (device, variables) => {
-      isScanning.current = false; // ✅ Release lock after successful pairing
+      // Keep isScanning = true to prevent further scans while alert shows or navigating
+      queryClient.invalidateQueries({ queryKey: ["userElders"] });
+
+      Alert.alert("เชื่อมต่ออุปกรณ์สำเร็จ", "เชื่อมต่ออุปกรณ์เรียบร้อยแล้ว", [
+        {
+          text: "ไปตั้งค่า WiFi",
+          onPress: () =>
+            router.replace({
+              pathname: "/(features)/(device)/wifi-config",
+              params: { deviceCode: variables },
+            }),
+        },
+      ]);
+    },
+    onError: (error: any) => {
+      // Don't reset isScanning here immediately to prevent loop
+      let serverMessage = error.response?.data?.message || error.response?.data?.error;
+
+      // Handle specific cases
+      if (error.response?.status === 409 || JSON.stringify(error.response?.data).includes("already paired")) {
+        serverMessage = "อุปกรณ์นี้ถูกเชื่อมต่อกับบัญชีอื่นอยู่แล้ว กรุณายกเลิกการเชื่อมต่อจากบัญชีเดิมก่อน";
+        // Don't log error for expected handled cases
+      } else {
+        console.error("Error pairing device:", error);
+      }
+
       Alert.alert(
-        'เชื่อมต่ออุปกรณ์สำเร็จ',
-        'เชื่อมต่ออุปกรณ์เรียบร้อยแล้ว',
+        "เชื่อมต่อไม่สำเร็จ",
+        serverMessage || error.message || "ไม่สามารถเชื่อมต่ออุปกรณ์ได้",
         [
           {
-            text: 'ไปตั้งค่า WiFi',
-            onPress: () => router.replace({
-              pathname: '/(features)/(device)/wifi-config',
-              params: { deviceCode: variables }
-            }),
+            text: "ตกลง",
+            onPress: () => {
+              // Only reset scanning when user acknowledges the error
+              isScanning.current = false;
+            },
           },
         ]
       );
-    },
-    onError: (error: any) => {
-      isScanning.current = false;
-      
-      const errorMessage = error.data?.error || error.message || JSON.stringify(error);
-      
-      // Special handling for already paired devices to offer redirection
-      if (
-        errorMessage.includes('already paired') ||
-        errorMessage.includes('Device is already paired') ||
-        (error.data && JSON.stringify(error.data).includes('already paired'))
-      ) {
-        Alert.alert(
-          'อุปกรณ์ถูกเชื่อมต่อแล้ว',
-          'อุปกรณ์นี้ถูกเชื่อมต่อแล้ว คุณต้องการไปตั้งค่า WiFi หรือไม่?',
-          [
-            {
-              text: 'ยกเลิก',
-              style: 'cancel',
-            },
-            {
-              text: 'ไปตั้งค่า WiFi',
-              onPress: () => {
-                router.replace('/(features)/(device)/wifi-config');
-              }
-            }
-          ]
-        );
-        return;
-      }
-
-      // Standard error handling
-      showErrorMessage('ข้อผิดพลาด', error);
     },
   });
 
@@ -117,21 +118,17 @@ export default function DevicePairing() {
   // 🎮 LAYER: Logic (Event Handlers)
   // ==========================================
   const handleManualPairing = async () => {
-    const cleanCode = macAddress.replace(/[^0-9A-Za-z]/g, '').toUpperCase();
-
-    if (!cleanCode || cleanCode.length !== 8) {
-      Alert.alert('ข้อมูลไม่ครบถ้วน', 'กรุณากรอกรหัสอุปกรณ์ 8 หลัก');
+    if (!macAddress || macAddress.length < 8) {
+      Alert.alert("ข้อมูลไม่ครบถ้วน", "กรุณากรอกรหัสอุปกรณ์ 8 หลัก");
       return;
     }
-
-    Logger.info('Manual pairing with device code:', cleanCode);
-    pairMutation.mutate(cleanCode);
+    pairMutation.mutate(macAddress);
   };
 
   const handleBarCodeScanned = ({ data }: { data: string }) => {
+    // Prevent multiple scans
     if (isScanning.current || pairMutation.isPending) return;
     isScanning.current = true;
-    Logger.info('Scanned QR:', data);
     pairMutation.mutate(data);
   };
 
@@ -143,97 +140,102 @@ export default function DevicePairing() {
       if (router.canGoBack()) {
         router.back();
       } else {
-        router.replace('/(tabs)/settings');
+        router.replace("/(tabs)/settings");
       }
     }
   };
 
   // ==========================================
-  // 🎨 LAYER: UI Components (Header)
+  // 🎨 LAYER: UI Components (Shared)
   // ==========================================
 
 
   // ==========================================
-  // 📝 LAYER: View (Manual Entry Mode)
+  // 🖼️ LAYER: View (Manual Entry Mode)
   // ==========================================
   if (showManualEntry) {
     return (
-      <ScreenWrapper contentContainerStyle={{ paddingBottom: 40, flexGrow: 1 }} useScrollView={false}>
-        <ScreenHeader title="ติดตั้งอุปกรณ์ใหม่" />
+      <View className="flex-1 bg-white">
+        <View style={{ height: insets.top, backgroundColor: "white" }} />
 
-        <View className="px-6">
-          {/* Info Note */}
-          <View className="bg-blue-50 rounded-2xl p-4 mb-6 mt-2">
-            <Text className="font-kanit text-blue-600 font-medium" style={{ fontSize: 15 }}>
-              กรุณากรอกรหัสอุปกรณ์ 8 หลัก
-            </Text>
-            <Text className="font-kanit text-blue-600" style={{ fontSize: 15, marginTop: 2 }}>
-              ที่ติดบนสติ๊กเกอร์ของอุปกรณ์
-            </Text>
-            <Text className="font-kanit text-gray-500 mt-2" style={{ fontSize: 14 }}>
-              ตัวอย่าง: 832CE051
-            </Text>
-          </View>
+        <ScreenHeader title="เชื่อมต่ออุปกรณ์" onBack={handleBack} />
 
-          {/* Chip Icon */}
-          <View className="items-center my-8">
-            <View className="w-28 h-28 rounded-full bg-[#16AD78]/10 items-center justify-center">
-              <View className="w-16 h-16 rounded-xl border-2 border-[#16AD78] items-center justify-center">
-                <View className="w-8 h-8 rounded-md bg-[#16AD78]/20 border border-[#16AD78]" />
-                {/* Chip pins */}
-                <View className="absolute -left-2 top-1/2 -translate-y-1/2 flex-col gap-1">
-                  <View className="w-2 h-1 bg-[#16AD78] rounded-sm" />
-                  <View className="w-2 h-1 bg-[#16AD78] rounded-sm" />
-                  <View className="w-2 h-1 bg-[#16AD78] rounded-sm" />
-                </View>
-                <View className="absolute -right-2 top-1/2 -translate-y-1/2 flex-col gap-1">
-                  <View className="w-2 h-1 bg-[#16AD78] rounded-sm" />
-                  <View className="w-2 h-1 bg-[#16AD78] rounded-sm" />
-                  <View className="w-2 h-1 bg-[#16AD78] rounded-sm" />
-                </View>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          className="flex-1"
+        >
+          <ScrollView
+            className="flex-1 px-6"
+            contentContainerStyle={{ paddingBottom: 100, flexGrow: 1 }}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            <View className="bg-blue-50 rounded-2xl p-4 mb-6 mt-6">
+              <Text
+                style={{ fontSize: 14 }}
+                className="font-kanit text-blue-700 mb-2"
+              >
+                กรุณากรอกรหัสอุปกรณ์ 8 หลัก
+              </Text>
+              <Text
+                style={{ fontSize: 14 }}
+                className="font-kanit text-blue-700"
+              >
+                ที่ติดบนสติ๊กเกอร์ของอุปกรณ์
+              </Text>
+              <Text
+                style={{ fontSize: 14, fontWeight: "600" }}
+                className="font-kanit text-blue-900 mt-2"
+              >
+                ตัวอย่าง: 832CE051
+              </Text>
+            </View>
+
+            <View className="items-center mb-6">
+              <View className="w-32 h-32 rounded-full bg-gray-100 items-center justify-center mb-4">
+                <Ionicons
+                  name="hardware-chip-outline"
+                  size={64}
+                  color="#16AD78"
+                />
               </View>
             </View>
-          </View>
 
-          {/* Device Code Input */}
-          <View className="mb-6">
             <FloatingLabelInput
               label="รหัสอุปกรณ์ (Device Code)"
               value={macAddress}
-              onChangeText={(text) => setMacAddress(formatDeviceCode(text))}
+              onChangeText={(text) =>
+                setMacAddress(
+                  text
+                    .toUpperCase()
+                    .replace(/[^A-Z0-9]/g, "")
+                    .slice(0, 8)
+                )
+              }
               autoCapitalize="characters"
               maxLength={8}
-              style={{ fontSize: 18, letterSpacing: 3 }}
             />
-          </View>
 
-          {/* Submit Button */}
-          <PrimaryButton
-            title="ยืนยัน"
-            onPress={handleManualPairing}
-            loading={pairMutation.isPending}
-            disabled={macAddress.length !== 8}
-            style={{ marginTop: 24, marginBottom: 16 }}
-          />
-
-          {/* Back to Camera Button */}
-          <TouchableOpacity
-            onPress={() => {
-              setShowManualEntry(false);
-              isScanning.current = false;
-            }}
-            className="py-3 items-center"
-            activeOpacity={0.7}
-          >
-            <View className="flex-row items-center">
-              <MaterialIcons name="photo-camera" size={20} color="#6B7280" />
-              <Text className="font-kanit text-gray-500 ml-2">
-                กลับไปสแกน QR Code
-              </Text>
-            </View>
-          </TouchableOpacity>
-        </View>
-      </ScreenWrapper >
+            <TouchableOpacity
+              onPress={handleManualPairing}
+              disabled={pairMutation.isPending}
+              className="bg-[#16AD78] rounded-2xl py-4 items-center mb-4"
+              style={{ opacity: pairMutation.isPending ? 0.6 : 1 }}
+            >
+              {pairMutation.isPending ? (
+                <ActivityIndicator size="small" color="#FFFFFF" />
+              ) : (
+                <Text
+                  style={{ fontSize: 16, fontWeight: "600" }}
+                  className="font-kanit text-white"
+                >
+                  ยืนยัน
+                </Text>
+              )}
+            </TouchableOpacity>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </View>
     );
   }
 
@@ -252,9 +254,8 @@ export default function DevicePairing() {
       )}
 
       {/* UI Overlay Layer */}
-      <View className="flex-1" style={{ zIndex: 10 }} pointerEvents="box-none">
-
-        <ScreenHeader title="ติดตั้งอุปกรณ์ใหม่" onBack={handleBack} transparent />
+      <View className="flex-1">
+        <ScreenHeader transparent={true} title="เชื่อมต่ออุปกรณ์" onBack={handleBack} />
 
         {/* Camera Overlay Content */}
         <View className="flex-1 justify-between pb-10">
@@ -269,7 +270,9 @@ export default function DevicePairing() {
                   onPress={requestPermission}
                   className="bg-[#16AD78] px-8 py-3 rounded-full shadow-lg"
                 >
-                  <Text className="font-kanit text-white font-bold text-base">อนุญาตให้ใช้กล้อง</Text>
+                  <Text className="font-kanit text-white font-bold text-base">
+                    อนุญาตให้ใช้กล้อง
+                  </Text>
                 </TouchableOpacity>
               </View>
             ) : (
@@ -305,13 +308,10 @@ export default function DevicePairing() {
           {/* Bottom Action */}
           <View className="px-6 items-center">
             <TouchableOpacity
-              onPress={() => {
-                isScanning.current = false;
-                setShowManualEntry(true);
-              }}
+              onPress={() => setShowManualEntry(true)}
               className="flex-row items-center bg-white/20 px-6 py-4 rounded-full border border-white/30 backdrop-blur-md shadow-lg active:bg-white/30"
             >
-              <MaterialIcons name="dialpad" size={20} color="white" />
+              <Ionicons name="keypad" size={20} color="white" />
               <Text className="font-kanit text-white ml-3 font-semibold text-base">
                 กรอกรหัสอุปกรณ์ด้วยตนเอง
               </Text>

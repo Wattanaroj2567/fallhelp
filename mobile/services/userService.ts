@@ -56,7 +56,12 @@ export async function updatePushToken(payload: UpdatePushTokenPayload) {
 export async function getUserElders(): Promise<Elder[]> {
   try {
     const response = await apiClient.get<{ data: Elder[]; success: boolean }>('/api/users/elders');
-    return response.data.data || [];
+    const elders = response.data.data || [];
+    // Log to verify address fields are received
+    if (elders.length > 0) {
+      console.log('Elder data received:', JSON.stringify(elders[0], null, 2));
+    }
+    return elders;
   } catch (error) {
     throw toApiError(error);
   }

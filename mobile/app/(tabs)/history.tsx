@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   View,
   Text,
@@ -6,14 +6,15 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import { MaterialIcons } from '@expo/vector-icons';
-import { useQuery } from '@tanstack/react-query';
-import { listEvents } from '@/services/eventService';
-import { getUserElders } from '@/services/userService';
-import { Event } from '@/services/types';
+} from "react-native";
+import { useRouter } from "expo-router";
+import { MaterialIcons } from "@expo/vector-icons";
+import { useQuery } from "@tanstack/react-query";
+import { listEvents } from "@/services/eventService";
+import { getUserElders } from "@/services/userService";
+import { Event } from "@/services/types";
+import { ScreenWrapper } from "@/components/ScreenWrapper";
+import { ScreenHeader } from "@/components/ScreenHeader";
 
 // ==========================================
 // 🧩 LAYER: Logic (Helper Functions)
@@ -22,9 +23,12 @@ import { Event } from '@/services/types';
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
   const year = date.getFullYear() + 543;
-  const day = date.getDate().toString().padStart(2, '0');
-  const month = (date.getMonth() + 1).toString().padStart(2, '0');
-  const time = date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+  const day = date.getDate().toString().padStart(2, "0");
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  const time = date.toLocaleTimeString("th-TH", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
   return `${day}/${month}/${year} เวลา ${time} น.`;
 };
@@ -35,8 +39,12 @@ const formatDate = (dateString: string) => {
 // Generate 60 mock events for testing filters (25, 50, All)
 const generateMockEvents = (): Event[] => {
   const events: Event[] = [];
-  const types: Array<'FALL' | 'HEART_RATE_HIGH' | 'HEART_RATE_LOW'> = ['FALL', 'HEART_RATE_HIGH', 'HEART_RATE_LOW'];
-  const baseDate = new Date('2025-01-05T23:00:00');
+  const types: Array<"FALL" | "HEART_RATE_HIGH" | "HEART_RATE_LOW"> = [
+    "FALL",
+    "HEART_RATE_HIGH",
+    "HEART_RATE_LOW",
+  ];
+  const baseDate = new Date("2025-01-05T23:00:00");
 
   for (let i = 0; i < 60; i++) {
     const typeIndex = i % 3; // Rotate through types
@@ -46,11 +54,16 @@ const generateMockEvents = (): Event[] => {
 
     events.push({
       id: `mock-${i + 1}`,
-      elderId: 'mock-elder',
-      deviceId: 'mock-device',
+      elderId: "mock-elder",
+      deviceId: "mock-device",
       type,
-      severity: type === 'FALL' ? 'CRITICAL' : 'WARNING',
-      value: type === 'FALL' ? null : type === 'HEART_RATE_HIGH' ? 110 + (i % 20) : 45 + (i % 10),
+      severity: type === "FALL" ? "CRITICAL" : "WARNING",
+      value:
+        type === "FALL"
+          ? null
+          : type === "HEART_RATE_HIGH"
+          ? 110 + (i % 20)
+          : 45 + (i % 10),
       isCancelled: false,
       isNotified: true,
       timestamp: timestamp.toISOString(),
@@ -72,15 +85,20 @@ export default function HistoryScreen() {
   // TODO: REMOVE IN PRODUCTION
   // This toggle is for UI preview during development only.
   // Set to false and remove the toggle button before production deployment.
-  const [useMockData, setUseMockData] = React.useState(true); // Toggle for preview
+  const [useMockData, setUseMockData] = React.useState(false); // Toggle for preview
   const [displayLimit, setDisplayLimit] = React.useState<number | null>(25); // 25, 50, or null (All)
 
   // ==========================================
   // ⚙️ LAYER: Logic (Data Fetching)
   // Purpose: Fetch and filter event history
   // ==========================================
-  const { data: events, isLoading, refetch, isError } = useQuery({
-    queryKey: ['historyEvents'],
+  const {
+    data: events,
+    isLoading,
+    refetch,
+    isError,
+  } = useQuery({
+    queryKey: ["historyEvents"],
     queryFn: async () => {
       const elders = await getUserElders();
       if (!elders || elders.length === 0) {
@@ -93,21 +111,25 @@ export default function HistoryScreen() {
       const response = await listEvents({
         elderId: elderId,
         page: 1,
-        pageSize: 100
+        pageSize: 100,
       });
 
       // Filter for specific event types
-      const allowedTypes = ['FALL', 'HEART_RATE_HIGH', 'HEART_RATE_LOW'];
+      const allowedTypes = ["FALL", "HEART_RATE_HIGH", "HEART_RATE_LOW"];
       const eventData = Array.isArray(response.data) ? response.data : [];
-      const filteredEvents = eventData.filter(e => allowedTypes.includes(e.type));
+      const filteredEvents = eventData.filter((e) =>
+        allowedTypes.includes(e.type)
+      );
 
       return filteredEvents;
     },
     enabled: !useMockData, // Only fetch when not using mock data
   });
 
-  const displayEvents = useMockData ? MOCK_EVENTS : (events || []);
-  const limitedEvents = displayLimit ? displayEvents.slice(0, displayLimit) : displayEvents;
+  const displayEvents = useMockData ? MOCK_EVENTS : events || [];
+  const limitedEvents = displayLimit
+    ? displayEvents.slice(0, displayLimit)
+    : displayEvents;
   const totalEvents = limitedEvents.length;
 
   // ==========================================
@@ -115,33 +137,33 @@ export default function HistoryScreen() {
   // Purpose: Determine display text/colors based on event type
   // ==========================================
   const getEventDisplayInfo = (item: Event) => {
-    let icon: 'warning' | 'favorite' | 'heart-broken' = 'warning';
-    let iconColor = '#EF4444';
-    let bgColor = '#FEE2E2';
-    let titleStatus = 'ปกติ';
-    let description = 'เหตุการณ์ทั่วไป';
-    let bpmText = item.value ? `${Math.round(item.value)} BPM` : '';
+    let icon: "warning" | "favorite" | "heart-broken" = "warning";
+    let iconColor = "#EF4444";
+    let bgColor = "#FEE2E2";
+    let titleStatus = "ปกติ";
+    let description = "เหตุการณ์ทั่วไป";
+    let bpmText = item.value ? `${Math.round(item.value)} BPM` : "";
 
     switch (item.type) {
-      case 'FALL':
-        icon = 'warning';
-        iconColor = '#EF4444';
-        bgColor = '#FEE2E2';
-        titleStatus = 'ตรวจพบการหกล้ม';
-        description = 'พบเหตุการณ์หกล้ม กรุณาตรวจสอบ';
+      case "FALL":
+        icon = "warning";
+        iconColor = "#EF4444";
+        bgColor = "#FEE2E2";
+        titleStatus = "ตรวจพบการหกล้ม";
+        description = "พบเหตุการณ์หกล้ม กรุณาตรวจสอบ";
         break;
-      case 'HEART_RATE_HIGH':
-        icon = 'favorite';
-        iconColor = '#F59E0B';
-        bgColor = '#FEF3C7';
-        titleStatus = 'ชีพจรสูงกว่าปกติ';
+      case "HEART_RATE_HIGH":
+        icon = "favorite";
+        iconColor = "#F59E0B";
+        bgColor = "#FEF3C7";
+        titleStatus = "ชีพจรสูงกว่าปกติ";
         description = `ชีพจร ${bpmText}`;
         break;
-      case 'HEART_RATE_LOW':
-        icon = 'heart-broken';
-        iconColor = '#3B82F6';
-        bgColor = '#DBEAFE';
-        titleStatus = 'ชีพจรต่ำกว่าปกติ';
+      case "HEART_RATE_LOW":
+        icon = "heart-broken";
+        iconColor = "#3B82F6";
+        bgColor = "#DBEAFE";
+        titleStatus = "ชีพจรต่ำกว่าปกติ";
         description = `ชีพจร ${bpmText}`;
         break;
       default:
@@ -155,29 +177,45 @@ export default function HistoryScreen() {
   // 🖼️ LAYER: View (Sub-Component)
   // Purpose: Render individual list item
   // ==========================================
-  const renderItem = ({ item, index }: { item: Event, index: number }) => {
-    const { icon, iconColor, bgColor, titleStatus, description } = getEventDisplayInfo(item);
+  const renderItem = ({ item, index }: { item: Event; index: number }) => {
+    const { icon, iconColor, bgColor, titleStatus, description } =
+      getEventDisplayInfo(item);
     const displayIndex = totalEvents - index;
 
     return (
       <View className="mb-4 bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
         {/* Number Badge */}
         <View className="absolute top-3 right-3 w-8 h-8 rounded-full bg-gray-100 items-center justify-center z-10">
-          <Text style={{ fontSize: 14, fontWeight: '700' }} className="font-kanit text-gray-600">
+          <Text
+            style={{ fontSize: 14, fontWeight: "700" }}
+            className="font-kanit text-gray-600"
+          >
             {displayIndex}
           </Text>
         </View>
 
         {/* Icon Header */}
-        <View className="flex-row items-center p-4" style={{ backgroundColor: bgColor }}>
-          <View className="w-12 h-12 rounded-full items-center justify-center" style={{ backgroundColor: 'white' }}>
+        <View
+          className="flex-row items-center p-4"
+          style={{ backgroundColor: bgColor }}
+        >
+          <View
+            className="w-12 h-12 rounded-full items-center justify-center"
+            style={{ backgroundColor: "white" }}
+          >
             <MaterialIcons name={icon} size={24} color={iconColor} />
           </View>
           <View className="flex-1 ml-3">
-            <Text style={{ fontSize: 16, fontWeight: '600' }} className="font-kanit text-gray-900">
+            <Text
+              style={{ fontSize: 16, fontWeight: "600" }}
+              className="font-kanit text-gray-900"
+            >
               {titleStatus}
             </Text>
-            <Text style={{ fontSize: 12 }} className="font-kanit text-gray-600 mt-0.5">
+            <Text
+              style={{ fontSize: 12 }}
+              className="font-kanit text-gray-600 mt-0.5"
+            >
               {formatDate(item.timestamp)}
             </Text>
           </View>
@@ -185,7 +223,10 @@ export default function HistoryScreen() {
 
         {/* Description */}
         <View className="px-4 py-3 border-t border-gray-100">
-          <Text style={{ fontSize: 14, lineHeight: 20 }} className="font-kanit text-gray-700">
+          <Text
+            style={{ fontSize: 14, lineHeight: 20 }}
+            className="font-kanit text-gray-700"
+          >
             {description}
           </Text>
         </View>
@@ -195,17 +236,44 @@ export default function HistoryScreen() {
 
   if (isError && !useMockData) {
     return (
-      <SafeAreaView className="flex-1 bg-white" edges={['top', 'left', 'right']}>
+      <ScreenWrapper
+        edges={["top"]}
+        useScrollView={false}
+        style={{ backgroundColor: "#FFFFFF" }}
+        header={
+          <ScreenHeader
+            title="ประวัติเหตุการณ์"
+            rightElement={
+              <TouchableOpacity
+                onPress={() => setUseMockData(!useMockData)}
+                className="p-2 -mr-2"
+              >
+                <MaterialIcons
+                  name={useMockData ? "visibility" : "visibility-off"}
+                  size={28}
+                  color="#6B7280"
+                />
+              </TouchableOpacity>
+            }
+          />
+        }
+      >
         <View className="flex-1 justify-center items-center px-6">
           <MaterialIcons name="error-outline" size={64} color="#D1D5DB" />
-          <Text style={{ fontSize: 18 }} className="font-kanit text-gray-700 mt-4 text-center">
+          <Text
+            style={{ fontSize: 18 }}
+            className="font-kanit text-gray-700 mt-4 text-center"
+          >
             เกิดข้อผิดพลาดในการโหลดข้อมูล
           </Text>
-          <TouchableOpacity onPress={() => refetch()} className="mt-4 bg-gray-200 px-6 py-3 rounded-xl">
+          <TouchableOpacity
+            onPress={() => refetch()}
+            className="mt-4 bg-gray-200 px-6 py-3 rounded-xl"
+          >
             <Text className="font-kanit text-gray-700">ลองใหม่</Text>
           </TouchableOpacity>
         </View>
-      </SafeAreaView>
+      </ScreenWrapper>
     );
   }
 
@@ -214,33 +282,38 @@ export default function HistoryScreen() {
   // Purpose: Render the main UI
   // ==========================================
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={['top', 'left', 'right']}>
-      {/* Header */}
-      <View className="flex-row items-center justify-between px-6 py-4">
-        <View className="w-8" />
-        <Text className="font-kanit text-xl font-bold text-gray-900">
-          ประวัติเหตุการณ์
-        </Text>
-        {/* TODO: REMOVE THIS TOGGLE BUTTON IN PRODUCTION */}
-        <TouchableOpacity
-          onPress={() => setUseMockData(!useMockData)}
-          className="w-8 h-8 items-center justify-center"
-        >
-          <MaterialIcons
-            name={useMockData ? "visibility" : "visibility-off"}
-            size={24}
-            color="#6B7280"
-          />
-        </TouchableOpacity>
-      </View>
-
+    <ScreenWrapper
+      edges={["top"]}
+      useScrollView={false}
+      style={{ backgroundColor: "#FFFFFF" }}
+      header={
+        <ScreenHeader
+          title="ประวัติเหตุการณ์"
+          rightElement={
+            <TouchableOpacity
+              onPress={() => setUseMockData(!useMockData)}
+              className="p-2 -mr-2"
+            >
+              <MaterialIcons
+                name={useMockData ? "visibility" : "visibility-off"}
+                size={28}
+                color="#6B7280"
+              />
+            </TouchableOpacity>
+          }
+        />
+      }
+    >
       {/* Navigation Link */}
       <View className="px-6">
         <TouchableOpacity
           className="flex-row items-center justify-between py-4 mb-2 border-b border-gray-100"
-          onPress={() => router.push('/(features)/(monitoring)/report-summary')}
+          onPress={() => router.push("/(features)/(monitoring)/report-summary")}
         >
-          <Text style={{ fontSize: 16, fontWeight: '500' }} className="font-kanit text-gray-900">
+          <Text
+            style={{ fontSize: 16, fontWeight: "500" }}
+            className="font-kanit text-gray-900"
+          >
             ดูรายงานสรุปประจำเดือน
           </Text>
           <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
@@ -248,12 +321,17 @@ export default function HistoryScreen() {
 
         <View className="flex-row items-center justify-between mb-4 mt-2">
           <Text style={{ fontSize: 14 }} className="font-kanit text-gray-500">
-            {useMockData ? 'แสดงข้อมูลตัวอย่าง' : `แสดง ${totalEvents} จาก ${displayEvents.length} เหตุการณ์`}
+            {useMockData
+              ? "แสดงข้อมูลตัวอย่าง"
+              : `แสดง ${totalEvents} จาก ${displayEvents.length} เหตุการณ์`}
           </Text>
           {/* TODO: REMOVE THIS BADGE IN PRODUCTION */}
           {useMockData && (
             <View className="bg-blue-50 px-3 py-1 rounded-full">
-              <Text style={{ fontSize: 12 }} className="font-kanit text-blue-600">
+              <Text
+                style={{ fontSize: 12 }}
+                className="font-kanit text-blue-600"
+              >
                 MOCK DATA
               </Text>
             </View>
@@ -262,26 +340,34 @@ export default function HistoryScreen() {
 
         {/* Limit Filter Chips */}
         <View className="flex-row items-center mb-4">
-          <Text style={{ fontSize: 14 }} className="font-kanit text-gray-600 mr-3">
+          <Text
+            style={{ fontSize: 14 }}
+            className="font-kanit text-gray-600 mr-3"
+          >
             แสดง:
           </Text>
           <View className="flex-row gap-2">
             {[25, 50, null].map((limit) => {
               const isSelected = displayLimit === limit;
-              const label = limit === null ? 'ทั้งหมด' : `${limit}`;
+              const label = limit === null ? "ทั้งหมด" : `${limit}`;
 
               return (
                 <TouchableOpacity
-                  key={limit?.toString() || 'all'}
+                  key={limit?.toString() || "all"}
                   onPress={() => setDisplayLimit(limit)}
-                  className={`px-4 py-2 rounded-full ${isSelected ? 'bg-[#16AD78]' : 'bg-gray-100'
-                    }`}
+                  className={`px-4 py-2 rounded-full ${
+                    isSelected ? "bg-[#16AD78]" : "bg-gray-100"
+                  }`}
                   activeOpacity={0.7}
                 >
                   <Text
-                    style={{ fontSize: 14, fontWeight: isSelected ? '600' : '400' }}
-                    className={`font-kanit ${isSelected ? 'text-white' : 'text-gray-700'
-                      }`}
+                    style={{
+                      fontSize: 14,
+                      fontWeight: isSelected ? "600" : "400",
+                    }}
+                    className={`font-kanit ${
+                      isSelected ? "text-white" : "text-gray-700"
+                    }`}
                   >
                     {label}
                   </Text>
@@ -296,7 +382,9 @@ export default function HistoryScreen() {
       {isLoading && !useMockData ? (
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color="#16AD78" />
-          <Text className="font-kanit text-gray-500 mt-4">กำลังโหลดข้อมูล...</Text>
+          <Text className="font-kanit text-gray-500 mt-4">
+            กำลังโหลดข้อมูล...
+          </Text>
         </View>
       ) : (
         <FlatList
@@ -307,14 +395,21 @@ export default function HistoryScreen() {
             <RefreshControl
               refreshing={!useMockData && isLoading}
               onRefresh={refetch}
-              colors={['#16AD78']}
+              colors={["#16AD78"]}
             />
           }
-          contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 8, paddingBottom: 20 }}
+          contentContainerStyle={{
+            paddingHorizontal: 24,
+            paddingTop: 8,
+            paddingBottom: 20,
+          }}
           ListEmptyComponent={
             <View className="mt-20 items-center">
               <MaterialIcons name="event-note" size={64} color="#D1D5DB" />
-              <Text style={{ fontSize: 16 }} className="font-kanit text-gray-400 mt-4">
+              <Text
+                style={{ fontSize: 16 }}
+                className="font-kanit text-gray-400 mt-4"
+              >
                 ไม่มีประวัติเหตุการณ์ผิดปกติ
               </Text>
             </View>
@@ -322,6 +417,6 @@ export default function HistoryScreen() {
           showsVerticalScrollIndicator={false}
         />
       )}
-    </SafeAreaView>
+    </ScreenWrapper>
   );
 }

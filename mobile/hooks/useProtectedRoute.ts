@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter, useSegments } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
 import Logger from '@/utils/logger';
@@ -12,6 +12,7 @@ export function useProtectedRoute() {
   const segments = useSegments();
   const router = useRouter();
   const checkingRef = useRef(false);
+  const hasCheckedSetup = useRef(false);
 
   useEffect(() => {
     if (isLoading) return;
@@ -23,19 +24,22 @@ export function useProtectedRoute() {
       isSignedIn, 
       currentSegment: segments[0],
       inAuthGroup,
-      inTabsGroup
+      inTabsGroup,
+      hasCheckedSetup: hasCheckedSetup.current
     });
 
     if (!isSignedIn && !inAuthGroup) {
       // User is NOT signed in, but trying to access a protected route
       // Redirect to Login
+      hasCheckedSetup.current = false;
       router.replace('/(auth)/login');
     } else if (isSignedIn && inAuthGroup && segments[0] !== '(setup)') {
       // User IS signed in, but is on an auth screen (login/register)
       // Check if they have elder data before redirecting
+      hasCheckedSetup.current = false;
       checkElderAndRedirect();
-    } else if (isSignedIn && inTabsGroup) {
-      // User IS signed in and on tabs → always check setup completion
+    } else if (isSignedIn && inTabsGroup && !hasCheckedSetup.current) {
+      // User IS signed in and on tabs → check setup completion ONCE
       checkElderAndRedirect();
     }
   }, [isSignedIn, segments, isLoading]);
@@ -47,48 +51,32 @@ export function useProtectedRoute() {
     
     try {
       const { getUserElders } = require('../services/userService');
-      const { listDevices } = require('../services/deviceService');
       const elders = await getUserElders();
       
       if (!elders || elders.length === 0) {
         // No elder data → redirect to step 1 (via empty-state)
+        hasCheckedSetup.current = true;
         router.replace('/(setup)/empty-state');
         return;
       }
 
-      // Has elder → check device status
-      const elder = elders[0];
+      // Has elder → setup is considered complete
+      // Mark as checked and allow staying in tabs
+      hasCheckedSetup.current = true;
       
-      if (!elder.deviceId) {
-        // Elder exists but no device → redirect to step 2 (device pairing)
-        router.replace('/(setup)/step2-device-pairing');
-        return;
+      // Only redirect to tabs if we're NOT already there
+      if (segments[0] !== '(tabs)') {
+        router.replace('/(tabs)');
       }
-
-      // Has elder + deviceId → check WiFi status
-      try {
-        const devices = await listDevices();
-        const device = devices.find((d: any) => d.id === elder.deviceId);
-        
-        if (!device || !device.wifiSsid) {
-          // Device not connected to WiFi → redirect to step 3 (WiFi config)
-          router.replace('/(setup)/step3-wifi-setup');
-          return;
-        }
-      } catch (error) {
-        Logger.error('Failed to check device WiFi:', error);
-        // If can't check device, assume WiFi not configured
-        router.replace('/(setup)/step3-wifi-setup');
-        return;
-      }
-
-      // Everything complete → redirect to home
-      router.replace('/(tabs)');
       
     } catch (error) {
       Logger.error('Failed to check elder data:', error);
-      // Fallback to home on error
-      router.replace('/(tabs)');
+      // Mark as checked to prevent loops
+      hasCheckedSetup.current = true;
+      // On error, assume setup is complete and stay/go to tabs
+      if (segments[0] !== '(tabs)') {
+        router.replace('/(tabs)');
+      }
     } finally {
       checkingRef.current = false;
     }

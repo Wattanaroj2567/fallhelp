@@ -1,73 +1,305 @@
-import React from 'react';
-import { useQuery } from '@tanstack/react-query';
-import api from '../services/api';
-import { Users, Smartphone, AlertTriangle, Activity } from 'lucide-react';
+import { useQuery } from "@tanstack/react-query";
+import api from "../services/api";
+import { useAuth } from "../context/AuthContext";
+import {
+  Users as UsersIcon,
+  Smartphone,
+  Activity,
+  Calendar,
+} from "lucide-react";
+
+// Type definitions
+interface User {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: string;
+  isActive: boolean;
+}
+
+interface CaregiverAccess {
+  user: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  };
+}
+
+interface Elder {
+  id: string;
+  firstName: string;
+  lastName: string;
+  gender: string;
+  dateOfBirth: string;
+  isActive: boolean;
+  caregivers?: CaregiverAccess[];
+}
+
+// Helper function to convert date to Buddhist Era
+const toBuddhistYear = (date: Date | string): string => {
+  const d = new Date(date);
+  const buddhistYear = d.getFullYear() + 543;
+  const day = d.getDate().toString().padStart(2, "0");
+  const month = (d.getMonth() + 1).toString().padStart(2, "0");
+  return `${day}/${month}/${buddhistYear}`;
+};
 
 export default function Dashboard() {
-    const { data, isLoading, error } = useQuery({
-        queryKey: ['dashboardStats'],
-        queryFn: async () => {
-            const response = await api.get('/admin/dashboard');
-            return response.data.data;
-        },
-        refetchInterval: 5000, // Auto-refresh every 5 seconds
-    });
+  const { user: currentUser } = useAuth();
 
-    if (isLoading) return <div className="text-center py-10">Loading stats...</div>;
-    if (error) return <div className="text-center py-10 text-red-500">Failed to load dashboard data</div>;
+  const { data, isLoading: dashboardLoading } = useQuery({
+    queryKey: ["dashboardStats"],
+    queryFn: async () => {
+      const response = await api.get("/admin/dashboard");
+      return response.data.data;
+    },
+    refetchInterval: 5000,
+  });
 
-    const stats = [
-        {
-            label: 'Total Users',
-            value: data.totalUsers,
-            icon: Users,
-            color: 'bg-blue-500',
-        },
-        {
-            label: 'Total Elders',
-            value: data.totalElders,
-            icon: Activity,
-            color: 'bg-purple-500',
-        },
-        {
-            label: 'Active Devices',
-            value: `${data.activeDevices || 0} / ${data.totalDevices || 0}`,
-            icon: Smartphone,
-            color: 'bg-green-500',
-        },
-        {
-            label: 'Active Alerts',
-            value: data.activeAlerts || 0,
-            icon: AlertTriangle,
-            color: 'bg-red-500',
-        },
-    ];
+  const { data: users, isLoading: usersLoading } = useQuery({
+    queryKey: ["users"],
+    queryFn: async () => {
+      const response = await api.get("/admin/users");
+      return response.data.data;
+    },
+    refetchInterval: 5000,
+  });
 
+  const { data: elders, isLoading: eldersLoading } = useQuery({
+    queryKey: ["elders"],
+    queryFn: async () => {
+      const response = await api.get("/admin/elders");
+      return response.data.data;
+    },
+    refetchInterval: 5000,
+  });
+
+  if (dashboardLoading || usersLoading || eldersLoading) {
     return (
-        <div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-6">Dashboard Overview</h1>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                {stats.map((stat, index) => (
-                    <div key={index} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center">
-                        <div className={`${stat.color} p-4 rounded-lg text-white mr-4`}>
-                            <stat.icon size={24} />
-                        </div>
-                        <div>
-                            <p className="text-gray-500 text-sm">{stat.label}</p>
-                            <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-                        </div>
-                    </div>
-                ))}
-            </div>
-
-            {/* Recent Activity Placeholder */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                <h2 className="text-lg font-bold text-gray-900 mb-4">Recent System Events</h2>
-                <div className="text-gray-500 text-center py-8">
-                    No recent events to display.
-                </div>
-            </div>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-500">Loading dashboard...</p>
         </div>
+      </div>
     );
+  }
+
+  const stats = [
+    {
+      label: "Total Users",
+      value: data?.totalUsers || users?.length || 0,
+      icon: UsersIcon,
+      gradient: "from-blue-500 to-blue-600",
+      text: "text-blue-600",
+    },
+    {
+      label: "Total Elders",
+      value: data?.totalElders || elders?.length || 0,
+      icon: Activity,
+      gradient: "from-purple-500 to-purple-600",
+      text: "text-purple-600",
+    },
+    {
+      label: "Active Devices",
+      value: `${data?.activeDevices || 0} / ${data?.totalDevices || 0}`,
+      icon: Smartphone,
+      gradient: "from-green-500 to-green-600",
+      text: "text-green-600",
+    },
+  ];
+
+  return (
+    <div className="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-indigo-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold bg-linear-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent mb-2">
+            Dashboard Overview
+          </h1>
+          <p className="text-gray-500">
+            Real-time system monitoring and statistics
+          </p>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          {stats.map((stat, index) => (
+            <div
+              key={index}
+              className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div
+                  className={`p-2.5 rounded-xl bg-linear-to-br ${stat.gradient} shadow-lg`}
+                >
+                  <stat.icon size={20} className="text-white" />
+                </div>
+              </div>
+              <p className="text-sm text-gray-500 mb-1">{stat.label}</p>
+              <p className={`text-3xl font-bold ${stat.text}`}>{stat.value}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Users Section */}
+        <div className="mb-8">
+          <div className="mb-4">
+            <h2 className="text-2xl font-bold bg-linear-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+              Registered Users
+            </h2>
+          </div>
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-linear-to-r from-gray-50 to-blue-50 border-b border-gray-200">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    Name
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    Email
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    Role
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    Status
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {users?.map((user: User) => (
+                  <tr
+                    key={user.id}
+                    className="hover:bg-blue-50/50 transition-colors"
+                  >
+                    <td className="px-6 py-4">
+                      <div>
+                        <p className="font-semibold text-gray-900">
+                          {user.firstName} {user.lastName}
+                        </p>
+                        {currentUser?.id === user.id && (
+                          <span className="inline-block mt-0.5 px-2 py-0.5 bg-green-100 text-green-700 text-xs font-semibold rounded-full">
+                            You
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-gray-600">{user.email}</td>
+                    <td className="px-6 py-4">
+                      <span
+                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${user.role === "ADMIN"
+                          ? "bg-purple-100 text-purple-700 border border-purple-200"
+                          : "bg-blue-100 text-blue-700 border border-blue-200"
+                          }`}
+                      >
+                        {user.role}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span
+                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${user.isActive
+                          ? "bg-green-100 text-green-700 border border-green-200"
+                          : "bg-red-100 text-red-700 border border-red-200"
+                          }`}
+                      >
+                        {user.isActive ? "Active" : "Inactive"}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Elders Section */}
+        <div>
+          <div className="mb-4">
+            <h2 className="text-2xl font-bold bg-linear-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+              Elders
+            </h2>
+          </div>
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-linear-to-r from-gray-50 to-purple-50 border-b border-gray-200">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    Name
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    Caregiver
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    Gender
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    Date of Birth
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    Status
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {elders?.map((elder: Elder) => (
+                  <tr
+                    key={elder.id}
+                    className="hover:bg-purple-50/50 transition-colors"
+                  >
+                    <td className="px-6 py-4">
+                      <p className="font-semibold text-gray-900">
+                        {elder.firstName} {elder.lastName}
+                      </p>
+                    </td>
+                    <td className="px-6 py-4">
+                      {elder.caregivers && elder.caregivers.length > 0 ? (
+                        <div className="flex flex-col gap-1">
+                          {elder.caregivers.map((access: CaregiverAccess) => (
+                            <span
+                              key={access.user.id}
+                              className="text-sm text-gray-700"
+                            >
+                              {access.user.firstName} {access.user.lastName}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-gray-400 italic text-sm">
+                          No caregiver
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-700">
+                        {elder.gender}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2 text-gray-700">
+                        <Calendar className="w-4 h-4 text-gray-400" />
+                        <span className="font-medium">
+                          {toBuddhistYear(elder.dateOfBirth)}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span
+                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${elder.isActive
+                          ? "bg-green-100 text-green-700 border border-green-200"
+                          : "bg-red-100 text-red-700 border border-red-200"
+                          }`}
+                      >
+                        {elder.isActive ? "Active" : "Inactive"}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
