@@ -336,7 +336,7 @@ export default function ElderInfo() {
 
           {/* Edit Button */}
           {/* Edit Button - Hide if Read Only */}
-          {elder.accessLevel === 'OWNER' && (
+          {(elder.accessLevel === 'OWNER' || elder.accessLevel === 'EDITOR') && (
             <PrimaryButton
               title="แก้ไขข้อมูล"
               variant="outline"
@@ -345,7 +345,7 @@ export default function ElderInfo() {
           )}
 
           {/* View Only Message */}
-          {elder.accessLevel !== 'OWNER' && (
+          {elder.accessLevel !== 'OWNER' && elder.accessLevel !== 'EDITOR' && (
             <View className="bg-gray-50 rounded-2xl p-4 mt-6 items-center">
               <MaterialIcons name="lock-outline" size={24} color="#9CA3AF" />
               <Text className="font-kanit text-gray-500 text-center mt-2">

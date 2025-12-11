@@ -22,6 +22,7 @@ router.delete('/:id', elderController.deleteElder);
 // Member management
 router.get('/:id/members', elderController.getElderMembers);
 router.post('/:id/members', elderController.inviteMember);
+router.patch('/:id/members/:userId', elderController.updateMemberAccess);
 router.delete('/:id/members/:userId', elderController.removeMember);
 
 // Emergency Contacts (Nested under elders)

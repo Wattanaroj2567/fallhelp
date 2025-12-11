@@ -7,13 +7,12 @@ import {
   ActivityIndicator,
   Alert,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getProfile } from "@/services/userService";
 import { Image } from "react-native";
-import { listMembers, removeMember } from "@/services/elderService";
+import { listMembers } from "@/services/elderService";
 import { useCurrentElder } from "@/hooks/useCurrentElder";
 import Logger from "@/utils/logger";
 import { ScreenWrapper } from "@/components/ScreenWrapper";
@@ -23,10 +22,129 @@ import { PrimaryButton } from "@/components/PrimaryButton";
 interface MemberDisplay {
   id: string;
   email: string;
-  role: "OWNER" | "VIEWER";
+  role: "OWNER" | "EDITOR" | "VIEWER";
   name: string;
   profileImage?: string | null;
 }
+
+// ==========================================
+// 🧩 LAYER: View (Sub-Component)
+// Purpose: Optimized Member Item
+// ==========================================
+const MemberItem = React.memo(
+  ({
+    item,
+    currentUserId,
+  }: {
+    item: MemberDisplay;
+    currentUserId?: string;
+  }) => {
+    const router = useRouter();
+    const isMe = currentUserId === item.id;
+    const isOwner = item.role === "OWNER";
+
+    const handlePress = () => {
+      if (isMe) return;
+
+      router.push({
+        pathname: "/(features)/(user)/member-detail",
+        params: {
+          memberId: item.id,
+          initialRole: item.role,
+          memberName: item.name,
+          memberEmail: item.email,
+          memberImage: item.profileImage || "",
+        },
+      });
+    };
+
+    return (
+      <TouchableOpacity
+        onPress={handlePress}
+        disabled={isMe}
+        activeOpacity={0.7}
+        className={`bg-white rounded-2xl p-4 mb-3 flex-row items-start border border-gray-100 shadow-sm shadow-gray-100 ${isMe ? "opacity-100" : ""
+          }`}
+      >
+        <View className="w-12 h-12 rounded-full bg-gray-100 items-center justify-center mr-3 overflow-hidden border border-gray-100">
+          {item.profileImage ? (
+            <Image
+              source={{ uri: item.profileImage }}
+              className="w-full h-full"
+              resizeMode="cover"
+            />
+          ) : (
+            <MaterialIcons name="person" size={24} color="#9CA3AF" />
+          )}
+        </View>
+        <View className="flex-1">
+          <Text
+            style={{ fontSize: 16, fontWeight: "600" }}
+            className="font-kanit text-gray-900"
+          >
+            {item.name}
+            {isMe && <Text className="text-blue-600"> (ฉัน)</Text>}
+          </Text>
+          <Text
+            style={{ fontSize: 13 }}
+            className="font-kanit text-gray-500 mb-2"
+          >
+            {item.email}
+          </Text>
+
+          <View className="flex-row flex-wrap gap-2">
+            {/* Role Badge */}
+            <View
+              className={`self-start px-2 py-0.5 rounded-full ${isOwner ? "bg-purple-100" : "bg-gray-100 border border-gray-200"
+                }`}
+            >
+              <Text
+                style={{ fontSize: 11 }}
+                className={`font-kanit ${isOwner
+                    ? "text-purple-700 font-medium"
+                    : "text-gray-600 font-medium"
+                  }`}
+              >
+                {isOwner ? "ญาติผู้ดูแลหลัก (Owner)" : "ญาติผู้ดูแลเสริม"}
+              </Text>
+            </View>
+
+            {/* View Only Badge */}
+            {!isOwner && item.role === "VIEWER" && (
+              <View className="self-start px-2 py-0.5 rounded-full bg-orange-50 border border-orange-100">
+                <Text
+                  style={{ fontSize: 10 }}
+                  className="font-kanit text-orange-700"
+                >
+                  ดูได้อย่างเดียว
+                </Text>
+              </View>
+            )}
+
+            {/* Editor Badge */}
+            {!isOwner && item.role === "EDITOR" && (
+              <View className="self-start px-2 py-0.5 rounded-full bg-teal-50 border border-teal-100">
+                <Text
+                  style={{ fontSize: 10 }}
+                  className="font-kanit text-teal-700"
+                >
+                  แก้ไขได้
+                </Text>
+              </View>
+            )}
+          </View>
+
+          {/* Chevright icon to indicate clickable (Hide if Me) */}
+          {!isMe && (
+            <View className="absolute right-0 top-1">
+              <MaterialIcons name="chevron-right" size={20} color="#E5E7EB" />
+            </View>
+          )}
+        </View>
+      </TouchableOpacity>
+    );
+  }
+);
 
 // ==========================================
 // 📱 LAYER: View (Component)
@@ -70,127 +188,17 @@ export default function Members() {
       return memberList.map((m: any) => ({
         id: m.userId || m.id,
         email: m.user?.email || m.email || "ไม่ระบุ",
-        role: (m.accessLevel === "OWNER" ? "OWNER" : "VIEWER") as
-          | "OWNER"
-          | "VIEWER",
+        role: (m.accessLevel === "OWNER"
+          ? "OWNER"
+          : m.accessLevel === "EDITOR"
+            ? "EDITOR"
+            : "VIEWER") as "OWNER" | "EDITOR" | "VIEWER",
         name: m.user ? `${m.user.firstName} ${m.user.lastName}` : "ไม่ระบุ",
         profileImage: m.user?.profileImage,
       })) as MemberDisplay[];
     },
     enabled: !!currentElder?.id,
   });
-
-  // ==========================================
-  // ⚙️ LAYER: Logic (Mutation)
-  // Purpose: Delete Member
-  // ==========================================
-  const deleteMutation = useMutation({
-    mutationFn: async (memberId: string) => {
-      if (!currentElder?.id) throw new Error("No elder ID");
-      await removeMember(currentElder.id, memberId);
-    },
-    onSuccess: () => {
-      Alert.alert("สำเร็จ", "ลบสมาชิกเรียบร้อยแล้ว");
-      queryClient.invalidateQueries({ queryKey: ["members"] });
-    },
-    onError: () => {
-      Alert.alert("ข้อผิดพลาด", "ไม่สามารถลบสมาชิกได้");
-    },
-  });
-
-  // ==========================================
-  // 🎮 LAYER: Logic (Event Handlers)
-  // Purpose: Handle delete confirmation
-  // ==========================================
-  const handleDeleteMember = (memberId: string, memberName: string) => {
-    Alert.alert(
-      "ยืนยันการลบสมาชิก",
-      `คุณต้องการลบ ${memberName} ออกจากกลุ่มใช่หรือไม่?`,
-      [
-        { text: "ยกเลิก", style: "cancel" },
-        {
-          text: "ลบ",
-          style: "destructive",
-          onPress: () => deleteMutation.mutate(memberId),
-        },
-      ]
-    );
-  };
-
-  // ==========================================
-  // 🖼️ LAYER: View (Sub-Component)
-  // Purpose: Render individual member item
-  // ==========================================
-  const renderMemberItem = ({ item }: { item: MemberDisplay }) => {
-    const isMe = userProfile?.id === item.id;
-    const isOwner = item.role === "OWNER";
-
-    return (
-      <View className="bg-white rounded-2xl p-4 mb-3 flex-row items-start border border-gray-100 shadow-sm shadow-gray-100">
-        <View className="w-12 h-12 rounded-full bg-gray-100 items-center justify-center mr-3 overflow-hidden border border-gray-100">
-          {item.profileImage ? (
-            <Image
-              source={{ uri: item.profileImage }}
-              className="w-full h-full"
-              resizeMode="cover"
-            />
-          ) : (
-            <MaterialIcons name="person" size={24} color="#9CA3AF" />
-          )}
-        </View>
-        <View className="flex-1">
-          <Text
-            style={{ fontSize: 16, fontWeight: "600" }}
-            className="font-kanit text-gray-900"
-          >
-            {item.name}
-          </Text>
-          <Text style={{ fontSize: 13 }} className="font-kanit text-gray-500 mb-2">
-            {item.email}
-          </Text>
-
-          <View className="flex-row flex-wrap gap-2">
-            {/* Role Badge */}
-            <View
-              className={`self-start px-2 py-0.5 rounded-full ${isOwner ? "bg-yellow-100" : "bg-blue-50"
-                }`}
-            >
-              <Text
-                style={{ fontSize: 11 }}
-                className={`font-kanit ${isOwner ? "text-yellow-700 font-medium" : "text-blue-600 font-medium"
-                  }`}
-              >
-                {isOwner
-                  ? "ญาติผู้ดูแลหลัก"
-                  : "ญาติผู้ดูแลเสริม"}
-                {isMe ? " (ฉัน)" : ""}
-              </Text>
-            </View>
-
-            {/* View Only Badge (for non-owners) */}
-            {!isOwner && (
-              <View className="self-start px-2 py-0.5 rounded-full bg-gray-100 border border-gray-200">
-                <Text style={{ fontSize: 10 }} className="font-kanit text-gray-500">
-                  ดูได้อย่างเดียว
-                </Text>
-              </View>
-            )}
-          </View>
-        </View>
-
-        {/* Delete Button (Only for Owners, can't delete self, can delete others) */}
-        {!isOwner && currentElder?.accessLevel === 'OWNER' && (
-          <TouchableOpacity
-            onPress={() => handleDeleteMember(item.id, item.name)}
-            className="ml-2 p-2 bg-red-50 rounded-full"
-            disabled={deleteMutation.isPending}
-          >
-            <MaterialIcons name="delete-outline" size={20} color="#EF4444" />
-          </TouchableOpacity>
-        )}
-      </View>
-    );
-  };
 
   // ==========================================
   // 🖼️ LAYER: View (Sub-Component)
@@ -246,10 +254,14 @@ export default function Members() {
     <ScreenWrapper
       edges={["top"]}
       useScrollView={false}
-      style={{ backgroundColor: "#FFFFFF" }}
+      style={{ backgroundColor: "#F9FAFB" }}
     >
       {/* Header */}
-      <ScreenHeader title="จัดการสมาชิก" onBack={() => router.back()} />
+      <ScreenHeader
+        title={`จัดการสมาชิก (${members?.length || 0})`}
+        onBack={() => router.back()}
+        backgroundColor="#F9FAFB"
+      />
 
       {isLoading ? (
         <View className="flex-1 items-center justify-center">
@@ -272,7 +284,9 @@ export default function Members() {
                   style={{ fontSize: 13, lineHeight: 20 }}
                   className="font-kanit text-blue-700 ml-2 flex-1"
                 >
-                  สมาชิกที่ถูกเชิญจะสามารถดูข้อมูลผู้สูงอายุและประวัติการหกล้มได้เท่านั้น ไม่สามารถแก้ไขหรือลบข้อมูลได้
+                  สมาชิกสามารถถูกกำหนดสิทธิ์ให้เป็นผู้ช่วยที่แก้ไขข้อมูลได้
+                  หรือดูได้อย่างเดียว
+                  โดยการแตะที่รายชื่อเพื่อจัดการสิทธิ์
                 </Text>
               </View>
             </View>
@@ -282,7 +296,9 @@ export default function Members() {
           <View className="flex-1 px-6">
             <FlatList
               data={members}
-              renderItem={renderMemberItem}
+              renderItem={({ item }) => (
+                <MemberItem item={item} currentUserId={userProfile?.id} />
+              )}
               keyExtractor={(item) => item.id}
               ListEmptyComponent={renderEmptyState}
               showsVerticalScrollIndicator={false}
@@ -293,14 +309,18 @@ export default function Members() {
           </View>
 
           {/* Fixed Bottom Button (Only for Owner) */}
-          {members && members.length > 0 && currentElder?.accessLevel === 'OWNER' && (
-            <View className="px-6 py-5 bg-white border-t border-gray-100">
-              <PrimaryButton
-                title="เชิญสมาชิกเข้ากลุ่มของคุณ"
-                onPress={() => router.push("/(features)/(user)/invite-member")}
-              />
-            </View>
-          )}
+          {members &&
+            members.length > 0 &&
+            currentElder?.accessLevel === "OWNER" && (
+              <View className="px-6 py-5 bg-white border-t border-gray-100">
+                <PrimaryButton
+                  title="เชิญสมาชิกเข้ากลุ่มของคุณ"
+                  onPress={() =>
+                    router.push("/(features)/(user)/invite-member")
+                  }
+                />
+              </View>
+            )}
         </View>
       )}
     </ScreenWrapper>

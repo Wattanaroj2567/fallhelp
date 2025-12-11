@@ -69,7 +69,7 @@ export default function EditElderInfo() {
     },
   });
 
-  const isReadOnly = elder?.accessLevel === 'VIEWER';
+  const isReadOnly = !elder || (elder.accessLevel !== 'OWNER' && elder.accessLevel !== 'EDITOR');
 
   // ==========================================
   // 🧩 LAYER: Logic (Side Effects)

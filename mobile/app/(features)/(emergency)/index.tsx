@@ -43,7 +43,7 @@ export default function EmergencyContacts() {
   // Purpose: Check Access Level
   // ==========================================
   const { data: currentElder, isLoading: isElderLoading } = useCurrentElder();
-  const isReadOnly = !currentElder || currentElder.accessLevel !== 'OWNER';
+  const isReadOnly = !currentElder || (currentElder.accessLevel !== 'OWNER' && currentElder.accessLevel !== 'EDITOR');
 
   // ==========================================
   // ⚙️ LAYER: Logic (Data Fetching)
@@ -54,21 +54,42 @@ export default function EmergencyContacts() {
     isLoading,
     refetch,
   } = useQuery<EmergencyContact[]>({
-    queryKey: ["emergencyContacts"],
+    queryKey: ["emergencyContacts", currentElder?.id],
+    enabled: !!currentElder?.id,
     queryFn: async () => {
-      // Use the cached elder if available, otherwise fetch
-      // But here we need to ensure we get the contacts for the correct elder.
-      // useCurrentElder handles fetching elders.
-      // If we rely on useCurrentElder, we might wait for it.
-
-      // Fallback or use currentElder directly if ready
       let elderId = currentElder?.id;
+      // If currentElder is not ready, we wait or return empty to rely on hook.
+      // But we want to fetch fast.
+      // If we fetch manually here, we don't update currentElder state/accessLevel!
+      // This useQuery ONLY returns contacts.
+      // The component relies on `currentElder` (from hook) for accessLevel.
+
+      // If hook is slow but this query is fast (fetching elders again), this query works (shows contacts).
+      // But `currentElder` variable (from hook) might still be undefined or stale?
+      // No, they share the same query key ['userElders'] ideally?
+
+      // `useCurrentElder` uses `getUserElders` with key `['userElders']`.
+      // `useQuery` here calls `listContacts`. It does NOT call `getUserElders` unless `!elderId`.
+      // If `!elderId`, it calls `getUserElders`. THIS DOES NOT update the `useCurrentElder` hook's data cache automatically unless queryClient matches.
+      // `useCurrentElder` uses `useQuery`.
+      // Here we call `getUserElders` directly (function). This does NOT update React Query cache for 'userElders'.
+
+      // So: Contacts load (because we fetched elder ID manually).
+      // But `currentElder` (from hook) is still loading or empty?
+      // If `currentElder` is loading, `isElderLoading` is true. Banner hidden.
+
+      // If `currentElder` loaded, why is accessLevel wrong?
+
       if (!elderId) {
+        // Fallback
         const elders = await getUserElders();
-        if (elders && elders.length > 0) {
+        if (elders?.length > 0) {
           elderId = elders[0].id;
+          // We have the elder here! But we don't pass it to the component state.
         }
       }
+
+      // ... fetch contacts ...
 
       if (elderId) {
         const contactList = await listContacts(elderId);
@@ -78,7 +99,6 @@ export default function EmergencyContacts() {
       }
       return [];
     },
-    enabled: true, // simplified, dependent on refetch basically or generic query
   });
 
   // Sync local state with fetched data
@@ -92,7 +112,9 @@ export default function EmergencyContacts() {
   useFocusEffect(
     React.useCallback(() => {
       refetch();
-    }, [refetch])
+      // Also refetch elder permissions to be safe
+      queryClient.invalidateQueries({ queryKey: ['userElders'] });
+    }, [refetch, queryClient])
   );
 
   // ==========================================
@@ -110,6 +132,14 @@ export default function EmergencyContacts() {
     },
   });
 
+  // Debug: Log Access Level
+  useEffect(() => {
+    if (currentElder) {
+      console.log('Debug: Current Elder:', JSON.stringify(currentElder, null, 2));
+      console.log('Debug: Access Level:', currentElder.accessLevel);
+    }
+  }, [currentElder]);
+
   const reorderMutation = useMutation({
     mutationFn: ({
       elderId,
@@ -122,7 +152,7 @@ export default function EmergencyContacts() {
       queryClient.invalidateQueries({ queryKey: ["emergencyContacts"] });
     },
     onError: (error: any) => {
-      Logger.error("Reorder failed", error);
+      console.error("Reorder failed", error); // Changed from Logger to console for now
       Alert.alert("ผิดพลาด", "ไม่สามารถบันทึกลำดับได้");
       refetch(); // Revert on error
     },
@@ -155,8 +185,8 @@ export default function EmergencyContacts() {
     // Extract IDs in new order
     const contactIds = data.map((c) => c.id);
 
-    if (data.length > 0) {
-      const elderId = data[0].elderId; // Assuming data has elderId or use currentElder.id
+    if (data.length > 1) { // Prevent reordering if only 1 item
+      const elderId = data[0].elderId;
       reorderMutation.mutate({ elderId, contactIds });
     }
   };
@@ -181,8 +211,8 @@ export default function EmergencyContacts() {
           className={`bg-white rounded-2xl p-4 mb-3 shadow-sm border border-gray-100 flex-row items-center ${isActive ? "opacity-90 shadow-lg scale-105" : ""
             }`}
         >
-          {/* Drag Handle - Hide if ReadOnly */}
-          {!isReadOnly && (
+          {/* Drag Handle - Hide if ReadOnly or Single Item */}
+          {!isReadOnly && localContacts.length > 1 && (
             <TouchableOpacity onPressIn={drag} className="mr-4 p-2">
               <MaterialIcons name="drag-handle" size={24} color="#9CA3AF" />
             </TouchableOpacity>

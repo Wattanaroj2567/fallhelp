@@ -25,8 +25,8 @@ export const createEmergencyContact = asyncHandler(async (req: Request, res: Res
     },
   });
 
-  if (!access || access.accessLevel !== 'OWNER') {
-    throw new Error('Only owner can manage emergency contacts');
+  if (!access || (access.accessLevel !== 'OWNER' && access.accessLevel !== 'EDITOR')) {
+    throw new Error('Only owner or editor can manage emergency contacts');
   }
 
   // Calculate next priority
@@ -121,8 +121,8 @@ export const updateEmergencyContact = asyncHandler(async (req: Request, res: Res
     },
   });
 
-  if (!access || access.accessLevel !== 'OWNER') {
-    throw new Error('Only owner can update emergency contacts');
+  if (!access || (access.accessLevel !== 'OWNER' && access.accessLevel !== 'EDITOR')) {
+    throw new Error('Only owner or editor can update emergency contacts');
   }
 
   const updated = await prisma.emergencyContact.update({
@@ -168,8 +168,8 @@ export const deleteEmergencyContact = asyncHandler(async (req: Request, res: Res
     },
   });
 
-  if (!access || access.accessLevel !== 'OWNER') {
-    throw new Error('Only owner can delete emergency contacts');
+  if (!access || (access.accessLevel !== 'OWNER' && access.accessLevel !== 'EDITOR')) {
+    throw new Error('Only owner or editor can delete emergency contacts');
   }
 
   // Hard delete
@@ -205,8 +205,8 @@ export const reorderEmergencyContacts = asyncHandler(async (req: Request, res: R
     },
   });
 
-  if (!access || access.accessLevel !== 'OWNER') {
-    throw new Error('Only owner can reorder contacts');
+  if (!access || (access.accessLevel !== 'OWNER' && access.accessLevel !== 'EDITOR')) {
+    throw new Error('Only owner or editor can reorder contacts');
   }
 
   // Use transaction to update priorities safely

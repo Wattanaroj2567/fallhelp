@@ -222,8 +222,8 @@ export const updateElder = async (
     },
   });
 
-  if (!access || access.accessLevel !== 'OWNER') {
-    throw new Error('Only owner can update elder information');
+  if (!access || (access.accessLevel !== 'OWNER' && access.accessLevel !== 'EDITOR')) {
+    throw new Error('Only owner or editor can update elder information');
   }
 
   // Convert dateOfBirth string to Date if needed
@@ -402,6 +402,84 @@ export const inviteMember = async (
   }
 
   return newAccess;
+};
+
+/**
+ * Update member access level (only OWNER can update)
+ */
+export const updateMemberAccess = async (
+  userId: string,
+  elderId: string,
+  targetUserId: string,
+  newAccessLevel: AccessLevel
+) => {
+  // Check if requester is OWNER
+  const access = await prisma.userElderAccess.findUnique({
+    where: {
+      userId_elderId: {
+        userId,
+        elderId,
+      },
+    },
+  });
+
+  if (!access || access.accessLevel !== 'OWNER') {
+    throw new Error('Only owner can update member access');
+  }
+
+  // Cannot update self
+  if (targetUserId === userId) {
+    throw new Error('Cannot update your own access level');
+  }
+
+  // Check target user access
+  const targetAccess = await prisma.userElderAccess.findUnique({
+    where: {
+      userId_elderId: {
+        userId: targetUserId,
+        elderId,
+      },
+    },
+  });
+
+  if (!targetAccess) {
+    throw new Error('Member not found');
+  }
+
+  // Cannot change another Owner's role
+  if (targetAccess.accessLevel === 'OWNER') {
+    throw new Error('Cannot change access level of an owner');
+  }
+
+  // Only allow switching between EDITOR and VIEWER
+  if (newAccessLevel !== 'EDITOR' && newAccessLevel !== 'VIEWER') {
+    throw new Error('Invalid access level');
+  }
+
+  const updatedAccess = await prisma.userElderAccess.update({
+    where: {
+      userId_elderId: {
+        userId: targetUserId,
+        elderId,
+      },
+    },
+    data: {
+      accessLevel: newAccessLevel,
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          profileImage: true,
+        },
+      },
+    },
+  });
+
+  return updatedAccess;
 };
 
 /**

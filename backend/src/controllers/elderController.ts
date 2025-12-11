@@ -118,6 +118,23 @@ export const inviteMember = asyncHandler(async (req: Request, res: Response) => 
 });
 
 /**
+ * PATCH /api/elders/:id/members/:userId
+ */
+export const updateMemberAccess = asyncHandler(async (req: Request, res: Response) => {
+  const userId = req.user!.userId;
+  const { id, userId: memberUserId } = req.params;
+  const { accessLevel } = req.body;
+
+  const result = await elderService.updateMemberAccess(userId, id, memberUserId, accessLevel);
+
+  res.json({
+    success: true,
+    message: 'Member access updated successfully',
+    data: result,
+  });
+});
+
+/**
  * DELETE /api/elders/:id/members/:userId
  */
 export const removeMember = asyncHandler(async (req: Request, res: Response) => {

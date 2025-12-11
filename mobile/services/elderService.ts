@@ -105,6 +105,22 @@ export async function inviteMember(elderId: string, payload: InviteMemberPayload
   }
 }
 
+export async function updateMemberAccess(
+  elderId: string,
+  memberId: string,
+  accessLevel: 'EDITOR' | 'VIEWER'
+): Promise<Member> {
+  try {
+    const response = await apiClient.patch<{ data: Member; success: boolean }>(
+      `/api/elders/${elderId}/members/${memberId}`,
+      { accessLevel }
+    );
+    return response.data.data;
+  } catch (error) {
+    throw toApiError(error);
+  }
+}
+
 export async function removeMember(elderId: string, userId: string) {
   try {
     await apiClient.delete(`/api/elders/${elderId}/members/${userId}`);

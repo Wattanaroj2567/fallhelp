@@ -12,7 +12,7 @@ export type Gender = 'MALE' | 'FEMALE' | 'OTHER';
 
 export type UserRole = 'ADMIN' | 'CAREGIVER';
 
-export type AccessLevel = 'OWNER' | 'VIEWER';
+export type AccessLevel = 'OWNER' | 'ADMIN' | 'EDITOR' | 'VIEWER';
 
 export type DeviceStatus = 'ACTIVE' | 'INACTIVE' | 'MAINTENANCE' | 'PAIRED' | 'UNPAIRED';
 

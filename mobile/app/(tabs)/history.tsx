@@ -62,8 +62,8 @@ const generateMockEvents = (): Event[] => {
         type === "FALL"
           ? null
           : type === "HEART_RATE_HIGH"
-          ? 110 + (i % 20)
-          : 45 + (i % 10),
+            ? 110 + (i % 20)
+            : 45 + (i % 10),
       isCancelled: false,
       isNotified: true,
       timestamp: timestamp.toISOString(),
@@ -239,6 +239,7 @@ export default function HistoryScreen() {
       <ScreenWrapper
         edges={["top"]}
         useScrollView={false}
+        keyboardAvoiding={false}
         style={{ backgroundColor: "#FFFFFF" }}
         header={
           <ScreenHeader
@@ -285,6 +286,7 @@ export default function HistoryScreen() {
     <ScreenWrapper
       edges={["top"]}
       useScrollView={false}
+      keyboardAvoiding={false}
       style={{ backgroundColor: "#FFFFFF" }}
       header={
         <ScreenHeader
@@ -355,9 +357,8 @@ export default function HistoryScreen() {
                 <TouchableOpacity
                   key={limit?.toString() || "all"}
                   onPress={() => setDisplayLimit(limit)}
-                  className={`px-4 py-2 rounded-full ${
-                    isSelected ? "bg-[#16AD78]" : "bg-gray-100"
-                  }`}
+                  className={`px-4 py-2 rounded-full ${isSelected ? "bg-[#16AD78]" : "bg-gray-100"
+                    }`}
                   activeOpacity={0.7}
                 >
                   <Text
@@ -365,9 +366,8 @@ export default function HistoryScreen() {
                       fontSize: 14,
                       fontWeight: isSelected ? "600" : "400",
                     }}
-                    className={`font-kanit ${
-                      isSelected ? "text-white" : "text-gray-700"
-                    }`}
+                    className={`font-kanit ${isSelected ? "text-white" : "text-gray-700"
+                      }`}
                   >
                     {label}
                   </Text>

@@ -8,6 +8,7 @@ interface ScreenHeaderProps {
   onBack?: () => void;
   rightElement?: React.ReactNode;
   transparent?: boolean;
+  backgroundColor?: string;
 }
 
 export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
@@ -15,14 +16,18 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
   onBack,
   rightElement,
   transparent = false,
+  backgroundColor,
 }) => {
   const insets = useSafeAreaInsets();
 
   return (
     <View
-      className={`${transparent ? "bg-black/30" : "bg-white"
+      className={`${transparent ? "bg-black/30" : ""
         } rounded-b-[32px] overflow-hidden pb-2`}
-      style={{ paddingTop: transparent ? insets.top : 0 }}
+      style={{
+        paddingTop: transparent ? insets.top : 0,
+        backgroundColor: transparent ? undefined : (backgroundColor || "white")
+      }}
     >
       <View className="flex-row items-center justify-between px-4 py-4">
         {/* Left: Back Button or Placeholder */}

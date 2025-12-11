@@ -122,9 +122,9 @@ export default function DeviceDetails() {
             <View className="flex-1 p-6">
                 {/* View Only Warning - Only show if has actions or no device */}
                 {isReadOnly && (
-                    <View className="bg-yellow-50 rounded-2xl p-4 mb-4 border border-yellow-100 flex-row items-center">
-                        <MaterialIcons name="lock" size={20} color="#CA8A04" style={{ marginRight: 8 }} />
-                        <Text className="font-kanit text-yellow-700 flex-1" style={{ fontSize: 13 }}>
+                    <View className="bg-gray-50 rounded-2xl p-4 mb-4 border border-gray-200 flex-row items-center">
+                        <MaterialIcons name="lock-outline" size={20} color="#9CA3AF" style={{ marginRight: 8 }} />
+                        <Text className="font-kanit text-gray-600 flex-1" style={{ fontSize: 13 }}>
                             โหมดดูได้อย่างเดียว: ไม่สามารถจัดการการเชื่อมต่ออุปกรณ์ได้
                         </Text>
                     </View>

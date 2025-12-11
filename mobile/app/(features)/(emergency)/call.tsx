@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import {
   View,
   Text,
@@ -7,32 +7,41 @@ import {
   Alert,
   ActivityIndicator,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { listContacts } from "@/services/emergencyContactService";
-import { getUserElders } from "@/services/userService";
+import { useCurrentElder } from "@/hooks/useCurrentElder";
 import { ScreenWrapper } from "@/components/ScreenWrapper";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import Logger from "@/utils/logger";
 
 export default function EmergencyCallScreen() {
   const router = useRouter();
+  const queryClient = useQueryClient();
 
-  // Fetch Elder ID first
-  const { data: elders, isLoading: isEldersLoading } = useQuery({
-    queryKey: ["userElders"],
-    queryFn: getUserElders,
-  });
+  // Fetch Current Elder (Centralized Hook)
+  const { data: currentElder, isLoading: isEldersLoading } = useCurrentElder();
 
-  const currentElderId = elders?.[0]?.id;
+  const currentElderId = currentElder?.id;
+  const isOwner = currentElder?.accessLevel === 'OWNER' || currentElder?.accessLevel === 'EDITOR';
 
   // Fetch Contacts
-  const { data: contacts, isLoading: isContactsLoading } = useQuery({
+  const { data: contacts, isLoading: isContactsLoading, refetch: refetchContacts } = useQuery({
     queryKey: ["emergencyContacts", currentElderId],
     queryFn: () => listContacts(currentElderId!),
     enabled: !!currentElderId,
   });
+
+  useFocusEffect(
+    useCallback(() => {
+      if (currentElderId) {
+        refetchContacts();
+      }
+      // Also ensure permissions are up to date
+      queryClient.invalidateQueries({ queryKey: ["userElders"] });
+    }, [currentElderId, refetchContacts, queryClient])
+  );
 
   const isLoading = isEldersLoading || (!!currentElderId && isContactsLoading);
 
@@ -59,7 +68,7 @@ export default function EmergencyCallScreen() {
         title="โทรฉุกเฉิน"
         onBack={() => router.back()}
         rightElement={
-          elders?.[0]?.accessLevel === 'OWNER' ? (
+          isOwner ? (
             <TouchableOpacity
               className="p-2"
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
@@ -68,7 +77,10 @@ export default function EmergencyCallScreen() {
             >
               <MaterialIcons name="settings" size={24} color="#374151" />
             </TouchableOpacity>
-          ) : null
+          ) : (
+            // Placeholder to prevent layout shift if loading or not owner
+            <View style={{ width: 40 }} />
+          )
         }
       />
 
@@ -134,7 +146,7 @@ export default function EmergencyCallScreen() {
               </Text>
 
               {/* Add Contact Button - Hide if Read Only */}
-              {elders?.[0]?.accessLevel === 'OWNER' && (
+              {isOwner && (
                 <TouchableOpacity
                   onPress={() => router.push("/(features)/(emergency)")}
                   className="mt-4 bg-blue-500 px-6 py-3 rounded-full"

@@ -40,7 +40,7 @@ export default function Profile() {
     queryFn: getUserElders,
   });
   const currentElder = elders?.[0];
-  const isOwner = currentElder?.accessLevel === 'OWNER';
+  const isOwner = currentElder?.accessLevel === 'OWNER' || currentElder?.accessLevel === 'EDITOR';
 
   // Reset error state when profile image changes
   React.useEffect(() => {

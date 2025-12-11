@@ -63,13 +63,18 @@ export const ScreenWrapper: React.FC<ScreenWrapperProps> = ({
                 >
                     {children}
                 </KeyboardAwareScrollView>
-            ) : (
-                // Fixed view (Login/Found, etc)
+            ) : keyboardAvoiding ? (
+                // Fixed view with keyboard dismiss
                 <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
                     <View style={[{ flex: 1 }, contentContainerStyle]}>
                         {children}
                     </View>
                 </TouchableWithoutFeedback>
+            ) : (
+                // Fixed view without dismiss (for Lists)
+                <View style={[{ flex: 1 }, contentContainerStyle]}>
+                    {children}
+                </View>
             )}
         </Container>
     );
