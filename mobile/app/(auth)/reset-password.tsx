@@ -118,6 +118,7 @@ export default function ResetPasswordScreen() {
               isPassword
               autoCapitalize="none"
               textContentType="password"
+              accentColor={THEME_COLOR}
             />
 
             {/* Requirements Text (From Image) */}
@@ -147,6 +148,7 @@ export default function ResetPasswordScreen() {
               isPassword
               autoCapitalize="none"
               textContentType="password"
+              accentColor={THEME_COLOR}
             />
           </View>
 

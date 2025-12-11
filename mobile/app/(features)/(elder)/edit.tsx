@@ -69,6 +69,8 @@ export default function EditElderInfo() {
     },
   });
 
+  const isReadOnly = elder?.accessLevel === 'VIEWER';
+
   // ==========================================
   // 🧩 LAYER: Logic (Side Effects)
   // Purpose: Populate form when data is loaded
@@ -132,6 +134,8 @@ export default function EditElderInfo() {
   // Purpose: Handle form submission
   // ==========================================
   const handleSave = () => {
+    if (isReadOnly) return;
+
     // Validation
     if (!firstName.trim()) {
       Alert.alert("กรุณากรอกข้อมูล", "กรุณากรอกชื่อผู้สูงอายุ");
@@ -206,9 +210,9 @@ export default function EditElderInfo() {
       weight: Number(weight),
       diseases: medicalCondition
         ? medicalCondition
-            .split(",")
-            .map((d) => d.trim())
-            .filter((d) => d)
+          .split(",")
+          .map((d) => d.trim())
+          .filter((d) => d)
         : [],
       houseNumber: houseNumber.trim(),
       village: village.trim(),
@@ -222,6 +226,9 @@ export default function EditElderInfo() {
   };
 
   const onDateChange = (event: any, selectedDate?: Date) => {
+    // If read only, ignore
+    if (isReadOnly) return;
+
     const currentDate = selectedDate || dateOfBirth || new Date();
     if (Platform.OS === "android") {
       setShowDatePicker(false);
@@ -261,21 +268,30 @@ export default function EditElderInfo() {
       scrollViewRef={scrollViewRef}
       header={
         <ScreenHeader
-          title="แก้ไขข้อมูลผู้สูงอายุ"
+          title={isReadOnly ? "ข้อมูลผู้สูงอายุ" : "แก้ไขข้อมูลผู้สูงอายุ"}
           onBack={() => router.back()}
         />
       }
     >
       <View>
-        {/* Info Note */}
-        <View className="bg-blue-50 rounded-2xl p-4 mb-6 mt-2">
-          <Text className="font-kanit text-blue-700" style={{ fontSize: 14 }}>
-            ปรับข้อมูลผู้สูงอายุให้เป็นปัจจุบัน
-            เพื่อช่วยให้การติดตามและแจ้งเตือนแม่นยำ
-          </Text>
-        </View>
+        {/* Info Note or Read Only Warning */}
+        {isReadOnly ? (
+          <View className="bg-yellow-50 rounded-2xl p-4 mb-6 mt-2 border border-yellow-100 flex-row items-center">
+            <MaterialIcons name="lock" size={20} color="#CA8A04" style={{ marginRight: 8 }} />
+            <Text className="font-kanit text-yellow-700 flex-1" style={{ fontSize: 14 }}>
+              คุณอยู่ในสถานะ "ดูได้อย่างเดียว" ไม่สามารถแก้ไขข้อมูลได้ กรุณาติดต่อญาติผู้ดูแลหลักหากต้องการเปลี่ยนแปลง
+            </Text>
+          </View>
+        ) : (
+          <View className="bg-blue-50 rounded-2xl p-4 mb-6 mt-2">
+            <Text className="font-kanit text-blue-700" style={{ fontSize: 14 }}>
+              ปรับข้อมูลผู้สูงอายุให้เป็นปัจจุบัน
+              เพื่อช่วยให้การติดตามและแจ้งเตือนแม่นยำ
+            </Text>
+          </View>
+        )}
 
-        <View className="w-full">
+        <View className="w-full" style={{ opacity: isReadOnly ? 0.8 : 1 }} pointerEvents={isReadOnly ? 'none' : 'auto'}>
           {/* Elder Name & Lastname - FloatingLabelInput Match Register */}
           <View className="flex-row gap-3">
             {/* First Name */}
@@ -285,6 +301,7 @@ export default function EditElderInfo() {
               onChangeText={setFirstName}
               isRequired={true}
               containerStyle={{ flex: 1 }}
+              editable={!isReadOnly}
             />
 
             {/* Last Name */}
@@ -294,21 +311,24 @@ export default function EditElderInfo() {
               onChangeText={setLastName}
               isRequired={true}
               containerStyle={{ flex: 1 }}
+              editable={!isReadOnly}
             />
           </View>
 
           {/* Gender - Replaced with Reusable Component */}
+          {/* We might need to make GenderSelect support readonly/disabled prop, or just pointerEvents='none' handles it */}
           <GenderSelect value={gender} onChange={setGender} isRequired={true} />
 
           {/* Birth Date - Using Theme Colors */}
           <View className="mb-4">
             <TouchableOpacity
-              onPress={() => setShowDatePicker(true)}
+              onPress={() => !isReadOnly && setShowDatePicker(true)}
               className="bg-white rounded-2xl px-4 justify-center"
-              style={{ height: 60, borderWidth: 1, borderColor: "#E5E7EB" }}
+              style={{ height: 60, borderWidth: 1, borderColor: "#E5E7EB", backgroundColor: isReadOnly ? '#F3F4F6' : 'white' }}
+              disabled={isReadOnly}
             >
               {dateOfBirth ? (
-                <View className="absolute -top-2.5 left-3 bg-white px-1 z-10">
+                <View className={`absolute -top-2.5 left-3 px-1 z-10 ${isReadOnly ? 'bg-gray-100' : 'bg-white'}`}>
                   <Text
                     className="font-kanit"
                     style={{ fontSize: 12, color: "#a3a6af" }}
@@ -351,6 +371,7 @@ export default function EditElderInfo() {
                 onChangeText={setHeight}
                 keyboardType="numeric"
                 isRequired={true}
+                editable={!isReadOnly}
               />
             </View>
             <View className="flex-1">
@@ -360,6 +381,7 @@ export default function EditElderInfo() {
                 onChangeText={setWeight}
                 keyboardType="numeric"
                 isRequired={true}
+                editable={!isReadOnly}
               />
             </View>
           </View>
@@ -370,6 +392,7 @@ export default function EditElderInfo() {
             value={medicalCondition}
             onChangeText={setMedicalCondition}
             containerStyle={{ marginBottom: 16 }}
+            editable={!isReadOnly}
           />
 
           {/* House Number and Village */}
@@ -383,6 +406,7 @@ export default function EditElderInfo() {
                 }
                 value={houseNumber}
                 onChangeText={setHouseNumber}
+                editable={!isReadOnly}
               />
             </View>
             <View className="flex-1">
@@ -394,6 +418,7 @@ export default function EditElderInfo() {
                 }
                 value={village}
                 onChangeText={setVillage}
+                editable={!isReadOnly}
               />
             </View>
           </View>
@@ -404,21 +429,24 @@ export default function EditElderInfo() {
               value={address}
               onChange={setAddress}
               isRequired
+            // Need to pass editable or similar prop if component supports it, otherwise View pointerEvents handles it
             />
           </View>
 
-          {/* Save Button */}
-          <PrimaryButton
-            title="บันทึกข้อมูล"
-            onPress={handleSave}
-            loading={updateMutation.isPending}
-            style={{ marginBottom: 32 }}
-          />
+          {/* Save Button - Hide if Read Only */}
+          {!isReadOnly && (
+            <PrimaryButton
+              title="บันทึกข้อมูล"
+              onPress={handleSave}
+              loading={updateMutation.isPending}
+              style={{ marginBottom: 32 }}
+            />
+          )}
         </View>
       </View>
 
       {/* Date Picker Modal (iOS) or standard (Android) */}
-      {Platform.OS === "ios" ? (
+      {!isReadOnly && Platform.OS === "ios" ? (
         <Modal
           transparent={true}
           visible={showDatePicker}

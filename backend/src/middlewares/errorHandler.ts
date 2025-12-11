@@ -2,28 +2,40 @@ import { Request, Response, NextFunction } from 'express';
 import { Prisma } from '../generated/prisma/client.js';
 import createDebug from 'debug';
 import { AppError } from '../utils/AppError.js';
+import { ApiError, ErrorMessages } from '../utils/ApiError.js';
 
 const log = createDebug('fallhelp:error');
 
 /**
  * Global error handler middleware
+ * Follows Resend-style error schema pattern
  */
-
 export const errorHandler = (
   error: Error,
   req: Request,
   res: Response,
   next: NextFunction
 ): void => {
-  if (error instanceof AppError && error.isOperational) {
-    // Log only message for operational errors to avoid clutter
+  // Log errors
+  if ((error instanceof AppError && error.isOperational) || (error instanceof ApiError && error.isOperational)) {
     log('[Warn]: %s', error.message);
   } else {
-    // Log full error for unexpected crashes
     log('[Error]: %O', error);
   }
 
-  // AppError
+  // New ApiError (Thai-friendly)
+  if (error instanceof ApiError) {
+    res.status(error.statusCode).json({
+      success: false,
+      error: {
+        code: error.code,
+        message: error.messageTh, // Thai message by default
+      },
+    });
+    return;
+  }
+
+  // Legacy AppError (for backward compatibility)
   if (error instanceof AppError) {
     res.status(error.statusCode).json({
       success: false,
@@ -38,8 +50,10 @@ export const errorHandler = (
     if (error.code === 'P2002') {
       res.status(409).json({
         success: false,
-        error: 'A record with this value already exists',
-        details: error.meta,
+        error: {
+          code: 'email_already_exists',
+          message: ErrorMessages.email_already_exists.th,
+        },
       });
       return;
     }
@@ -48,7 +62,10 @@ export const errorHandler = (
     if (error.code === 'P2025') {
       res.status(404).json({
         success: false,
-        error: 'Record not found',
+        error: {
+          code: 'resource_not_found',
+          message: ErrorMessages.resource_not_found.th,
+        },
       });
       return;
     }
@@ -57,7 +74,10 @@ export const errorHandler = (
     if (error.code === 'P2003') {
       res.status(400).json({
         success: false,
-        error: 'Invalid reference to related record',
+        error: {
+          code: 'validation_error',
+          message: 'ข้อมูลที่อ้างอิงไม่ถูกต้อง',
+        },
       });
       return;
     }
@@ -67,8 +87,10 @@ export const errorHandler = (
   if (error instanceof Prisma.PrismaClientValidationError) {
     res.status(400).json({
       success: false,
-      error: 'Invalid data provided',
-      details: error.message,
+      error: {
+        code: 'validation_error',
+        message: ErrorMessages.validation_error.th,
+      },
     });
     return;
   }
@@ -77,7 +99,10 @@ export const errorHandler = (
   if (error.name === 'JsonWebTokenError') {
     res.status(401).json({
       success: false,
-      error: 'Invalid token',
+      error: {
+        code: 'invalid_token',
+        message: ErrorMessages.invalid_token.th,
+      },
     });
     return;
   }
@@ -85,17 +110,21 @@ export const errorHandler = (
   if (error.name === 'TokenExpiredError') {
     res.status(401).json({
       success: false,
-      error: 'Token expired',
+      error: {
+        code: 'session_expired',
+        message: ErrorMessages.session_expired.th,
+      },
     });
     return;
   }
 
-  // Default error
+  // Default error (Thai-friendly)
   res.status(500).json({
     success: false,
-    error: process.env.NODE_ENV === 'production' 
-      ? 'Internal server error' 
-      : error.message,
+    error: {
+      code: 'internal_server_error',
+      message: ErrorMessages.internal_server_error.th,
+    },
   });
 };
 

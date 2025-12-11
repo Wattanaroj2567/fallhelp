@@ -1,12 +1,11 @@
 // components/ThaiAddressAutocomplete.tsx
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   View,
   Text,
   TextInput,
   FlatList,
   TouchableOpacity,
-  StyleSheet,
   Modal,
   Pressable,
   KeyboardAvoidingView,
@@ -52,14 +51,23 @@ export function ThaiAddressAutocomplete({
   const theme = useTheme();
   const [showModal, setShowModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
 
-  // Filter addresses based on search query
+  // Debounce search query (300ms)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(searchQuery);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Filter addresses based on debounced search query
   const filteredAddresses = useMemo(() => {
-    if (!searchQuery || searchQuery.length < 2) {
+    if (!debouncedQuery || debouncedQuery.length < 2) {
       return [];
     }
 
-    const query = searchQuery.toLowerCase();
+    const query = debouncedQuery.toLowerCase();
     const results = data.filter((item) => {
       return (
         item.district.toLowerCase().includes(query) ||
@@ -71,10 +79,11 @@ export function ThaiAddressAutocomplete({
 
     // Limit to 50 results for performance
     return results.slice(0, 50);
-  }, [searchQuery]);
+  }, [debouncedQuery]);
 
   const handleOpen = () => {
     setSearchQuery("");
+    setDebouncedQuery("");
     setShowModal(true);
   };
 
@@ -87,11 +96,13 @@ export function ThaiAddressAutocomplete({
     });
     setShowModal(false);
     setSearchQuery("");
+    setDebouncedQuery("");
   };
 
   const handleClose = () => {
     setShowModal(false);
     setSearchQuery("");
+    setDebouncedQuery("");
   };
 
   const formatDisplayValue = () => {
@@ -102,46 +113,56 @@ export function ThaiAddressAutocomplete({
   const labelColor = error
     ? theme.colors.error
     : value?.district
-    ? "#a3a6af"
-    : "#a3a6af";
+      ? "#a3a6af"
+      : "#a3a6af";
+
+  const borderColor = error
+    ? theme.colors.error
+    : "#E5E7EB"; // Always gray unless error (as per user request)
 
   return (
-    <View style={styles.container}>
-      {/* Label */}
-      <Text style={[styles.label, { color: labelColor }]}>
-        ค้นหาที่อยู่ {isRequired && <Text style={{ color: "#EF4444" }}>*</Text>}
-      </Text>
-
-      {/* Input Field (opens modal) */}
+    <View className="mb-4">
       <TouchableOpacity
         onPress={handleOpen}
-        style={[
-          styles.inputContainer,
-          {
-            borderColor: error
-              ? theme.colors.error
-              : value?.district
-              ? theme.colors.primary
-              : "#E5E7EB",
-          },
-        ]}
+        className="bg-white rounded-2xl px-4 justify-center"
+        style={{
+          borderWidth: 1,
+          borderColor: borderColor,
+          height: 56,
+        }}
       >
-        <Text
-          style={[
-            styles.inputText,
-            {
-              color: value?.district ? theme.colors.onSurface : "#a3a6af",
-            },
-          ]}
-          numberOfLines={1}
-        >
-          {formatDisplayValue()}
-        </Text>
-        <MaterialIcons name="search" size={24} color="#a3a6af" />
+        {/* Floating Label (Simulated) */}
+        <View className="absolute -top-2.5 left-3 bg-white px-1 z-10">
+          <Text
+            className="font-kanit"
+            style={{
+              fontSize: 12,
+              color: error ? theme.colors.error : "#a3a6af"
+            }}
+          >
+            ค้นหาที่อยู่ {isRequired && <Text className="text-red-500">*</Text>}
+          </Text>
+        </View>
+
+        {/* Input Text / Placeholder */}
+        <View className="flex-row items-center justify-between">
+          <Text
+            className="flex-1 font-kanit text-[16px] mr-2"
+            style={{
+              color: value?.district ? theme.colors.onSurface : "#a3a6af", // Gray if placeholder
+            }}
+            numberOfLines={1}
+          >
+            {formatDisplayValue()}
+          </Text>
+          <MaterialIcons name="search" size={24} color="#a3a6af" />
+        </View>
       </TouchableOpacity>
 
       {/* Error Message */}
-      {error && <Text style={styles.errorText}>{error}</Text>}
+      {error && (
+        <Text className="font-kanit text-xs text-red-500 mt-1 ml-1">{error}</Text>
+      )}
 
       {/* Search Modal */}
       <Modal
@@ -151,27 +172,32 @@ export function ThaiAddressAutocomplete({
         onRequestClose={handleClose}
       >
         <KeyboardAvoidingView
-          style={{ flex: 1 }}
+          className="flex-1"
           behavior={Platform.OS === "ios" ? "padding" : "height"}
         >
-          <Pressable style={styles.modalOverlay} onPress={handleClose}>
+          <Pressable
+            className="flex-1 bg-black/50 justify-end"
+            onPress={handleClose}
+          >
             <Pressable
-              style={styles.modalContent}
+              className="bg-white rounded-t-[20px] max-h-[90%] pb-5"
               onPress={(e) => e.stopPropagation()}
             >
               {/* Header */}
-              <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>ค้นหาที่อยู่ของคุณ</Text>
+              <View className="flex-row justify-between items-center p-4 border-b border-gray-100">
+                <Text className="font-kanit text-lg font-semibold text-gray-700">
+                  ค้นหาที่อยู่ของคุณ
+                </Text>
                 <TouchableOpacity onPress={handleClose}>
                   <MaterialIcons name="close" size={24} color="#374151" />
                 </TouchableOpacity>
               </View>
 
               {/* Search Input */}
-              <View style={styles.searchContainer}>
+              <View className="flex-row items-center mx-4 my-2 px-3 py-2.5 bg-gray-100 rounded-xl">
                 <MaterialIcons name="search" size={20} color="#a3a6af" />
                 <TextInput
-                  style={styles.searchInput}
+                  className="flex-1 font-kanit text-base ml-2 text-gray-700"
                   value={searchQuery}
                   onChangeText={setSearchQuery}
                   placeholder={placeholder}
@@ -187,13 +213,13 @@ export function ThaiAddressAutocomplete({
 
               {/* Search Hint */}
               {searchQuery.length < 2 && (
-                <View style={styles.hintContainer}>
+                <View className="flex-row items-center px-4 py-2 gap-1.5">
                   <MaterialIcons
                     name="info-outline"
                     size={16}
                     color="#a3a6af"
                   />
-                  <Text style={styles.hintText}>
+                  <Text className="font-kanit text-sm text-gray-400">
                     พิมพ์อย่างน้อย 2 ตัวอักษรเพื่อค้นหา
                   </Text>
                 </View>
@@ -205,28 +231,26 @@ export function ThaiAddressAutocomplete({
                 keyExtractor={(item, index) =>
                   `${item.district}-${item.amphoe}-${item.province}-${index}`
                 }
-                style={styles.resultsList}
+                className="max-h-[500px]"
                 keyboardShouldPersistTaps="handled"
                 renderItem={({ item }) => (
                   <TouchableOpacity
-                    style={styles.resultItem}
+                    className="flex-row items-center px-4 py-3.5 border-b border-gray-100"
                     onPress={() => handleSelect(item)}
                   >
-                    <View style={styles.resultContent}>
-                      <Text style={styles.resultText}>
-                        <Text style={styles.resultHighlight}>
+                    <View className="flex-1">
+                      <Text className="font-kanit text-[15px] leading-[22px]">
+                        <Text className="font-semibold text-gray-700">
                           {item.district}
                         </Text>
                         {" » "}
-                        <Text style={styles.resultSecondary}>
-                          {item.amphoe}
-                        </Text>
+                        <Text className="text-gray-500">{item.amphoe}</Text>
                         {" » "}
-                        <Text style={styles.resultSecondary}>
-                          {item.province}
-                        </Text>
+                        <Text className="text-gray-500">{item.province}</Text>
                         {" » "}
-                        <Text style={styles.resultZipcode}>{item.zipcode}</Text>
+                        <Text className="font-medium text-[#16AD78]">
+                          {item.zipcode}
+                        </Text>
                       </Text>
                     </View>
                     <MaterialIcons
@@ -237,15 +261,17 @@ export function ThaiAddressAutocomplete({
                   </TouchableOpacity>
                 )}
                 ListEmptyComponent={
-                  searchQuery.length >= 2 ? (
-                    <View style={styles.emptyContainer}>
+                  debouncedQuery.length >= 2 ? (
+                    <View className="py-12 items-center">
                       <MaterialIcons
                         name="search-off"
                         size={48}
                         color="#E5E7EB"
                       />
-                      <Text style={styles.emptyText}>ไม่พบที่อยู่ที่ค้นหา</Text>
-                      <Text style={styles.emptyHint}>
+                      <Text className="font-kanit text-base text-gray-500 mt-3 mb-1">
+                        ไม่พบที่อยู่ที่ค้นหา
+                      </Text>
+                      <Text className="font-kanit text-sm text-gray-400 text-center">
                         ลองค้นหาด้วยชื่อตำบล อำเภอ จังหวัด หรือรหัสไปรษณีย์
                       </Text>
                     </View>
@@ -259,138 +285,3 @@ export function ThaiAddressAutocomplete({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    marginBottom: 16,
-  },
-  label: {
-    fontSize: 12,
-    marginBottom: 6,
-    fontFamily: "Kanit",
-  },
-  inputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    backgroundColor: "#FFFFFF",
-  },
-  inputText: {
-    flex: 1,
-    fontSize: 16,
-    fontFamily: "Kanit",
-    marginRight: 8,
-  },
-  errorText: {
-    fontSize: 12,
-    color: "#EF4444",
-    marginTop: 4,
-    fontFamily: "Kanit",
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "flex-end",
-  },
-  modalContent: {
-    backgroundColor: "#FFFFFF",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    maxHeight: "90%",
-    paddingBottom: 20,
-  },
-  modalHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#F3F4F6",
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#374151",
-    fontFamily: "Kanit",
-  },
-  searchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    margin: 16,
-    marginBottom: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    backgroundColor: "#F3F4F6",
-    borderRadius: 12,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 16,
-    marginLeft: 8,
-    fontFamily: "Kanit",
-    color: "#374151",
-  },
-  hintContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    gap: 6,
-  },
-  hintText: {
-    fontSize: 14,
-    color: "#a3a6af",
-    fontFamily: "Kanit",
-  },
-  resultsList: {
-    maxHeight: 500,
-  },
-  resultItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: "#F3F4F6",
-  },
-  resultContent: {
-    flex: 1,
-  },
-  resultText: {
-    fontSize: 15,
-    fontFamily: "Kanit",
-    lineHeight: 22,
-  },
-  resultHighlight: {
-    color: "#374151",
-    fontWeight: "600",
-  },
-  resultSecondary: {
-    color: "#6B7280",
-  },
-  resultZipcode: {
-    color: "#16AD78",
-    fontWeight: "500",
-  },
-  emptyContainer: {
-    padding: 48,
-    alignItems: "center",
-  },
-  emptyText: {
-    fontSize: 16,
-    color: "#6B7280",
-    fontFamily: "Kanit",
-    marginTop: 12,
-    marginBottom: 4,
-  },
-  emptyHint: {
-    fontSize: 14,
-    color: "#a3a6af",
-    fontFamily: "Kanit",
-    textAlign: "center",
-  },
-});

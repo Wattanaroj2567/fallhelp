@@ -13,6 +13,7 @@ const router = Router();
 router.post('/register', authLimiter, validateRegister, authController.register);
 router.post('/login', authLimiter, validateLogin, authController.login);
 router.post('/request-otp', otpLimiter, validateOtpRequest, authController.requestOtp);
+router.post('/admin/request-otp', otpLimiter, validateOtpRequest, authController.requestAdminOtp); // Admin-only OTP
 router.post('/verify-otp', validateOtpVerification, authController.verifyOtp);
 router.post('/reset-password', authController.resetPassword);
 router.get('/me', authenticate, authController.getMe);

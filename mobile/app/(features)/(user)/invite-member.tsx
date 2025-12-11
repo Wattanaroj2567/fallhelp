@@ -13,7 +13,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { inviteMember } from "@/services/elderService";
 import { FloatingLabelInput } from "@/components/FloatingLabelInput";
 import { useCurrentElder } from "@/hooks/useCurrentElder";
@@ -28,6 +28,7 @@ import { PrimaryButton } from "@/components/PrimaryButton";
 // ==========================================
 export default function InviteMember() {
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   // ==========================================
   // 🧩 LAYER: Logic (Local State)
@@ -51,6 +52,7 @@ export default function InviteMember() {
       await inviteMember(data.elderId, { email: data.email });
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["members"] });
       Alert.alert("สำเร็จ", "เชิญสมาชิกผู้ดูแลคนอื่นเรียบร้อยแล้ว", [
         {
           text: "ตกลง",

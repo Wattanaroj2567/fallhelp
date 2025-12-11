@@ -1,5 +1,7 @@
 import { Elder, AccessLevel } from '../generated/prisma/client.js';
 import prisma from '../prisma.js';
+import { sendInvitationEmail } from '../utils/email.js';
+import { ApiError } from '../utils/ApiError.js';
 
 // ==========================================
 // ⚙️ LAYER: Business Logic (Service)
@@ -355,7 +357,7 @@ export const inviteMember = async (
   });
 
   if (existingAccess) {
-    throw new Error('User already has access to this elder');
+    throw new ApiError('user_already_member');
   }
 
   // Grant VIEWER access
@@ -377,6 +379,27 @@ export const inviteMember = async (
       },
     },
   });
+
+  // Get inviter (requester) and elder info for email
+  const inviter = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { firstName: true, lastName: true },
+  });
+
+  const elder = await prisma.elder.findUnique({
+    where: { id: elderId },
+    select: { firstName: true, lastName: true },
+  });
+
+  if (inviter && elder) {
+    const inviterName = `${inviter.firstName} ${inviter.lastName}`;
+    const elderName = `${elder.firstName} ${elder.lastName}`;
+
+    // Fire and forget email (don't block response)
+    sendInvitationEmail(inviteeEmail, inviterName, elderName).catch((err: any) => {
+      console.error('Failed to send invitation email:', err);
+    });
+  }
 
   return newAccess;
 };

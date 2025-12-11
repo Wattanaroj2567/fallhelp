@@ -6,6 +6,8 @@ const router = express.Router();
 
 // Public/User routes
 router.post('/', authenticate, feedbackController.submitFeedback);
+router.get('/repair-requests', authenticate, feedbackController.getRepairRequests);
+router.delete('/repair-requests/:id', authenticate, feedbackController.deleteRepairRequest);
 
 // Admin routes
 router.get('/', authenticate, requireAdmin, feedbackController.getFeedbacks);

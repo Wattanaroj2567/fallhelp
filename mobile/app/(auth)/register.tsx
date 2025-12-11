@@ -10,12 +10,14 @@ import {
 import { useRouter } from "expo-router";
 import { useMutation } from "@tanstack/react-query";
 import { register } from "@/services/authService";
+import { getErrorMessage } from "@/utils/errorHelper";
 import Logger from "@/utils/logger";
 import { FloatingLabelInput } from "@/components/FloatingLabelInput";
 import { ScreenWrapper } from "@/components/ScreenWrapper";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { GenderSelect } from "@/components/GenderSelect";
+import { useAuth } from "@/context/AuthContext";
 
 // ==========================================
 // 📱 LAYER: View (Component)
@@ -38,6 +40,7 @@ export default function RegisterScreen() {
 
   const router = useRouter();
   const scrollViewRef = useRef<ScrollView>(null);
+  const { signIn } = useAuth(); // Access auth context
 
   // Toggle scroll based on keyboard visibility
   useEffect(() => {
@@ -62,8 +65,12 @@ export default function RegisterScreen() {
     mutationFn: async (data: any) => {
       return await register(data);
     },
-    onSuccess: () => {
-      // Redirect logic
+    onSuccess: async (data) => {
+      // Vital: Update AuthContext state so the app knows we are logged in
+      if (data && data.token) {
+        await signIn(data.token);
+      }
+
       // Redirect to success screen
       router.replace({
         pathname: "/(auth)/success",
@@ -72,23 +79,8 @@ export default function RegisterScreen() {
     },
     onError: (error: any) => {
       Logger.error("Register error:", error);
-      // Extract detailed error message from backend
-      const backendError = error.response?.data?.error || error.response?.data?.message;
-      const message = backendError || error.message || "เกิดข้อผิดพลาด";
-
-      // User-friendly error messages
-      let userMessage = message;
-      if (message.includes("already exists")) {
-        userMessage = "อีเมลนี้ถูกใช้งานแล้ว กรุณาใช้อีเมลอื่น";
-      } else if (message.includes("gender") || message.includes("Gender")) {
-        userMessage = "กรุณาเลือกเพศ";
-      } else if (message.includes("email")) {
-        userMessage = "รูปแบบอีเมลไม่ถูกต้อง";
-      } else if (message.includes("password")) {
-        userMessage = "รหัสผ่านไม่ตรงตามเกณฑ์";
-      }
-
-      Alert.alert("ลงทะเบียนล้มเหลว", userMessage);
+      const message = getErrorMessage(error);
+      Alert.alert("ลงทะเบียนล้มเหลว", message);
     },
   });
 
@@ -146,168 +138,171 @@ export default function RegisterScreen() {
         scrollEnabled: isScrollEnabled, // ✅ Only scroll when keyboard is open
       }}
       scrollViewRef={scrollViewRef} // Pass ref correctly
-      header={<ScreenHeader title="ลงทะเบียน" onBack={router.back} />}
-    >
-      <View>
-        <Text
-          className="font-kanit text-gray-500"
-          style={{
-            fontSize: 14,
-            marginBottom: 32,
-            textAlign: "left",
-          }}
-        >
-          กรุณากรอกรายละเอียดของคุณเพื่อเข้าใช้งาน
-        </Text>
-
-        <View className="w-full">
-          {/* Row 1: Name & Lastname */}
-          <View className="flex-row gap-3">
-            {/* First Name */}
-            <FloatingLabelInput
-              testID="firstName-input"
-              label="ชื่อ"
-              value={firstName}
-              onChangeText={setFirstName}
-              containerStyle={{ flex: 1 }}
-            />
-
-            {/* Last Name */}
-            <FloatingLabelInput
-              testID="lastName-input"
-              label="นามสกุล"
-              value={lastName}
-              onChangeText={setLastName}
-              containerStyle={{ flex: 1 }}
-            />
-          </View>
-
-          {/* Row 2: Gender */}
-          <GenderSelect value={gender} onChange={setGender} />
-
-          {/* Row 3: Phone */}
-          <FloatingLabelInput
-            testID="phone-input"
-            label="เบอร์โทรศัพท์"
-            value={phone}
-            onChangeText={(text) => {
-              const cleaned = text.replace(/[^0-9]/g, "");
-              if (cleaned.length <= 10) {
-                setPhone(cleaned);
-              }
-            }}
-            keyboardType="number-pad"
-            maxLength={10}
-            containerStyle={{ marginBottom: 16 }}
-          />
-
-          {/* Row 4: Email */}
-          <FloatingLabelInput
-            testID="email-input"
-            label="อีเมล"
-            value={email}
-            onChangeText={(text) => {
-              setEmail(text);
-              if (/[ก-๙]/.test(text)) {
-                setEmailError("กรุณากรอกอีเมลเป็นภาษาอังกฤษ");
-              } else {
-                setEmailError("");
-              }
-            }}
-            error={emailError}
-            autoCapitalize="none"
-            autoCorrect={false}
-            spellCheck={false}
-            keyboardType="email-address"
-            containerStyle={{ marginBottom: 16 }}
-          />
-
-          {/* Row 5: Password */}
-          <FloatingLabelInput
-            testID="password-input"
-            label="รหัสผ่าน"
-            value={password}
-            onChangeText={(text) => {
-              setPassword(text);
-              if (/[ก-๙]/.test(text)) {
-                setPasswordError("กรุณากรอกรหัสผ่านเป็นภาษาอังกฤษ");
-              } else {
-                setPasswordError("");
-              }
-            }}
-            error={passwordError}
-            isPassword
-            autoCapitalize="none"
-            textContentType="password"
-            containerStyle={{ marginBottom: 16 }}
-          />
-
-          {/* Requirements */}
-          <View className="bg-blue-50 rounded-2xl p-4 mb-8">
-            <Text
-              style={{ fontSize: 12, fontWeight: "600" }}
-              className="font-kanit text-blue-700 mb-2"
-            >
-              ข้อกำหนดรหัสผ่าน:
-            </Text>
-            <View className="flex-row items-start mb-1">
-              <Text
-                style={{ fontSize: 12 }}
-                className="font-kanit text-blue-700 mr-2"
-              >
-                •
-              </Text>
-              <Text
-                style={{ fontSize: 12 }}
-                className="font-kanit text-blue-700 flex-1"
-              >
-                อย่างน้อย 8 ตัวอักษร
-              </Text>
-            </View>
-            <View className="flex-row items-start">
-              <Text
-                style={{ fontSize: 12 }}
-                className="font-kanit text-blue-700 mr-2"
-              >
-                •
-              </Text>
-              <Text
-                style={{ fontSize: 12 }}
-                className="font-kanit text-blue-700 flex-1"
-              >
-                มีตัวอักษรพิมพ์ใหญ่-เล็กและตัวเลข
-              </Text>
-            </View>
-          </View>
-
-          {/* Register Button */}
-          <PrimaryButton
-            testID="register-button"
-            title="ลงทะเบียน"
-            onPress={handleRegister}
-            loading={registerMutation.isPending}
-          />
-
-          {/* Login Link */}
-          <View className="flex-row justify-center items-center mt-6">
+      header={
+        <View>
+          <ScreenHeader title="ลงทะเบียน" onBack={router.back} />
+          {/* Description - Sticky with header */}
+          <View className="px-6 pb-4">
             <Text
               className="font-kanit text-gray-500"
-              style={{ fontSize: 15 }}
+              style={{
+                fontSize: 14,
+                textAlign: "left",
+              }}
             >
-              มีบัญชีอยู่แล้ว ?{" "}
+              กรุณากรอกรายละเอียดของคุณเพื่อเข้าใช้งาน
             </Text>
-            <TouchableOpacity
-              onPress={() => router.push("/(auth)/login")}
-              activeOpacity={0.7}
-            >
-              <Text
-                className="font-kanit font-semibold"
-                style={{ fontSize: 15, color: "#EB6A6A" }}
-              >
-                เข้าสู่ระบบ
-              </Text>
-            </TouchableOpacity>
           </View>
+        </View>
+      }
+    >
+      <View>
+        {/* Row 1: Name & Lastname */}
+        <View className="flex-row gap-3">
+          {/* First Name */}
+          <FloatingLabelInput
+            testID="firstName-input"
+            label="ชื่อ"
+            value={firstName}
+            onChangeText={setFirstName}
+            containerStyle={{ flex: 1 }}
+          />
+
+          {/* Last Name */}
+          <FloatingLabelInput
+            testID="lastName-input"
+            label="นามสกุล"
+            value={lastName}
+            onChangeText={setLastName}
+            containerStyle={{ flex: 1 }}
+          />
+        </View>
+
+        {/* Row 2: Gender */}
+        <GenderSelect value={gender} onChange={setGender} />
+
+        {/* Row 3: Phone */}
+        <FloatingLabelInput
+          testID="phone-input"
+          label="เบอร์โทรศัพท์"
+          value={phone}
+          onChangeText={(text) => {
+            const cleaned = text.replace(/[^0-9]/g, "");
+            if (cleaned.length <= 10) {
+              setPhone(cleaned);
+            }
+          }}
+          keyboardType="number-pad"
+          maxLength={10}
+          containerStyle={{ marginBottom: 16 }}
+        />
+
+        {/* Row 4: Email */}
+        <FloatingLabelInput
+          testID="email-input"
+          label="อีเมล"
+          value={email}
+          onChangeText={(text) => {
+            setEmail(text);
+            if (/[ก-๙]/.test(text)) {
+              setEmailError("กรุณากรอกอีเมลเป็นภาษาอังกฤษ");
+            } else {
+              setEmailError("");
+            }
+          }}
+          error={emailError}
+          autoCapitalize="none"
+          autoCorrect={false}
+          spellCheck={false}
+          keyboardType="email-address"
+          containerStyle={{ marginBottom: 16 }}
+        />
+
+        {/* Row 5: Password */}
+        <FloatingLabelInput
+          testID="password-input"
+          label="รหัสผ่าน"
+          value={password}
+          onChangeText={(text) => {
+            setPassword(text);
+            if (/[ก-๙]/.test(text)) {
+              setPasswordError("กรุณากรอกรหัสผ่านเป็นภาษาอังกฤษ");
+            } else {
+              setPasswordError("");
+            }
+          }}
+          error={passwordError}
+          isPassword
+          autoCapitalize="none"
+          textContentType="password"
+          containerStyle={{ marginBottom: 16 }}
+        />
+
+        {/* Requirements */}
+        <View className="bg-blue-50 rounded-2xl p-4 mb-8">
+          <Text
+            style={{ fontSize: 12, fontWeight: "600" }}
+            className="font-kanit text-blue-700 mb-2"
+          >
+            ข้อกำหนดรหัสผ่าน:
+          </Text>
+          <View className="flex-row items-start mb-1">
+            <Text
+              style={{ fontSize: 12 }}
+              className="font-kanit text-blue-700 mr-2"
+            >
+              •
+            </Text>
+            <Text
+              style={{ fontSize: 12 }}
+              className="font-kanit text-blue-700 flex-1"
+            >
+              อย่างน้อย 8 ตัวอักษร
+            </Text>
+          </View>
+          <View className="flex-row items-start">
+            <Text
+              style={{ fontSize: 12 }}
+              className="font-kanit text-blue-700 mr-2"
+            >
+              •
+            </Text>
+            <Text
+              style={{ fontSize: 12 }}
+              className="font-kanit text-blue-700 flex-1"
+            >
+              มีตัวอักษรพิมพ์ใหญ่-เล็กและตัวเลข
+            </Text>
+          </View>
+        </View>
+
+        {/* Register Button */}
+        <PrimaryButton
+          testID="register-button"
+          title="ลงทะเบียน"
+          onPress={handleRegister}
+          loading={registerMutation.isPending}
+        />
+
+        {/* Login Link */}
+        <View className="flex-row justify-center items-center mt-6">
+          <Text
+            className="font-kanit text-gray-500"
+            style={{ fontSize: 15 }}
+          >
+            มีบัญชีอยู่แล้ว ?{" "}
+          </Text>
+          <TouchableOpacity
+            onPress={() => router.push("/(auth)/login")}
+            activeOpacity={0.7}
+          >
+            <Text
+              className="font-kanit font-semibold"
+              style={{ fontSize: 15, color: "#EB6A6A" }}
+            >
+              เข้าสู่ระบบ
+            </Text>
+          </TouchableOpacity>
         </View>
       </View>
     </ScreenWrapper>

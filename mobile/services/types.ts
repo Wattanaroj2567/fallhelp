@@ -63,6 +63,8 @@ export type Elder = {
   createdAt?: string;
   updatedAt?: string;
   device?: Device | null;
+  /** Access level of the current user to this elder ('OWNER' | 'VIEWER') */
+  accessLevel?: AccessLevel;
 };
 
 export type UserProfile = {

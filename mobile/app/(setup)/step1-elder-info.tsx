@@ -2,17 +2,14 @@ import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
-  TextInput,
-  TouchableOpacity,
-  ScrollView,
   Alert,
   ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
   Modal,
   Pressable,
+  TouchableOpacity,
+  Platform,
+  Keyboard,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useMutation } from "@tanstack/react-query";
@@ -28,8 +25,7 @@ import Logger from "@/utils/logger";
 import { GenderSelect } from "@/components/GenderSelect";
 import { useTheme } from "react-native-paper";
 import { FloatingLabelInput } from "@/components/FloatingLabelInput";
-import { ScreenWrapper } from "@/components/ScreenWrapper";
-import { ScreenHeader } from "@/components/ScreenHeader";
+import { WizardLayout } from "@/components/WizardLayout";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import {
@@ -57,7 +53,6 @@ export default function Step1() {
   const [gender, setGender] = useState("");
   const [dateOfBirth, setDateOfBirth] = useState<Date | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
-  // showGenderPicker removed - using GenderSelect component
 
   const [height, setHeight] = useState("");
   const [weight, setWeight] = useState("");
@@ -80,6 +75,20 @@ export default function Step1() {
         if (existingElderId === "undefined" || existingElderId === "null") {
           existingElderId = null;
         }
+
+        // Validate if elder actually exists on server (fix for Dev Mode/DB Wipes)
+        if (existingElderId) {
+          try {
+            const { getElder } = require("@/services/elderService");
+            await getElder(existingElderId);
+            Logger.debug("Step 1 check: Elder ID exists on server", existingElderId);
+          } catch (serverError) {
+            Logger.warn("Step 1 check: Elder ID invalid or not found on server (clearing)", serverError);
+            existingElderId = null; // Treat as new
+            await SecureStore.deleteItemAsync("setup_elderId");
+          }
+        }
+
         Logger.debug("Step 1 loadFormData: existingElderId =", existingElderId);
 
         const savedData = await AsyncStorage.getItem(FORM_STORAGE_KEY);
@@ -90,7 +99,7 @@ export default function Step1() {
           );
           setLastName(
             parsed.lastName ||
-              (parsed.name ? parsed.name.split(" ").slice(1).join(" ") : "")
+            (parsed.name ? parsed.name.split(" ").slice(1).join(" ") : "")
           );
           setGender(parsed.gender || "");
           setDateOfBirth(
@@ -290,9 +299,9 @@ export default function Step1() {
       weight: Number(weight),
       diseases: medicalCondition
         ? medicalCondition
-            .split(",")
-            .map((d) => d.trim())
-            .filter((d) => d)
+          .split(",")
+          .map((d) => d.trim())
+          .filter((d) => d)
         : [],
       houseNumber: houseNumber.trim(),
       village: village.trim(),
@@ -329,9 +338,9 @@ export default function Step1() {
           weight: Number(initialData.weight),
           diseases: initialData.medicalCondition
             ? initialData.medicalCondition
-                .split(",")
-                .map((d: string) => d.trim())
-                .filter((d: string) => d)
+              .split(",")
+              .map((d: string) => d.trim())
+              .filter((d: string) => d)
             : [],
           houseNumber: initialData.houseNumber || "",
           village: initialData.village || "",
@@ -365,63 +374,11 @@ export default function Step1() {
     saveElderMutation.mutate(currentData);
   };
 
-  const handleBack = async () => {
-    try {
-      // Check if we have a paired device - if yes, DON'T delete elder
-      const deviceId = await SecureStore.getItemAsync("setup_deviceId");
-      if (deviceId) {
-        // User has paired device, just go back to empty-state without deleting
-        Logger.info("Device paired, keeping elder data on back navigation");
-        router.replace("/(setup)/empty-state");
-        return;
-      }
-
-      // No device paired yet - ask confirmation before deleting
-      const elderId = await SecureStore.getItemAsync("setup_elderId");
-      if (elderId) {
-        Alert.alert(
-          "ยกเลิกการสร้างข้อมูล",
-          "ข้อมูลผู้สูงอายุที่กรอกจะถูกลบ ต้องการย้อนกลับหรือไม่?",
-          [
-            {
-              text: "ยกเลิก",
-              style: "cancel",
-            },
-            {
-              text: "ย้อนกลับ",
-              style: "destructive",
-              onPress: async () => {
-                try {
-                  await deleteElder(elderId);
-                  Logger.info(
-                    "Auto-deleted elder on back to empty state:",
-                    elderId
-                  );
-                } catch (deleteError) {
-                  // Ignore delete errors (e.g. 500 if not owner, or network fail)
-                  Logger.warn(
-                    "Could not auto-delete elder (ignoring):",
-                    deleteError
-                  );
-                }
-
-                // Always clear local storage
-                await SecureStore.deleteItemAsync("setup_elderId");
-                await AsyncStorage.removeItem(FORM_STORAGE_KEY);
-                router.replace("/(setup)/empty-state");
-              },
-            },
-          ]
-        );
-        return;
-      }
-
-      // No elder created yet, just go back
-      router.replace("/(setup)/empty-state");
-    } catch (error) {
-      Logger.error("Failed to handle back navigation cleanup:", error);
-      router.replace("/(setup)/empty-state");
-    }
+  const handleBack = () => {
+    // Simply go back to the welcome screen
+    // We do NOT delete the elder here anymore, to avoid complex state issues and errors.
+    // The previous logic caused crashes when navigating back.
+    router.replace("/(setup)/empty-state");
   };
 
   const onDateChange = (event: any, selectedDate?: Date) => {
@@ -453,96 +410,22 @@ export default function Step1() {
   // Purpose: Render the form UI
   // ==========================================
   return (
-    <ScreenWrapper
-      header={
-        <View>
-          <ScreenHeader title="ข้อมูลผู้สูงอายุ" onBack={handleBack} />
-          {/* Progress Bar (Sticky) */}
-          <View className="px-6 pb-2 mb-2">
-            <View className="relative">
-              {/* Connecting Line (Background) */}
-              <View
-                className="absolute top-4 left-[16%] right-[16%] h-[2px] bg-gray-200"
-                style={{ zIndex: 0 }}
-              />
-              {/* Active Line (None for Step 1 start) */}
-
-              {/* Steps (Foreground) */}
-              <View className="flex-row justify-between">
-                {/* Step 1 */}
-                <View className="flex-1 items-center">
-                  <View className="w-8 h-8 rounded-full bg-blue-500 items-center justify-center z-10 mb-2 shadow-sm border border-blue-400">
-                    <Text
-                      style={{ fontSize: 14, fontWeight: "600" }}
-                      className="text-white font-kanit"
-                    >
-                      1
-                    </Text>
-                  </View>
-                  <Text
-                    style={{ fontSize: 12 }}
-                    className="text-blue-600 text-center font-kanit"
-                  >
-                    กรอกข้อมูล{"\n"}ผู้สูงอายุ
-                  </Text>
-                </View>
-
-                {/* Step 2 */}
-                <View className="flex-1 items-center">
-                  <View className="w-8 h-8 rounded-full bg-white border-2 border-gray-200 items-center justify-center z-10 mb-2">
-                    <Text
-                      style={{ fontSize: 14, fontWeight: "600" }}
-                      className="text-gray-400 font-kanit"
-                    >
-                      2
-                    </Text>
-                  </View>
-                  <Text
-                    style={{ fontSize: 12 }}
-                    className="text-gray-400 text-center font-kanit"
-                  >
-                    ติดตั้งอุปกรณ์
-                  </Text>
-                </View>
-
-                {/* Step 3 */}
-                <View className="flex-1 items-center">
-                  <View className="w-8 h-8 rounded-full bg-white border-2 border-gray-200 items-center justify-center z-10 mb-2">
-                    <Text
-                      style={{ fontSize: 14, fontWeight: "600" }}
-                      className="text-gray-400 font-kanit"
-                    >
-                      3
-                    </Text>
-                  </View>
-                  <Text
-                    style={{ fontSize: 12 }}
-                    className="text-gray-400 text-center font-kanit"
-                  >
-                    ตั้งค่า WiFi
-                  </Text>
-                </View>
-              </View>
-            </View>
-          </View>
-        </View>
-      }
+    <WizardLayout
+      currentStep={1}
+      title="ข้อมูลผู้สูงอายุ"
+      onBack={handleBack}
       contentContainerStyle={{ paddingHorizontal: 24, flexGrow: 1 }}
-      keyboardAvoiding
-      edges={["top", "left", "right"]}
-      scrollViewProps={{
-        bounces: true,
-        overScrollMode: "always",
-      }}
       scrollViewRef={scrollViewRef}
-    >
-      <View className="flex-1">
-        {/* Info Note */}
-        <View className="bg-blue-50 rounded-2xl p-4 mb-6 mt-6">
+      headerExtra={
+        <View className="bg-blue-50 rounded-2xl p-4 mb-2">
           <Text className="font-kanit text-blue-700" style={{ fontSize: 14 }}>
             เพื่อให้เป็นข้อมูลส่วนตัวของคุณในการติดตามผู้สูงอายุและเพิ่มเติม
           </Text>
         </View>
+      }
+    >
+      <View className="flex-1 mt-4">
+        {/* Info Note Removed from here */}
 
         {/* Elder Name & Lastname */}
         <View className="flex-row gap-3">
@@ -576,15 +459,25 @@ export default function Step1() {
         {/* Birth Date - Using Theme Colors */}
         <View className="mb-4">
           <TouchableOpacity
-            onPress={() => setShowDatePicker(true)}
+            onPress={() => {
+              Keyboard.dismiss(); // Close other inputs to prevent double focus
+              setShowDatePicker(true);
+            }}
             className="bg-white rounded-2xl px-4 justify-center"
-            style={{ height: 60, borderWidth: 1, borderColor: "#E5E7EB" }}
+            style={{
+              height: 60,
+              borderWidth: 1,
+              borderColor: showDatePicker ? theme.colors.primary : "#E5E7EB",
+            }}
           >
             {dateOfBirth ? (
               <View className="absolute -top-2.5 left-3 bg-white px-1 z-10">
                 <Text
                   className="font-kanit"
-                  style={{ fontSize: 12, color: "#a3a6af" }}
+                  style={{
+                    fontSize: 12,
+                    color: showDatePicker ? theme.colors.primary : "#a3a6af"
+                  }}
                 >
                   วัน/เดือน/ปีเกิด <Text style={{ color: "#EF4444" }}>*</Text>
                 </Text>
@@ -606,7 +499,11 @@ export default function Step1() {
             </Text>
 
             <View className="absolute right-4 top-5">
-              <MaterialIcons name="calendar-today" size={20} color="#a3a6af" />
+              <MaterialIcons
+                name="calendar-today"
+                size={20}
+                color={showDatePicker ? theme.colors.primary : "#a3a6af"}
+              />
             </View>
           </TouchableOpacity>
         </View>
@@ -689,57 +586,57 @@ export default function Step1() {
         />
       </View>
 
-      {/* GenderPickerModal Removed */}
-
       {/* Date Picker Modal (iOS) or standard (Android) */}
-      {Platform.OS === "ios" ? (
-        <Modal
-          transparent={true}
-          visible={showDatePicker}
-          animationType="slide"
-          onRequestClose={() => setShowDatePicker(false)}
-        >
-          <Pressable
-            className="flex-1 justify-end bg-black/50"
-            onPress={() => setShowDatePicker(false)}
+      {
+        Platform.OS === "ios" ? (
+          <Modal
+            transparent={true}
+            visible={showDatePicker}
+            animationType="slide"
+            onRequestClose={() => setShowDatePicker(false)}
           >
             <Pressable
-              className="bg-white pb-6 rounded-t-3xl"
-              onPress={(e) => e.stopPropagation()}
+              className="flex-1 justify-end bg-black/50"
+              onPress={() => setShowDatePicker(false)}
             >
-              <View className="flex-row justify-between items-center p-4 border-b border-gray-100">
-                <Text className="font-kanit text-lg font-bold">
-                  เลือกวันเกิด
-                </Text>
-                <TouchableOpacity onPress={() => setShowDatePicker(false)}>
-                  <Text className="font-kanit text-blue-600 text-lg font-bold">
-                    เสร็จสิ้น
+              <Pressable
+                className="bg-white pb-6 rounded-t-3xl"
+                onPress={(e) => e.stopPropagation()}
+              >
+                <View className="flex-row justify-between items-center p-4 border-b border-gray-100">
+                  <Text className="font-kanit text-lg font-bold">
+                    เลือกวันเกิด
                   </Text>
-                </TouchableOpacity>
-              </View>
-              <DateTimePicker
-                value={dateOfBirth || new Date()}
-                maximumDate={new Date()}
-                mode="date"
-                display="spinner"
-                onChange={onDateChange}
-                locale="th-TH"
-                textColor="#000000"
-              />
+                  <TouchableOpacity onPress={() => setShowDatePicker(false)}>
+                    <Text className="font-kanit text-blue-600 text-lg font-bold">
+                      เสร็จสิ้น
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+                <DateTimePicker
+                  value={dateOfBirth || new Date()}
+                  maximumDate={new Date()}
+                  mode="date"
+                  display="spinner"
+                  onChange={onDateChange}
+                  locale="th-TH"
+                  textColor="#000000"
+                />
+              </Pressable>
             </Pressable>
-          </Pressable>
-        </Modal>
-      ) : (
-        showDatePicker && (
-          <DateTimePicker
-            value={dateOfBirth || new Date()}
-            maximumDate={new Date()}
-            mode="date"
-            display="default"
-            onChange={onDateChange}
-          />
+          </Modal>
+        ) : (
+          showDatePicker && (
+            <DateTimePicker
+              value={dateOfBirth || new Date()}
+              maximumDate={new Date()}
+              mode="date"
+              display="default"
+              onChange={onDateChange}
+            />
+          )
         )
-      )}
-    </ScreenWrapper>
+      }
+    </WizardLayout >
   );
 }

@@ -54,6 +54,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const signOut = async () => {
         await clearToken();
+
+        // Clear all setup persistence
+        try {
+            const SecureStore = require("expo-secure-store");
+            const AsyncStorage = require("@react-native-async-storage/async-storage").default;
+
+            await SecureStore.deleteItemAsync("setup_elderId");
+            await SecureStore.deleteItemAsync("setup_step");
+            await SecureStore.deleteItemAsync("setup_deviceId");
+            await AsyncStorage.removeItem("setup_step1_form_data");
+        } catch (error) {
+            Logger.warn("Failed to clear setup data on signout", error);
+        }
+
         setIsSignedIn(false);
     };
 

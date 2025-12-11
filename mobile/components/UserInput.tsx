@@ -1,16 +1,16 @@
 import React, { useState } from "react";
-import { TextInput, TextInputProps, StyleSheet } from "react-native";
+import { TextInput, TextInputProps } from "react-native";
 
-export const UserInput = ({ style, ...props }: TextInputProps) => {
+export const UserInput = ({ style, className, ...props }: TextInputProps & { className?: string }) => {
     const [isFocused, setIsFocused] = useState(false);
+
+    const baseClass = "bg-white border rounded-xl px-4 py-3 font-kanit text-base text-gray-900";
+    const focusClass = isFocused ? "border-[#16AD78] bg-green-50" : "border-gray-200";
 
     return (
         <TextInput
-            style={[
-                styles.input,
-                isFocused && styles.focused,
-                style,
-            ]}
+            className={`${baseClass} ${focusClass} ${className || ""}`}
+            style={style} // Allow override for dynamic values only
             placeholderTextColor="#9CA3AF"
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
@@ -18,21 +18,3 @@ export const UserInput = ({ style, ...props }: TextInputProps) => {
         />
     );
 };
-
-const styles = StyleSheet.create({
-    input: {
-        backgroundColor: "white",
-        borderWidth: 1,
-        borderColor: "#E5E7EB", // gray-200
-        borderRadius: 12, // rounded-xl
-        paddingHorizontal: 16, // px-4
-        paddingVertical: 12, // py-3
-        fontFamily: "Kanit",
-        fontSize: 16,
-        color: "#111827", // gray-900
-    },
-    focused: {
-        borderColor: "#16AD78", // Focus Color
-        backgroundColor: "#F0FDF4", // Light green bg
-    },
-});

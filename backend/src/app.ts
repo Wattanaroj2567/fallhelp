@@ -1,6 +1,9 @@
+// Load environment variables FIRST before any other imports
+import dotenv from 'dotenv';
+dotenv.config();
+
 import express, { Express } from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import path from 'node:path';
 import routes from './routes';
 import uploadRoutes from './routes/uploadRoutes';
@@ -15,9 +18,6 @@ import { apiLimiter } from './middlewares/rateLimit';
 // ⚙️ LAYER: Core (App Configuration)
 // Purpose: Configure Express application, middleware, and routes
 // ==========================================
-
-// Load environment variables
-dotenv.config();
 
 const app: Express = express();
 const logDocs = createDebug('fallhelp:api:docs');

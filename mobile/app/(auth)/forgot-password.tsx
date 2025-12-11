@@ -126,6 +126,7 @@ export default function ForgotPasswordScreen() {
               error={emailError}
               autoCapitalize="none"
               keyboardType="email-address"
+              accentColor={BUTTON_COLOR}
             />
           </View>
 

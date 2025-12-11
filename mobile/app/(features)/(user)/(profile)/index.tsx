@@ -5,7 +5,7 @@ import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/services/api';
-import { getProfile, updateProfile, deleteAccount } from '@/services/userService';
+import { getProfile, updateProfile, deleteAccount, getUserElders } from '@/services/userService';
 import Logger from '@/utils/logger';
 import * as ImagePicker from 'expo-image-picker';
 import { ProfileSkeleton } from '@/components/skeletons';
@@ -33,6 +33,14 @@ export default function Profile() {
     queryKey: ['userProfile'],
     queryFn: getProfile,
   });
+
+  // Fetch Current Elder Access Level
+  const { data: elders } = useQuery({
+    queryKey: ['userElders'],
+    queryFn: getUserElders,
+  });
+  const currentElder = elders?.[0];
+  const isOwner = currentElder?.accessLevel === 'OWNER';
 
   // Reset error state when profile image changes
   React.useEffect(() => {
@@ -283,29 +291,31 @@ export default function Profile() {
             </Text>
           </TouchableOpacity>
 
-          {/* Emergency Contacts */}
-          <TouchableOpacity
-            onPress={() => router.push('/(features)/(emergency)')}
-            className="flex-row items-center justify-between p-5"
-            activeOpacity={0.6}
-          >
-            <View className="flex-1">
-              <Text style={{ fontSize: 12 }} className="font-kanit text-gray-500 mb-1">
-                ผู้ติดต่อฉุกเฉิน
-              </Text>
-              <Text style={{ fontSize: 16 }} className="font-kanit text-gray-900">
-                จัดการรายชื่อ
-              </Text>
-            </View>
-            <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
-          </TouchableOpacity>
+          {/* Emergency Contacts - Only for Owner */}
+          {isOwner && (
+            <TouchableOpacity
+              onPress={() => router.push('/(features)/(emergency)')}
+              className="flex-row items-center justify-between p-5"
+              activeOpacity={0.6}
+            >
+              <View className="flex-1">
+                <Text style={{ fontSize: 12 }} className="font-kanit text-gray-500 mb-1">
+                  ผู้ติดต่อฉุกเฉิน
+                </Text>
+                <Text style={{ fontSize: 16 }} className="font-kanit text-gray-900">
+                  จัดการรายชื่อ
+                </Text>
+              </View>
+              <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* Role Badge */}
         <View className="bg-blue-50 rounded-2xl p-4 flex-row items-center mb-6">
           <MaterialIcons name="verified-user" size={20} color="#3B82F6" />
           <Text style={{ fontSize: 14 }} className="font-kanit text-blue-700 ml-2">
-            บทบาท: {profile.role === 'CAREGIVER' ? 'ญาติผู้ดูแล' : profile.role}
+            บทบาท: {currentElder ? (currentElder.accessLevel === 'OWNER' ? 'ญาติผู้ดูแลหลัก' : 'ญาติผู้ดูแลเสริม') : (profile.role === 'CAREGIVER' ? 'ญาติผู้ดูแล' : profile.role)}
           </Text>
         </View>
 

@@ -9,6 +9,7 @@ import { FloatingLabelInput } from '@/components/FloatingLabelInput';
 import { ScreenWrapper } from '@/components/ScreenWrapper';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { PrimaryButton } from '@/components/PrimaryButton';
+import { getErrorMessage } from '@/utils/errorHelper';
 
 export default function ChangePassword() {
   const router = useRouter();
@@ -69,7 +70,7 @@ export default function ChangePassword() {
       );
     } catch (error: any) {
       Logger.error('Error changing password:', error);
-      const message = error.response?.data?.message || error.message || 'ไม่สามารถเปลี่ยนรหัสผ่านได้';
+      const message = getErrorMessage(error);
       Alert.alert('ข้อผิดพลาด', message);
     } finally {
       setSaving(false);

@@ -7,6 +7,7 @@ interface Feedback {
   id: string;
   message: string;
   userName?: string; // Display name from mobile
+  ticketNumber?: string; // REP-001, REP-002 for repair requests
   status: "PENDING" | "REVIEWED" | "RESOLVED";
   createdAt: string;
   user: {
@@ -14,6 +15,7 @@ interface Feedback {
     firstName: string;
     lastName: string;
     email: string;
+    phone?: string | null;
     profileImage: string | null;
   } | null;
 }
@@ -166,6 +168,11 @@ export default function Feedback() {
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
+                    {feedback.ticketNumber && (
+                      <span className="px-2 py-0.5 text-xs font-bold rounded bg-indigo-100 text-indigo-700">
+                        {feedback.ticketNumber}
+                      </span>
+                    )}
                     <h3 className="text-lg font-semibold text-gray-900">
                       {feedback.userName ||
                         (feedback.user
@@ -196,10 +203,19 @@ export default function Feedback() {
                       {feedback.status}
                     </span>
                   </div>
-                  {feedback.user?.email && (
-                    <p className="text-sm text-gray-500">
-                      {feedback.user.email}
-                    </p>
+                  {(feedback.user?.email || feedback.user?.phone) && (
+                    <div className="flex items-center gap-4 mt-1">
+                      {feedback.user?.email && (
+                        <p className="text-sm text-gray-500">
+                          {feedback.user.email}
+                        </p>
+                      )}
+                      {feedback.user?.phone && isRepairRequest(feedback.message) && (
+                        <p className="text-sm text-green-600 font-medium flex items-center gap-1">
+                          <span>📞</span> {feedback.user.phone}
+                        </p>
+                      )}
+                    </div>
                   )}
                   <p className="text-xs text-gray-400 mt-1">
                     {new Date(feedback.createdAt).toLocaleString("en-US", {

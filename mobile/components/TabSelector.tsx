@@ -24,13 +24,16 @@ export const TabSelector: React.FC<TabSelectorProps> = ({
                         onPress={() => onTabChange(index)}
                         style={[
                             styles.tab,
-                            isActive ? styles.tabActive : styles.tabInactive
+                            isActive && styles.activeTab,
                         ]}
+                        activeOpacity={0.7}
                     >
-                        <Text style={[
-                            styles.tabText,
-                            isActive ? styles.tabTextActive : styles.tabTextInactive
-                        ]}>
+                        <Text
+                            style={[
+                                styles.tabText,
+                                isActive && styles.activeTabText,
+                            ]}
+                        >
                             {tab}
                         </Text>
                     </TouchableOpacity>
@@ -42,8 +45,8 @@ export const TabSelector: React.FC<TabSelectorProps> = ({
 
 const styles = StyleSheet.create({
     container: {
-        flexDirection: 'row',
-        backgroundColor: '#F3F4F6',
+        flexDirection: "row",
+        backgroundColor: "#F3F4F6", // gray-100
         padding: 4,
         borderRadius: 12,
         marginBottom: 24,
@@ -51,32 +54,26 @@ const styles = StyleSheet.create({
     tab: {
         flex: 1,
         paddingVertical: 10,
-        alignItems: 'center',
+        alignItems: "center",
+        justifyContent: "center",
         borderRadius: 8,
+        backgroundColor: "transparent",
     },
-    tabActive: {
-        backgroundColor: '#FFFFFF',
-        shadowColor: '#000',
+    activeTab: {
+        backgroundColor: "#FFFFFF",
+        shadowColor: "#000",
         shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
+        shadowOpacity: 0.05,
         shadowRadius: 2,
-        elevation: 2,
-    },
-    tabInactive: {
-        backgroundColor: 'transparent',
+        elevation: 1,
     },
     tabText: {
-        fontFamily: 'Kanit',
         fontSize: 14,
+        fontFamily: "Kanit",
+        color: "#6B7280", // gray-500
     },
-    tabTextActive: {
-        color: '#111827',
-        fontFamily: 'Kanit',
-        fontWeight: '700',
-    },
-    tabTextInactive: {
-        color: '#6B7280',
-        fontFamily: 'Kanit',
-        fontWeight: '400',
+    activeTabText: {
+        color: "#111827", // gray-900
+        fontWeight: "bold",
     },
 });

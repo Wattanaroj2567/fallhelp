@@ -2,29 +2,18 @@ import React, { useState } from "react";
 import {
   View,
   Text,
-  TextInput,
-  TouchableOpacity,
-  ScrollView,
   Alert,
   ActivityIndicator,
   Modal,
-  KeyboardAvoidingView,
-  Platform,
 } from "react-native";
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
 import { useMutation } from "@tanstack/react-query";
 import { configureWifi } from "@/services/deviceService";
 import * as SecureStore from "expo-secure-store";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Logger from "@/utils/logger";
 import { FloatingLabelInput } from "@/components/FloatingLabelInput";
-import { ScreenWrapper } from "@/components/ScreenWrapper";
-import { ScreenHeader } from "@/components/ScreenHeader";
+import { WizardLayout } from "@/components/WizardLayout";
 import { PrimaryButton } from "@/components/PrimaryButton";
 
 // ==========================================
@@ -33,7 +22,6 @@ import { PrimaryButton } from "@/components/PrimaryButton";
 // ==========================================
 export default function Step3() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
 
   // ==========================================
   // 🧩 LAYER: Logic (Local State)
@@ -152,91 +140,11 @@ export default function Step3() {
   };
 
   return (
-    <ScreenWrapper
-      keyboardAvoiding={true}
+    <WizardLayout
+      currentStep={3}
+      title="ตั้งค่า WiFi"
+      onBack={handleBack}
       contentContainerStyle={{ paddingHorizontal: 24, flexGrow: 1 }}
-      edges={["top", "left", "right"]}
-      header={
-        <View className="bg-white rounded-b-[32px] overflow-hidden pb-4 mb-4 shadow-sm">
-          {/* Header */}
-          <View className="flex-row items-center justify-between px-6 py-4">
-            <TouchableOpacity onPress={handleBack} className="p-2 -ml-2">
-              <Ionicons name="chevron-back" size={28} color="#374151" />
-            </TouchableOpacity>
-            <Text className="font-kanit text-xl font-bold text-gray-900">
-              ตั้งค่า WiFi
-            </Text>
-            <View className="w-8" />
-          </View>
-
-          {/* Progress Bar */}
-          <View className="px-6">
-            <View className="relative">
-              {/* Connecting Line (Background) */}
-              <View
-                className="absolute top-4 left-[16%] right-[16%] h-[2px] bg-gray-200"
-                style={{ zIndex: 0 }}
-              />
-              {/* Active Lines */}
-              <View
-                className="absolute top-4 left-[16%] right-[84%] h-[2px] bg-[#16AD78]"
-                style={{ zIndex: 1 }}
-              />
-              <View
-                className="absolute top-4 left-[16%] right-[16%] h-[2px] bg-[#16AD78]"
-                style={{ zIndex: 1 }}
-              />
-
-              {/* Steps (Foreground) */}
-              <View className="flex-row justify-between">
-                {/* Step 1 */}
-                <View className="flex-1 items-center">
-                  <View className="w-8 h-8 rounded-full bg-[#16AD78] items-center justify-center z-10 mb-2 shadow-sm border border-[#16AD78]">
-                    <Ionicons name="checkmark" size={20} color="white" />
-                  </View>
-                  <Text
-                    style={{ fontSize: 12 }}
-                    className="text-green-600 text-center font-kanit"
-                  >
-                    กรอกข้อมูล{"\n"}ผู้สูงอายุ
-                  </Text>
-                </View>
-
-                {/* Step 2 */}
-                <View className="flex-1 items-center">
-                  <View className="w-8 h-8 rounded-full bg-[#16AD78] items-center justify-center z-10 mb-2 shadow-sm border border-[#16AD78]">
-                    <Ionicons name="checkmark" size={20} color="white" />
-                  </View>
-                  <Text
-                    style={{ fontSize: 12 }}
-                    className="text-green-600 text-center font-kanit"
-                  >
-                    ติดตั้งอุปกรณ์
-                  </Text>
-                </View>
-
-                {/* Step 3 */}
-                <View className="flex-1 items-center">
-                  <View className="w-8 h-8 rounded-full bg-blue-600 items-center justify-center z-10 mb-2 shadow-sm border border-blue-600">
-                    <Text
-                      style={{ fontSize: 14, fontWeight: "600" }}
-                      className="text-white font-kanit"
-                    >
-                      3
-                    </Text>
-                  </View>
-                  <Text
-                    style={{ fontSize: 12 }}
-                    className="text-blue-600 text-center font-kanit"
-                  >
-                    ตั้งค่า WiFi
-                  </Text>
-                </View>
-              </View>
-            </View>
-          </View>
-        </View>
-      }
     >
       <View>
         {/* Title */}
@@ -317,6 +225,6 @@ export default function Step3() {
           </View>
         </View>
       </Modal>
-    </ScreenWrapper>
+    </WizardLayout>
   );
 }

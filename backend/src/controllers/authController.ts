@@ -58,11 +58,27 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
 
 /**
  * POST /api/auth/request-otp
+ * For mobile app (CAREGIVER only by default)
  */
 export const requestOtp = asyncHandler(async (req: Request, res: Response) => {
   const { email, purpose } = req.body;
 
-  const result = await authService.requestOtp(email, purpose);
+  const result = await authService.requestOtp(email, purpose); // Default: CAREGIVER only
+
+  res.json({
+    success: true,
+    data: result,
+  });
+});
+
+/**
+ * POST /api/auth/admin/request-otp
+ * For admin panel (ADMIN only)
+ */
+export const requestAdminOtp = asyncHandler(async (req: Request, res: Response) => {
+  const { email, purpose } = req.body;
+
+  const result = await authService.requestOtp(email, purpose, 'ADMIN'); // ADMIN only
 
   res.json({
     success: true,

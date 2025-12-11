@@ -1,3 +1,6 @@
+// Load environment variables FIRST (must be before any other imports)
+import 'dotenv/config';
+
 import http from 'http';
 import app from './app';
 import createDebug from 'debug';

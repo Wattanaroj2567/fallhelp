@@ -16,6 +16,8 @@ interface FloatingLabelInputProps
   containerStyle?: StyleProp<ViewStyle>;
   isPassword?: boolean;
   isRequired?: boolean; // ✅ Add support for required asterisks
+  accentColor?: string; // ✅ Custom accent color for focus state
+  forceFocus?: boolean; // ✅ Force focus state (for GenderSelect modal)
   testID?: string;
 }
 
@@ -25,6 +27,8 @@ export const FloatingLabelInput: React.FC<FloatingLabelInputProps> = ({
   containerStyle,
   isPassword = false,
   isRequired = false,
+  accentColor, // ✅ Optional custom color
+  forceFocus = false, // ✅ Force focus state
   value,
   style,
   multiline,
@@ -32,7 +36,13 @@ export const FloatingLabelInput: React.FC<FloatingLabelInputProps> = ({
 }) => {
   const theme = useTheme();
   const [showPassword, setShowPassword] = React.useState(false);
-  const [isFocused, setIsFocused] = React.useState(false);
+  const [isFocusedInternal, setIsFocusedInternal] = React.useState(false);
+
+  // ✅ Use forceFocus or internal focus state
+  const isFocused = forceFocus || isFocusedInternal;
+
+  // ✅ Use accentColor if provided, otherwise default to theme.colors.primary
+  const focusColor = accentColor || theme.colors.primary;
 
   // คำนวณความสูง:
   // - Multiline: เริ่มต้น 120px
@@ -41,13 +51,13 @@ export const FloatingLabelInput: React.FC<FloatingLabelInputProps> = ({
 
   // ✅ 3-State Label Color Logic:
   // 1. Empty (no value) → onSurfaceVariant (#a3a6af) - Gray
-  // 2. Focused (typing) → primary (#16AD78) - Green
+  // 2. Focused (typing) → focusColor (custom or green)
   // 3. Filled + Blur → #a3a6af - Gray
   const labelColor = isFocused
-    ? theme.colors.primary
+    ? focusColor
     : value
-    ? "#a3a6af"
-    : theme.colors.onSurfaceVariant;
+      ? "#a3a6af"
+      : theme.colors.onSurfaceVariant;
 
   // Construct Label with Red Asterisk if required
   const labelNode = isRequired ? (
@@ -68,17 +78,17 @@ export const FloatingLabelInput: React.FC<FloatingLabelInputProps> = ({
         error={!!error}
         secureTextEntry={isPassword && !showPassword}
         onFocus={(e) => {
-          setIsFocused(true);
+          setIsFocusedInternal(true);
           props.onFocus?.(e);
         }}
         onBlur={(e) => {
-          setIsFocused(false);
+          setIsFocusedInternal(false);
           props.onBlur?.(e);
         }}
-        // 🎨 จัดการสี: ใช้สีจาก theme
-        activeOutlineColor={error ? theme.colors.error : theme.colors.primary}
-        outlineColor={error ? theme.colors.error : "#E5E7EB"} // gray-200 (ขอบปกติสีจาง)
-        cursorColor={error ? theme.colors.error : theme.colors.primary}
+        // 🎨 จัดการสี: ใช้ focusColor แทน theme.colors.primary
+        activeOutlineColor={error ? theme.colors.error : focusColor}
+        outlineColor={error ? theme.colors.error : (isFocused ? focusColor : "#E5E7EB")} // ✅ Green when forceFocus
+        cursorColor={error ? theme.colors.error : focusColor}
         textColor={theme.colors.onSurface}
         placeholderTextColor={theme.colors.onSurfaceVariant}
         style={[
@@ -97,13 +107,13 @@ export const FloatingLabelInput: React.FC<FloatingLabelInputProps> = ({
           [
             multiline
               ? {
-                  paddingTop: 16,
-                  paddingBottom: 16,
-                  textAlignVertical: "top",
-                }
+                paddingTop: 16,
+                paddingBottom: 16,
+                textAlignVertical: "top",
+              }
               : {
-                  textAlignVertical: "center", // ✅ Fix cursor jumping for Thai
-                },
+                textAlignVertical: "center", // ✅ Fix cursor jumping for Thai
+              },
           ] as StyleProp<TextStyle>
         }
         multiline={multiline}

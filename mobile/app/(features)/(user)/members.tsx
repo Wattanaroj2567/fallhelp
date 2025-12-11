@@ -11,6 +11,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { getProfile } from "@/services/userService";
+import { Image } from "react-native";
 import { listMembers, removeMember } from "@/services/elderService";
 import { useCurrentElder } from "@/hooks/useCurrentElder";
 import Logger from "@/utils/logger";
@@ -23,6 +25,7 @@ interface MemberDisplay {
   email: string;
   role: "OWNER" | "VIEWER";
   name: string;
+  profileImage?: string | null;
 }
 
 // ==========================================
@@ -38,10 +41,16 @@ export default function Members() {
   // Purpose: Fetch Elder ID & Members List
   // ==========================================
 
-  // 1. Fetch Elder ID first
+  // 1. Fetch User Profile to identify "Me"
+  const { data: userProfile } = useQuery({
+    queryKey: ["userProfile"],
+    queryFn: getProfile,
+  });
+
+  // 2. Fetch Elder ID
   const { data: currentElder } = useCurrentElder();
 
-  // 2. Fetch Members using Elder ID
+  // 3. Fetch Members using Elder ID
   const {
     data: members,
     isLoading,
@@ -65,6 +74,7 @@ export default function Members() {
           | "OWNER"
           | "VIEWER",
         name: m.user ? `${m.user.firstName} ${m.user.lastName}` : "ไม่ระบุ",
+        profileImage: m.user?.profileImage,
       })) as MemberDisplay[];
     },
     enabled: !!currentElder?.id,
@@ -111,53 +121,76 @@ export default function Members() {
   // 🖼️ LAYER: View (Sub-Component)
   // Purpose: Render individual member item
   // ==========================================
-  const renderMemberItem = ({ item }: { item: MemberDisplay }) => (
-    <View className="bg-white rounded-2xl p-4 mb-3 flex-row items-center border border-gray-100">
-      <View className="w-12 h-12 rounded-full bg-green-100 items-center justify-center mr-3">
-        <MaterialIcons name="person" size={24} color="#16AD78" />
-      </View>
-      <View className="flex-1">
-        <Text
-          style={{ fontSize: 16, fontWeight: "600" }}
-          className="font-kanit text-gray-900"
-        >
-          {item.name}
-        </Text>
-        <Text style={{ fontSize: 14 }} className="font-kanit text-gray-500">
-          {item.email}
-        </Text>
-        <View className="mt-1">
-          <View
-            className={`self-start px-2 py-0.5 rounded-full ${
-              item.role === "OWNER" ? "bg-yellow-100" : "bg-gray-100"
-            }`}
+  const renderMemberItem = ({ item }: { item: MemberDisplay }) => {
+    const isMe = userProfile?.id === item.id;
+    const isOwner = item.role === "OWNER";
+
+    return (
+      <View className="bg-white rounded-2xl p-4 mb-3 flex-row items-start border border-gray-100 shadow-sm shadow-gray-100">
+        <View className="w-12 h-12 rounded-full bg-gray-100 items-center justify-center mr-3 overflow-hidden border border-gray-100">
+          {item.profileImage ? (
+            <Image
+              source={{ uri: item.profileImage }}
+              className="w-full h-full"
+              resizeMode="cover"
+            />
+          ) : (
+            <MaterialIcons name="person" size={24} color="#9CA3AF" />
+          )}
+        </View>
+        <View className="flex-1">
+          <Text
+            style={{ fontSize: 16, fontWeight: "600" }}
+            className="font-kanit text-gray-900"
           >
-            <Text
-              style={{ fontSize: 12 }}
-              className={`font-kanit ${
-                item.role === "OWNER" ? "text-yellow-700" : "text-gray-600"
-              }`}
+            {item.name}
+          </Text>
+          <Text style={{ fontSize: 13 }} className="font-kanit text-gray-500 mb-2">
+            {item.email}
+          </Text>
+
+          <View className="flex-row flex-wrap gap-2">
+            {/* Role Badge */}
+            <View
+              className={`self-start px-2 py-0.5 rounded-full ${isOwner ? "bg-yellow-100" : "bg-blue-50"
+                }`}
             >
-              {item.role === "OWNER" ? "เจ้าของกลุ่ม" : "ดูอย่างเดียว"}
-            </Text>
+              <Text
+                style={{ fontSize: 11 }}
+                className={`font-kanit ${isOwner ? "text-yellow-700 font-medium" : "text-blue-600 font-medium"
+                  }`}
+              >
+                {isOwner
+                  ? "ญาติผู้ดูแลหลัก"
+                  : "ญาติผู้ดูแลเสริม"}
+                {isMe ? " (ฉัน)" : ""}
+              </Text>
+            </View>
+
+            {/* View Only Badge (for non-owners) */}
+            {!isOwner && (
+              <View className="self-start px-2 py-0.5 rounded-full bg-gray-100 border border-gray-200">
+                <Text style={{ fontSize: 10 }} className="font-kanit text-gray-500">
+                  ดูได้อย่างเดียว
+                </Text>
+              </View>
+            )}
           </View>
         </View>
+
+        {/* Delete Button (Only for Owners, can't delete self, can delete others) */}
+        {!isOwner && currentElder?.accessLevel === 'OWNER' && (
+          <TouchableOpacity
+            onPress={() => handleDeleteMember(item.id, item.name)}
+            className="ml-2 p-2 bg-red-50 rounded-full"
+            disabled={deleteMutation.isPending}
+          >
+            <MaterialIcons name="delete-outline" size={20} color="#EF4444" />
+          </TouchableOpacity>
+        )}
       </View>
-      {item.role !== "OWNER" && (
-        <TouchableOpacity
-          onPress={() => handleDeleteMember(item.id, item.name)}
-          className="ml-2 p-2"
-          disabled={deleteMutation.isPending}
-        >
-          {deleteMutation.isPending ? (
-            <ActivityIndicator size="small" color="#EF4444" />
-          ) : (
-            <MaterialIcons name="delete" size={24} color="#EF4444" />
-          )}
-        </TouchableOpacity>
-      )}
-    </View>
-  );
+    );
+  };
 
   // ==========================================
   // 🖼️ LAYER: View (Sub-Component)
@@ -227,7 +260,7 @@ export default function Members() {
         <View className="flex-1">
           {/* Info Box */}
           <View className="px-6 pt-4">
-            <View className="bg-blue-50 rounded-2xl p-4 mb-4">
+            <View className="bg-blue-50 rounded-2xl p-4 mb-4 border border-blue-100">
               <View className="flex-row items-start">
                 <MaterialIcons
                   name="info"
@@ -236,11 +269,10 @@ export default function Members() {
                   style={{ marginTop: 2 }}
                 />
                 <Text
-                  style={{ fontSize: 14, lineHeight: 20 }}
+                  style={{ fontSize: 13, lineHeight: 20 }}
                   className="font-kanit text-blue-700 ml-2 flex-1"
                 >
-                  สมาชิกที่ถูกเชิญจะสามารถดูข้อมูลผู้สูงอายุและประวัติการหกล้มได้เท่านั้น
-                  ไม่สามารถแก้ไขหรือลบข้อมูลได้
+                  สมาชิกที่ถูกเชิญจะสามารถดูข้อมูลผู้สูงอายุและประวัติการหกล้มได้เท่านั้น ไม่สามารถแก้ไขหรือลบข้อมูลได้
                 </Text>
               </View>
             </View>
@@ -260,8 +292,8 @@ export default function Members() {
             />
           </View>
 
-          {/* Fixed Bottom Button */}
-          {members && members.length > 0 && (
+          {/* Fixed Bottom Button (Only for Owner) */}
+          {members && members.length > 0 && currentElder?.accessLevel === 'OWNER' && (
             <View className="px-6 py-5 bg-white border-t border-gray-100">
               <PrimaryButton
                 title="เชิญสมาชิกเข้ากลุ่มของคุณ"

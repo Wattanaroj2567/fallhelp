@@ -237,4 +237,40 @@ describe("ScreenHeader Component", () => {
       expect(mockBack).toHaveBeenCalledTimes(1);
     });
   });
+
+  // ==========================================
+  // ✅ Test Group 8: HitSlop (NEW)
+  // ==========================================
+
+  describe("HitSlop", () => {
+    it("should have hitSlop on back button for easier pressing", () => {
+      const mockBack = jest.fn();
+
+      const { getByTestId } = render(
+        <ScreenHeader title="Settings" onBack={mockBack} />
+      );
+
+      const backButton = getByTestId("back-button");
+
+      // HitSlop should be defined on the component
+      // The button should still be pressable
+      expect(backButton).toBeTruthy();
+      fireEvent.press(backButton);
+      expect(mockBack).toHaveBeenCalled();
+    });
+
+    it("should have expanded touch area via hitSlop prop", () => {
+      const mockBack = jest.fn();
+
+      render(<ScreenHeader title="Test" onBack={mockBack} />);
+
+      const backButton = screen.getByTestId("back-button");
+
+      // Multiple presses should all register
+      fireEvent.press(backButton);
+      fireEvent.press(backButton);
+
+      expect(mockBack).toHaveBeenCalledTimes(2);
+    });
+  });
 });

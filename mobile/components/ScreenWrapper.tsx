@@ -5,6 +5,7 @@ import {
     View,
     TouchableWithoutFeedback,
     Keyboard,
+    Platform,
 } from 'react-native';
 import { SafeAreaView, Edge } from 'react-native-safe-area-context';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
@@ -19,6 +20,8 @@ interface ScreenWrapperProps {
     scrollViewProps?: React.ComponentProps<typeof ScrollView>; // Keep for compatibility
     header?: React.ReactNode;
     scrollViewRef?: React.Ref<any>; // Update type to accept library ref
+    className?: string; // NativeWind override
+    useSafeArea?: boolean; // Use SafeAreaView or regular View
 }
 
 export const ScreenWrapper: React.FC<ScreenWrapperProps> = ({
@@ -31,10 +34,14 @@ export const ScreenWrapper: React.FC<ScreenWrapperProps> = ({
     scrollViewProps,
     header,
     scrollViewRef,
+    className,
+    useSafeArea = true,
 }) => {
+    const baseClassName = className || "flex-1 bg-white";
+    const Container = useSafeArea ? SafeAreaView : View;
 
     return (
-        <SafeAreaView className="flex-1 bg-white" edges={edges} style={style}>
+        <Container className={baseClassName} edges={useSafeArea ? edges : undefined} style={style}>
             {header}
             {useScrollView ? (
                 // ✅ Use "Ready-made" standard library for form handling
@@ -45,10 +52,12 @@ export const ScreenWrapper: React.FC<ScreenWrapperProps> = ({
                         { paddingHorizontal: 24, paddingBottom: 24, flexGrow: 1 },
                         contentContainerStyle,
                     ]}
-                    enableOnAndroid={true} // Handle Android natively
-                    enableAutomaticScroll={true} // Auto-scroll to focused input
-                    enableResetScrollToCoords={false} // ✅ Fix: Stop it from bouncing/resetting position
-                    extraScrollHeight={120} // Adjusted : Reasonable distance, not too high
+                    enableOnAndroid={true}
+                    enableAutomaticScroll={true}
+                    enableResetScrollToCoords={false}
+                    extraHeight={100} // Reduced from 120 to 50 to prevent huge jumps
+                    extraScrollHeight={100} // Reduced from 120 to 50
+                    viewIsInsideTabBar={false}
                     keyboardShouldPersistTaps="handled"
                     {...scrollViewProps} // Pass through other props like bounces/scrollEnabled
                 >
@@ -62,6 +71,6 @@ export const ScreenWrapper: React.FC<ScreenWrapperProps> = ({
                     </View>
                 </TouchableWithoutFeedback>
             )}
-        </SafeAreaView>
+        </Container>
     );
 };

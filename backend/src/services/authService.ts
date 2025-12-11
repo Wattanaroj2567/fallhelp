@@ -4,6 +4,7 @@ import { generateToken, JwtPayload } from '../utils/jwt.js';
 import { addMinutes } from '../utils/time.js';
 import { sendOtpEmail, sendWelcomeEmail } from '../utils/email.js';
 import { AppError } from '../utils/AppError.js';
+import { createError } from '../utils/ApiError.js';
 import createDebug from 'debug';
 import prisma from '../prisma.js';
 
@@ -34,7 +35,18 @@ export const register = async (data: {
   });
 
   if (existingUser) {
-    throw new Error('User with this email already exists');
+    throw createError.emailExists();
+  }
+
+  // Check if phone already exists (if provided)
+  if (data.phone) {
+    const existingPhone = await prisma.user.findFirst({
+      where: { phone: data.phone },
+    });
+
+    if (existingPhone) {
+      throw new AppError('Phone number already in use', 400);
+    }
   }
 
   // Hash password
@@ -126,7 +138,8 @@ export const login = async (
  */
 export const requestOtp = async (
   email: string,
-  purpose: 'PASSWORD_RESET' | 'EMAIL_VERIFICATION' | 'PHONE_VERIFICATION'
+  purpose: 'PASSWORD_RESET' | 'EMAIL_VERIFICATION' | 'PHONE_VERIFICATION',
+  allowedRole: 'CAREGIVER' | 'ADMIN' | 'ALL' = 'CAREGIVER' // Default: only CAREGIVER for mobile app
 ): Promise<{ message: string }> => {
   // Check if user exists
   const user = await prisma.user.findUnique({
@@ -135,6 +148,11 @@ export const requestOtp = async (
 
   if (!user) {
     throw new Error('User not found');
+  }
+
+  // Check if user has the correct role
+  if (allowedRole !== 'ALL' && user.role !== allowedRole) {
+    throw new Error(`ไม่สามารถใช้ฟังก์ชันนี้กับบัญชีประเภท ${user.role === 'ADMIN' ? 'ผู้ดูแลระบบ' : 'ผู้ดูแล'} ได้`);
   }
 
   // Generate OTP

@@ -18,6 +18,8 @@ import { pairDevice } from "@/services/deviceService";
 import * as SecureStore from "expo-secure-store";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { FloatingLabelInput } from "@/components/FloatingLabelInput";
+import { WizardLayout } from "@/components/WizardLayout";
+import { getErrorMessage } from "@/utils/errorHelper";
 
 // ==========================================
 // 📱 LAYER: View (Component)
@@ -79,12 +81,10 @@ export default function Step2() {
     },
     onError: (error: any) => {
       console.error("Error pairing device:", error);
-      // Try to extract specific error message from backend response
-      const serverMessage =
-        error.response?.data?.message || error.response?.data?.error;
+      const message = getErrorMessage(error);
       Alert.alert(
         "ข้อผิดพลาด",
-        serverMessage || error.message || "ไม่สามารถเชื่อมต่ออุปกรณ์ได้",
+        message,
         [
           {
             text: "ตกลง",
@@ -168,250 +168,130 @@ export default function Step2() {
   // ==========================================
   // 🎨 LAYER: UI Components (Shared)
   // ==========================================
-  const renderHeader = (isTransparent: boolean) => (
-    <View
-      className={`${
-        isTransparent ? "bg-black/30" : "bg-white"
-      } rounded-b-[32px] overflow-hidden pb-4 mb-4`}
-      style={{ paddingTop: isTransparent ? insets.top : 0 }}
-    >
-      {/* Header */}
-      <View className="flex-row items-center justify-between px-6 py-4">
-        <TouchableOpacity onPress={handleBack} className="p-2 -ml-2">
-          <Ionicons
-            name="chevron-back"
-            size={28}
-            color={isTransparent ? "white" : "#374151"}
-          />
-        </TouchableOpacity>
-        <Text
-          className={`font-kanit text-xl font-bold ${
-            isTransparent ? "text-white" : "text-gray-900"
-          }`}
-        >
-          ติดตั้งอุปกรณ์
-        </Text>
-        <View className="w-8" />
-      </View>
-
-      {/* Progress Bar */}
-      <View className="px-6">
-        <View className="relative">
-          {/* Connecting Line (Background) */}
-          <View
-            className={`absolute top-4 left-[16%] right-[16%] h-[2px] ${
-              isTransparent ? "bg-white/20" : "bg-gray-200"
-            }`}
-            style={{ zIndex: 0 }}
-          />
-          <View
-            className="absolute top-4 left-[16%] right-[50%] h-[2px] bg-[#16AD78]"
-            style={{ zIndex: 1 }}
-          />
-
-          {/* Steps (Foreground) */}
-          <View className="flex-row justify-between">
-            {/* Step 1 */}
-            <View className="flex-1 items-center">
-              <View className="w-8 h-8 rounded-full bg-[#16AD78] items-center justify-center z-10 mb-2 shadow-sm border border-[#16AD78]">
-                <Ionicons name="checkmark" size={20} color="white" />
-              </View>
-              <Text
-                style={{ fontSize: 12 }}
-                className={`${
-                  isTransparent ? "text-green-400" : "text-green-600"
-                } text-center font-kanit`}
-              >
-                กรอกข้อมูล{"\n"}ผู้สูงอายุ
-              </Text>
-            </View>
-
-            {/* Step 2 */}
-            <View className="flex-1 items-center">
-              <View
-                className={`w-8 h-8 rounded-full ${
-                  isTransparent
-                    ? "bg-blue-500 border-blue-400"
-                    : "bg-blue-600 border-blue-600"
-                } items-center justify-center z-10 mb-2 shadow-sm border`}
-              >
-                <Text
-                  style={{ fontSize: 14, fontWeight: "600" }}
-                  className="text-white font-kanit"
-                >
-                  2
-                </Text>
-              </View>
-              <Text
-                style={{ fontSize: 12 }}
-                className={`${
-                  isTransparent ? "text-blue-300" : "text-blue-600"
-                } text-center font-kanit`}
-              >
-                ติดตั้งอุปกรณ์
-              </Text>
-            </View>
-
-            {/* Step 3 */}
-            <View className="flex-1 items-center">
-              <View
-                className={`w-8 h-8 rounded-full ${
-                  isTransparent
-                    ? "bg-black/40 border-white/30"
-                    : "bg-white border-gray-200"
-                } border-2 items-center justify-center z-10 mb-2`}
-              >
-                <Text
-                  style={{ fontSize: 14, fontWeight: "600" }}
-                  className="text-gray-400 font-kanit"
-                >
-                  3
-                </Text>
-              </View>
-              <Text
-                style={{ fontSize: 12 }}
-                className="text-gray-400 text-center font-kanit"
-              >
-                ตั้งค่า WiFi
-              </Text>
-            </View>
-          </View>
-        </View>
-      </View>
-    </View>
-  );
+  // ==========================================
+  // 🎨 LAYER: UI Components
+  // ==========================================
+  // renderHeader removed - using WizardLayout
 
   // ==========================================
   // 🖼️ LAYER: View (Manual Entry Mode)
   // ==========================================
   if (showManualEntry) {
     return (
-      <View className="flex-1 bg-white">
-        {/* Use SafeAreaView only for top padding simulation if needed, or just View with insets */}
-        <View style={{ height: insets.top, backgroundColor: "white" }} />
-
-        {renderHeader(false)}
-
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          className="flex-1"
-        >
-          <ScrollView
-            className="flex-1 px-6"
-            contentContainerStyle={{ paddingBottom: 100, flexGrow: 1 }}
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}
-          >
-            {existingDeviceId && (
-              <View className="bg-green-50 rounded-2xl p-4 mb-6 mt-6 border border-green-200">
-                <View className="flex-row items-center mb-2">
-                  <Ionicons name="checkmark-circle" size={24} color="#16AD78" />
-                  <Text
-                    style={{ fontSize: 16, fontWeight: "600" }}
-                    className="font-kanit text-green-800 ml-2"
-                  >
-                    อุปกรณ์ถูกผูกแล้ว
-                  </Text>
-                </View>
-                <Text
-                  style={{ fontSize: 14 }}
-                  className="font-kanit text-green-700 mb-3"
-                >
-                  คุณสามารถไปขั้นตอนต่อไป หรือเปลี่ยนอุปกรณ์ใหม่
-                </Text>
-                <View className="flex-row gap-3">
-                  <TouchableOpacity
-                    onPress={() => router.push("/(setup)/step3-wifi-setup")}
-                    className="flex-1 bg-green-600 rounded-xl py-3 items-center"
-                  >
-                    <Text
-                      style={{ fontSize: 14, fontWeight: "600" }}
-                      className="font-kanit text-white"
-                    >
-                      ไปขั้นตอนถัดไป
-                    </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={handleChangeDevice}
-                    className="flex-1 bg-white border border-green-600 rounded-xl py-3 items-center"
-                  >
-                    <Text
-                      style={{ fontSize: 14, fontWeight: "600" }}
-                      className="font-kanit text-green-600"
-                    >
-                      เปลี่ยนอุปกรณ์
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            )}
-
-            <View className="bg-blue-50 rounded-2xl p-4 mb-6 mt-6">
+      <WizardLayout
+        currentStep={2}
+        title="ติดตั้งอุปกรณ์"
+        onBack={handleBack}
+        contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 100 }}
+      >
+        {existingDeviceId && (
+          <View className="bg-green-50 rounded-2xl p-4 mb-6 mt-6 border border-green-200">
+            <View className="flex-row items-center mb-2">
+              <Ionicons name="checkmark-circle" size={24} color="#16AD78" />
               <Text
-                style={{ fontSize: 14 }}
-                className="font-kanit text-blue-700 mb-2"
+                style={{ fontSize: 16, fontWeight: "600" }}
+                className="font-kanit text-green-800 ml-2"
               >
-                กรุณากรอกรหัสอุปกรณ์ 8 หลัก
-              </Text>
-              <Text
-                style={{ fontSize: 14 }}
-                className="font-kanit text-blue-700"
-              >
-                ที่ติดบนสติ๊กเกอร์ของอุปกรณ์
-              </Text>
-              <Text
-                style={{ fontSize: 14, fontWeight: "600" }}
-                className="font-kanit text-blue-900 mt-2"
-              >
-                ตัวอย่าง: 832CE051
+                อุปกรณ์ถูกผูกแล้ว
               </Text>
             </View>
-
-            <View className="items-center mb-6">
-              <View className="w-32 h-32 rounded-full bg-gray-100 items-center justify-center mb-4">
-                <Ionicons
-                  name="hardware-chip-outline"
-                  size={64}
-                  color="#16AD78"
-                />
-              </View>
-            </View>
-
-            <FloatingLabelInput
-              label="รหัสอุปกรณ์ (Device Code)"
-              value={macAddress}
-              onChangeText={(text) =>
-                setMacAddress(
-                  text
-                    .toUpperCase()
-                    .replace(/[^A-Z0-9]/g, "")
-                    .slice(0, 8)
-                )
-              }
-              autoCapitalize="characters"
-              maxLength={8}
-            />
-
-            <TouchableOpacity
-              onPress={handleManualPairing}
-              disabled={pairMutation.isPending}
-              className="bg-[#16AD78] rounded-2xl py-4 items-center mb-4"
-              style={{ opacity: pairMutation.isPending ? 0.6 : 1 }}
+            <Text
+              style={{ fontSize: 14 }}
+              className="font-kanit text-green-700 mb-3"
             >
-              {pairMutation.isPending ? (
-                <ActivityIndicator size="small" color="#FFFFFF" />
-              ) : (
+              คุณสามารถไปขั้นตอนต่อไป หรือเปลี่ยนอุปกรณ์ใหม่
+            </Text>
+            <View className="flex-row gap-3">
+              <TouchableOpacity
+                onPress={() => router.push("/(setup)/step3-wifi-setup")}
+                className="flex-1 bg-green-600 rounded-xl py-3 items-center"
+              >
                 <Text
-                  style={{ fontSize: 16, fontWeight: "600" }}
+                  style={{ fontSize: 14, fontWeight: "600" }}
                   className="font-kanit text-white"
                 >
-                  ยืนยัน
+                  ไปขั้นตอนถัดไป
                 </Text>
-              )}
-            </TouchableOpacity>
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </View>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleChangeDevice}
+                className="flex-1 bg-white border border-green-600 rounded-xl py-3 items-center"
+              >
+                <Text
+                  style={{ fontSize: 14, fontWeight: "600" }}
+                  className="font-kanit text-green-600"
+                >
+                  เปลี่ยนอุปกรณ์
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+
+        <View className="bg-blue-50 rounded-2xl p-4 mb-6 mt-6">
+          <Text
+            style={{ fontSize: 14 }}
+            className="font-kanit text-blue-700 mb-2"
+          >
+            กรุณากรอกรหัสอุปกรณ์ 8 หลัก
+          </Text>
+          <Text
+            style={{ fontSize: 14 }}
+            className="font-kanit text-blue-700"
+          >
+            ที่ติดบนสติ๊กเกอร์ของอุปกรณ์
+          </Text>
+          <Text
+            style={{ fontSize: 14, fontWeight: "600" }}
+            className="font-kanit text-blue-900 mt-2"
+          >
+            ตัวอย่าง: 832CE051
+          </Text>
+        </View>
+
+        <View className="items-center mb-6">
+          <View className="w-32 h-32 rounded-full bg-gray-100 items-center justify-center mb-4">
+            <Ionicons
+              name="hardware-chip-outline"
+              size={64}
+              color="#16AD78"
+            />
+          </View>
+        </View>
+
+        <FloatingLabelInput
+          label="รหัสอุปกรณ์ (Device Code)"
+          value={macAddress}
+          onChangeText={(text) =>
+            setMacAddress(
+              text
+                .toUpperCase()
+                .replace(/[^A-Z0-9]/g, "")
+                .slice(0, 8)
+            )
+          }
+          autoCapitalize="characters"
+          maxLength={8}
+        />
+
+        <TouchableOpacity
+          onPress={handleManualPairing}
+          disabled={pairMutation.isPending}
+          className="bg-[#16AD78] rounded-2xl py-4 items-center mb-4"
+          style={{ opacity: pairMutation.isPending ? 0.6 : 1 }}
+        >
+          {pairMutation.isPending ? (
+            <ActivityIndicator size="small" color="#FFFFFF" />
+          ) : (
+            <Text
+              style={{ fontSize: 16, fontWeight: "600" }}
+              className="font-kanit text-white"
+            >
+              ยืนยัน
+            </Text>
+          )}
+        </TouchableOpacity>
+      </WizardLayout>
     );
   }
 
@@ -421,6 +301,10 @@ export default function Step2() {
   return (
     <View className="flex-1 bg-black">
       {/* Background Camera Layer */}
+      {/* 
+         NOTE: Camera permissions handled in logic layer. 
+         If granted, show CameraView.
+      */}
       {permission?.granted && (
         <CameraView
           style={[StyleSheet.absoluteFill]}
@@ -430,16 +314,21 @@ export default function Step2() {
       )}
 
       {/* UI Overlay Layer */}
-      <View className="flex-1">
-        {renderHeader(true)}
-
+      {/* Use WizardLayout in transparent mode */}
+      <WizardLayout
+        currentStep={2}
+        title="ติดตั้งอุปกรณ์"
+        onBack={handleBack}
+        transparent={true}
+      >
         {/* Camera Overlay Content */}
-        <View className="flex-1 justify-between pb-10">
+        {/* We need flex-1 here to fill the space provided by WizardLayout's children container */}
+        <View className="flex-1 justify-between pb-10 px-6">
           {/* Center Scanning Area */}
           <View className="flex-1 items-center justify-center">
             {existingDeviceId ? (
               // Device already paired - show success message
-              <View className="items-center px-6">
+              <View className="items-center w-full">
                 <View className="w-24 h-24 rounded-full bg-green-500 items-center justify-center mb-6">
                   <Ionicons name="checkmark-circle" size={64} color="white" />
                 </View>
@@ -451,7 +340,7 @@ export default function Step2() {
                 </Text>
                 <TouchableOpacity
                   onPress={() => router.push("/(setup)/step3-wifi-setup")}
-                  className="bg-white rounded-2xl px-8 py-4 mb-4"
+                  className="bg-white rounded-2xl px-8 py-4 mb-4 w-full items-center"
                 >
                   <Text
                     style={{ fontSize: 16, fontWeight: "600" }}
@@ -462,7 +351,7 @@ export default function Step2() {
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={handleChangeDevice}
-                  className="bg-white/20 border-2 border-white rounded-2xl px-8 py-4"
+                  className="bg-white/20 border-2 border-white rounded-2xl px-8 py-4 w-full items-center"
                 >
                   <Text
                     style={{ fontSize: 16, fontWeight: "600" }}
@@ -517,7 +406,7 @@ export default function Step2() {
           </View>
 
           {/* Bottom Action */}
-          <View className="px-6 items-center">
+          <View className="items-center">
             <TouchableOpacity
               onPress={() => setShowManualEntry(true)}
               className="flex-row items-center bg-white/20 px-6 py-4 rounded-full border border-white/30 backdrop-blur-md shadow-lg active:bg-white/30"
@@ -529,7 +418,7 @@ export default function Step2() {
             </TouchableOpacity>
           </View>
         </View>
-      </View>
+      </WizardLayout>
     </View>
   );
 }

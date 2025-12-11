@@ -335,11 +335,24 @@ export default function ElderInfo() {
           </View>
 
           {/* Edit Button */}
-          <PrimaryButton
-            title="แก้ไขข้อมูล"
-            variant="outline"
-            onPress={() => router.push("/(features)/(elder)/edit")}
-          />
+          {/* Edit Button - Hide if Read Only */}
+          {elder.accessLevel === 'OWNER' && (
+            <PrimaryButton
+              title="แก้ไขข้อมูล"
+              variant="outline"
+              onPress={() => router.push("/(features)/(elder)/edit")}
+            />
+          )}
+
+          {/* View Only Message */}
+          {elder.accessLevel !== 'OWNER' && (
+            <View className="bg-gray-50 rounded-2xl p-4 mt-6 items-center">
+              <MaterialIcons name="lock-outline" size={24} color="#9CA3AF" />
+              <Text className="font-kanit text-gray-500 text-center mt-2">
+                คุณมีสิทธิ์ดูข้อมูลเท่านั้น
+              </Text>
+            </View>
+          )}
         </View>
       </ScrollView>
     </ScreenWrapper>

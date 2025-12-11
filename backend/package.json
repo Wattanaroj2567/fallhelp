@@ -38,6 +38,7 @@
     "multer": "^2.0.2",
     "nodemailer": "^7.0.10",
     "qrcode": "^1.5.4",
+    "resend": "^6.6.0",
     "socket.io": "^4.8.1",
     "uuid": "^13.0.0"
   },

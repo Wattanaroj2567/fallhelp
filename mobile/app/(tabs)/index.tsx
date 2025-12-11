@@ -27,7 +27,7 @@ import { getUserElders as getElders, getProfile } from "@/services/userService";
 import { listEvents, cancelEvent } from "@/services/eventService";
 import { getUnreadCount } from "@/services/notificationService";
 import { useSocket } from "@/hooks/useSocket";
-import * as SecureStore from "expo-secure-store";
+import { useAuth } from "@/context/AuthContext";
 import Logger from "@/utils/logger";
 
 // ==========================================
@@ -57,6 +57,7 @@ const calculateAge = (dobString?: string) => {
 export default function Home() {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { isSignedIn } = useAuth();
   const [imageError, setImageError] = useState(false);
 
   // ==========================================
@@ -75,12 +76,14 @@ export default function Home() {
       const elders = await getElders();
       return elders && elders.length > 0 ? elders[0] : null;
     },
+    enabled: isSignedIn, // Only fetch when logged in
   });
 
   // 1.5. Fetch User Profile (for profile image)
   const { data: userProfile } = useQuery({
     queryKey: ["userProfile"],
     queryFn: getProfile,
+    enabled: isSignedIn, // Only fetch when logged in
   });
 
   // Reset error state when profile image changes
@@ -129,6 +132,7 @@ export default function Home() {
         return 0;
       }
     },
+    enabled: isSignedIn, // Only fetch when logged in
     refetchInterval: 30000, // Poll every 30 seconds
     retry: 1,
     staleTime: 10000,
@@ -417,29 +421,37 @@ export default function Home() {
               {/* Grid: Device & Heart Rate */}
               <View className="flex-row mb-6">
                 <TouchableOpacity
-                  onPress={() => {
-                    if (elderInfo?.device) {
-                      router.push("/(features)/(device)/details");
-                    } else {
-                      router.push("/(features)/(device)/pairing");
-                    }
-                  }}
+                  onPress={() => router.push("/(features)/(device)/details")}
                   className="flex-1 bg-white p-5 rounded-[24px] border border-gray-100 shadow-sm mr-1.5 active:bg-gray-50"
                 >
                   <View className="flex-row justify-between items-start">
                     <View
-                      className={`w-12 h-12 rounded-2xl items-center justify-center ${isConnected ? "bg-green-100" : "bg-gray-100"
+                      className={`w-12 h-12 rounded-2xl items-center justify-center ${!elderInfo?.device
+                        ? "bg-gray-100"
+                        : isConnected
+                          ? "bg-green-100"
+                          : "bg-red-100"
                         }`}
                     >
                       <MaterialIcons
                         name="devices"
                         size={24}
-                        color={isConnected ? "#16AD78" : "#9CA3AF"}
+                        color={
+                          !elderInfo?.device
+                            ? "#9CA3AF"
+                            : isConnected
+                              ? "#16AD78"
+                              : "#EF4444"
+                        }
                       />
                     </View>
                     <View className="flex-row items-start gap-1">
                       <View
-                        className={`w-3 h-3 rounded-full mt-1 ${isConnected ? "bg-green-500" : "bg-gray-300"
+                        className={`w-3 h-3 rounded-full mt-1 ${!elderInfo?.device
+                          ? "bg-gray-300"
+                          : isConnected
+                            ? "bg-green-500"
+                            : "bg-red-500"
                           }`}
                       />
                       <MaterialIcons name="chevron-right" size={20} color="#CBD5E1" />
@@ -451,10 +463,14 @@ export default function Home() {
                       อุปกรณ์
                     </Text>
                     <Text
-                      className={`text-lg font-kanit font-bold ${isConnected ? "text-gray-800" : "text-gray-400"
+                      className={`text-lg font-kanit font-bold ${!elderInfo?.device
+                        ? "text-gray-400"
+                        : isConnected
+                          ? "text-gray-800"
+                          : "text-red-500"
                         }`}
                     >
-                      {isConnected ? "ออนไลน์" : "ออฟไลน์"}
+                      {!elderInfo?.device ? "ไม่มีอุปกรณ์" : isConnected ? "ออนไลน์" : "ออฟไลน์"}
                     </Text>
                   </View>
                 </TouchableOpacity>

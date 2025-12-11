@@ -1,4 +1,3 @@
-// components/AutocompleteInput.tsx
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -6,14 +5,12 @@ import {
   TextInput,
   FlatList,
   TouchableOpacity,
-  StyleSheet,
   Modal,
   Pressable,
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
-import { useTheme } from "react-native-paper";
 
 interface AutocompleteInputProps {
   label: string;
@@ -24,6 +21,7 @@ interface AutocompleteInputProps {
   isRequired?: boolean;
   error?: string;
   editable?: boolean;
+  containerClassName?: string;
 }
 
 export function AutocompleteInput({
@@ -35,8 +33,8 @@ export function AutocompleteInput({
   isRequired = false,
   error,
   editable = true,
+  containerClassName,
 }: AutocompleteInputProps) {
-  const theme = useTheme();
   const [showModal, setShowModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredOptions, setFilteredOptions] = useState<string[]>(options);
@@ -71,50 +69,51 @@ export function AutocompleteInput({
     setSearchQuery("");
   };
 
-  const labelColor = error ? theme.colors.error : value ? "#a3a6af" : "#a3a6af";
+  // Dynamic Styles Logic
+  const labelColorClass = error ? "text-red-500" : "text-gray-400";
+  
+  const getBorderColorClass = () => {
+    if (error) return "border-red-500";
+    if (value) return "border-primary"; // ใช้สี Primary ของ App (สีเขียว/ฟ้าตาม Theme)
+    return "border-gray-200";
+  };
 
   return (
-    <View style={styles.container}>
+    <View className={`mb-4 ${containerClassName || ''}`}>
       {/* Label */}
-      <Text style={[styles.label, { color: labelColor }]}>
-        {label} {isRequired && <Text style={{ color: "#EF4444" }}>*</Text>}
+      <Text className={`text-xs mb-1.5 font-kanit ${labelColorClass}`}>
+        {label} {isRequired && <Text className="text-red-500">*</Text>}
       </Text>
 
-      {/* Input Field (Read-only, opens modal on press) */}
+      {/* Input Field (Read-only trigger) */}
       <TouchableOpacity
         onPress={handleOpen}
         disabled={!editable}
-        style={[
-          styles.inputContainer,
-          {
-            borderColor: error
-              ? theme.colors.error
-              : value
-              ? theme.colors.primary
-              : "#E5E7EB",
-            opacity: editable ? 1 : 0.5,
-          },
-        ]}
+        className={`flex-row items-center justify-between border rounded-xl px-4 py-3.5 bg-white ${getBorderColorClass()} ${
+          editable ? 'opacity-100' : 'opacity-50'
+        }`}
+        activeOpacity={0.7}
       >
         <Text
-          style={[
-            styles.inputText,
-            {
-              color: value ? theme.colors.onSurface : "#a3a6af",
-            },
-          ]}
+          className={`flex-1 text-base font-kanit ${
+            value ? "text-gray-900" : "text-gray-400"
+          }`}
         >
           {value || placeholder}
         </Text>
         <MaterialIcons
           name="arrow-drop-down"
           size={24}
-          color={editable ? "#a3a6af" : "#E5E7EB"}
+          color={editable ? "#9CA3AF" : "#E5E7EB"}
         />
       </TouchableOpacity>
 
       {/* Error Message */}
-      {error && <Text style={styles.errorText}>{error}</Text>}
+      {error && (
+        <Text className="text-xs text-red-500 mt-1 font-kanit">
+          {error}
+        </Text>
+      )}
 
       {/* Modal Picker */}
       <Modal
@@ -127,33 +126,38 @@ export function AutocompleteInput({
           style={{ flex: 1 }}
           behavior={Platform.OS === "ios" ? "padding" : "height"}
         >
-          <Pressable style={styles.modalOverlay} onPress={handleClose}>
+          <Pressable 
+            className="flex-1 bg-black/50 justify-end" 
+            onPress={handleClose}
+          >
             <Pressable
-              style={styles.modalContent}
+              className="bg-white rounded-t-3xl max-h-[80%] pb-5"
               onPress={(e) => e.stopPropagation()}
             >
               {/* Header */}
-              <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>{label}</Text>
-                <TouchableOpacity onPress={handleClose}>
+              <View className="flex-row justify-between items-center p-4 border-b border-gray-100">
+                <Text className="text-lg font-kanit-bold text-gray-700">
+                  {label}
+                </Text>
+                <TouchableOpacity onPress={handleClose} className="p-1">
                   <MaterialIcons name="close" size={24} color="#374151" />
                 </TouchableOpacity>
               </View>
 
               {/* Search Input */}
-              <View style={styles.searchContainer}>
-                <MaterialIcons name="search" size={20} color="#a3a6af" />
+              <View className="flex-row items-center m-4 px-3 py-2 bg-gray-100 rounded-xl">
+                <MaterialIcons name="search" size={20} color="#9CA3AF" />
                 <TextInput
-                  style={styles.searchInput}
+                  className="flex-1 text-base ml-2 font-kanit text-gray-700 p-0"
                   value={searchQuery}
                   onChangeText={setSearchQuery}
                   placeholder={`ค้นหา${label}...`}
-                  placeholderTextColor="#a3a6af"
+                  placeholderTextColor="#9CA3AF"
                   autoFocus={false}
                 />
                 {searchQuery ? (
                   <TouchableOpacity onPress={() => setSearchQuery("")}>
-                    <MaterialIcons name="close" size={20} color="#a3a6af" />
+                    <MaterialIcons name="close" size={20} color="#9CA3AF" />
                   </TouchableOpacity>
                 ) : null}
               </View>
@@ -162,36 +166,41 @@ export function AutocompleteInput({
               <FlatList
                 data={filteredOptions}
                 keyExtractor={(item, index) => `${item}-${index}`}
-                style={styles.optionsList}
+                className="max-h-[400px]"
                 keyboardShouldPersistTaps="handled"
-                renderItem={({ item }) => (
-                  <TouchableOpacity
-                    style={[
-                      styles.optionItem,
-                      value === item && styles.optionItemSelected,
-                    ]}
-                    onPress={() => handleSelect(item)}
-                  >
-                    <Text
-                      style={[
-                        styles.optionText,
-                        value === item && styles.optionTextSelected,
-                      ]}
+                renderItem={({ item }) => {
+                  const isSelected = value === item;
+                  return (
+                    <TouchableOpacity
+                      className={`flex-row justify-between items-center px-4 py-3.5 border-b border-gray-50 ${
+                        isSelected ? "bg-green-50" : "bg-white"
+                      }`}
+                      onPress={() => handleSelect(item)}
                     >
-                      {item}
-                    </Text>
-                    {value === item && (
-                      <MaterialIcons
-                        name="check"
-                        size={20}
-                        color={theme.colors.primary}
-                      />
-                    )}
-                  </TouchableOpacity>
-                )}
+                      <Text
+                        className={`text-base font-kanit ${
+                          isSelected 
+                            ? "text-[#16AD78] font-kanit-bold" 
+                            : "text-gray-700"
+                        }`}
+                      >
+                        {item}
+                      </Text>
+                      {isSelected && (
+                        <MaterialIcons
+                          name="check"
+                          size={20}
+                          color="#16AD78"
+                        />
+                      )}
+                    </TouchableOpacity>
+                  );
+                }}
                 ListEmptyComponent={
-                  <View style={styles.emptyContainer}>
-                    <Text style={styles.emptyText}>ไม่พบข้อมูล</Text>
+                  <View className="p-8 items-center">
+                    <Text className="text-base text-gray-400 font-kanit">
+                      ไม่พบข้อมูล
+                    </Text>
                   </View>
                 }
               />
@@ -202,110 +211,3 @@ export function AutocompleteInput({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    marginBottom: 16,
-  },
-  label: {
-    fontSize: 12,
-    marginBottom: 6,
-    fontFamily: "Kanit",
-  },
-  inputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    backgroundColor: "#FFFFFF",
-  },
-  inputText: {
-    flex: 1,
-    fontSize: 16,
-    fontFamily: "Kanit",
-  },
-  errorText: {
-    fontSize: 12,
-    color: "#EF4444",
-    marginTop: 4,
-    fontFamily: "Kanit",
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "flex-end",
-  },
-  modalContent: {
-    backgroundColor: "#FFFFFF",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    maxHeight: "80%",
-    paddingBottom: 20,
-  },
-  modalHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#F3F4F6",
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#374151",
-    fontFamily: "Kanit",
-  },
-  searchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    margin: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    backgroundColor: "#F3F4F6",
-    borderRadius: 12,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 16,
-    marginLeft: 8,
-    fontFamily: "Kanit",
-    color: "#374151",
-  },
-  optionsList: {
-    maxHeight: 400,
-  },
-  optionItem: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: "#F3F4F6",
-  },
-  optionItemSelected: {
-    backgroundColor: "#F0FDF4",
-  },
-  optionText: {
-    fontSize: 16,
-    color: "#374151",
-    fontFamily: "Kanit",
-  },
-  optionTextSelected: {
-    color: "#16AD78",
-    fontWeight: "600",
-  },
-  emptyContainer: {
-    padding: 32,
-    alignItems: "center",
-  },
-  emptyText: {
-    fontSize: 16,
-    color: "#a3a6af",
-    fontFamily: "Kanit",
-  },
-});

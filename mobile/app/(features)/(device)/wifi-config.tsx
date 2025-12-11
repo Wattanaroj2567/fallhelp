@@ -2,14 +2,12 @@ import React, { useState } from "react";
 import {
   View,
   Text,
-  TouchableOpacity,
   Alert,
   ActivityIndicator,
   Modal,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 import { useMutation } from "@tanstack/react-query";
 import { configureWifi } from "@/services/deviceService";
 import { FloatingLabelInput } from "@/components/FloatingLabelInput";
@@ -24,9 +22,9 @@ import Logger from "@/utils/logger";
 // ==========================================
 export default function WifiConfig() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
   const params = useLocalSearchParams();
   const deviceCode = params.deviceCode as string;
+  const from = params.from as string;
 
   // ==========================================
   // 🧩 LAYER: Logic (Local State)
@@ -52,7 +50,13 @@ export default function WifiConfig() {
       Alert.alert("สำเร็จ", "ส่งข้อมูลการตั้งค่า WiFi ไปยังอุปกรณ์แล้ว", [
         {
           text: "ตกลง",
-          onPress: () => router.back(),
+          onPress: () => {
+            if (from === "pairing") {
+              router.replace("/(features)/(device)/details");
+            } else {
+              router.back();
+            }
+          },
         },
       ]);
     },
@@ -75,41 +79,65 @@ export default function WifiConfig() {
   };
 
   const handleBack = () => {
-    if (router.canGoBack()) {
-      router.back();
+    if (from === "pairing") {
+      router.replace("/(features)/(device)/details");
     } else {
-      router.replace("/(tabs)/settings");
+      if (router.canGoBack()) {
+        router.back();
+      } else {
+        router.replace("/(features)/(device)/details");
+      }
     }
   };
 
-  return (
-    <ScreenWrapper
-      keyboardAvoiding={true}
-      contentContainerStyle={{ paddingHorizontal: 24, flexGrow: 1 }}
-      edges={["top", "left", "right"]}
-      useScrollView={false}
-    >
+  // ==========================================
+  // 🖼️ LAYER: View (Header Component)
+  // ==========================================
+  const renderHeader = () => (
+    <View style={{ backgroundColor: "#FFFFFF" }}>
       <ScreenHeader title="ตั้งค่า WiFi" onBack={handleBack} />
-      <View className="flex-1 px-6">
-        {/* Title */}
+      <View style={{ paddingHorizontal: 24, paddingBottom: 8 }}>
         <Text
-          style={{ fontSize: 20, fontWeight: "600" }}
-          className="font-kanit text-gray-900 mb-2 mt-4"
+          style={{ fontSize: 20, fontWeight: "600", marginBottom: 8, marginTop: 8 }}
+          className="font-kanit text-gray-900"
         >
           ตั้งค่าเครือข่าย WiFi สำหรับอุปกรณ์
         </Text>
         <Text
-          style={{ fontSize: 14 }}
-          className="font-kanit text-gray-600 mb-6"
+          style={{ fontSize: 14, marginBottom: 8 }}
+          className="font-kanit text-gray-600"
         >
-          กรุณากรอกชื่อ WiFi (SSID)
-          และรหัสผ่านเพื่อเชื่อมต่ออุปกรณ์กับอินเทอร์เน็ต
+          กรุณากรอกชื่อ WiFi (SSID) และรหัสผ่านเพื่อเชื่อมต่ออุปกรณ์กับอินเทอร์เน็ต
         </Text>
+      </View>
+    </View>
+  );
 
-        <View className="bg-yellow-50 rounded-2xl p-4 mb-6 border border-yellow-200">
+  // ==========================================
+  // 🖼️ LAYER: View (Main Render)
+  // ==========================================
+  return (
+    <ScreenWrapper
+      keyboardAvoiding={true}
+      contentContainerStyle={{ paddingHorizontal: 24, flexGrow: 1, paddingTop: 16 }}
+      edges={["top", "left", "right"]}
+      useScrollView={true}
+      header={renderHeader()}
+    >
+      <View style={{ flex: 1 }}>
+        <View
+          style={{
+            backgroundColor: "#FEF9C3",
+            borderRadius: 16,
+            padding: 16,
+            marginBottom: 24,
+            borderWidth: 1,
+            borderColor: "#FDE68A",
+          }}
+        >
           <Text
-            style={{ fontSize: 12, fontWeight: "600" }}
-            className="font-kanit text-yellow-800 mb-1"
+            style={{ fontSize: 12, fontWeight: "600", marginBottom: 4 }}
+            className="font-kanit text-yellow-800"
           >
             📝 หมายเหตุสำหรับ Production:
           </Text>
@@ -120,7 +148,7 @@ export default function WifiConfig() {
           </Text>
         </View>
 
-        <View className="mb-4">
+        <View style={{ marginBottom: 16 }}>
           <FloatingLabelInput
             label="ชื่อ WiFi (SSID)"
             value={manualSsid}
@@ -130,7 +158,7 @@ export default function WifiConfig() {
           />
         </View>
 
-        <View className="mb-6">
+        <View style={{ marginBottom: 24 }}>
           <FloatingLabelInput
             label="รหัสผ่าน WiFi"
             value={manualPassword}
@@ -151,12 +179,27 @@ export default function WifiConfig() {
       </View>
 
       <Modal visible={configureWifiMutation.isPending} transparent>
-        <View className="flex-1 bg-black/50 justify-center items-center p-6">
-          <View className="bg-white rounded-3xl p-8 items-center">
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            justifyContent: "center",
+            alignItems: "center",
+            padding: 24,
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: "#FFFFFF",
+              borderRadius: 24,
+              padding: 32,
+              alignItems: "center",
+            }}
+          >
             <ActivityIndicator size="large" color="#16AD78" />
             <Text
-              style={{ fontSize: 16 }}
-              className="text-gray-900 mt-4 font-kanit"
+              style={{ fontSize: 16, marginTop: 16 }}
+              className="text-gray-900 font-kanit"
             >
               กำลังเชื่อมต่อ WiFi กับอุปกรณ์...
             </Text>

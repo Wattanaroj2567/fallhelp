@@ -17,9 +17,11 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { pairDevice } from "@/services/deviceService";
 import { apiClient } from "@/services/api";
 import { getUserElders } from "@/services/userService";
+import { useCurrentElder } from "@/hooks/useCurrentElder";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { FloatingLabelInput } from "@/components/FloatingLabelInput";
 import { ScreenHeader } from "@/components/ScreenHeader";
+import { getErrorMessage } from "@/utils/errorHelper";
 
 // ==========================================
 // 📱 LAYER: View (Component)
@@ -37,7 +39,21 @@ export default function DevicePairing() {
   const [macAddress, setMacAddress] = useState("");
   const isScanning = useRef(false);
 
-  // Request permission on mount
+  // Check Permissions
+  const { data: currentElder } = useCurrentElder();
+  const isReadOnly = currentElder?.accessLevel === 'VIEWER';
+
+  React.useEffect(() => {
+    if (isReadOnly) {
+      Alert.alert(
+        "ไม่มีสิทธิ์เข้าถึง",
+        "คุณไม่มีสิทธิ์ในการจับคู่อุปกรณ์ กรุณาติดต่อญาติผู้ดูแลหลัก",
+        [{ text: "ตกลง", onPress: () => router.back() }]
+      );
+    }
+  }, [isReadOnly]);
+
+  // Request camera permission on mount
   React.useEffect(() => {
     if (permission && !permission.granted && !permission.canAskAgain) {
       // Permission denied permanently
@@ -55,18 +71,17 @@ export default function DevicePairing() {
     mutationKey: ["pairDevice"],
     mutationFn: async (deviceCode: string) => {
       // Fetch user's elders to get an ID using the service
-      const elders = await getUserElders();
-      const elder = elders && elders.length > 0 ? elders[0] : null;
-      const elderId = elder?.id;
+      // Better to use currentElder if available
+      const elderId = currentElder?.id;
 
       if (!elderId) {
         throw new Error("ไม่พบข้อมูลผู้สูงอายุ กรุณาสร้างข้อมูลผู้สูงอายุก่อน");
       }
 
       // Check if already paired with this device
-      if (elder?.device?.deviceCode === deviceCode) {
+      if (currentElder?.device?.deviceCode === deviceCode) {
         // Already paired to us - treat as success
-        return elder.device;
+        return currentElder.device;
       }
 
       return await pairDevice({ deviceCode, elderId });
@@ -81,26 +96,24 @@ export default function DevicePairing() {
           onPress: () =>
             router.replace({
               pathname: "/(features)/(device)/wifi-config",
-              params: { deviceCode: variables },
+              params: { deviceCode: variables, from: 'pairing' },
             }),
         },
       ]);
     },
     onError: (error: any) => {
-      // Don't reset isScanning here immediately to prevent loop
-      let serverMessage = error.response?.data?.message || error.response?.data?.error;
+      const message = getErrorMessage(error);
+      let displayMessage = message;
 
-      // Handle specific cases
-      if (error.response?.status === 409 || JSON.stringify(error.response?.data).includes("already paired")) {
-        serverMessage = "อุปกรณ์นี้ถูกเชื่อมต่อกับบัญชีอื่นอยู่แล้ว กรุณายกเลิกการเชื่อมต่อจากบัญชีเดิมก่อน";
-        // Don't log error for expected handled cases
+      if (message === 'DEVICE_ALREADY_PAIRED') {
+        displayMessage = "อุปกรณ์นี้ถูกเชื่อมต่อกับบัญชีอื่นอยู่แล้ว กรุณายกเลิกการเชื่อมต่อจากบัญชีเดิมก่อน";
       } else {
         console.error("Error pairing device:", error);
       }
 
       Alert.alert(
         "เชื่อมต่อไม่สำเร็จ",
-        serverMessage || error.message || "ไม่สามารถเชื่อมต่ออุปกรณ์ได้",
+        displayMessage,
         [
           {
             text: "ตกลง",
@@ -118,6 +131,8 @@ export default function DevicePairing() {
   // 🎮 LAYER: Logic (Event Handlers)
   // ==========================================
   const handleManualPairing = async () => {
+    if (isReadOnly) return;
+
     if (!macAddress || macAddress.length < 8) {
       Alert.alert("ข้อมูลไม่ครบถ้วน", "กรุณากรอกรหัสอุปกรณ์ 8 หลัก");
       return;
@@ -126,6 +141,8 @@ export default function DevicePairing() {
   };
 
   const handleBarCodeScanned = ({ data }: { data: string }) => {
+    if (isReadOnly) return;
+
     // Prevent multiple scans
     if (isScanning.current || pairMutation.isPending) return;
     isScanning.current = true;
@@ -145,10 +162,13 @@ export default function DevicePairing() {
     }
   };
 
-  // ==========================================
-  // 🎨 LAYER: UI Components (Shared)
-  // ==========================================
-
+  if (isReadOnly) {
+    return (
+      <View className="flex-1 bg-white items-center justify-center">
+        <ActivityIndicator size="large" color="#16AD78" />
+      </View>
+    );
+  }
 
   // ==========================================
   // 🖼️ LAYER: View (Manual Entry Mode)

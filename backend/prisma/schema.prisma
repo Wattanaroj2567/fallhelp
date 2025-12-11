@@ -303,16 +303,25 @@ enum AccessLevel {
 
 // ==================== FEEDBACK ====================
 
-model Feedback {
-  id        String         @id @default(uuid())
-  userId    String? // Optional: User might send anonymously or if we want to track
-  user      User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
-  message   String
-  userName  String? // Display name from mobile app (English)
-  status    FeedbackStatus @default(PENDING)
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
+enum FeedbackType {
+  COMMENT        // ความคิดเห็นทั่วไป (from feedback screen)
+  REPAIR_REQUEST // การแจ้งซ่อม (from repair screen)
+}
 
+model Feedback {
+  id           String         @id @default(uuid())
+  userId       String? // Optional: User might send anonymously or if we want to track
+  user         User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  type         FeedbackType   @default(COMMENT)
+  ticketNumber String?        @unique // REP-001, REP-002 for REPAIR_REQUEST
+  message      String
+  userName     String? // Display name from mobile app (English)
+  status       FeedbackStatus @default(PENDING)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@index([userId, type])
+  @@index([ticketNumber])
   @@map("feedbacks")
 }
 

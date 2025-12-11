@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, Modal, Pressable } from "react-native";
+import { View, Text, TouchableOpacity, Modal, Pressable, Keyboard } from "react-native";
 import { FloatingLabelInput } from "./FloatingLabelInput";
 import { TextInput } from "react-native-paper";
 
@@ -50,10 +50,12 @@ export function GenderSelect({
                     editable={false}
                     isRequired={isRequired} // Pass prop down
                     error={error}
+                    forceFocus={showPicker} // ✅ Force focus state when modal open
+                    accentColor={showPicker ? "#16AD78" : undefined} // ✅ Green border when modal open
                     right={
                         <TextInput.Icon
                             icon="chevron-down"
-                            color="#6B7280"
+                            color={showPicker ? "#16AD78" : "#6B7280"} // ✅ Green icon when open
                             forceTextInputFocus={false}
                         />
                     }
@@ -62,7 +64,10 @@ export function GenderSelect({
 
             {/* Invisible Overlay to Open Modal */}
             <Pressable
-                onPress={() => setShowPicker(true)}
+                onPress={() => {
+                    Keyboard.dismiss(); // ✅ Blur other inputs first
+                    setShowPicker(true);
+                }}
                 style={{
                     position: "absolute",
                     top: 0,

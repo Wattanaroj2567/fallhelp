@@ -32,7 +32,7 @@ apiClient.interceptors.request.use(async (config) => {
     headers.Authorization = `Bearer ${token}`;
     config.headers = headers;
   }
-    // Logger.debug(`Request: ${config.method?.toUpperCase()} ${config.url}`, config.data);
+  // Logger.debug(`Request: ${config.method?.toUpperCase()} ${config.url}`, config.data);
   return config;
 });
 
@@ -43,14 +43,14 @@ apiClient.interceptors.response.use(
   },
   async (error) => {
     const apiError = toApiError(error);
-    
+
     // Handle 401 Unauthorized
     if (error.response?.status === 401) {
       Logger.debug(`API 401 (Session Expired): ${error.config?.method?.toUpperCase()} ${error.config?.url}`);
-    } 
+    }
     // Handle 500 "User not found" - invalid token with non-existent userId
     else if (
-      error.response?.status === 500 && 
+      error.response?.status === 500 &&
       error.config?.url?.includes('/api/users/profile') &&
       error.response?.data?.error === 'User not found'
     ) {
@@ -58,7 +58,7 @@ apiClient.interceptors.response.use(
       // Clear token to force re-login
       const { clearToken } = await import('./tokenStorage');
       await clearToken();
-    } 
+    }
     // Handle 409 Conflict (e.g. Device already paired) - Handled in UI
     else if (error.response?.status === 409) {
       Logger.debug(`API 409 (Conflict): ${error.config?.method?.toUpperCase()} ${error.config?.url} - ${apiError.message}`);
@@ -67,7 +67,7 @@ apiClient.interceptors.response.use(
     else {
       Logger.error(`API Error: ${error.config?.method?.toUpperCase()} ${error.config?.url}`, apiError);
     }
-    
+
     return Promise.reject(apiError);
   }
 );
@@ -91,9 +91,26 @@ export type ApiError = {
  */
 export function toApiError(error: unknown): ApiError {
   if (axios.isAxiosError(error)) {
+    // Extract message from various possible error formats
+    let message = error.message; // Default to axios message
+    const responseData = error.response?.data;
+
+    // New format: { error: { code, message } }
+    if (responseData?.error && typeof responseData.error === 'object' && responseData.error.message) {
+      message = responseData.error.message;
+    }
+    // Legacy format: { error: "string" }
+    else if (typeof responseData?.error === 'string') {
+      message = responseData.error;
+    }
+    // Alternative format: { message: "string" }
+    else if (responseData?.message) {
+      message = responseData.message;
+    }
+
     return {
       status: error.response?.status,
-      message: error.response?.data?.message ?? error.message,
+      message: message,
       data: error.response?.data,
     };
   }

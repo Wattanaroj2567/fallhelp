@@ -1,5 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import { verifyToken } from '../utils/jwt';
+import debug from 'debug';
+
+const authDebug = debug('fallhelp:auth');
 
 // ==========================================
 // 🛡️ LAYER: Security (Middleware)
@@ -12,8 +15,10 @@ import { verifyToken } from '../utils/jwt';
 export const authenticate = (req: Request, res: Response, next: NextFunction): void => {
   try {
     const authHeader = req.headers.authorization;
+    authDebug('Auth header present:', !!authHeader, 'Path:', req.path);
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      authDebug('No token provided for path:', req.path);
       res.status(401).json({
         success: false,
         error: 'No token provided. Please login.',
@@ -23,10 +28,12 @@ export const authenticate = (req: Request, res: Response, next: NextFunction): v
 
     const token = authHeader.substring(7); // Remove 'Bearer ' prefix
     const decoded = verifyToken(token);
+    authDebug('Token verified for user:', decoded?.id, 'path:', req.path);
 
     req.user = decoded;
     next();
   } catch (error) {
+    authDebug('Token verification failed:', (error as Error).message);
     res.status(401).json({
       success: false,
       error: 'Invalid or expired token. Please login again.',

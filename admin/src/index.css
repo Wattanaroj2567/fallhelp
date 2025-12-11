@@ -12,6 +12,12 @@ body {
   font-family: var(--font-kanit);
 }
 
+/* Hide native password reveal button in Edge/Internet Explorer */
+input::-ms-reveal,
+input::-ms-clear {
+  display: none;
+}
+
 @media print {
   @page {
     margin: 0;

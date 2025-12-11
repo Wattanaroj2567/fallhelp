@@ -20,9 +20,8 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
 
   return (
     <View
-      className={`${
-        transparent ? "bg-black/30" : "bg-white"
-      } rounded-b-[32px] overflow-hidden pb-2`}
+      className={`${transparent ? "bg-black/30" : "bg-white"
+        } rounded-b-[32px] overflow-hidden pb-2`}
       style={{ paddingTop: transparent ? insets.top : 0 }}
     >
       <View className="flex-row items-center justify-between px-4 py-4">
@@ -33,6 +32,7 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
             onPress={onBack}
             className="p-2 -ml-2"
             activeOpacity={0.7}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
             <MaterialIcons
               name="arrow-back"
@@ -46,9 +46,8 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
 
         {/* Center: Title */}
         <Text
-          className={`font-kanit text-xl ${
-            transparent ? "text-white" : "text-gray-900"
-          } text-center flex-1`}
+          className={`font-kanit text-xl ${transparent ? "text-white" : "text-gray-900"
+            } text-center flex-1`}
           numberOfLines={1}
         >
           {title}

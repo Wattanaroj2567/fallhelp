@@ -59,14 +59,16 @@ export default function EmergencyCallScreen() {
         title="โทรฉุกเฉิน"
         onBack={() => router.back()}
         rightElement={
-          <TouchableOpacity
-            className="p-2"
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            onPress={() => router.push("/(features)/(emergency)")}
-            activeOpacity={0.8}
-          >
-            <MaterialIcons name="settings" size={24} color="#374151" />
-          </TouchableOpacity>
+          elders?.[0]?.accessLevel === 'OWNER' ? (
+            <TouchableOpacity
+              className="p-2"
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              onPress={() => router.push("/(features)/(emergency)")}
+              activeOpacity={0.8}
+            >
+              <MaterialIcons name="settings" size={24} color="#374151" />
+            </TouchableOpacity>
+          ) : null
         }
       />
 
@@ -130,15 +132,19 @@ export default function EmergencyCallScreen() {
               <Text className="text-gray-500 font-kanit mt-3 text-center text-base">
                 ไม่มีผู้ติดต่อฉุกเฉิน
               </Text>
-              <TouchableOpacity
-                onPress={() => router.push("/(features)/(emergency)")}
-                className="mt-4 bg-blue-500 px-6 py-3 rounded-full"
-                activeOpacity={0.85}
-              >
-                <Text className="text-white font-kanit text-base">
-                  เพิ่มผู้ติดต่อ
-                </Text>
-              </TouchableOpacity>
+
+              {/* Add Contact Button - Hide if Read Only */}
+              {elders?.[0]?.accessLevel === 'OWNER' && (
+                <TouchableOpacity
+                  onPress={() => router.push("/(features)/(emergency)")}
+                  className="mt-4 bg-blue-500 px-6 py-3 rounded-full"
+                  activeOpacity={0.85}
+                >
+                  <Text className="text-white font-kanit text-base">
+                    เพิ่มผู้ติดต่อ
+                  </Text>
+                </TouchableOpacity>
+              )}
             </View>
           )}
         </View>
