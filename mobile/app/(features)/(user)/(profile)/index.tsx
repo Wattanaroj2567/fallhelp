@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl, Alert } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, TouchableHighlight, ActivityIndicator, RefreshControl, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -132,9 +132,14 @@ export default function Profile() {
           <Text style={{ fontSize: 18 }} className="font-kanit text-gray-700 mt-4 text-center">
             ไม่พบข้อมูลโปรไฟล์
           </Text>
-          <TouchableOpacity onPress={() => refetch()} className="mt-4 bg-gray-200 p-3 rounded-lg">
+          <TouchableHighlight
+            onPress={() => refetch()}
+            className="mt-4 p-3 rounded-lg"
+            underlayColor="#E5E7EB"
+            style={{ backgroundColor: "#E5E7EB" }}
+          >
             <Text className="font-kanit">ลองใหม่</Text>
-          </TouchableOpacity>
+          </TouchableHighlight>
         </View>
       </SafeAreaView>
     );
@@ -195,120 +200,136 @@ export default function Profile() {
         </View>
 
         {/* Profile Fields - Box with Border */}
-        <View className="bg-white rounded-3xl border border-gray-200 overflow-hidden mb-4">
-          {/* Name & Gender Group */}
-          <TouchableOpacity
-            onPress={() => router.push('/(features)/(user)/(profile)/edit-info')}
-            className="flex-row items-center justify-between p-5 border-b border-gray-100"
-            activeOpacity={0.6}
-          >
-            <View className="flex-1">
-              {/* Name */}
-              <View className="mb-3">
-                <Text style={{ fontSize: 12 }} className="font-kanit text-gray-500 mb-1">
-                  ชื่อ-นามสกุล
-                </Text>
-                <Text style={{ fontSize: 16 }} className="font-kanit text-gray-900">
-                  {profile.firstName} {profile.lastName}
-                </Text>
-              </View>
-
-              {/* Gender */}
-              <View>
-                <Text style={{ fontSize: 12 }} className="font-kanit text-gray-500 mb-1">
-                  เพศ
-                </Text>
-                <Text style={{ fontSize: 16 }} className="font-kanit text-gray-900">
-                  {profile.gender === 'MALE'
-                    ? 'ชาย'
-                    : profile.gender === 'FEMALE'
-                      ? 'หญิง'
-                      : profile.gender === 'OTHER'
-                        ? 'อื่นๆ'
-                        : 'ไม่ระบุ'}
-                </Text>
-              </View>
-            </View>
-            <Text style={{ fontSize: 14, fontWeight: '600' }} className="font-kanit text-gray-400">
-              แก้ไข
-            </Text>
-          </TouchableOpacity>
-
-          {/* Phone */}
-          <TouchableOpacity
-            onPress={() => router.push('/(features)/(user)/(profile)/edit-phone')}
-            className="flex-row items-center justify-between p-5 border-b border-gray-100"
-            activeOpacity={0.6}
-          >
-            <View className="flex-1">
-              <Text style={{ fontSize: 12 }} className="font-kanit text-gray-500 mb-1">
-                เบอร์โทรศัพท์
-              </Text>
-              <Text style={{ fontSize: 16 }} className="font-kanit text-gray-900">
-                {profile.phone || 'ไม่ระบุ'}
-              </Text>
-            </View>
-            <Text style={{ fontSize: 14, fontWeight: '600' }} className="font-kanit text-gray-400">
-              แก้ไข
-            </Text>
-          </TouchableOpacity>
-
-          {/* Email */}
-          <TouchableOpacity
-            onPress={() => router.push('/(features)/(user)/(profile)/change-email')}
-            className="flex-row items-center justify-between p-5 border-b border-gray-100"
-            activeOpacity={0.6}
-          >
-            <View className="flex-1">
-              <Text style={{ fontSize: 12 }} className="font-kanit text-gray-500 mb-1">
-                อีเมล
-              </Text>
-              <Text style={{ fontSize: 16 }} className="font-kanit text-gray-900">
-                {profile.email}
-              </Text>
-            </View>
-            <Text style={{ fontSize: 14, fontWeight: '600' }} className="font-kanit text-gray-400">
-              แก้ไข
-            </Text>
-          </TouchableOpacity>
-
-          {/* Password */}
-          <TouchableOpacity
-            onPress={() => router.push('/(features)/(user)/(profile)/change-password')}
-            className="flex-row items-center justify-between p-5 border-b border-gray-100"
-            activeOpacity={0.6}
-          >
-            <View className="flex-1">
-              <Text style={{ fontSize: 12 }} className="font-kanit text-gray-500 mb-1">
-                รหัสผ่าน
-              </Text>
-              <Text style={{ fontSize: 16 }} className="font-kanit text-gray-900">
-                ••••••••
-              </Text>
-            </View>
-            <Text style={{ fontSize: 14, fontWeight: '600' }} className="font-kanit text-gray-400">
-              เปลี่ยน
-            </Text>
-          </TouchableOpacity>
-
-          {/* Emergency Contacts - Only for Owner */}
-          {isOwner && (
-            <TouchableOpacity
-              onPress={() => router.push('/(features)/(emergency)')}
-              className="flex-row items-center justify-between p-5"
-              activeOpacity={0.6}
+        <View className="bg-white rounded-[24px] shadow-lg shadow-black/15 android:elevation-10 mb-4">
+          <View className="rounded-[24px] overflow-hidden border border-gray-100">
+            {/* Name & Gender Group */}
+            <TouchableHighlight
+              onPress={() => router.push('/(features)/(user)/(profile)/edit-info')}
+              className="border-b border-gray-100"
+              underlayColor="#E5E7EB"
+              style={{ backgroundColor: 'white' }}
             >
-              <View className="flex-1">
-                <Text style={{ fontSize: 12 }} className="font-kanit text-gray-500 mb-1">
-                  ผู้ติดต่อฉุกเฉิน
-                </Text>
-                <Text style={{ fontSize: 16 }} className="font-kanit text-gray-900">
-                  จัดการรายชื่อ
+              <View className="flex-row items-center justify-between p-5">
+                <View className="flex-1">
+                  {/* Name */}
+                  <View className="mb-3">
+                    <Text style={{ fontSize: 12 }} className="font-kanit text-gray-500 mb-1">
+                      ชื่อ-นามสกุล
+                    </Text>
+                    <Text style={{ fontSize: 16 }} className="font-kanit text-gray-900">
+                      {profile.firstName} {profile.lastName}
+                    </Text>
+                  </View>
+
+                  {/* Gender */}
+                  <View>
+                    <Text style={{ fontSize: 12 }} className="font-kanit text-gray-500 mb-1">
+                      เพศ
+                    </Text>
+                    <Text style={{ fontSize: 16 }} className="font-kanit text-gray-900">
+                      {profile.gender === 'MALE'
+                        ? 'ชาย'
+                        : profile.gender === 'FEMALE'
+                          ? 'หญิง'
+                          : profile.gender === 'OTHER'
+                            ? 'อื่นๆ'
+                            : 'ไม่ระบุ'}
+                    </Text>
+                  </View>
+                </View>
+                <Text style={{ fontSize: 14, fontWeight: '600' }} className="font-kanit text-gray-400">
+                  แก้ไข
                 </Text>
               </View>
-              <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
-            </TouchableOpacity>
-          )}
+            </TouchableHighlight>
+
+            {/* Phone */}
+            <TouchableHighlight
+              onPress={() => router.push('/(features)/(user)/(profile)/edit-phone')}
+              className="border-b border-gray-100"
+              underlayColor="#E5E7EB"
+              style={{ backgroundColor: 'white' }}
+            >
+              <View className="flex-row items-center justify-between p-5">
+                <View className="flex-1">
+                  <Text style={{ fontSize: 12 }} className="font-kanit text-gray-500 mb-1">
+                    เบอร์โทรศัพท์
+                  </Text>
+                  <Text style={{ fontSize: 16 }} className="font-kanit text-gray-900">
+                    {profile.phone || 'ไม่ระบุ'}
+                  </Text>
+                </View>
+                <Text style={{ fontSize: 14, fontWeight: '600' }} className="font-kanit text-gray-400">
+                  แก้ไข
+                </Text>
+              </View>
+            </TouchableHighlight>
+
+            {/* Email */}
+            <TouchableHighlight
+              onPress={() => router.push('/(features)/(user)/(profile)/change-email')}
+              className="border-b border-gray-100"
+              underlayColor="#E5E7EB"
+              style={{ backgroundColor: 'white' }}
+            >
+              <View className="flex-row items-center justify-between p-5">
+                <View className="flex-1">
+                  <Text style={{ fontSize: 12 }} className="font-kanit text-gray-500 mb-1">
+                    อีเมล
+                  </Text>
+                  <Text style={{ fontSize: 16 }} className="font-kanit text-gray-900">
+                    {profile.email}
+                  </Text>
+                </View>
+                <Text style={{ fontSize: 14, fontWeight: '600' }} className="font-kanit text-gray-400">
+                  แก้ไข
+                </Text>
+              </View>
+            </TouchableHighlight>
+
+            {/* Password */}
+            <TouchableHighlight
+              onPress={() => router.push('/(features)/(user)/(profile)/change-password')}
+              className={isOwner ? "border-b border-gray-100" : ""}
+              underlayColor="#E5E7EB"
+              style={{ backgroundColor: 'white' }}
+            >
+              <View className="flex-row items-center justify-between p-5">
+                <View className="flex-1">
+                  <Text style={{ fontSize: 12 }} className="font-kanit text-gray-500 mb-1">
+                    รหัสผ่าน
+                  </Text>
+                  <Text style={{ fontSize: 16 }} className="font-kanit text-gray-900">
+                    ••••••••
+                  </Text>
+                </View>
+                <Text style={{ fontSize: 14, fontWeight: '600' }} className="font-kanit text-gray-400">
+                  เปลี่ยน
+                </Text>
+              </View>
+            </TouchableHighlight>
+
+            {/* Emergency Contacts - Only for Owner */}
+            {isOwner && (
+              <TouchableHighlight
+                onPress={() => router.push('/(features)/(emergency)')}
+                underlayColor="#E5E7EB"
+                style={{ backgroundColor: 'white' }}
+              >
+                <View className="flex-row items-center justify-between p-5">
+                  <View className="flex-1">
+                    <Text style={{ fontSize: 12 }} className="font-kanit text-gray-500 mb-1">
+                      ผู้ติดต่อฉุกเฉิน
+                    </Text>
+                    <Text style={{ fontSize: 16 }} className="font-kanit text-gray-900">
+                      จัดการรายชื่อ
+                    </Text>
+                  </View>
+                  <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
+                </View>
+              </TouchableHighlight>
+            )}
+          </View>
         </View>
 
         {/* Role Badge */}

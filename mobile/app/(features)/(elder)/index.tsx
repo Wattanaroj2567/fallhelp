@@ -193,144 +193,146 @@ export default function ElderInfo() {
       >
         <View className="mt-4">
           {/* Info Fields - Box with Border */}
-          <View className="bg-white rounded-3xl border border-gray-200 overflow-hidden mb-6">
-            {/* Name */}
-            <View className="p-4 border-b border-gray-100">
-              <Text
-                style={{ fontSize: 12 }}
-                className="font-kanit text-gray-500 mb-1"
-              >
-                ชื่อ-นามสกุล
-              </Text>
-              <Text
-                style={{ fontSize: 16 }}
-                className="font-kanit text-gray-900"
-              >
-                {elder.firstName} {elder.lastName}
-              </Text>
-            </View>
-
-            {/* Row 1: Gender & DOB */}
-            <View className="flex-row border-b border-gray-100">
-              <View className="flex-1 p-4 border-r border-gray-100">
+          <View className="bg-white rounded-[32px] shadow-lg shadow-black/15 android:elevation-10 mb-6">
+            <View className="rounded-[32px] overflow-hidden border border-gray-100">
+              {/* Name */}
+              <View className="p-4 border-b border-gray-100">
                 <Text
                   style={{ fontSize: 12 }}
                   className="font-kanit text-gray-500 mb-1"
                 >
-                  เพศ
+                  ชื่อ-นามสกุล
                 </Text>
                 <Text
                   style={{ fontSize: 16 }}
                   className="font-kanit text-gray-900"
                 >
-                  {getGenderText(elder.gender)}
+                  {elder.firstName} {elder.lastName}
                 </Text>
               </View>
-              <View className="flex-1 p-4">
-                <Text
-                  style={{ fontSize: 12 }}
-                  className="font-kanit text-gray-500 mb-1"
-                >
-                  วัน/เดือน/ปีเกิด
-                </Text>
-                <Text
-                  style={{ fontSize: 16 }}
-                  className="font-kanit text-gray-900"
-                >
-                  {formatThaiDate(elder.dateOfBirth)}
-                </Text>
-                {age > 0 && (
+
+              {/* Row 1: Gender & DOB */}
+              <View className="flex-row border-b border-gray-100">
+                <View className="flex-1 p-4 border-r border-gray-100">
                   <Text
-                    style={{ fontSize: 14 }}
-                    className="font-kanit text-gray-500 mt-1"
+                    style={{ fontSize: 12 }}
+                    className="font-kanit text-gray-500 mb-1"
                   >
-                    ({age} ปี)
+                    เพศ
                   </Text>
-                )}
+                  <Text
+                    style={{ fontSize: 16 }}
+                    className="font-kanit text-gray-900"
+                  >
+                    {getGenderText(elder.gender)}
+                  </Text>
+                </View>
+                <View className="flex-1 p-4">
+                  <Text
+                    style={{ fontSize: 12 }}
+                    className="font-kanit text-gray-500 mb-1"
+                  >
+                    วัน/เดือน/ปีเกิด
+                  </Text>
+                  <Text
+                    style={{ fontSize: 16 }}
+                    className="font-kanit text-gray-900"
+                  >
+                    {formatThaiDate(elder.dateOfBirth)}
+                  </Text>
+                  {age > 0 && (
+                    <Text
+                      style={{ fontSize: 14 }}
+                      className="font-kanit text-gray-500 mt-1"
+                    >
+                      ({age} ปี)
+                    </Text>
+                  )}
+                </View>
               </View>
-            </View>
 
-            {/* Row 2: Height & Weight */}
-            <View className="flex-row border-b border-gray-100">
-              <View className="flex-1 p-4 border-r border-gray-100">
+              {/* Row 2: Height & Weight */}
+              <View className="flex-row border-b border-gray-100">
+                <View className="flex-1 p-4 border-r border-gray-100">
+                  <Text
+                    style={{ fontSize: 12 }}
+                    className="font-kanit text-gray-500 mb-1"
+                  >
+                    ส่วนสูง
+                  </Text>
+                  <Text
+                    style={{ fontSize: 16 }}
+                    className="font-kanit text-gray-900"
+                  >
+                    {elder.height ? `${elder.height} cm` : "ไม่ระบุ"}
+                  </Text>
+                </View>
+                <View className="flex-1 p-4">
+                  <Text
+                    style={{ fontSize: 12 }}
+                    className="font-kanit text-gray-500 mb-1"
+                  >
+                    น้ำหนัก
+                  </Text>
+                  <Text
+                    style={{ fontSize: 16 }}
+                    className="font-kanit text-gray-900"
+                  >
+                    {elder.weight ? `${elder.weight} kg` : "ไม่ระบุ"}
+                  </Text>
+                </View>
+              </View>
+
+              {/* Diseases */}
+              <View className="p-4 border-b border-gray-100">
                 <Text
                   style={{ fontSize: 12 }}
                   className="font-kanit text-gray-500 mb-1"
                 >
-                  ส่วนสูง
+                  โรคประจำตัว
                 </Text>
                 <Text
                   style={{ fontSize: 16 }}
                   className="font-kanit text-gray-900"
                 >
-                  {elder.height ? `${elder.height} cm` : "ไม่ระบุ"}
+                  {elder.diseases && elder.diseases.length > 0
+                    ? elder.diseases.join(", ")
+                    : "ไม่มี"}
                 </Text>
               </View>
-              <View className="flex-1 p-4">
+
+              {/* Address */}
+              <View className="p-4">
                 <Text
                   style={{ fontSize: 12 }}
                   className="font-kanit text-gray-500 mb-1"
                 >
-                  น้ำหนัก
+                  ที่อยู่
                 </Text>
                 <Text
                   style={{ fontSize: 16 }}
                   className="font-kanit text-gray-900"
                 >
-                  {elder.weight ? `${elder.weight} kg` : "ไม่ระบุ"}
+                  {(() => {
+                    const addressParts = [];
+                    if (elder.houseNumber)
+                      addressParts.push(`บ้านเลขที่ ${elder.houseNumber}`);
+                    if (elder.village)
+                      addressParts.push(`หมู่ที่ ${elder.village}`);
+                    if (elder.subdistrict)
+                      addressParts.push(`ตำบล${elder.subdistrict}`);
+                    if (elder.district)
+                      addressParts.push(`อำเภอ${elder.district}`);
+                    if (elder.province)
+                      addressParts.push(`จังหวัด${elder.province}`);
+                    if (elder.zipcode) addressParts.push(elder.zipcode);
+
+                    return addressParts.length > 0
+                      ? addressParts.join(" ")
+                      : "ไม่ระบุ";
+                  })()}
                 </Text>
               </View>
-            </View>
-
-            {/* Diseases */}
-            <View className="p-4 border-b border-gray-100">
-              <Text
-                style={{ fontSize: 12 }}
-                className="font-kanit text-gray-500 mb-1"
-              >
-                โรคประจำตัว
-              </Text>
-              <Text
-                style={{ fontSize: 16 }}
-                className="font-kanit text-gray-900"
-              >
-                {elder.diseases && elder.diseases.length > 0
-                  ? elder.diseases.join(", ")
-                  : "ไม่มี"}
-              </Text>
-            </View>
-
-            {/* Address */}
-            <View className="p-4">
-              <Text
-                style={{ fontSize: 12 }}
-                className="font-kanit text-gray-500 mb-1"
-              >
-                ที่อยู่
-              </Text>
-              <Text
-                style={{ fontSize: 16 }}
-                className="font-kanit text-gray-900"
-              >
-                {(() => {
-                  const addressParts = [];
-                  if (elder.houseNumber)
-                    addressParts.push(`บ้านเลขที่ ${elder.houseNumber}`);
-                  if (elder.village)
-                    addressParts.push(`หมู่ที่ ${elder.village}`);
-                  if (elder.subdistrict)
-                    addressParts.push(`ตำบล${elder.subdistrict}`);
-                  if (elder.district)
-                    addressParts.push(`อำเภอ${elder.district}`);
-                  if (elder.province)
-                    addressParts.push(`จังหวัด${elder.province}`);
-                  if (elder.zipcode) addressParts.push(elder.zipcode);
-
-                  return addressParts.length > 0
-                    ? addressParts.join(" ")
-                    : "ไม่ระบุ";
-                })()}
-              </Text>
             </View>
           </View>
 

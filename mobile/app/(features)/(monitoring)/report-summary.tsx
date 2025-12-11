@@ -3,6 +3,7 @@ import {
   View,
   Text,
   TouchableOpacity,
+  TouchableHighlight,
   ScrollView,
   ActivityIndicator,
   Modal,
@@ -235,12 +236,14 @@ export default function ReportSummary() {
           >
             เกิดข้อผิดพลาดในการโหลดข้อมูล
           </Text>
-          <TouchableOpacity
+          <TouchableHighlight
             onPress={() => refetch()}
-            className="mt-4 bg-gray-200 px-6 py-3 rounded-xl"
+            className="mt-4 px-6 py-3 rounded-xl"
+            underlayColor="#E5E7EB"
+            style={{ backgroundColor: "#E5E7EB" }}
           >
             <Text className="font-kanit text-gray-700">ลองใหม่</Text>
-          </TouchableOpacity>
+          </TouchableHighlight>
         </View>
       </ScreenWrapper>
     );
@@ -260,16 +263,17 @@ export default function ReportSummary() {
           title="รายงานสรุปประจำเดือน"
           onBack={() => router.back()}
           rightElement={
-            <TouchableOpacity
+            <TouchableHighlight
               onPress={() => setUseMockData(!useMockData)}
-              className="p-2 -mr-2"
+              className="p-2 -mr-2 rounded-full"
+              underlayColor="#E5E7EB"
             >
               <MaterialIcons
                 name={useMockData ? "visibility" : "visibility-off"}
                 size={28}
                 color="#6B7280"
               />
-            </TouchableOpacity>
+            </TouchableHighlight>
           }
         />
       }
@@ -278,49 +282,57 @@ export default function ReportSummary() {
         <View className="p-6">
           {/* Month Selector - Improved */}
           <View className="flex-row items-center justify-between mb-6">
-            <TouchableOpacity
+            <TouchableHighlight
               onPress={handlePreviousMonth}
-              className="w-12 h-12 items-center justify-center rounded-full bg-gray-100"
-              activeOpacity={0.6}
+              className="w-12 h-12 rounded-full overflow-hidden"
+              underlayColor="#E5E7EB"
+              style={{ borderRadius: 24 }}
             >
-              <MaterialIcons name="chevron-left" size={32} color="#374151" />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              className="flex-1 items-center mx-4"
-              onPress={() => setShowMonthPicker(true)}
-              activeOpacity={0.6}
-            >
-              <View className="flex-row items-center bg-gray-50 px-5 py-2.5 rounded-2xl border border-gray-200">
-                <Text
-                  style={{ fontSize: 20, fontWeight: "600" }}
-                  className="font-kanit text-gray-900"
-                >
-                  {THAI_MONTHS[currentMonth]} {currentYear}
-                </Text>
-                <MaterialIcons name="arrow-drop-down" size={28} color="#6B7280" />
+              <View className="w-12 h-12 items-center justify-center bg-gray-100">
+                <MaterialIcons name="chevron-left" size={32} color="#374151" />
               </View>
-              {useMockData && (
-                <View className="bg-blue-50 px-3 py-1 rounded-full mt-2">
-                  <Text
-                    style={{ fontSize: 12 }}
-                    className="font-kanit text-blue-600"
-                  >
-                    MOCK DATA
-                  </Text>
-                </View>
-              )}
-            </TouchableOpacity>
+            </TouchableHighlight>
 
-            <TouchableOpacity
+            <TouchableHighlight
+              className="flex-1 mx-4 rounded-2xl overflow-hidden"
+              onPress={() => setShowMonthPicker(true)}
+              underlayColor="#E5E7EB"
+              style={{ borderRadius: 16 }}
+            >
+              <View className="items-center">
+                <View className="flex-row items-center bg-gray-50 px-5 py-2.5 rounded-2xl border border-gray-200 w-full justify-center">
+                  <Text
+                    style={{ fontSize: 20, fontWeight: "600" }}
+                    className="font-kanit text-gray-900"
+                  >
+                    {THAI_MONTHS[currentMonth]} {currentYear}
+                  </Text>
+                  <MaterialIcons name="arrow-drop-down" size={28} color="#6B7280" />
+                </View>
+                {useMockData && (
+                  <View className="bg-blue-50 px-3 py-1 rounded-full mt-2">
+                    <Text
+                      style={{ fontSize: 12 }}
+                      className="font-kanit text-blue-600"
+                    >
+                      MOCK DATA
+                    </Text>
+                  </View>
+                )}
+              </View>
+            </TouchableHighlight>
+
+            <TouchableHighlight
               onPress={handleNextMonth}
               disabled={isCurrentMonth()}
-              className="w-12 h-12 items-center justify-center rounded-full bg-gray-100"
-              style={{ opacity: isCurrentMonth() ? 0.4 : 1 }}
-              activeOpacity={0.6}
+              className="w-12 h-12 rounded-full overflow-hidden"
+              underlayColor="#E5E7EB"
+              style={{ borderRadius: 24, opacity: isCurrentMonth() ? 0.4 : 1 }}
             >
-              <MaterialIcons name="chevron-right" size={32} color="#374151" />
-            </TouchableOpacity>
+              <View className="w-12 h-12 items-center justify-center bg-gray-100">
+                <MaterialIcons name="chevron-right" size={32} color="#374151" />
+              </View>
+            </TouchableHighlight>
           </View>
 
           {isLoading && !useMockData ? (
@@ -336,76 +348,82 @@ export default function ReportSummary() {
           ) : displaySummary ? (
             <>
               {/* Peak Time Card */}
-              <View className="bg-white rounded-3xl border border-gray-200 p-5 mb-4 flex-row items-center">
-                <View className="w-14 h-14 rounded-2xl bg-teal-100 items-center justify-center mr-4">
-                  <MaterialIcons name="schedule" size={28} color="#16AD78" />
-                </View>
-                <View className="flex-1">
-                  <Text style={{ fontSize: 13 }} className="font-kanit text-gray-500 mb-1">
-                    ช่วงเวลาเกิดเหตุบ่อยที่สุด
-                  </Text>
-                  <Text style={{ fontSize: 20, fontWeight: "600" }} className="font-kanit text-teal-600">
-                    {displaySummary.peakTimeRange}
-                  </Text>
+              <View className="bg-white rounded-[24px] shadow-lg shadow-black/15 android:elevation-10 mb-4">
+                <View className="rounded-[24px] overflow-hidden border border-gray-100 p-5 flex-row items-center">
+                  <View className="w-14 h-14 rounded-2xl bg-teal-100 items-center justify-center mr-4">
+                    <MaterialIcons name="schedule" size={28} color="#16AD78" />
+                  </View>
+                  <View className="flex-1">
+                    <Text style={{ fontSize: 13 }} className="font-kanit text-gray-500 mb-1">
+                      ช่วงเวลาเกิดเหตุบ่อยที่สุด
+                    </Text>
+                    <Text style={{ fontSize: 20, fontWeight: "600" }} className="font-kanit text-teal-600">
+                      {displaySummary.peakTimeRange}
+                    </Text>
+                  </View>
                 </View>
               </View>
 
               {/* Fall Events Card */}
-              <View className="bg-white rounded-3xl border border-gray-200 p-5 mb-4 flex-row items-center">
-                <View className="w-14 h-14 rounded-2xl bg-orange-100 items-center justify-center mr-4">
-                  <MaterialIcons name="warning" size={28} color="#F97316" />
-                </View>
-                <View className="flex-1">
-                  <Text style={{ fontSize: 13 }} className="font-kanit text-gray-500 mb-1">
-                    เหตุการณ์หกล้ม
-                  </Text>
-                  <View className="flex-row items-baseline">
-                    <Text style={{ fontSize: 36, fontWeight: "700" }} className="font-kanit text-orange-500">
-                      {displaySummary.totalFallEvents}
+              <View className="bg-white rounded-[24px] shadow-lg shadow-black/15 android:elevation-10 mb-4">
+                <View className="rounded-[24px] overflow-hidden border border-gray-100 p-5 flex-row items-center">
+                  <View className="w-14 h-14 rounded-2xl bg-orange-100 items-center justify-center mr-4">
+                    <MaterialIcons name="warning" size={28} color="#F97316" />
+                  </View>
+                  <View className="flex-1">
+                    <Text style={{ fontSize: 13 }} className="font-kanit text-gray-500 mb-1">
+                      เหตุการณ์หกล้ม
                     </Text>
-                    <Text style={{ fontSize: 16 }} className="font-kanit text-gray-500 ml-2">
-                      ครั้ง
-                    </Text>
+                    <View className="flex-row items-baseline">
+                      <Text style={{ fontSize: 36, fontWeight: "700" }} className="font-kanit text-orange-500">
+                        {displaySummary.totalFallEvents}
+                      </Text>
+                      <Text style={{ fontSize: 16 }} className="font-kanit text-gray-500 ml-2">
+                        ครั้ง
+                      </Text>
+                    </View>
                   </View>
                 </View>
               </View>
 
               {/* Heart Rate Card */}
-              <View className="bg-white rounded-3xl border border-gray-200 p-5 mb-4">
-                <View className="flex-row items-center mb-4">
-                  <View className="w-14 h-14 rounded-2xl bg-rose-100 items-center justify-center mr-4">
-                    <MaterialIcons name="favorite" size={28} color="#E11D48" />
-                  </View>
-                  <Text style={{ fontSize: 16, fontWeight: "600" }} className="font-kanit text-gray-900">
-                    ชีพจรผิดปกติ
-                  </Text>
-                </View>
-                <View className="flex-row gap-4 ml-2">
-                  {/* High HR */}
-                  <View className="flex-1 bg-red-50 rounded-2xl p-4">
-                    <View className="flex-row items-center mb-2">
-                      <MaterialIcons name="trending-up" size={20} color="#EF4444" />
-                      <Text style={{ fontSize: 13 }} className="font-kanit text-red-600 ml-1">
-                        สูงผิดปกติ
-                      </Text>
+              <View className="bg-white rounded-[24px] shadow-lg shadow-black/15 android:elevation-10 mb-4">
+                <View className="rounded-[24px] overflow-hidden border border-gray-100 p-5">
+                  <View className="flex-row items-center mb-4">
+                    <View className="w-14 h-14 rounded-2xl bg-rose-100 items-center justify-center mr-4">
+                      <MaterialIcons name="favorite" size={28} color="#E11D48" />
                     </View>
-                    <Text style={{ fontSize: 28, fontWeight: "700" }} className="font-kanit text-red-500">
-                      {displaySummary.heartRateAnomalies.high}
-                      <Text style={{ fontSize: 14 }} className="font-kanit text-red-400"> ครั้ง</Text>
+                    <Text style={{ fontSize: 16, fontWeight: "600" }} className="font-kanit text-gray-900">
+                      ชีพจรผิดปกติ
                     </Text>
                   </View>
-                  {/* Low HR */}
-                  <View className="flex-1 bg-blue-50 rounded-2xl p-4">
-                    <View className="flex-row items-center mb-2">
-                      <MaterialIcons name="trending-down" size={20} color="#3B82F6" />
-                      <Text style={{ fontSize: 13 }} className="font-kanit text-blue-600 ml-1">
-                        ต่ำผิดปกติ
+                  <View className="flex-row gap-4 ml-2">
+                    {/* High HR */}
+                    <View className="flex-1 bg-red-50 rounded-2xl p-4">
+                      <View className="flex-row items-center mb-2">
+                        <MaterialIcons name="trending-up" size={20} color="#EF4444" />
+                        <Text style={{ fontSize: 13 }} className="font-kanit text-red-600 ml-1">
+                          สูงผิดปกติ
+                        </Text>
+                      </View>
+                      <Text style={{ fontSize: 28, fontWeight: "700" }} className="font-kanit text-red-500">
+                        {displaySummary.heartRateAnomalies.high}
+                        <Text style={{ fontSize: 14 }} className="font-kanit text-red-400"> ครั้ง</Text>
                       </Text>
                     </View>
-                    <Text style={{ fontSize: 28, fontWeight: "700" }} className="font-kanit text-blue-500">
-                      {displaySummary.heartRateAnomalies.low}
-                      <Text style={{ fontSize: 14 }} className="font-kanit text-blue-400"> ครั้ง</Text>
-                    </Text>
+                    {/* Low HR */}
+                    <View className="flex-1 bg-blue-50 rounded-2xl p-4">
+                      <View className="flex-row items-center mb-2">
+                        <MaterialIcons name="trending-down" size={20} color="#3B82F6" />
+                        <Text style={{ fontSize: 13 }} className="font-kanit text-blue-600 ml-1">
+                          ต่ำผิดปกติ
+                        </Text>
+                      </View>
+                      <Text style={{ fontSize: 28, fontWeight: "700" }} className="font-kanit text-blue-500">
+                        {displaySummary.heartRateAnomalies.low}
+                        <Text style={{ fontSize: 14 }} className="font-kanit text-blue-400"> ครั้ง</Text>
+                      </Text>
+                    </View>
                   </View>
                 </View>
               </View>
@@ -489,6 +507,7 @@ export default function ReportSummary() {
                       ? "bg-green-50 border-2 border-green-500"
                       : "bg-gray-50"
                       }`}
+                    activeOpacity={0.6}
                   >
                     <Text
                       style={{
@@ -508,6 +527,7 @@ export default function ReportSummary() {
             <TouchableOpacity
               onPress={() => setShowMonthPicker(false)}
               className="bg-gray-100 rounded-xl py-3"
+              activeOpacity={0.6}
             >
               <Text
                 style={{ fontSize: 16, fontWeight: "600" }}

@@ -7,52 +7,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **UI/UX Standardization (Master Style)**:
+  - **3D Card Aesthetic**: Implemented "Nested View" strategy (Outer Shadow + Inner Clip) for Settings and History screens to ensure consistent deep shadows (`shadow-lg`, `elevation-10`) on both Android and iOS.
+  - **Interactive Feedback**: Replaced `TouchableOpacity`/`Pressable` with `TouchableHighlight` (Underlay: `#E5E7EB`) in Settings and History menus for robust, high-contrast touch feedback.
+
+### Fixed
+
+- **Navigation & Stability**:
+  - **Context Error**: Resolved `Couldn't find a navigation context` crash by moving `NotificationModal` outside `ScreenWrapper` in `app/(tabs)/index.tsx`.
+  - **NativeWind Crash**: Fixed `TypeError: state.className.split is not a function` by removing function-based className logic in `Pressable`.
+  - **Component Structure**: Fixed `React.Children.only` error in `TouchableHighlight` by ensuring single-child View wrapper.
+
+## [1.4.0] - 2025-12-12
+
 ### Fixed
 
 - **Mobile App - Critical Navigation & Error Handling Issues**
-
   - ✅ **GO_BACK Navigation Error**: Fixed `SectionErrorBoundary` error when pressing back button. Added proper error handling with fallback to home screen
   - ✅ **Post-Login Routing Bug**: Added Authentication Guard at root layout level (`_layout.tsx`). App now correctly routes to `(tabs)` after login instead of `(features)/(elder)`
-  - ✅ **Console Logging Violations**: Replaced all `console.log`, `console.error`, `console.debug` with `Logger` utility in 7 files:
-    - `app/(tabs)/index.tsx` - Home component
-    - `app/(tabs)/_layout.tsx` - TabLayout component
-    - `app/(auth)/login.tsx` - Login screen
-    - `app/(features)/(elder)/index.tsx` - ElderInfo screen
-    - `app/(features)/(monitoring)/notifications.tsx` - Notifications screen (3 occurrences)
-    - `components/QueryErrorBoundary.tsx` - Error boundary
-    - `components/SectionErrorBoundary.tsx` - Section error boundary
-  - ✅ **useSocket Hook Anti-Patterns**:
-    - Fixed watchdog infinite loop by using `useRef` to track state and reducing dependency array
-    - Replaced confusing ternary operators with clear if-statements
-    - Extracted magic numbers to constants: `STALE_HEARTBEAT_THRESHOLD_MS`, `WATCHDOG_CHECK_INTERVAL_MS`
-    - Fixed state update logic to prevent unnecessary re-renders
-  - ✅ **Login Redirect Timing**: Removed arbitrary 100ms `setTimeout` in login success handler for immediate navigation
+  - ✅ **Console Logging Violations**: Replaced all `console.log`, `console.error`, `console.debug` with `Logger` utility in 7 files.
+  - ✅ **useSocket Hook Anti-Patterns**: Fixed watchdog infinite loop, extracted constants, optimized state updates.
+  - ✅ **Login Redirect Timing**: Removed arbitrary 100ms `setTimeout` in login success handler.
+
+- **Emergency Call Screen**:
+  - Restored missing `call.tsx` file in `(features)/(emergency)/`
+  - Fixed module resolution error for `emergencyContactService`
+  - Corrected function import `getEmergencyContacts` -> `listContacts`
+  - Updated outdated routes in `emergency/index.tsx`
 
 ### Added
 
 - **Mobile App - Loading States Enhancement (Skeleton Screens)**
-
-  - Created `ListItemSkeleton` for animated list placeholders
-  - Created `CardSkeleton` for card-based layouts
-  - Created `ProfileSkeleton` for profile sections
+  - Created `ListItemSkeleton`, `CardSkeleton`, `ProfileSkeleton`
   - Implemented in Emergency Contacts and Profile screens
-  - Smooth shimmer animation using react-native-reanimated
+  - Smooth shimmer animation
 
 - **Mobile App - Input Component Refactoring**
-
   - Created reusable `FloatingLabelInput` component
-  - Refactored Auth screens (Login, Register, Forgot/Reset Password)
-  - Refactored Setup screens (Elder Info, Device Pairing, WiFi Setup)
-  - Refactored Profile screens (Edit Info, Change Password/Email/Phone)
-  - Refactored Settings screens (Pairing, Invite Member, WiFi Config)
-  - Refactored Elderly & Emergency Contact screens
+  - Refactored Auth, Setup, Profile, Settings, Elderly & Emergency Contact screens
   - Centralized input styling and animation logic
 
 - **Mobile App - Structural Refactoring (Feature-First Architecture)**
   - Reorganized `mobile/app` directory from Tab-based to Domain-based structure
   - Created `(features)` directory with sub-modules: `elder`, `device`, `user`, `emergency`, `monitoring`
   - Improved code maintainability and navigation logic
-  - Updated all `router.push` and `router.replace` calls to match new paths
 
 ### Changed
 
@@ -62,27 +62,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Updated `schema.prisma`, `elderService.ts`, `openapi.yaml`, and `postman_collection.json`
   - Updated Mobile UI to reflect field changes (Name -> Gender -> DOB -> Height -> Weight -> Diseases -> Address)
 
-### Fixed
-
-- **Emergency Call Screen**:
-  - Restored missing `call.tsx` file in `(features)/(emergency)/`
-  - Fixed module resolution error for `emergencyContactService`
-  - Corrected function import `getEmergencyContacts` -> `listContacts`
-  - Updated outdated routes in `emergency/index.tsx`
-
 ### Verified
 
 - **TypeScript Strict Mode**: Already enabled and working
-
-  - `strict: true` in tsconfig.json
-  - Type check passed with only 1 minor non-critical error
-  - Code is type-safe and strict-mode compliant
-
-- **Unit Tests Setup**: Initial test coverage for critical functions
-  - Configured Jest with jest-expo preset
-  - Created Logger utility tests (4 test cases)
-  - Created Emergency Contact Service tests (5 test cases)
-  - Added test scripts: `npm test`, `npm run test:watch`, `npm run test:coverage`
+- **Unit Tests Setup**: Initial test coverage for critical functions (Logger, Emergency Service)
 
 ---
 

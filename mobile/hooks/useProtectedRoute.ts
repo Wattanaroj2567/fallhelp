@@ -70,8 +70,9 @@ export function useProtectedRoute() {
       // Mark as checked and allow staying in tabs
       hasCheckedSetup.current = true;
 
-      // Only redirect to tabs if we're NOT already there
-      if (segments[0] !== '(tabs)') {
+      // Only redirect to tabs if we're NOT already in a valid post-setup route (tabs or features)
+      const inValidAppRoute = segments[0] === '(tabs)' || segments[0] === '(features)';
+      if (!inValidAppRoute) {
         router.replace('/(tabs)');
       }
 
@@ -80,7 +81,8 @@ export function useProtectedRoute() {
       // Mark as checked to prevent loops
       hasCheckedSetup.current = true;
       // On error, assume setup is complete and stay/go to tabs
-      if (segments[0] !== '(tabs)') {
+      const inValidAppRoute = segments[0] === '(tabs)' || segments[0] === '(features)';
+      if (!inValidAppRoute) {
         router.replace('/(tabs)');
       }
     } finally {

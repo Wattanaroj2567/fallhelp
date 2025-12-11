@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, Alert, ActivityIndicator, Image } from "react-native";
+import { View, Text, TouchableOpacity, TouchableHighlight, Alert, ActivityIndicator, Image } from "react-native";
 import { useRouter } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
 import { ScreenWrapper } from "@/components/ScreenWrapper";
@@ -131,66 +131,71 @@ export default function DeviceDetails() {
                 )}
 
                 {/* Device Info Card (Featured) - Unified for all states */}
-                <View className="bg-white p-8 rounded-[32px] shadow-sm border border-gray-100 mb-8 items-center relative overflow-hidden">
-                    <View className={`absolute top-0 left-0 w-full h-2 bg-linear-to-r from-blue-400 to-teal-400 ${colors.gradientOpacity}`} />
+                <View className="bg-white rounded-[32px] shadow-lg shadow-black/15 android:elevation-10 mb-8">
+                    <View className="rounded-[32px] overflow-hidden border border-gray-100 p-8 items-center relative">
+                        <View className={`absolute top-0 left-0 w-full h-2 bg-linear-to-r from-blue-400 to-teal-400 ${colors.gradientOpacity}`} />
 
-                    {hasDevice ? (
-                        <>
-                            <Text className="text-xs font-kanit text-gray-400 uppercase tracking-wider mb-1">
-                                Device Code
-                            </Text>
-                            <Text className="text-3xl font-kanit font-bold text-gray-800 mb-2 tracking-tight">
-                                {device.deviceCode}
-                            </Text>
-
-                            <View className={`px-4 py-1.5 rounded-full mb-8 ${colors.badgeBg}`}>
-                                <Text className={`text-sm font-kanit font-bold ${colors.badgeText}`}>
-                                    {isOnline ? '● ออนไลน์' : '● ออฟไลน์'}
+                        {hasDevice ? (
+                            <>
+                                <Text className="text-xs font-kanit text-gray-400 uppercase tracking-wider mb-1">
+                                    Device Code
                                 </Text>
-                            </View>
+                                <Text className="text-3xl font-kanit font-bold text-gray-800 mb-2 tracking-tight">
+                                    {device.deviceCode}
+                                </Text>
 
-                            <View className="w-full h-[1px] bg-gray-100 mb-6" />
-
-                            <View className="w-full flex-row justify-between px-4">
-                                <View className="items-center flex-1">
-                                    <Text className="text-gray-400 font-kanit text-xs mb-1 uppercase tracking-wider">Serial Number</Text>
-                                    <Text className="text-gray-800 font-kanit font-semibold text-sm text-center">
-                                        {device.serialNumber || "-"}
+                                <View className={`px-4 py-1.5 rounded-full mb-8 ${colors.badgeBg}`}>
+                                    <Text className={`text-sm font-kanit font-bold ${colors.badgeText}`}>
+                                        {isOnline ? '● ออนไลน์' : '● ออฟไลน์'}
                                     </Text>
                                 </View>
-                                <View className="w-[1px] bg-gray-100 h-full mx-4" />
-                                <View className="items-center flex-1">
-                                    <Text className="text-gray-400 font-kanit text-xs mb-1 uppercase tracking-wider">Firmware</Text>
-                                    <Text className="text-gray-800 font-kanit font-semibold text-sm">
-                                        {device.firmwareVersion || "1.0.0"}
-                                    </Text>
+
+                                <View className="w-full h-[1px] bg-gray-100 mb-6" />
+
+                                <View className="w-full flex-row justify-between px-4">
+                                    <View className="items-center flex-1">
+                                        <Text className="text-gray-400 font-kanit text-xs mb-1 uppercase tracking-wider">Serial Number</Text>
+                                        <Text className="text-gray-800 font-kanit font-semibold text-sm text-center">
+                                            {device.serialNumber || "-"}
+                                        </Text>
+                                    </View>
+                                    <View className="w-[1px] bg-gray-100 h-full mx-4" />
+                                    <View className="items-center flex-1">
+                                        <Text className="text-gray-400 font-kanit text-xs mb-1 uppercase tracking-wider">Firmware</Text>
+                                        <Text className="text-gray-800 font-kanit font-semibold text-sm">
+                                            {device.firmwareVersion || "1.0.0"}
+                                        </Text>
+                                    </View>
                                 </View>
-                            </View>
-                        </>
-                    ) : (
-                        <>
-                            <Text className="text-xl font-kanit font-bold text-gray-800 mb-2 text-center">
-                                ยังไม่ได้ผูกอุปกรณ์
-                            </Text>
+                            </>
+                        ) : (
+                            <>
+                                <Text className="text-xl font-kanit font-bold text-gray-800 mb-2 text-center">
+                                    ยังไม่ได้ผูกอุปกรณ์
+                                </Text>
 
-                            <Text className="text-sm font-kanit text-gray-500 mb-6 text-center px-4">
-                                {isReadOnly
-                                    ? "ยังไม่มีการเชื่อมต่ออุปกรณ์ในระบบ"
-                                    : "สแกน QR Code บนอุปกรณ์เพื่อเริ่มใช้งานระบบตรวจจับการล้ม"}
-                            </Text>
+                                <Text className="text-sm font-kanit text-gray-500 mb-6 text-center px-4">
+                                    {isReadOnly
+                                        ? "ยังไม่มีการเชื่อมต่ออุปกรณ์ในระบบ"
+                                        : "สแกน QR Code บนอุปกรณ์เพื่อเริ่มใช้งานระบบตรวจจับการล้ม"}
+                                </Text>
 
-                            {!isReadOnly && (
-                                <TouchableOpacity
-                                    onPress={() => router.push("/(features)/(device)/pairing")}
-                                    className="bg-[#16AD78] px-8 py-3.5 rounded-2xl flex-row items-center gap-2 shadow-sm"
-                                    style={{ shadowColor: '#16AD78', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8 }}
-                                >
-                                    <MaterialIcons name="qr-code-scanner" size={20} color="#FFFFFF" />
-                                    <Text className="text-white font-kanit font-bold text-base">จับคู่อุปกรณ์</Text>
-                                </TouchableOpacity>
-                            )}
-                        </>
-                    )}
+                                {!isReadOnly && (
+                                    <TouchableHighlight
+                                        onPress={() => router.push("/(features)/(device)/pairing")}
+                                        className="rounded-2xl shadow-sm"
+                                        underlayColor="#0B8E60"
+                                        style={{ shadowColor: '#16AD78', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, backgroundColor: "#16AD78" }}
+                                    >
+                                        <View className="px-8 py-3.5 flex-row items-center gap-2">
+                                            <MaterialIcons name="qr-code-scanner" size={20} color="#FFFFFF" />
+                                            <Text className="text-white font-kanit font-bold text-base">จับคู่อุปกรณ์</Text>
+                                        </View>
+                                    </TouchableHighlight>
+                                )}
+                            </>
+                        )}
+                    </View>
                 </View>
 
                 {/* Action Buttons Group - Only show when device exists */}
@@ -201,78 +206,88 @@ export default function DeviceDetails() {
                         </Text>
 
                         {/* Card Container - Like settings.tsx */}
-                        <View className="bg-white rounded-3xl border border-gray-200 overflow-hidden">
-                            {/* Repair */}
-                            <TouchableOpacity
-                                onPress={() => router.push("/(features)/(device)/repair")}
-                                className="flex-row items-center justify-between p-5 border-b border-gray-100"
-                                activeOpacity={0.6}
-                            >
-                                <View className="flex-row items-center flex-1">
-                                    <View className="w-10 h-10 rounded-full bg-gray-50 items-center justify-center mr-3">
-                                        <MaterialIcons name="build" size={22} color="#898989" />
-                                    </View>
-                                    <View className="flex-1">
-                                        <Text style={{ fontSize: 16, fontWeight: "500" }} className="font-kanit text-gray-900">
-                                            แจ้งปัญหา / ส่งซ่อม
-                                        </Text>
-                                        <Text style={{ fontSize: 12 }} className="font-kanit text-gray-400">
-                                            แจ้งอุปกรณ์ชำรุดหรือขอความช่วยเหลือ
-                                        </Text>
-                                    </View>
-                                </View>
-                                <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
-                            </TouchableOpacity>
-
-                            {/* WiFi Config */}
-                            <TouchableOpacity
-                                onPress={handleWifiConfig}
-                                className={`flex-row items-center justify-between p-5 ${!isReadOnly ? "border-b border-gray-100" : ""}`}
-                                activeOpacity={0.6}
-                            >
-                                <View className="flex-row items-center flex-1">
-                                    <View className="w-10 h-10 rounded-full bg-gray-50 items-center justify-center mr-3">
-                                        <MaterialIcons name="wifi" size={22} color="#898989" />
-                                    </View>
-                                    <View className="flex-1">
-                                        <Text style={{ fontSize: 16, fontWeight: "500" }} className="font-kanit text-gray-900">
-                                            ตั้งค่า Wi-Fi
-                                        </Text>
-                                        <Text style={{ fontSize: 12 }} className="font-kanit text-gray-400">
-                                            แก้ไขการเชื่อมต่อเครือข่าย
-                                        </Text>
-                                    </View>
-                                </View>
-                                <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
-                            </TouchableOpacity>
-
-                            {/* Unpair - Only for Owner */}
-                            {!isReadOnly && (
-                                <TouchableOpacity
-                                    onPress={handleUnpair}
-                                    className="flex-row items-center justify-between p-5"
-                                    activeOpacity={0.6}
+                        <View className="bg-white rounded-[24px] shadow-lg shadow-black/15 android:elevation-10">
+                            <View className="rounded-[24px] overflow-hidden border border-gray-100">
+                                {/* Repair */}
+                                <TouchableHighlight
+                                    onPress={() => router.push("/(features)/(device)/repair")}
+                                    className="border-b border-gray-100"
+                                    underlayColor="#E5E7EB"
+                                    style={{ backgroundColor: "white" }}
                                 >
-                                    <View className="flex-row items-center flex-1">
-                                        <View className="w-10 h-10 rounded-full bg-red-50 items-center justify-center mr-3">
-                                            <MaterialIcons name="link-off" size={22} color="#EF4444" />
+                                    <View className="flex-row items-center justify-between p-5">
+                                        <View className="flex-row items-center flex-1">
+                                            <View className="w-10 h-10 rounded-full bg-gray-50 items-center justify-center mr-3">
+                                                <MaterialIcons name="build" size={22} color="#898989" />
+                                            </View>
+                                            <View className="flex-1">
+                                                <Text style={{ fontSize: 16, fontWeight: "500" }} className="font-kanit text-gray-900">
+                                                    แจ้งปัญหา / ส่งซ่อม
+                                                </Text>
+                                                <Text style={{ fontSize: 12 }} className="font-kanit text-gray-400">
+                                                    แจ้งอุปกรณ์ชำรุดหรือขอความช่วยเหลือ
+                                                </Text>
+                                            </View>
                                         </View>
-                                        <View className="flex-1">
-                                            <Text style={{ fontSize: 16, fontWeight: "500" }} className="font-kanit text-red-500">
-                                                ยกเลิกการเชื่อมต่อ
-                                            </Text>
-                                            <Text style={{ fontSize: 12 }} className="font-kanit text-red-300">
-                                                ลบอุปกรณ์ออกจากบัญชี
-                                            </Text>
-                                        </View>
+                                        <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
                                     </View>
-                                    {unpairMutation.isPending ? (
-                                        <ActivityIndicator size="small" color="#EF4444" />
-                                    ) : (
-                                        <MaterialIcons name="chevron-right" size={24} color="#FCA5A5" />
-                                    )}
-                                </TouchableOpacity>
-                            )}
+                                </TouchableHighlight>
+
+                                {/* WiFi Config */}
+                                <TouchableHighlight
+                                    onPress={handleWifiConfig}
+                                    className={!isReadOnly ? "border-b border-gray-100" : ""}
+                                    underlayColor="#E5E7EB"
+                                    style={{ backgroundColor: "white" }}
+                                >
+                                    <View className="flex-row items-center justify-between p-5">
+                                        <View className="flex-row items-center flex-1">
+                                            <View className="w-10 h-10 rounded-full bg-gray-50 items-center justify-center mr-3">
+                                                <MaterialIcons name="wifi" size={22} color="#898989" />
+                                            </View>
+                                            <View className="flex-1">
+                                                <Text style={{ fontSize: 16, fontWeight: "500" }} className="font-kanit text-gray-900">
+                                                    ตั้งค่า Wi-Fi
+                                                </Text>
+                                                <Text style={{ fontSize: 12 }} className="font-kanit text-gray-400">
+                                                    แก้ไขการเชื่อมต่อเครือข่าย
+                                                </Text>
+                                            </View>
+                                        </View>
+                                        <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
+                                    </View>
+                                </TouchableHighlight>
+
+                                {/* Unpair - Only for Owner */}
+                                {!isReadOnly && (
+                                    <TouchableHighlight
+                                        onPress={handleUnpair}
+                                        underlayColor="#FEF2F2"
+                                        style={{ backgroundColor: "white" }}
+                                    >
+                                        <View className="flex-row items-center justify-between p-5">
+                                            <View className="flex-row items-center flex-1">
+                                                <View className="w-10 h-10 rounded-full bg-red-50 items-center justify-center mr-3">
+                                                    <MaterialIcons name="link-off" size={22} color="#EF4444" />
+                                                </View>
+                                                <View className="flex-1">
+                                                    <Text style={{ fontSize: 16, fontWeight: "500" }} className="font-kanit text-red-500">
+                                                        ยกเลิกการเชื่อมต่อ
+                                                    </Text>
+                                                    <Text style={{ fontSize: 12 }} className="font-kanit text-red-300">
+                                                        ลบอุปกรณ์ออกจากบัญชี
+                                                    </Text>
+                                                </View>
+                                            </View>
+                                            {unpairMutation.isPending ? (
+                                                <ActivityIndicator size="small" color="#EF4444" />
+                                            ) : (
+                                                <MaterialIcons name="chevron-right" size={24} color="#FCA5A5" />
+                                            )}
+                                        </View>
+                                    </TouchableHighlight>
+                                )}
+                            </View>
                         </View>
                     </>
                 )}

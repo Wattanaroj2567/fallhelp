@@ -4,6 +4,7 @@ import {
   Text,
   FlatList,
   TouchableOpacity,
+  TouchableHighlight,
   ActivityIndicator,
   RefreshControl,
 } from "react-native";
@@ -183,52 +184,54 @@ export default function HistoryScreen() {
     const displayIndex = totalEvents - index;
 
     return (
-      <View className="mb-4 bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
-        {/* Number Badge */}
-        <View className="absolute top-3 right-3 w-8 h-8 rounded-full bg-gray-100 items-center justify-center z-10">
-          <Text
-            style={{ fontSize: 14, fontWeight: "700" }}
-            className="font-kanit text-gray-600"
-          >
-            {displayIndex}
-          </Text>
-        </View>
+      <View className="mb-4 bg-white rounded-[24px] shadow-lg shadow-black/15 android:elevation-10">
+        <View className="rounded-[24px] overflow-hidden border border-gray-100">
+          {/* Number Badge */}
+          <View className="absolute top-3 right-3 w-8 h-8 rounded-full bg-gray-100 items-center justify-center z-10">
+            <Text
+              style={{ fontSize: 14, fontWeight: "700" }}
+              className="font-kanit text-gray-600"
+            >
+              {displayIndex}
+            </Text>
+          </View>
 
-        {/* Icon Header */}
-        <View
-          className="flex-row items-center p-4"
-          style={{ backgroundColor: bgColor }}
-        >
+          {/* Icon Header */}
           <View
-            className="w-12 h-12 rounded-full items-center justify-center"
-            style={{ backgroundColor: "white" }}
+            className="flex-row items-center p-4"
+            style={{ backgroundColor: bgColor }}
           >
-            <MaterialIcons name={icon} size={24} color={iconColor} />
-          </View>
-          <View className="flex-1 ml-3">
-            <Text
-              style={{ fontSize: 16, fontWeight: "600" }}
-              className="font-kanit text-gray-900"
+            <View
+              className="w-12 h-12 rounded-full items-center justify-center"
+              style={{ backgroundColor: "white" }}
             >
-              {titleStatus}
-            </Text>
-            <Text
-              style={{ fontSize: 12 }}
-              className="font-kanit text-gray-600 mt-0.5"
-            >
-              {formatDate(item.timestamp)}
-            </Text>
+              <MaterialIcons name={icon} size={24} color={iconColor} />
+            </View>
+            <View className="flex-1 ml-3">
+              <Text
+                style={{ fontSize: 16, fontWeight: "600" }}
+                className="font-kanit text-gray-900"
+              >
+                {titleStatus}
+              </Text>
+              <Text
+                style={{ fontSize: 12 }}
+                className="font-kanit text-gray-600 mt-0.5"
+              >
+                {formatDate(item.timestamp)}
+              </Text>
+            </View>
           </View>
-        </View>
 
-        {/* Description */}
-        <View className="px-4 py-3 border-t border-gray-100">
-          <Text
-            style={{ fontSize: 14, lineHeight: 20 }}
-            className="font-kanit text-gray-700"
-          >
-            {description}
-          </Text>
+          {/* Description */}
+          <View className="px-4 py-3 border-t border-gray-100">
+            <Text
+              style={{ fontSize: 14, lineHeight: 20 }}
+              className="font-kanit text-gray-700"
+            >
+              {description}
+            </Text>
+          </View>
         </View>
       </View>
     );
@@ -308,87 +311,92 @@ export default function HistoryScreen() {
     >
       {/* Navigation & Filter Card - Like settings.tsx */}
       <View className="px-6 py-4">
-        <View className="bg-white rounded-3xl border border-gray-200 overflow-hidden mb-4">
-          {/* Report Summary Link */}
-          <TouchableOpacity
-            className="flex-row items-center justify-between p-5 border-b border-gray-100"
-            onPress={() => router.push("/(features)/(monitoring)/report-summary")}
-            activeOpacity={0.6}
-          >
-            <View className="flex-row items-center flex-1">
-              <View className="w-10 h-10 rounded-full bg-blue-50 items-center justify-center mr-3">
-                <MaterialIcons name="assessment" size={22} color="#3B82F6" />
-              </View>
-              <View className="flex-1">
-                <Text
-                  style={{ fontSize: 16, fontWeight: "500" }}
-                  className="font-kanit text-gray-900"
-                >
-                  ดูรายงานสรุปประจำเดือน
-                </Text>
-                <Text style={{ fontSize: 12 }} className="font-kanit text-gray-400">
-                  สรุปสถิติเหตุการณ์แต่ละเดือน
-                </Text>
-              </View>
-            </View>
-            <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
-          </TouchableOpacity>
-
-          {/* Event Count & Filter */}
-          <View className="p-5">
-            <View className="flex-row items-center justify-between mb-4">
-              <Text style={{ fontSize: 14 }} className="font-kanit text-gray-500">
-                {useMockData
-                  ? "แสดงข้อมูลตัวอย่าง"
-                  : `แสดง ${totalEvents} จาก ${displayEvents.length} เหตุการณ์`}
-              </Text>
-              {/* TODO: REMOVE THIS BADGE IN PRODUCTION */}
-              {useMockData && (
-                <View className="bg-blue-50 px-3 py-1 rounded-full">
-                  <Text
-                    style={{ fontSize: 12 }}
-                    className="font-kanit text-blue-600"
-                  >
-                    MOCK DATA
-                  </Text>
-                </View>
-              )}
-            </View>
-
-            {/* Limit Filter Chips */}
-            <View className="flex-row items-center">
-              <Text
-                style={{ fontSize: 14 }}
-                className="font-kanit text-gray-600 mr-3"
-              >
-                แสดง:
-              </Text>
-              <View className="flex-row gap-2">
-                {[25, 50, null].map((limit) => {
-                  const isSelected = displayLimit === limit;
-                  const label = limit === null ? "ทั้งหมด" : `${limit}`;
-
-                  return (
-                    <TouchableOpacity
-                      key={limit?.toString() || "all"}
-                      onPress={() => setDisplayLimit(limit)}
-                      className={`px-4 py-2 rounded-full ${isSelected ? "bg-[#16AD78]" : "bg-gray-100"
-                        }`}
-                      activeOpacity={0.7}
+        <View className="bg-white rounded-[24px] shadow-lg shadow-black/15 android:elevation-10 mb-4">
+          <View className="rounded-[24px] overflow-hidden border border-gray-100">
+            {/* Report Summary Link */}
+            <TouchableHighlight
+              className="p-5 border-b border-gray-100"
+              onPress={() => router.push("/(features)/(monitoring)/report-summary")}
+              underlayColor="#E5E7EB"
+              style={{ backgroundColor: "white" }}
+            >
+              <View className="flex-row items-center justify-between">
+                <View className="flex-row items-center flex-1">
+                  <View className="w-10 h-10 rounded-full bg-blue-50 items-center justify-center mr-3">
+                    <MaterialIcons name="assessment" size={22} color="#3B82F6" />
+                  </View>
+                  <View className="flex-1">
+                    <Text
+                      style={{ fontSize: 16, fontWeight: "500" }}
+                      className="font-kanit text-gray-900"
                     >
-                      <Text
-                        style={{
-                          fontSize: 14,
-                          fontWeight: isSelected ? "600" : "400",
-                        }}
-                        className={`font-kanit ${isSelected ? "text-white" : "text-gray-700"
+                      ดูรายงานสรุปประจำเดือน
+                    </Text>
+                    <Text style={{ fontSize: 12 }} className="font-kanit text-gray-400">
+                      สรุปสถิติเหตุการณ์แต่ละเดือน
+                    </Text>
+                  </View>
+                </View>
+                <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
+              </View>
+            </TouchableHighlight>
+
+            {/* Event Count & Filter */}
+            <View className="p-5">
+              <View className="flex-row items-center justify-between mb-4">
+                <Text style={{ fontSize: 14 }} className="font-kanit text-gray-500">
+                  {useMockData
+                    ? "แสดงข้อมูลตัวอย่าง"
+                    : `แสดง ${totalEvents} จาก ${displayEvents.length} เหตุการณ์`}
+                </Text>
+                {/* TODO: REMOVE THIS BADGE IN PRODUCTION */}
+                {useMockData && (
+                  <View className="bg-blue-50 px-3 py-1 rounded-full">
+                    <Text
+                      style={{ fontSize: 12 }}
+                      className="font-kanit text-blue-600"
+                    >
+                      MOCK DATA
+                    </Text>
+                  </View>
+                )}
+              </View>
+
+              {/* Limit Filter Chips */}
+              <View className="flex-row items-center">
+                <Text
+                  style={{ fontSize: 14 }}
+                  className="font-kanit text-gray-600 mr-3"
+                >
+                  แสดง:
+                </Text>
+                <View className="flex-row gap-2">
+                  {[25, 50, null].map((limit) => {
+                    const isSelected = displayLimit === limit;
+                    const label = limit === null ? "ทั้งหมด" : `${limit}`;
+
+                    return (
+                      <TouchableOpacity
+                        key={limit?.toString() || "all"}
+                        onPress={() => setDisplayLimit(limit)}
+                        className={`px-4 py-2 rounded-full ${isSelected ? "bg-[#16AD78]" : "bg-gray-100"
                           }`}
+                        activeOpacity={0.7}
                       >
-                        {label}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
+                        <Text
+                          style={{
+                            fontSize: 14,
+                            fontWeight: isSelected ? "600" : "400",
+                          }}
+                          className={`font-kanit ${isSelected ? "text-white" : "text-gray-700"
+                            }`}
+                        >
+                          {label}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
               </View>
             </View>
           </View>

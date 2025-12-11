@@ -3,6 +3,7 @@ import {
   View,
   Text,
   TouchableOpacity,
+  TouchableHighlight,
   FlatList,
   ActivityIndicator,
   Alert,
@@ -59,84 +60,87 @@ const MemberItem = React.memo(
     };
 
     return (
-      <TouchableOpacity
+      <TouchableHighlight
         onPress={handlePress}
         disabled={isMe}
-        activeOpacity={0.6}
-        className={`bg-white rounded-[24px] p-5 mb-3 flex-row items-center justify-between border border-gray-100 shadow-sm ${isMe ? "" : "active:bg-gray-50"}`}
+        underlayColor="#F9FAFB"
+        style={{ borderRadius: 24, marginBottom: 12 }}
+        className={`bg-white rounded-[24px] shadow-sm border border-gray-100 ${isMe ? "opacity-90" : ""}`}
       >
-        {/* Left Content */}
-        <View className="flex-row items-center flex-1">
-          {/* Avatar */}
-          <View className="w-14 h-14 rounded-full bg-gray-100 items-center justify-center mr-4 overflow-hidden border-2 border-white shadow-sm">
-            {item.profileImage ? (
-              <Image
-                source={{ uri: item.profileImage }}
-                className="w-full h-full"
-                resizeMode="cover"
-              />
-            ) : (
-              <MaterialIcons name="person" size={28} color="#9CA3AF" />
-            )}
-          </View>
-
-          {/* Info */}
-          <View className="flex-1">
-            <Text
-              style={{ fontSize: 16, fontWeight: "600" }}
-              className="font-kanit text-gray-900 mb-0.5"
-            >
-              {item.name}
-              {isMe && <Text className="text-blue-600"> (ฉัน)</Text>}
-            </Text>
-            <Text
-              style={{ fontSize: 12 }}
-              className="font-kanit text-gray-400 mb-2"
-            >
-              {item.email}
-            </Text>
-
-            <View className="flex-row flex-wrap gap-1.5">
-              {/* Role Badge */}
-              <View
-                className={`px-2.5 py-0.5 rounded-full ${isOwner ? "bg-purple-100" : "bg-gray-100"}`}
-              >
-                <Text
-                  style={{ fontSize: 10 }}
-                  className={`font-kanit font-medium ${isOwner ? "text-purple-700" : "text-gray-600"}`}
-                >
-                  {isOwner ? "ญาติผู้ดูแลหลัก" : "ญาติผู้ดูแลเสริม"}
-                </Text>
-              </View>
-
-              {/* Viewer Badge */}
-              {!isOwner && item.role === "VIEWER" && (
-                <View className="px-2.5 py-0.5 rounded-full bg-orange-50">
-                  <Text style={{ fontSize: 10 }} className="font-kanit text-orange-600 font-medium">
-                    ดูอย่างเดียว
-                  </Text>
-                </View>
-              )}
-
-              {/* Editor Badge */}
-              {!isOwner && item.role === "EDITOR" && (
-                <View className="px-2.5 py-0.5 rounded-full bg-teal-50">
-                  <Text style={{ fontSize: 10 }} className="font-kanit text-teal-600 font-medium">
-                    แก้ไขได้
-                  </Text>
-                </View>
+        <View className="p-5 flex-row items-center justify-between">
+          {/* Left Content */}
+          <View className="flex-row items-center flex-1">
+            {/* Avatar */}
+            <View className="w-14 h-14 rounded-full bg-gray-100 items-center justify-center mr-4 overflow-hidden border-2 border-white shadow-sm">
+              {item.profileImage ? (
+                <Image
+                  source={{ uri: item.profileImage }}
+                  className="w-full h-full"
+                  resizeMode="cover"
+                />
+              ) : (
+                <MaterialIcons name="person" size={28} color="#9CA3AF" />
               )}
             </View>
-          </View>
-        </View>
 
-        {/* Right Chevron - Only show if not me */}
-        {!isMe && (
-          <View className="w-10 h-10 rounded-full bg-gray-50 items-center justify-center ml-2">
-            <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
+            {/* Info */}
+            <View className="flex-1">
+              <Text
+                style={{ fontSize: 16, fontWeight: "600" }}
+                className="font-kanit text-gray-900 mb-0.5"
+              >
+                {item.name}
+                {isMe && <Text className="text-blue-600"> (ฉัน)</Text>}
+              </Text>
+              <Text
+                style={{ fontSize: 12 }}
+                className="font-kanit text-gray-400 mb-2"
+              >
+                {item.email}
+              </Text>
+
+              <View className="flex-row flex-wrap gap-1.5">
+                {/* Role Badge */}
+                <View
+                  className={`px-2.5 py-0.5 rounded-full ${isOwner ? "bg-purple-100" : "bg-gray-100"}`}
+                >
+                  <Text
+                    style={{ fontSize: 10 }}
+                    className={`font-kanit font-medium ${isOwner ? "text-purple-700" : "text-gray-600"}`}
+                  >
+                    {isOwner ? "ญาติผู้ดูแลหลัก" : "ญาติผู้ดูแลเสริม"}
+                  </Text>
+                </View>
+
+                {/* Viewer Badge */}
+                {!isOwner && item.role === "VIEWER" && (
+                  <View className="px-2.5 py-0.5 rounded-full bg-orange-50">
+                    <Text style={{ fontSize: 10 }} className="font-kanit text-orange-600 font-medium">
+                      ดูอย่างเดียว
+                    </Text>
+                  </View>
+                )}
+
+                {/* Editor Badge */}
+                {!isOwner && item.role === "EDITOR" && (
+                  <View className="px-2.5 py-0.5 rounded-full bg-teal-50">
+                    <Text style={{ fontSize: 10 }} className="font-kanit text-teal-600 font-medium">
+                      แก้ไขได้
+                    </Text>
+                  </View>
+                )}
+              </View>
+            </View>
           </View>
-        )}
-      </TouchableOpacity>
+
+          {/* Right Chevron - Only show if not me */}
+          {!isMe && (
+            <View className="w-10 h-10 rounded-full bg-gray-50 items-center justify-center ml-2">
+              <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
+            </View>
+          )}
+        </View>
+      </TouchableHighlight>
     );
   }
 );
@@ -230,12 +234,14 @@ export default function Members() {
           <Text className="font-kanit text-red-500 mb-4">
             เกิดข้อผิดพลาดในการโหลดข้อมูล
           </Text>
-          <TouchableOpacity
+          <TouchableHighlight
             onPress={() => refetch()}
-            className="bg-gray-200 p-3 rounded-lg"
+            className="p-3 rounded-lg"
+            underlayColor="#E5E7EB"
+            style={{ backgroundColor: "#E5E7EB" }}
           >
             <Text className="font-kanit">ลองใหม่</Text>
-          </TouchableOpacity>
+          </TouchableHighlight>
         </View>
       </ScreenWrapper>
     );

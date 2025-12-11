@@ -95,9 +95,6 @@ export default function Home() {
   }, [userProfile?.profileImage]);
 
   // Refetch data when screen is focused
-  // Temporarily removed useFocusEffect to prevent 'Navigation Context' error on reload
-  // Refetch data when screen is focused
-  /*
   useFocusEffect(
     React.useCallback(() => {
       // Invalidate all relevant queries to ensure fresh data
@@ -105,12 +102,8 @@ export default function Home() {
       queryClient.invalidateQueries({ queryKey: ["userElders"] });
       queryClient.invalidateQueries({ queryKey: ["initialEvents"] });
       queryClient.invalidateQueries({ queryKey: ["unreadCount"] });
-
-      // Also trigger refetch to ensure data is fresh
-      refetch();
-    }, [queryClient, refetch])
+    }, [queryClient])
   );
-  */
 
   // 2. Fetch Initial Events (for initial state before socket updates)
   const { data: initialEvents } = useQuery({
