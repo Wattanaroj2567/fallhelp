@@ -160,10 +160,11 @@ export default function SettingsScreen() {
     <ScreenWrapper
       edges={["top"]}
       useScrollView={false}
+      keyboardAvoiding={false}
       style={{ backgroundColor: "#FFFFFF" }}
       header={<ScreenHeader title="ตั้งค่า" />}
     >
-      <View className="flex-1 px-4 pt-2">
+      <View className="flex-1 px-4 pt-4">
         {/* Settings Section - 3D Card Fix: Stronger Shadow */}
         <View className="bg-white rounded-[24px] shadow-lg shadow-black/15 android:elevation-10">
           <View className="rounded-[24px] overflow-hidden border border-gray-100">

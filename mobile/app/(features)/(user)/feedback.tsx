@@ -21,6 +21,8 @@ export default function FeedbackScreen() {
   // 🧩 LAYER: Logic (Local State)
   // Purpose: Manage feedback message
   // ==========================================
+  const [isFocused, setIsFocused] = useState(false);
+
   const [message, setMessage] = useState("");
 
   // ==========================================
@@ -73,14 +75,10 @@ export default function FeedbackScreen() {
     feedbackMutation.mutate({ message: message.trim(), userName });
   };
 
-  // ==========================================
-  // 🖼️ LAYER: View (Main Render)
-  // Purpose: Render feedback form
-  // ==========================================
   return (
     <ScreenWrapper
-      contentContainerStyle={{ paddingBottom: 40, flexGrow: 1 }}
-      scrollViewProps={{ bounces: false }}
+      contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 16, flex: 1 }}
+      useScrollView={false}
       header={<ScreenHeader title="ส่งความคิดเห็น" onBack={() => router.back()} />}
     >
       <View className="pt-2">
@@ -112,8 +110,11 @@ export default function FeedbackScreen() {
 
         {/* Message Input */}
         <View
-          className="bg-white rounded-2xl p-4 border border-gray-200 mb-6"
-          style={{ minHeight: 150 }}
+          className="bg-white rounded-2xl p-4 border mb-6"
+          style={{
+            height: 150,
+            borderColor: isFocused ? "#16AD78" : "#E5E7EB",
+          }}
         >
           <TextInput
             className="font-kanit text-gray-900 text-base"
@@ -123,7 +124,9 @@ export default function FeedbackScreen() {
             textAlignVertical="top"
             value={message}
             onChangeText={setMessage}
-            style={{ minHeight: 120 }}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+            style={{ height: 100 }}
             maxLength={500}
           />
           <Text

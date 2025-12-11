@@ -51,7 +51,7 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
             />
           </Bounceable>
         ) : (
-          <View className="w-8" />
+          <View className="w-8 h-11" />
         )}
 
         {/* Center: Title */}
@@ -67,7 +67,7 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
         {rightElement ? (
           <View className="flex-row items-center">{rightElement}</View>
         ) : (
-          <View className="w-8" />
+          <View className="w-8 h-11" />
         )}
       </View>
     </View>

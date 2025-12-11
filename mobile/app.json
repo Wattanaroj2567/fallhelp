@@ -46,8 +46,8 @@
       "expo-font"
     ],
     "extra": {
-      "apiUrl": "http://192.168.1.100:3000",
-      "socketUrl": "http://192.168.1.100:3000",
+      "apiUrl": "http://192.168.1.102:3000",
+      "socketUrl": "http://192.168.1.102:3000",
       "router": {},
       "eas": {
         "projectId": "e7494794-3e1d-4904-8d3a-72ad2c0fea2d"

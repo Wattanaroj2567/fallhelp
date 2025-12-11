@@ -192,9 +192,9 @@ export default function RepairScreen() {
                 style={{ flex: 1 }}
                 contentContainerStyle={{ paddingBottom: 40, flexGrow: 1 }}
                 enableOnAndroid={true}
-                enableAutomaticScroll={true}
-                extraScrollHeight={150}
-                extraHeight={150}
+                enableAutomaticScroll={false}
+                extraScrollHeight={0}
+                extraHeight={0}
                 keyboardShouldPersistTaps="always"
                 showsVerticalScrollIndicator={false}
             >
