@@ -194,6 +194,7 @@ export default function RepairScreen() {
                 enableOnAndroid={true}
                 enableAutomaticScroll={true}
                 extraScrollHeight={150}
+                extraHeight={150}
                 keyboardShouldPersistTaps="always"
                 showsVerticalScrollIndicator={false}
             >
@@ -201,25 +202,6 @@ export default function RepairScreen() {
                     {activeTab === 0 ? (
                         // FORM VIEW
                         <View style={{ gap: 20 }}>
-                            {/* Hero Icon */}
-                            <View style={{ alignItems: "center", marginBottom: 8 }}>
-                                <View style={{
-                                    width: 80,
-                                    height: 80,
-                                    borderRadius: 40,
-                                    backgroundColor: "#FEF9C3",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    borderWidth: 4,
-                                    borderColor: "#FFFFFF",
-                                    shadowColor: "#EAB308",
-                                    shadowOffset: { width: 0, height: 2 },
-                                    shadowOpacity: 0.1,
-                                    shadowRadius: 4,
-                                }}>
-                                    <MaterialIcons name="build" size={40} color="#EAB308" />
-                                </View>
-                            </View>
 
                             {/* Subject Input */}
                             <View>
@@ -228,7 +210,7 @@ export default function RepairScreen() {
                                     backgroundColor: "#FFFFFF",
                                     borderRadius: 16,
                                     borderWidth: 1,
-                                    borderColor: subjectFocused ? "#EAB308" : "#E5E7EB",
+                                    borderColor: subjectFocused ? "#16AD78" : "#E5E7EB",
                                 }}>
                                     <UserInput
                                         placeholder="เช่น เครื่องไม่เชื่อมต่อ, ไฟไม่ติด"
@@ -252,7 +234,7 @@ export default function RepairScreen() {
                                     borderRadius: 16,
                                     padding: 16,
                                     borderWidth: 1,
-                                    borderColor: messageFocused ? "#EAB308" : "#E5E7EB",
+                                    borderColor: messageFocused ? "#16AD78" : "#E5E7EB",
                                     minHeight: 150,
                                 }}>
                                     <UserInput
@@ -286,7 +268,7 @@ export default function RepairScreen() {
                             {/* Contact Info Preview */}
                             {userProfile && (
                                 <View className="mt-2 flex-row items-center justify-center space-x-2 opacity-60">
-                                    <MaterialIcons name="contact-support" size={16} color="#6B7280" />
+                                    <MaterialIcons name="contact-support" size={16} color="#898989" />
                                     <Text className="font-kanit text-gray-500 text-xs">
                                         ติดต่อกลับ: {userProfile.firstName} {userProfile.lastName}
                                     </Text>
@@ -323,7 +305,7 @@ export default function RepairScreen() {
                                     </Text>
                                     <TouchableOpacity
                                         onPress={() => refetchHistory()}
-                                        style={{ marginTop: 16, backgroundColor: "#EAB308", paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12 }}
+                                        style={{ marginTop: 16, backgroundColor: "#6B7280", paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12 }}
                                     >
                                         <Text style={{ fontFamily: "Kanit", fontWeight: "600", color: "#FFFFFF" }}>ลองใหม่</Text>
                                     </TouchableOpacity>
@@ -334,12 +316,12 @@ export default function RepairScreen() {
                                         width: 80,
                                         height: 80,
                                         borderRadius: 40,
-                                        backgroundColor: "#FEF3C7",
+                                        backgroundColor: "#F3F4F6",
                                         alignItems: "center",
                                         justifyContent: "center",
                                         marginBottom: 16,
                                     }}>
-                                        <MaterialIcons name="inbox" size={40} color="#F59E0B" />
+                                        <MaterialIcons name="inbox" size={40} color="#9CA3AF" />
                                     </View>
                                     <Text style={{ fontFamily: "Kanit", fontSize: 16, fontWeight: "600", color: "#374151", marginBottom: 8 }}>
                                         ยังไม่มีประวัติการแจ้งซ่อม
@@ -351,7 +333,7 @@ export default function RepairScreen() {
                                         onPress={() => setActiveTab(0)}
                                         style={{
                                             marginTop: 24,
-                                            backgroundColor: "#EAB308",
+                                            backgroundColor: "#16AD78",
                                             paddingHorizontal: 24,
                                             paddingVertical: 12,
                                             borderRadius: 12

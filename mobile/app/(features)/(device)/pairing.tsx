@@ -5,11 +5,9 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
   StyleSheet,
 } from "react-native";
+import { ScreenWrapper } from "@/components/ScreenWrapper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -175,87 +173,75 @@ export default function DevicePairing() {
   // ==========================================
   if (showManualEntry) {
     return (
-      <View className="flex-1 bg-white">
-        <View style={{ height: insets.top, backgroundColor: "white" }} />
-
-        <ScreenHeader title="เชื่อมต่ออุปกรณ์" onBack={handleBack} />
-
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          className="flex-1"
-        >
-          <ScrollView
-            className="flex-1 px-6"
-            contentContainerStyle={{ paddingBottom: 100, flexGrow: 1 }}
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}
+      <ScreenWrapper
+        contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 100, flexGrow: 1 }}
+        scrollViewProps={{ bounces: false }}
+        header={<ScreenHeader title="เชื่อมต่ออุปกรณ์" onBack={handleBack} />}
+      >
+        <View className="bg-blue-50 rounded-2xl p-4 mb-6 mt-6">
+          <Text
+            style={{ fontSize: 14 }}
+            className="font-kanit text-blue-700 mb-2"
           >
-            <View className="bg-blue-50 rounded-2xl p-4 mb-6 mt-6">
-              <Text
-                style={{ fontSize: 14 }}
-                className="font-kanit text-blue-700 mb-2"
-              >
-                กรุณากรอกรหัสอุปกรณ์ 8 หลัก
-              </Text>
-              <Text
-                style={{ fontSize: 14 }}
-                className="font-kanit text-blue-700"
-              >
-                ที่ติดบนสติ๊กเกอร์ของอุปกรณ์
-              </Text>
-              <Text
-                style={{ fontSize: 14, fontWeight: "600" }}
-                className="font-kanit text-blue-900 mt-2"
-              >
-                ตัวอย่าง: 832CE051
-              </Text>
-            </View>
+            กรุณากรอกรหัสอุปกรณ์ 8 หลัก
+          </Text>
+          <Text
+            style={{ fontSize: 14 }}
+            className="font-kanit text-blue-700"
+          >
+            ที่ติดบนสติ๊กเกอร์ของอุปกรณ์
+          </Text>
+          <Text
+            style={{ fontSize: 14, fontWeight: "600" }}
+            className="font-kanit text-blue-900 mt-2"
+          >
+            ตัวอย่าง: 832CE051
+          </Text>
+        </View>
 
-            <View className="items-center mb-6">
-              <View className="w-32 h-32 rounded-full bg-gray-100 items-center justify-center mb-4">
-                <Ionicons
-                  name="hardware-chip-outline"
-                  size={64}
-                  color="#16AD78"
-                />
-              </View>
-            </View>
-
-            <FloatingLabelInput
-              label="รหัสอุปกรณ์ (Device Code)"
-              value={macAddress}
-              onChangeText={(text) =>
-                setMacAddress(
-                  text
-                    .toUpperCase()
-                    .replace(/[^A-Z0-9]/g, "")
-                    .slice(0, 8)
-                )
-              }
-              autoCapitalize="characters"
-              maxLength={8}
+        <View className="items-center mb-6">
+          <View className="w-32 h-32 rounded-full bg-gray-100 items-center justify-center mb-4">
+            <Ionicons
+              name="hardware-chip-outline"
+              size={64}
+              color="#16AD78"
             />
+          </View>
+        </View>
 
-            <TouchableOpacity
-              onPress={handleManualPairing}
-              disabled={pairMutation.isPending}
-              className="bg-[#16AD78] rounded-2xl py-4 items-center mb-4"
-              style={{ opacity: pairMutation.isPending ? 0.6 : 1 }}
+        <FloatingLabelInput
+          label="รหัสอุปกรณ์ (Device Code)"
+          value={macAddress}
+          onChangeText={(text) =>
+            setMacAddress(
+              text
+                .toUpperCase()
+                .replace(/[^A-Z0-9]/g, "")
+                .slice(0, 8)
+            )
+          }
+          autoCapitalize="characters"
+          maxLength={8}
+        />
+
+        <TouchableOpacity
+          onPress={handleManualPairing}
+          disabled={pairMutation.isPending}
+          className="bg-[#16AD78] rounded-2xl py-4 items-center mb-4"
+          style={{ opacity: pairMutation.isPending ? 0.6 : 1 }}
+        >
+          {pairMutation.isPending ? (
+            <ActivityIndicator size="small" color="#FFFFFF" />
+          ) : (
+            <Text
+              style={{ fontSize: 16, fontWeight: "600" }}
+              className="font-kanit text-white"
             >
-              {pairMutation.isPending ? (
-                <ActivityIndicator size="small" color="#FFFFFF" />
-              ) : (
-                <Text
-                  style={{ fontSize: 16, fontWeight: "600" }}
-                  className="font-kanit text-white"
-                >
-                  ยืนยัน
-                </Text>
-              )}
-            </TouchableOpacity>
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </View>
+              ยืนยัน
+            </Text>
+          )}
+        </TouchableOpacity>
+      </ScreenWrapper>
     );
   }
 

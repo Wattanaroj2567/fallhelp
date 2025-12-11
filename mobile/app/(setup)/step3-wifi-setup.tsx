@@ -64,12 +64,18 @@ export default function Step3() {
     },
     onSuccess: async () => {
       // Clear all setup data
-      await SecureStore.deleteItemAsync("setup_step");
-      await SecureStore.deleteItemAsync("setup_elderId");
-      await SecureStore.deleteItemAsync("setup_deviceId");
-      await AsyncStorage.removeItem("setup_step1_form_data");
+      try {
+        await SecureStore.deleteItemAsync("setup_step");
+        await SecureStore.deleteItemAsync("setup_elderId");
+        await SecureStore.deleteItemAsync("setup_deviceId");
+        await AsyncStorage.removeItem("setup_step1_form_data");
 
-      router.replace("/(setup)/saved-success");
+        router.replace("/(setup)/saved-success");
+      } catch (err) {
+        Logger.error("Error clearing setup data:", err);
+        // Even if clearing fails, try to proceed
+        router.replace("/(setup)/saved-success");
+      }
     },
     onError: (error: any) => {
       Logger.error("Error configuring WiFi:", error);

@@ -86,14 +86,13 @@ export default function LoginScreen() {
   // ==========================================
   return (
     <ScreenWrapper
-      useScrollView={false} // ห้ามเลื่อนหน้าตามที่ขอ
       contentContainerStyle={{
-        paddingHorizontal: 24, // ปรับให้เท่ากับหน้า Register
-        flex: 1,
-        // justifyContent: 'center', // ❌ เอาออกเพราะทำให้จอกระตุกเวลาคีย์บอร์ดขึ้น
-        justifyContent: "flex-start", // ✅ จัดเริ่มจากด้านบนแทน
-        paddingTop: 40, // ✅ ปรับขึ้นมาให้ระยะสวยงาม (จากเดิม 100)
+        paddingHorizontal: 24,
+        paddingTop: 40,
+        paddingBottom: 40,
+        flexGrow: 1,
       }}
+      scrollViewProps={{ bounces: false }}
     >
       <View>
         {/* Logo Section */}

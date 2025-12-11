@@ -340,7 +340,7 @@ export default function EmergencyContacts() {
                         style={{ fontSize: 13, lineHeight: 20 }}
                         className="font-kanit text-blue-600 mt-1"
                       >
-                        กดค้างที่ขีด 3 ขีด{" "}
+                        กดค้างที่ขีด 2 ขีด{" "}
                         <MaterialIcons name="drag-handle" size={14} />{" "}
                         เพื่อลากจัดลำดับความสำคัญ
                       </Text>
@@ -367,7 +367,7 @@ export default function EmergencyContacts() {
                   >
                     {isReadOnly
                       ? "ญาติผู้ดูแลหลักยังไม่ได้เพิ่มเบอร์ติดต่อ"
-                      : "เพิ่มเบอร์ติดต่อฉุกเฉินเพื่อให้ระบบโทรออกอัตโนมัติเมื่อเกิดเหตุ"}
+                      : "เพิ่มเบอร์ติดต่อฉุกเฉินเพื่อให้คุณสามารถกดโทรออกได้ทันทีเมื่อเกิดเหตุ"}
                   </Text>
                 </View>
               }

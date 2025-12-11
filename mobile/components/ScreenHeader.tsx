@@ -9,6 +9,7 @@ interface ScreenHeaderProps {
   rightElement?: React.ReactNode;
   transparent?: boolean;
   backgroundColor?: string;
+  noSafeArea?: boolean;
 }
 
 export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
@@ -17,16 +18,17 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
   rightElement,
   transparent = false,
   backgroundColor,
+  noSafeArea = false,
 }) => {
   const insets = useSafeAreaInsets();
 
   return (
     <View
-      className={`${transparent ? "bg-black/30" : ""
-        } rounded-b-[32px] overflow-hidden pb-2`}
+      className={`${(transparent && !noSafeArea) ? "bg-black/30" : ""
+        } ${!noSafeArea ? "rounded-b-[32px] pb-2" : ""}`}
       style={{
-        paddingTop: transparent ? insets.top : 0,
-        backgroundColor: transparent ? undefined : (backgroundColor || "white")
+        paddingTop: (transparent && !noSafeArea) ? insets.top : 0,
+        backgroundColor: (transparent && !noSafeArea) ? undefined : (backgroundColor || (!noSafeArea ? "white" : undefined))
       }}
     >
       <View className="flex-row items-center justify-between px-4 py-4">

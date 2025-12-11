@@ -113,11 +113,9 @@ export default function InviteMember() {
   return (
     <ScreenWrapper
       contentContainerStyle={{ paddingBottom: 40, flexGrow: 1 }}
-      useScrollView={false}
+      scrollViewProps={{ bounces: false }}
+      header={<ScreenHeader title="เชิญสมาชิก" onBack={() => router.back()} />}
     >
-      {/* Header */}
-      <ScreenHeader title="เชิญสมาชิก" onBack={() => router.back()} />
-
       <View className="px-6 pt-2">
         {/* Icon */}
         <View className="items-center mb-6 mt-2">

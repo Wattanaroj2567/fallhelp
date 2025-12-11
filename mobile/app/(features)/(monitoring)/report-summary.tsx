@@ -152,11 +152,11 @@ export default function ReportSummary() {
       const peakTimeRange =
         maxCount > 0
           ? `${peakHour.toString().padStart(2, "0")}:00 - ${(
-              (peakHour + 1) %
-              24
-            )
-              .toString()
-              .padStart(2, "0")}:00 น.`
+            (peakHour + 1) %
+            24
+          )
+            .toString()
+            .padStart(2, "0")}:00 น.`
           : "ไม่มีข้อมูล";
 
       return {
@@ -276,28 +276,32 @@ export default function ReportSummary() {
     >
       <View className="flex-1">
         <View className="p-6">
-          {/* Month Selector */}
+          {/* Month Selector - Improved */}
           <View className="flex-row items-center justify-between mb-6">
             <TouchableOpacity
               onPress={handlePreviousMonth}
-              className="w-10 h-10 items-center justify-center rounded-full bg-white border border-gray-200"
+              className="w-12 h-12 items-center justify-center rounded-full bg-gray-100"
+              activeOpacity={0.6}
             >
-              <MaterialIcons name="chevron-left" size={24} color="#1F2937" />
+              <MaterialIcons name="chevron-left" size={32} color="#374151" />
             </TouchableOpacity>
 
             <TouchableOpacity
-              className="flex-1 items-center"
+              className="flex-1 items-center mx-4"
               onPress={() => setShowMonthPicker(true)}
-              activeOpacity={0.7}
+              activeOpacity={0.6}
             >
-              <Text
-                style={{ fontSize: 24, fontWeight: "600" }}
-                className="font-kanit text-gray-900"
-              >
-                {THAI_MONTHS[currentMonth]} {currentYear}
-              </Text>
+              <View className="flex-row items-center bg-gray-50 px-5 py-2.5 rounded-2xl border border-gray-200">
+                <Text
+                  style={{ fontSize: 20, fontWeight: "600" }}
+                  className="font-kanit text-gray-900"
+                >
+                  {THAI_MONTHS[currentMonth]} {currentYear}
+                </Text>
+                <MaterialIcons name="arrow-drop-down" size={28} color="#6B7280" />
+              </View>
               {useMockData && (
-                <View className="bg-blue-50 px-3 py-1 rounded-full mt-1">
+                <View className="bg-blue-50 px-3 py-1 rounded-full mt-2">
                   <Text
                     style={{ fontSize: 12 }}
                     className="font-kanit text-blue-600"
@@ -311,10 +315,11 @@ export default function ReportSummary() {
             <TouchableOpacity
               onPress={handleNextMonth}
               disabled={isCurrentMonth()}
-              className="w-10 h-10 items-center justify-center rounded-full bg-white border border-gray-200"
+              className="w-12 h-12 items-center justify-center rounded-full bg-gray-100"
               style={{ opacity: isCurrentMonth() ? 0.4 : 1 }}
+              activeOpacity={0.6}
             >
-              <MaterialIcons name="chevron-right" size={24} color="#1F2937" />
+              <MaterialIcons name="chevron-right" size={32} color="#374151" />
             </TouchableOpacity>
           </View>
 
@@ -330,123 +335,87 @@ export default function ReportSummary() {
             </View>
           ) : displaySummary ? (
             <>
-              {/* Summary Card - Green Theme */}
-              <View className="bg-green-50 border-2 border-green-500 rounded-3xl p-6 mb-6">
-                {/* Peak Time */}
-                <View className="mb-6">
-                  <View className="flex-row items-center mb-2">
-                    <View className="w-10 h-10 rounded-full bg-green-100 items-center justify-center mr-3">
-                      <MaterialIcons
-                        name="schedule"
-                        size={24}
-                        color="#16AD78"
-                      />
-                    </View>
-                    <Text
-                      style={{ fontSize: 16, fontWeight: "600" }}
-                      className="font-kanit text-gray-900"
-                    >
-                      ช่วงเวลาที่เกิดเหตุการณ์มากที่สุด
-                    </Text>
-                  </View>
-                  <Text
-                    style={{ fontSize: 20, fontWeight: "600" }}
-                    className="font-kanit text-green-600 ml-13"
-                  >
+              {/* Peak Time Card */}
+              <View className="bg-white rounded-3xl border border-gray-200 p-5 mb-4 flex-row items-center">
+                <View className="w-14 h-14 rounded-2xl bg-teal-100 items-center justify-center mr-4">
+                  <MaterialIcons name="schedule" size={28} color="#16AD78" />
+                </View>
+                <View className="flex-1">
+                  <Text style={{ fontSize: 13 }} className="font-kanit text-gray-500 mb-1">
+                    ช่วงเวลาเกิดเหตุบ่อยที่สุด
+                  </Text>
+                  <Text style={{ fontSize: 20, fontWeight: "600" }} className="font-kanit text-teal-600">
                     {displaySummary.peakTimeRange}
                   </Text>
                 </View>
+              </View>
 
-                {/* Divider */}
-                <View className="h-px bg-green-300 mb-6" />
-
-                {/* Fall Events Count */}
-                <View className="mb-6">
-                  <View className="flex-row items-center mb-2">
-                    <View className="w-10 h-10 rounded-full bg-orange-100 items-center justify-center mr-3">
-                      <MaterialIcons name="warning" size={24} color="#F97316" />
-                    </View>
-                    <Text
-                      style={{ fontSize: 16, fontWeight: "600" }}
-                      className="font-kanit text-gray-900"
-                    >
-                      จำนวนเหตุการณ์หกล้ม
+              {/* Fall Events Card */}
+              <View className="bg-white rounded-3xl border border-gray-200 p-5 mb-4 flex-row items-center">
+                <View className="w-14 h-14 rounded-2xl bg-orange-100 items-center justify-center mr-4">
+                  <MaterialIcons name="warning" size={28} color="#F97316" />
+                </View>
+                <View className="flex-1">
+                  <Text style={{ fontSize: 13 }} className="font-kanit text-gray-500 mb-1">
+                    เหตุการณ์หกล้ม
+                  </Text>
+                  <View className="flex-row items-baseline">
+                    <Text style={{ fontSize: 36, fontWeight: "700" }} className="font-kanit text-orange-500">
+                      {displaySummary.totalFallEvents}
+                    </Text>
+                    <Text style={{ fontSize: 16 }} className="font-kanit text-gray-500 ml-2">
+                      ครั้ง
                     </Text>
                   </View>
-                  <Text
-                    style={{ fontSize: 32, fontWeight: "600" }}
-                    className="font-kanit text-orange-500 ml-13"
-                  >
-                    {displaySummary.totalFallEvents}{" "}
-                    <Text className="font-kanit text-xl">ครั้ง</Text>
+                </View>
+              </View>
+
+              {/* Heart Rate Card */}
+              <View className="bg-white rounded-3xl border border-gray-200 p-5 mb-4">
+                <View className="flex-row items-center mb-4">
+                  <View className="w-14 h-14 rounded-2xl bg-rose-100 items-center justify-center mr-4">
+                    <MaterialIcons name="favorite" size={28} color="#E11D48" />
+                  </View>
+                  <Text style={{ fontSize: 16, fontWeight: "600" }} className="font-kanit text-gray-900">
+                    ชีพจรผิดปกติ
                   </Text>
                 </View>
-
-                {/* Divider */}
-                <View className="h-px bg-green-300 mb-6" />
-
-                {/* Heart Rate Anomalies */}
-                <View>
-                  <View className="flex-row items-center mb-3">
-                    <View className="w-10 h-10 rounded-full bg-red-100 items-center justify-center mr-3">
-                      <MaterialIcons
-                        name="favorite"
-                        size={24}
-                        color="#EF4444"
-                      />
+                <View className="flex-row gap-4 ml-2">
+                  {/* High HR */}
+                  <View className="flex-1 bg-red-50 rounded-2xl p-4">
+                    <View className="flex-row items-center mb-2">
+                      <MaterialIcons name="trending-up" size={20} color="#EF4444" />
+                      <Text style={{ fontSize: 13 }} className="font-kanit text-red-600 ml-1">
+                        สูงผิดปกติ
+                      </Text>
                     </View>
-                    <Text
-                      style={{ fontSize: 16, fontWeight: "600" }}
-                      className="font-kanit text-gray-900"
-                    >
-                      ชีพจรผิดปกติ
+                    <Text style={{ fontSize: 28, fontWeight: "700" }} className="font-kanit text-red-500">
+                      {displaySummary.heartRateAnomalies.high}
+                      <Text style={{ fontSize: 14 }} className="font-kanit text-red-400"> ครั้ง</Text>
                     </Text>
                   </View>
-
-                  <View className="ml-13">
+                  {/* Low HR */}
+                  <View className="flex-1 bg-blue-50 rounded-2xl p-4">
                     <View className="flex-row items-center mb-2">
-                      <View className="w-3 h-3 rounded-full bg-red-500 mr-2" />
-                      <Text
-                        style={{ fontSize: 16 }}
-                        className="font-kanit text-gray-700"
-                      >
-                        ชีพจรสูง:{" "}
-                        <Text className="font-kanit font-semibold text-red-500">
-                          {displaySummary.heartRateAnomalies.high} ครั้ง
-                        </Text>
+                      <MaterialIcons name="trending-down" size={20} color="#3B82F6" />
+                      <Text style={{ fontSize: 13 }} className="font-kanit text-blue-600 ml-1">
+                        ต่ำผิดปกติ
                       </Text>
                     </View>
-                    <View className="flex-row items-center">
-                      <View className="w-3 h-3 rounded-full bg-blue-500 mr-2" />
-                      <Text
-                        style={{ fontSize: 16 }}
-                        className="font-kanit text-gray-700"
-                      >
-                        ชีพจรต่ำ:{" "}
-                        <Text className="font-kanit font-semibold text-blue-500">
-                          {displaySummary.heartRateAnomalies.low} ครั้ง
-                        </Text>
-                      </Text>
-                    </View>
+                    <Text style={{ fontSize: 28, fontWeight: "700" }} className="font-kanit text-blue-500">
+                      {displaySummary.heartRateAnomalies.low}
+                      <Text style={{ fontSize: 14 }} className="font-kanit text-blue-400"> ครั้ง</Text>
+                    </Text>
                   </View>
                 </View>
               </View>
 
               {/* Info Box */}
-              <View className="bg-blue-50 rounded-2xl p-4">
-                <View className="flex-row items-start">
-                  <MaterialIcons name="info" size={24} color="#3B82F6" />
-                  <View className="flex-1 ml-3">
-                    <Text
-                      style={{ fontSize: 14 }}
-                      className="font-kanit text-blue-700"
-                    >
-                      ข้อมูลนี้เป็นสรุปเหตุการณ์ทั้งหมดในเดือน{" "}
-                      {THAI_MONTHS[currentMonth]}{" "}
-                      เพื่อช่วยให้คุณติดตามและวิเคราะห์พฤติกรรมของผู้สูงอายุได้ดีขึ้น
-                    </Text>
-                  </View>
-                </View>
+              <View className="bg-gray-50 rounded-2xl p-4 flex-row items-start">
+                <MaterialIcons name="info-outline" size={20} color="#6B7280" />
+                <Text style={{ fontSize: 13 }} className="font-kanit text-gray-500 flex-1 ml-2">
+                  ข้อมูลนี้เป็นสรุปเหตุการณ์ทั้งหมดในเดือน {THAI_MONTHS[currentMonth]} {currentYear}
+                </Text>
               </View>
             </>
           ) : (
@@ -516,20 +485,18 @@ export default function ReportSummary() {
                       setCurrentYear(year);
                       setShowMonthPicker(false);
                     }}
-                    className={`py-3 px-4 rounded-xl mb-2 ${
-                      isSelected
-                        ? "bg-green-50 border-2 border-green-500"
-                        : "bg-gray-50"
-                    }`}
+                    className={`py-3 px-4 rounded-xl mb-2 ${isSelected
+                      ? "bg-green-50 border-2 border-green-500"
+                      : "bg-gray-50"
+                      }`}
                   >
                     <Text
                       style={{
                         fontSize: 16,
                         fontWeight: isSelected ? "600" : "400",
                       }}
-                      className={`font-kanit text-center ${
-                        isSelected ? "text-green-600" : "text-gray-700"
-                      }`}
+                      className={`font-kanit text-center ${isSelected ? "text-green-600" : "text-gray-700"
+                        }`}
                     >
                       {THAI_MONTHS[month]} {year}
                     </Text>

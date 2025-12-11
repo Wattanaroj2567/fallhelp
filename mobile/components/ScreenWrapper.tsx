@@ -54,9 +54,9 @@ export const ScreenWrapper: React.FC<ScreenWrapperProps> = ({
                     ]}
                     enableOnAndroid={true}
                     enableAutomaticScroll={true}
-                    enableResetScrollToCoords={false}
-                    extraHeight={100} // Reduced from 120 to 50 to prevent huge jumps
-                    extraScrollHeight={100} // Reduced from 120 to 50
+                    enableResetScrollToCoords={true} // Smart Reset enabled
+                    extraHeight={120}
+                    extraScrollHeight={120}
                     viewIsInsideTabBar={false}
                     keyboardShouldPersistTaps="handled"
                     {...scrollViewProps} // Pass through other props like bounces/scrollEnabled

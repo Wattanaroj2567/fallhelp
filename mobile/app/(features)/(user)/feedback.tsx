@@ -80,19 +80,10 @@ export default function FeedbackScreen() {
   return (
     <ScreenWrapper
       contentContainerStyle={{ paddingBottom: 40, flexGrow: 1 }}
-      useScrollView={false}
+      scrollViewProps={{ bounces: false }}
+      header={<ScreenHeader title="ส่งความคิดเห็น" onBack={() => router.back()} />}
     >
-      {/* Header */}
-      <ScreenHeader title="ส่งความคิดเห็น" onBack={() => router.back()} />
-
       <View className="px-6 pt-2">
-        {/* Icon */}
-        <View className="items-center mb-6 mt-2">
-          <View className="w-20 h-20 rounded-full bg-blue-100 items-center justify-center">
-            <MaterialIcons name="chat-bubble" size={40} color="#3B82F6" />
-          </View>
-        </View>
-
         {/* Description */}
         <View className="bg-blue-50 rounded-2xl p-4 mb-6">
           <Text
@@ -109,7 +100,7 @@ export default function FeedbackScreen() {
         {/* User Info Display */}
         {userProfile && (
           <View className="bg-gray-50 rounded-xl p-3 mb-4 flex-row items-center">
-            <MaterialIcons name="person" size={20} color="#6B7280" />
+            <MaterialIcons name="person" size={20} color="#898989" />
             <Text
               style={{ fontSize: 14 }}
               className="font-kanit text-gray-700 ml-2"

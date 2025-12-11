@@ -157,13 +157,14 @@ export const WizardLayout: React.FC<WizardLayoutProps> = ({
             <View className="flex-1">
                 {/* Header with Progress Bar - Transparent Background */}
                 <View
-                    className="bg-black/30 rounded-b-[32px] overflow-hidden pb-4"
+                    className="bg-black/30 pb-4"
                     style={{ paddingTop: insets.top }}
                 >
                     <ScreenHeader
                         title={title}
                         onBack={onBack}
                         transparent={true}
+                        noSafeArea={true}
                     />
                     <ProgressBar currentStep={currentStep} transparent={true} />
                     {headerExtra}

@@ -98,7 +98,7 @@ export default function ChangePassword() {
         </Text>
 
         {/* Current Password */}
-        <View className="mb-3">
+        <View className="mb-2">
           <FloatingLabelInput
             label="รหัสผ่านปัจจุบัน"
             value={currentPassword}
@@ -110,7 +110,7 @@ export default function ChangePassword() {
         </View>
 
         {/* New Password */}
-        <View className="mb-3">
+        <View className="mb-2">
           <FloatingLabelInput
             label="รหัสผ่านใหม่"
             value={newPassword}
@@ -122,7 +122,7 @@ export default function ChangePassword() {
         </View>
 
         {/* Confirm Password */}
-        <View className="mb-3">
+        <View className="mb-2">
           <FloatingLabelInput
             label="ยืนยันรหัสผ่านใหม่"
             value={confirmPassword}

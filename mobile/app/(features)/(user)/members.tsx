@@ -62,85 +62,80 @@ const MemberItem = React.memo(
       <TouchableOpacity
         onPress={handlePress}
         disabled={isMe}
-        activeOpacity={0.7}
-        className={`bg-white rounded-2xl p-4 mb-3 flex-row items-start border border-gray-100 shadow-sm shadow-gray-100 ${isMe ? "opacity-100" : ""
-          }`}
+        activeOpacity={0.6}
+        className={`bg-white rounded-[24px] p-5 mb-3 flex-row items-center justify-between border border-gray-100 shadow-sm ${isMe ? "" : "active:bg-gray-50"}`}
       >
-        <View className="w-12 h-12 rounded-full bg-gray-100 items-center justify-center mr-3 overflow-hidden border border-gray-100">
-          {item.profileImage ? (
-            <Image
-              source={{ uri: item.profileImage }}
-              className="w-full h-full"
-              resizeMode="cover"
-            />
-          ) : (
-            <MaterialIcons name="person" size={24} color="#9CA3AF" />
-          )}
-        </View>
-        <View className="flex-1">
-          <Text
-            style={{ fontSize: 16, fontWeight: "600" }}
-            className="font-kanit text-gray-900"
-          >
-            {item.name}
-            {isMe && <Text className="text-blue-600"> (ฉัน)</Text>}
-          </Text>
-          <Text
-            style={{ fontSize: 13 }}
-            className="font-kanit text-gray-500 mb-2"
-          >
-            {item.email}
-          </Text>
-
-          <View className="flex-row flex-wrap gap-2">
-            {/* Role Badge */}
-            <View
-              className={`self-start px-2 py-0.5 rounded-full ${isOwner ? "bg-purple-100" : "bg-gray-100 border border-gray-200"
-                }`}
-            >
-              <Text
-                style={{ fontSize: 11 }}
-                className={`font-kanit ${isOwner
-                    ? "text-purple-700 font-medium"
-                    : "text-gray-600 font-medium"
-                  }`}
-              >
-                {isOwner ? "ญาติผู้ดูแลหลัก (Owner)" : "ญาติผู้ดูแลเสริม"}
-              </Text>
-            </View>
-
-            {/* View Only Badge */}
-            {!isOwner && item.role === "VIEWER" && (
-              <View className="self-start px-2 py-0.5 rounded-full bg-orange-50 border border-orange-100">
-                <Text
-                  style={{ fontSize: 10 }}
-                  className="font-kanit text-orange-700"
-                >
-                  ดูได้อย่างเดียว
-                </Text>
-              </View>
-            )}
-
-            {/* Editor Badge */}
-            {!isOwner && item.role === "EDITOR" && (
-              <View className="self-start px-2 py-0.5 rounded-full bg-teal-50 border border-teal-100">
-                <Text
-                  style={{ fontSize: 10 }}
-                  className="font-kanit text-teal-700"
-                >
-                  แก้ไขได้
-                </Text>
-              </View>
+        {/* Left Content */}
+        <View className="flex-row items-center flex-1">
+          {/* Avatar */}
+          <View className="w-14 h-14 rounded-full bg-gray-100 items-center justify-center mr-4 overflow-hidden border-2 border-white shadow-sm">
+            {item.profileImage ? (
+              <Image
+                source={{ uri: item.profileImage }}
+                className="w-full h-full"
+                resizeMode="cover"
+              />
+            ) : (
+              <MaterialIcons name="person" size={28} color="#9CA3AF" />
             )}
           </View>
 
-          {/* Chevright icon to indicate clickable (Hide if Me) */}
-          {!isMe && (
-            <View className="absolute right-0 top-1">
-              <MaterialIcons name="chevron-right" size={20} color="#E5E7EB" />
+          {/* Info */}
+          <View className="flex-1">
+            <Text
+              style={{ fontSize: 16, fontWeight: "600" }}
+              className="font-kanit text-gray-900 mb-0.5"
+            >
+              {item.name}
+              {isMe && <Text className="text-blue-600"> (ฉัน)</Text>}
+            </Text>
+            <Text
+              style={{ fontSize: 12 }}
+              className="font-kanit text-gray-400 mb-2"
+            >
+              {item.email}
+            </Text>
+
+            <View className="flex-row flex-wrap gap-1.5">
+              {/* Role Badge */}
+              <View
+                className={`px-2.5 py-0.5 rounded-full ${isOwner ? "bg-purple-100" : "bg-gray-100"}`}
+              >
+                <Text
+                  style={{ fontSize: 10 }}
+                  className={`font-kanit font-medium ${isOwner ? "text-purple-700" : "text-gray-600"}`}
+                >
+                  {isOwner ? "ญาติผู้ดูแลหลัก" : "ญาติผู้ดูแลเสริม"}
+                </Text>
+              </View>
+
+              {/* Viewer Badge */}
+              {!isOwner && item.role === "VIEWER" && (
+                <View className="px-2.5 py-0.5 rounded-full bg-orange-50">
+                  <Text style={{ fontSize: 10 }} className="font-kanit text-orange-600 font-medium">
+                    ดูอย่างเดียว
+                  </Text>
+                </View>
+              )}
+
+              {/* Editor Badge */}
+              {!isOwner && item.role === "EDITOR" && (
+                <View className="px-2.5 py-0.5 rounded-full bg-teal-50">
+                  <Text style={{ fontSize: 10 }} className="font-kanit text-teal-600 font-medium">
+                    แก้ไขได้
+                  </Text>
+                </View>
+              )}
             </View>
-          )}
+          </View>
         </View>
+
+        {/* Right Chevron - Only show if not me */}
+        {!isMe && (
+          <View className="w-10 h-10 rounded-full bg-gray-50 items-center justify-center ml-2">
+            <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
+          </View>
+        )}
       </TouchableOpacity>
     );
   }
@@ -284,7 +279,7 @@ export default function Members() {
                   style={{ fontSize: 13, lineHeight: 20 }}
                   className="font-kanit text-blue-700 ml-2 flex-1"
                 >
-                  สมาชิกสามารถถูกกำหนดสิทธิ์ให้เป็นผู้ช่วยที่แก้ไขข้อมูลได้
+                  สมาชิกสามารถถูกกำหนดสิทธิ์ให้แก้ไขข้อมูลได้
                   หรือดูได้อย่างเดียว
                   โดยการแตะที่รายชื่อเพื่อจัดการสิทธิ์
                 </Text>
@@ -308,11 +303,11 @@ export default function Members() {
             />
           </View>
 
-          {/* Fixed Bottom Button (Only for Owner) */}
+          {/* Invite Button (Only for Owner) */}
           {members &&
             members.length > 0 &&
             currentElder?.accessLevel === "OWNER" && (
-              <View className="px-6 py-5 bg-white border-t border-gray-100">
+              <View className="px-6 pb-8">
                 <PrimaryButton
                   title="เชิญสมาชิกเข้ากลุ่มของคุณ"
                   onPress={() =>

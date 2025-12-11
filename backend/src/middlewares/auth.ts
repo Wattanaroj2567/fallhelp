@@ -28,7 +28,7 @@ export const authenticate = (req: Request, res: Response, next: NextFunction): v
 
     const token = authHeader.substring(7); // Remove 'Bearer ' prefix
     const decoded = verifyToken(token);
-    authDebug('Token verified for user:', decoded?.id, 'path:', req.path);
+    authDebug('Token verified for user:', decoded?.userId, 'path:', req.path);
 
     req.user = decoded;
     next();

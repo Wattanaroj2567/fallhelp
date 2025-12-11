@@ -85,8 +85,16 @@ export default function MemberDetailScreen() {
     };
 
     return (
-        <ScreenWrapper useScrollView={false} style={{ backgroundColor: "#F9FAFB" }}>
-            <ScreenHeader title="รายละเอียดสมาชิก" onBack={() => router.back()} backgroundColor="#F9FAFB" />
+        <ScreenWrapper
+            edges={["top", "left", "right"]}
+            useScrollView={false}
+            style={{ backgroundColor: "#F9FAFB" }}
+        >
+            <ScreenHeader
+                title="รายละเอียดสมาชิก"
+                onBack={() => router.back()}
+                backgroundColor="#F9FAFB"
+            />
 
             <View className="flex-1 px-6 pt-6">
                 {/* User Card */}
@@ -115,91 +123,104 @@ export default function MemberDetailScreen() {
                 {/* Role Selection (Hide if target is Owner) */}
                 {!isTargetOwner && (
                     <>
-                        <Text className="text-lg font-bold font-kanit text-gray-800 mb-4">
+                        <Text className="text-base font-bold font-kanit text-gray-700 mb-3 ml-2">
                             กำหนดสิทธิ์การใช้งาน
                         </Text>
 
-                        <TouchableOpacity
-                            onPress={() => setSelectedRole('EDITOR')}
-                            activeOpacity={0.7}
-                            className={`flex-row items-center p-4 rounded-2xl mb-3 border ${selectedRole === 'EDITOR'
-                                ? "bg-teal-50 border-teal-200"
-                                : "bg-white border-gray-100"
-                                }`}
-                        >
-                            <View className={`w-12 h-12 rounded-full items-center justify-center mr-4 ${selectedRole === 'EDITOR' ? "bg-teal-100" : "bg-gray-50"
-                                }`}>
-                                <MaterialIcons name="edit" size={24} color={selectedRole === 'EDITOR' ? "#0F766E" : "#9CA3AF"} />
-                            </View>
-                            <View className="flex-1">
-                                <Text className={`font-bold font-kanit text-base ${selectedRole === 'EDITOR' ? "text-teal-900" : "text-gray-900"
-                                    }`}>
-                                    แก้ไขได้
-                                </Text>
-                                <Text className="font-kanit text-sm text-gray-500 mt-0.5">
-                                    สามารถแก้ไขข้อมูลส่วนตัว จัดการรายชื่อผู้ติดต่อฉุกเฉิน และตั้งค่าอุปกรณ์ได้
-                                </Text>
-                            </View>
-                            <View className={`w-6 h-6 rounded-full border-2 items-center justify-center ${selectedRole === 'EDITOR' ? "border-teal-500 bg-teal-500" : "border-gray-300 bg-transparent"
-                                }`}>
-                                {selectedRole === 'EDITOR' && <MaterialIcons name="check" size={16} color="white" />}
-                            </View>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                            onPress={() => setSelectedRole('VIEWER')}
-                            activeOpacity={0.7}
-                            className={`flex-row items-center p-4 rounded-2xl mb-8 border ${selectedRole === 'VIEWER'
-                                ? "bg-orange-50 border-orange-200"
-                                : "bg-white border-gray-100"
-                                }`}
-                        >
-                            <View className={`w-12 h-12 rounded-full items-center justify-center mr-4 ${selectedRole === 'VIEWER' ? "bg-orange-100" : "bg-gray-50"
-                                }`}>
-                                <MaterialIcons name="visibility" size={24} color={selectedRole === 'VIEWER' ? "#C2410C" : "#9CA3AF"} />
-                            </View>
-                            <View className="flex-1">
-                                <Text className={`font-bold font-kanit text-base ${selectedRole === 'VIEWER' ? "text-orange-900" : "text-gray-900"
-                                    }`}>
-                                    ดูอย่างเดียว
-                                </Text>
-                                <Text className="font-kanit text-sm text-gray-500 mt-0.5">
-                                    ดูข้อมูลสุขภาพและความเป็นอยู่ได้เท่านั้น ไม่สามารถแก้ไขการตั้งค่าใดๆ
-                                </Text>
-                            </View>
-                            <View className={`w-6 h-6 rounded-full border-2 items-center justify-center ${selectedRole === 'VIEWER' ? "border-orange-500 bg-orange-500" : "border-gray-300 bg-transparent"
-                                }`}>
-                                {selectedRole === 'VIEWER' && <MaterialIcons name="check" size={16} color="white" />}
-                            </View>
-                        </TouchableOpacity>
-
-                        {/* Save Button */}
-                        {selectedRole !== initialRole && (
+                        {/* Role Selection Card */}
+                        <View className="bg-white rounded-3xl border border-gray-200 overflow-hidden mb-6">
+                            {/* Editor Option */}
                             <TouchableOpacity
-                                onPress={handleSave}
-                                className="bg-[#16AD78] py-4 rounded-2xl mb-4 items-center shadow-sm shadow-green-200"
-                                disabled={updateMutation.isPending}
+                                onPress={() => setSelectedRole('EDITOR')}
+                                activeOpacity={0.6}
+                                className={`flex-row items-center p-5 border-b border-gray-100 ${selectedRole === 'EDITOR' ? "bg-teal-50" : ""}`}
                             >
-                                {updateMutation.isPending ? (
-                                    <ActivityIndicator color="white" />
+                                <View className={`w-10 h-10 rounded-full items-center justify-center mr-3 ${selectedRole === 'EDITOR' ? "bg-teal-100" : "bg-gray-50"}`}>
+                                    <MaterialIcons name="edit" size={22} color={selectedRole === 'EDITOR' ? "#0F766E" : "#6B7280"} />
+                                </View>
+                                <View className="flex-1">
+                                    <Text style={{ fontSize: 16, fontWeight: "500" }} className={`font-kanit ${selectedRole === 'EDITOR' ? "text-teal-900" : "text-gray-900"}`}>
+                                        แก้ไขได้
+                                    </Text>
+                                    <Text style={{ fontSize: 12 }} className="font-kanit text-gray-500">
+                                        แก้ไขข้อมูล จัดการผู้ติดต่อฉุกเฉิน และตั้งค่าอุปกรณ์
+                                    </Text>
+                                </View>
+                                <View className={`w-6 h-6 rounded-full border-2 items-center justify-center ${selectedRole === 'EDITOR' ? "border-teal-500 bg-teal-500" : "border-gray-300"}`}>
+                                    {selectedRole === 'EDITOR' && <MaterialIcons name="check" size={14} color="white" />}
+                                </View>
+                            </TouchableOpacity>
+
+                            {/* Viewer Option */}
+                            <TouchableOpacity
+                                onPress={() => setSelectedRole('VIEWER')}
+                                activeOpacity={0.6}
+                                className={`flex-row items-center p-5 ${selectedRole === 'VIEWER' ? "bg-orange-50" : ""}`}
+                            >
+                                <View className={`w-10 h-10 rounded-full items-center justify-center mr-3 ${selectedRole === 'VIEWER' ? "bg-orange-100" : "bg-gray-50"}`}>
+                                    <MaterialIcons name="visibility" size={22} color={selectedRole === 'VIEWER' ? "#C2410C" : "#6B7280"} />
+                                </View>
+                                <View className="flex-1">
+                                    <Text style={{ fontSize: 16, fontWeight: "500" }} className={`font-kanit ${selectedRole === 'VIEWER' ? "text-orange-900" : "text-gray-900"}`}>
+                                        ดูอย่างเดียว
+                                    </Text>
+                                    <Text style={{ fontSize: 12 }} className="font-kanit text-gray-500">
+                                        ดูข้อมูลได้เท่านั้น ไม่สามารถแก้ไขการตั้งค่าใดๆ
+                                    </Text>
+                                </View>
+                                <View className={`w-6 h-6 rounded-full border-2 items-center justify-center ${selectedRole === 'VIEWER' ? "border-orange-500 bg-orange-500" : "border-gray-300"}`}>
+                                    {selectedRole === 'VIEWER' && <MaterialIcons name="check" size={14} color="white" />}
+                                </View>
+                            </TouchableOpacity>
+                        </View>
+
+                        {/* Action Buttons Card */}
+                        <Text className="text-base font-bold font-kanit text-gray-700 mb-3 ml-2">
+                            การจัดการ
+                        </Text>
+                        <View className="bg-white rounded-3xl border border-gray-200 overflow-hidden">
+                            {/* Save Button - Only show if role changed */}
+                            {selectedRole !== initialRole && (
+                                <TouchableOpacity
+                                    onPress={handleSave}
+                                    activeOpacity={0.6}
+                                    className="flex-row items-center p-5 border-b border-gray-100 bg-green-50"
+                                    disabled={updateMutation.isPending}
+                                >
+                                    <View className="w-10 h-10 rounded-full items-center justify-center mr-3 bg-green-100">
+                                        <MaterialIcons name="save" size={22} color="#16AD78" />
+                                    </View>
+                                    <Text style={{ fontSize: 16, fontWeight: "500" }} className="font-kanit text-green-700 flex-1">
+                                        {updateMutation.isPending ? "กำลังบันทึก..." : "บันทึกการเปลี่ยนแปลง"}
+                                    </Text>
+                                    {updateMutation.isPending ? (
+                                        <ActivityIndicator size="small" color="#16AD78" />
+                                    ) : (
+                                        <MaterialIcons name="chevron-right" size={24} color="#86EFAC" />
+                                    )}
+                                </TouchableOpacity>
+                            )}
+
+                            {/* Delete Button */}
+                            <TouchableOpacity
+                                onPress={handleDelete}
+                                activeOpacity={0.6}
+                                className="flex-row items-center p-5"
+                                disabled={deleteMutation.isPending}
+                            >
+                                <View className="w-10 h-10 rounded-full items-center justify-center mr-3 bg-red-50">
+                                    <MaterialIcons name="person-remove" size={22} color="#EF4444" />
+                                </View>
+                                <Text style={{ fontSize: 16, fontWeight: "500" }} className="font-kanit text-red-500 flex-1">
+                                    {deleteMutation.isPending ? "กำลังลบ..." : "ลบออกจากกลุ่มครอบครัว"}
+                                </Text>
+                                {deleteMutation.isPending ? (
+                                    <ActivityIndicator size="small" color="#EF4444" />
                                 ) : (
-                                    <Text className="font-bold font-kanit text-white text-lg">บันทึกการเปลี่ยนแปลง</Text>
+                                    <MaterialIcons name="chevron-right" size={24} color="#FCA5A5" />
                                 )}
                             </TouchableOpacity>
-                        )}
-
-                        {/* Delete Button */}
-                        <TouchableOpacity
-                            onPress={handleDelete}
-                            className="bg-white border border-red-100 py-4 rounded-2xl items-center"
-                            disabled={deleteMutation.isPending}
-                        >
-                            {deleteMutation.isPending ? (
-                                <ActivityIndicator color="#EF4444" />
-                            ) : (
-                                <Text className="font-bold font-kanit text-red-500 text-lg">ลบออกจากกลุ่มครอบครัว</Text>
-                            )}
-                        </TouchableOpacity>
+                        </View>
                     </>
                 )}
             </View>

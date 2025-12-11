@@ -5,7 +5,7 @@ import {
   StyleProp,
   ViewStyle,
   TextStyle,
-  Platform,
+  Animated,
 } from "react-native";
 import { TextInput, useTheme } from "react-native-paper";
 
@@ -15,9 +15,9 @@ interface FloatingLabelInputProps
   error?: string;
   containerStyle?: StyleProp<ViewStyle>;
   isPassword?: boolean;
-  isRequired?: boolean; // ✅ Add support for required asterisks
-  accentColor?: string; // ✅ Custom accent color for focus state
-  forceFocus?: boolean; // ✅ Force focus state (for GenderSelect modal)
+  isRequired?: boolean;
+  accentColor?: string;
+  forceFocus?: boolean;
   testID?: string;
 }
 
@@ -27,8 +27,8 @@ export const FloatingLabelInput: React.FC<FloatingLabelInputProps> = ({
   containerStyle,
   isPassword = false,
   isRequired = false,
-  accentColor, // ✅ Optional custom color
-  forceFocus = false, // ✅ Force focus state
+  accentColor,
+  forceFocus = false,
   value,
   style,
   multiline,
@@ -38,42 +38,76 @@ export const FloatingLabelInput: React.FC<FloatingLabelInputProps> = ({
   const [showPassword, setShowPassword] = React.useState(false);
   const [isFocusedInternal, setIsFocusedInternal] = React.useState(false);
 
-  // ✅ Use forceFocus or internal focus state
+  // Animation for floating label
+  const animatedValue = React.useRef(
+    new Animated.Value(value ? 1 : 0)
+  ).current;
+
   const isFocused = forceFocus || isFocusedInternal;
-
-  // ✅ Use accentColor if provided, otherwise default to theme.colors.primary
   const focusColor = accentColor || theme.colors.primary;
-
-  // คำนวณความสูง:
-  // - Multiline: เริ่มต้น 120px
-  // - Single Line: 56px (Standard Material Design)
   const inputHeight = multiline ? 120 : 56;
 
-  // ✅ 3-State Label Color Logic:
-  // 1. Empty (no value) → onSurfaceVariant (#a3a6af) - Gray
-  // 2. Focused (typing) → focusColor (custom or green)
-  // 3. Filled + Blur → #a3a6af - Gray
+  // Animate label when focus/blur or value changes
+  React.useEffect(() => {
+    Animated.timing(animatedValue, {
+      toValue: isFocused || value ? 1 : 0,
+      duration: 150,
+      useNativeDriver: false,
+    }).start();
+  }, [isFocused, value]);
+
+  // Label animation styles
+  const labelStyle: Animated.AnimatedProps<StyleProp<TextStyle>> = {
+    position: "absolute",
+    left: 12,
+    // ️ เมื่อลอย: top = -10, เมื่อในช่อง: top = 16
+    top: animatedValue.interpolate({
+      inputRange: [0, 1],
+      outputRange: [16, -10],
+    }),
+    // ️ เมื่อลอย: fontSize = 12, เมื่อในช่อง: fontSize = 16
+    fontSize: animatedValue.interpolate({
+      inputRange: [0, 1],
+      outputRange: [16, 12],
+    }),
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 4,
+    // ️ สำคัญ: lineHeight สูงมากเพื่อรองรับ น้ำ (สระอำ + ไม้โท)
+    lineHeight: 24,
+    zIndex: 10,
+  };
+
   const labelColor = isFocused
     ? focusColor
     : value
       ? "#a3a6af"
       : theme.colors.onSurfaceVariant;
 
-  // Construct Label with Red Asterisk if required
-  const labelNode = isRequired ? (
-    <Text style={{ color: labelColor }}>
-      {label} <Text style={{ color: "#EF4444" }}>*</Text>
-    </Text>
-  ) : (
-    <Text style={{ color: labelColor }}>{label}</Text>
-  );
+  const displayLabel =
+    typeof label === "string" ? label : "";
 
   return (
-    <View style={[{ marginBottom: 16 }, containerStyle]}>
+    <View style={[{ marginBottom: 16, marginTop: 4 }, containerStyle]}>
+      {/* Custom External Label - ควบคุมได้ 100% */}
+      <Animated.Text
+        style={[
+          labelStyle,
+          {
+            fontFamily: "Kanit",
+            color: labelColor,
+          },
+        ]}
+        numberOfLines={1}
+      >
+        {displayLabel}
+        {isRequired && <Text style={{ color: "#EF4444" }}> *</Text>}
+      </Animated.Text>
+
       <TextInput
         testID={props.testID || "floating-label-input"}
         mode="outlined"
-        label={labelNode as any} // Cast to any to avoid strict type conflict
+        // ️ ซ่อน Label ของ React Native Paper
+        label=""
         value={value}
         error={!!error}
         secureTextEntry={isPassword && !showPassword}
@@ -85,21 +119,25 @@ export const FloatingLabelInput: React.FC<FloatingLabelInputProps> = ({
           setIsFocusedInternal(false);
           props.onBlur?.(e);
         }}
-        // 🎨 จัดการสี: ใช้ focusColor แทน theme.colors.primary
         activeOutlineColor={error ? theme.colors.error : focusColor}
-        outlineColor={error ? theme.colors.error : (isFocused ? focusColor : "#E5E7EB")} // ✅ Green when forceFocus
+        outlineColor={
+          error ? theme.colors.error : isFocused ? focusColor : "#E5E7EB"
+        }
         cursorColor={error ? theme.colors.error : focusColor}
         textColor={theme.colors.onSurface}
         placeholderTextColor={theme.colors.onSurfaceVariant}
+        outlineStyle={{
+          borderRadius: 12,
+        }}
         style={[
           {
             backgroundColor: "#FFFFFF",
             fontSize: 16,
-            lineHeight: 24, // ✅ Fix cursor jumping on iOS for Thai font
-            paddingVertical: 0, // ✅ Fix default padding on Android
+            lineHeight: 24,
+            paddingVertical: 0,
             height: multiline ? undefined : inputHeight,
             minHeight: inputHeight,
-            includeFontPadding: false, // ✅ Fix text vertical alignment on Android
+            includeFontPadding: false,
           },
           style,
         ]}
@@ -112,7 +150,7 @@ export const FloatingLabelInput: React.FC<FloatingLabelInputProps> = ({
                 textAlignVertical: "top",
               }
               : {
-                textAlignVertical: "center", // ✅ Fix cursor jumping for Thai
+                textAlignVertical: "center",
               },
           ] as StyleProp<TextStyle>
         }
@@ -132,7 +170,6 @@ export const FloatingLabelInput: React.FC<FloatingLabelInputProps> = ({
         {...props}
       />
 
-      {/* Error Message */}
       {error && (
         <Text
           style={{

@@ -48,11 +48,13 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401) {
       Logger.debug(`API 401 (Session Expired): ${error.config?.method?.toUpperCase()} ${error.config?.url}`);
     }
-    // Handle 500 "User not found" - invalid token with non-existent userId
+    // Handle 500 "User not found" (Old) OR 404 "user_not_found" (New)
     else if (
-      error.response?.status === 500 &&
-      error.config?.url?.includes('/api/users/profile') &&
-      error.response?.data?.error === 'User not found'
+      (error.response?.status === 500 && error.response?.data?.error === 'User not found') ||
+      (error.response?.status === 404 && (
+        error.response?.data?.error?.code === 'user_not_found' ||
+        error.response?.data?.error === 'user_not_found'
+      ))
     ) {
       Logger.warn('User not found in database - clearing invalid token');
       // Clear token to force re-login

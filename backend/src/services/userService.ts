@@ -1,6 +1,7 @@
 import { User, Gender } from '../generated/prisma/client.js';
 import { hashPassword, comparePassword } from '../utils/password.js';
 import prisma from '../prisma.js';
+import { ApiError } from '../utils/ApiError.js';
 
 // ==========================================
 // ⚙️ LAYER: Business Logic (Service)
@@ -157,7 +158,7 @@ export const deleteUser = async (userId: string): Promise<{ message: string }> =
   });
 
   if (!user) {
-    throw new Error('User not found');
+    throw new ApiError('user_not_found');
   }
 
   // Delete user (Cascade delete will handle related records)

@@ -71,12 +71,16 @@ export default function SettingsScreen() {
     onPress,
     isLast = false,
     isDanger = false,
+    iconColor,
+    bgColor,
   }: {
     icon: React.ComponentProps<typeof MaterialIcons>["name"];
     title: string;
     onPress: () => void;
     isLast?: boolean;
     isDanger?: boolean;
+    iconColor?: string;
+    bgColor?: string;
   }) => (
     <TouchableOpacity
       onPress={onPress}
@@ -86,13 +90,13 @@ export default function SettingsScreen() {
     >
       <View className="flex-row items-center flex-1">
         <View
-          className={`w-10 h-10 rounded-full items-center justify-center ${isDanger ? "bg-red-50" : "bg-gray-50"
+          className={`w-10 h-10 rounded-full items-center justify-center ${bgColor ? bgColor : isDanger ? "bg-red-50" : "bg-gray-50"
             }`}
         >
           <MaterialIcons
             name={icon}
             size={22}
-            color={isDanger ? "#EF4444" : "#6B7280"}
+            color={iconColor ? iconColor : isDanger ? "#EF4444" : "#898989"}
           />
         </View>
         <Text
@@ -149,7 +153,7 @@ export default function SettingsScreen() {
   return (
     <ScreenWrapper
       edges={["top"]}
-      useScrollView={true}
+      useScrollView={false}
       style={{ backgroundColor: "#FFFFFF" }}
       header={<ScreenHeader title="ตั้งค่า" />}
     >
@@ -186,8 +190,8 @@ export default function SettingsScreen() {
               title="โทรศัพท์"
               subtitle={SUPPORT_PHONE}
               onPress={handleCallPhone}
-              iconColor="#22C55E"
-              bgColor="bg-green-50"
+              iconColor="#898989"
+              bgColor="bg-gray-50"
             />
             <View className="border-t border-gray-100" />
             <ContactItem
@@ -195,28 +199,28 @@ export default function SettingsScreen() {
               title="อีเมล"
               subtitle={SUPPORT_EMAIL}
               onPress={handleSendEmail}
-              iconColor="#3B82F6"
-              bgColor="bg-blue-50"
+              iconColor="#898989"
+              bgColor="bg-gray-50"
             />
             <View className="border-t border-gray-100" />
             {/* LINE with custom icon */}
             <TouchableOpacity
               onPress={handleOpenLine}
-              className="flex-row items-center p-4"
+              className="flex-row items-center p-5"
               activeOpacity={0.6}
             >
-              <View className="w-10 h-10 rounded-full items-center justify-center overflow-hidden">
+              <View className="w-10 h-10 rounded-full items-center justify-center">
                 <Image
                   source={require("@/assets/images/Lineicon.png")}
-                  style={{ width: 40, height: 40 }}
+                  style={{ width: 28, height: 28 }}
                   resizeMode="contain"
                 />
               </View>
               <View className="ml-3 flex-1">
-                <Text style={{ fontSize: 14, fontWeight: "500" }} className="font-kanit text-gray-900">
+                <Text style={{ fontSize: 16, fontWeight: "500" }} className="font-kanit text-gray-900">
                   LINE
                 </Text>
-                <Text style={{ fontSize: 12 }} className="font-kanit text-gray-500">
+                <Text style={{ fontSize: 13 }} className="font-kanit text-gray-500">
                   คลิกเพื่อเพิ่มเพื่อน
                 </Text>
               </View>

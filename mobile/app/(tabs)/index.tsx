@@ -12,7 +12,9 @@ import {
 // import { Image } from 'expo-image';
 import { MaterialIcons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { ScreenWrapper } from "@/components/ScreenWrapper";
-import { useRouter, useFocusEffect, Link } from "expo-router";
+import { NotificationModal } from "@/components/NotificationModal";
+import { router, useFocusEffect } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -55,10 +57,11 @@ const calculateAge = (dobString?: string) => {
 // Purpose: Main Dashboard Screen
 // ==========================================
 export default function Home() {
-  const router = useRouter();
   const queryClient = useQueryClient();
   const { isSignedIn } = useAuth();
   const [imageError, setImageError] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const { top } = useSafeAreaInsets();
 
   // ==========================================
   // ⚙️ LAYER: Logic (Data Fetching)
@@ -92,6 +95,9 @@ export default function Home() {
   }, [userProfile?.profileImage]);
 
   // Refetch data when screen is focused
+  // Temporarily removed useFocusEffect to prevent 'Navigation Context' error on reload
+  // Refetch data when screen is focused
+  /*
   useFocusEffect(
     React.useCallback(() => {
       // Invalidate all relevant queries to ensure fresh data
@@ -104,6 +110,7 @@ export default function Home() {
       refetch();
     }, [queryClient, refetch])
   );
+  */
 
   // 2. Fetch Initial Events (for initial state before socket updates)
   const { data: initialEvents } = useQuery({
@@ -291,23 +298,29 @@ export default function Home() {
   }
 
   return (
-    <ScreenWrapper
-      edges={["top"]}
-      useScrollView={false}
-      style={{ backgroundColor: "#FDFDFD" }}
-    >
-      {/* Header Section */}
-      <View className="flex-row items-center justify-between pt-3 pb-4 bg-white px-6 border-b border-gray-100">
-        <View>
-          <Text className="text-sm text-gray-500 font-kanit">สวัสดี, คุณ</Text>
-          <Text className="text-xl font-kanit font-bold text-gray-800">
-            {userProfile?.firstName}
-          </Text>
-        </View>
+    <View className="flex-1 bg-white">
+      <ScreenWrapper
+        edges={["left", "right"]}
+        useScrollView={false}
+        style={{ backgroundColor: "#FFFFFF" }}
+      >
+        {/* Header Section (Floating 3D Card) */}
+        <View
+          style={{ paddingTop: top + 12 }}
+          className="flex-row items-center justify-between pb-6 bg-white px-6 rounded-b-[32px] shadow-sm z-10 mb-2"
+        >
+          <View>
+            <Text className="text-base text-gray-500 font-kanit">สวัสดี, คุณ</Text>
+            <Text className="text-2xl font-kanit font-bold text-gray-800">
+              {userProfile?.firstName}
+            </Text>
+          </View>
 
-        <View className="flex-row items-center gap-5">
-          <Link href="/(features)/(monitoring)/notifications" asChild>
-            <TouchableOpacity className="p-1 relative">
+          <View className="flex-row items-center gap-5">
+            <TouchableOpacity
+              onPress={() => setShowNotifications(true)}
+              className="p-1 relative"
+            >
               <MaterialIcons
                 name="notifications-none"
                 size={28}
@@ -317,10 +330,11 @@ export default function Home() {
                 <View className="absolute top-1 right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white" />
               )}
             </TouchableOpacity>
-          </Link>
 
-          <Link href="/(features)/(user)/(profile)" asChild>
-            <TouchableOpacity className="rounded-full overflow-hidden">
+            <TouchableOpacity
+              onPress={() => router.push("/(features)/(user)/(profile)")}
+              className="rounded-full overflow-hidden"
+            >
               {userProfile?.profileImage && !imageError ? (
                 <Image
                   key={userProfile?.profileImage} // Force re-render on change
@@ -337,198 +351,221 @@ export default function Home() {
                 </View>
               )}
             </TouchableOpacity>
-          </Link>
-        </View>
-      </View>
-
-      <View className="flex-1 px-5 pt-6 pb-4 justify-between">
-        {isLoading ? (
-          <View className="flex-1 items-center justify-center">
-            <ActivityIndicator size="large" color="#16AD78" />
-            <Text className="font-kanit text-gray-500 mt-4">
-              กำลังโหลดข้อมูล...
-            </Text>
           </View>
-        ) : elderInfo ? (
-          // Main Dashboard UI
-          <>
-            <View>
-              {/* Section Title */}
-              <Text className="text-lg font-kanit font-bold text-gray-800 ml-1 mb-5">
-                ภาพรวม
+        </View >
+
+        <View className="flex-1 px-5 pt-6 pb-4 justify-between">
+          {isLoading ? (
+            <View className="flex-1 items-center justify-center">
+              <ActivityIndicator size="large" color="#16AD78" />
+              <Text className="font-kanit text-gray-500 mt-4">
+                กำลังโหลดข้อมูล...
               </Text>
+            </View>
+          ) : elderInfo ? (
+            // Main Dashboard UI
+            <>
+              <View>
+                {/* Section Title */}
+                <Text className="text-lg font-kanit font-bold text-gray-800 ml-1 mb-5">
+                  ภาพรวม
+                </Text>
 
-              {/* Fall Status Card (Hero - Colorful) */}
-              <View
-                className={`p-6 rounded-[24px] shadow-md mb-6 ${fallStatus === "FALL"
-                  ? "bg-red-500"
-                  : isConnected
-                    ? "bg-[#4A90E2]"
-                    : "bg-gray-400"
-                  }`}
-              >
-                <View className="flex-row justify-between items-start mb-6">
-                  <View className="flex-row items-center gap-4">
-                    <View className="w-12 h-12 rounded-full bg-white/20 items-center justify-center backdrop-blur-sm">
-                      <MaterialIcons
-                        name={
-                          fallStatus === "FALL"
-                            ? "warning"
-                            : isConnected
-                              ? "accessibility"
-                              : "signal-wifi-off"
-                        }
-                        size={28}
-                        color="white"
-                      />
-                    </View>
-                    <View>
-                      <Text className="text-white/80 font-kanit text-sm mb-0.5">
-                        สถานะการหกล้ม
-                      </Text>
-                      <Text className="text-white font-kanit font-bold text-2xl">
-                        {fallStatus === "FALL" ? "ตรวจพบ!" : (isConnected ? "ปกติ" : "-")}
-                      </Text>
-                    </View>
-                  </View>
-                  {fallStatus === "FALL" && (
-                    <View className="bg-white px-3 py-1 rounded-full">
-                      <Text className="text-xs text-red-600 font-kanit font-bold">
-                        ฉุกเฉิน
-                      </Text>
-                    </View>
-                  )}
-                </View>
-
-                <View className="flex-row justify-between items-end">
-                  <Text className="text-white/70 font-kanit text-xs">
-                    อัปเดตล่าสุด : {formatTime(lastFallUpdate)}
-                  </Text>
-
-                  {fallStatus === "FALL" && (
-                    <TouchableOpacity
-                      onPress={handleResetStatus}
-                      className="bg-white px-5 py-2.5 rounded-xl shadow-sm active:bg-gray-100"
-                    >
-                      <Text className="text-red-500 font-kanit font-bold text-sm">
-                        รีเซ็ตสถานะ
-                      </Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
-              </View>
-
-              {/* Grid: Device & Heart Rate */}
-              <View className="flex-row mb-6">
-                <TouchableOpacity
-                  onPress={() => router.push("/(features)/(device)/details")}
-                  className="flex-1 bg-white p-5 rounded-[24px] border border-gray-100 shadow-sm mr-1.5 active:bg-gray-50"
+                {/* Fall Status Card (Hero - Colorful with Border) */}
+                {/* Fall Status Card (Hero - 3D Card Style) */}
+                <View
+                  className={`p-6 rounded-[24px] mb-6 border bg-white shadow-sm ${fallStatus === "FALL" ? "border-red-100" : "border-gray-100"
+                    }`}
                 >
-                  <View className="flex-row justify-between items-start">
-                    <View
-                      className={`w-12 h-12 rounded-2xl items-center justify-center ${!elderInfo?.device
-                        ? "bg-gray-100"
-                        : isConnected
-                          ? "bg-green-100"
-                          : "bg-red-100"
-                        }`}
-                    >
-                      <MaterialIcons
-                        name="devices"
-                        size={24}
-                        color={
-                          !elderInfo?.device
-                            ? "#9CA3AF"
-                            : isConnected
-                              ? "#16AD78"
-                              : "#EF4444"
-                        }
-                      />
-                    </View>
-                    <View className="flex-row items-start gap-1">
+                  <View className="flex-row justify-between items-start mb-6">
+                    <View className="flex-row items-center gap-4">
                       <View
-                        className={`w-3 h-3 rounded-full mt-1 ${!elderInfo?.device
-                          ? "bg-gray-300"
+                        className={`w-12 h-12 rounded-full items-center justify-center ${fallStatus === "FALL"
+                          ? "bg-red-100"
                           : isConnected
-                            ? "bg-green-500"
-                            : "bg-red-500"
-                          }`}
-                      />
-                      <MaterialIcons name="chevron-right" size={20} color="#CBD5E1" />
-                    </View>
-                  </View>
-
-                  <View className="mt-4">
-                    <Text className="text-gray-400 font-kanit text-xs mb-1">
-                      อุปกรณ์
-                    </Text>
-                    <Text
-                      className={`text-lg font-kanit font-bold ${!elderInfo?.device
-                        ? "text-gray-400"
-                        : isConnected
-                          ? "text-gray-800"
-                          : "text-red-500"
-                        }`}
-                    >
-                      {!elderInfo?.device ? "ไม่มีอุปกรณ์" : isConnected ? "ออนไลน์" : "ออฟไลน์"}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-
-                {/* Heart Rate */}
-                <View className="flex-1 bg-white p-5 rounded-[24px] border border-gray-100 shadow-sm ml-1.5">
-                  <View className="flex-row justify-between items-start">
-                    <Animated.View
-                      style={heartAnimatedStyle}
-                      className={`w-12 h-12 rounded-2xl items-center justify-center ${isConnected ? "bg-rose-100" : "bg-gray-100"
-                        }`}
-                    >
-                      <MaterialIcons
-                        name="favorite"
-                        size={24}
-                        color={isConnected ? "#E11D48" : "#9CA3AF"}
-                      />
-                    </Animated.View>
-                    {(heartRate || 0) > 0 &&
-                      ((heartRate || 0) < 60 || (heartRate || 0) > 100) ? (
-                      <View
-                        className={`px-2 py-1 rounded-md ${(heartRate || 0) > 100 ? "bg-red-100" : "bg-blue-100"
+                            ? "bg-blue-50"
+                            : "bg-gray-100"
                           }`}
                       >
+                        <MaterialIcons
+                          name={
+                            fallStatus === "FALL"
+                              ? "warning"
+                              : isConnected
+                                ? "accessibility"
+                                : "signal-wifi-off"
+                          }
+                          size={28}
+                          color={
+                            fallStatus === "FALL"
+                              ? "#EF4444"
+                              : isConnected
+                                ? "#3B82F6"
+                                : "#9CA3AF"
+                          }
+                        />
+                      </View>
+                      <View>
+                        <Text className="text-gray-400 font-kanit text-sm mb-0.5">
+                          สถานะการหกล้ม
+                        </Text>
                         <Text
-                          className={`text-[10px] font-bold ${(heartRate || 0) > 100
-                            ? "text-red-600"
-                            : "text-blue-600"
+                          className={`font-kanit font-bold text-2xl ${fallStatus === "FALL"
+                            ? "text-red-500"
+                            : isConnected
+                              ? "text-gray-900"
+                              : "text-gray-400"
                             }`}
                         >
-                          {(heartRate || 0) > 100 ? "สูง" : "ต่ำ"}
+                          {fallStatus === "FALL"
+                            ? "ตรวจพบ!"
+                            : isConnected
+                              ? "ปกติ"
+                              : "-"}
                         </Text>
                       </View>
-                    ) : null}
+                    </View>
+                    {fallStatus === "FALL" && (
+                      <View className="bg-red-50 px-3 py-1 rounded-full border border-red-100">
+                        <Text className="text-xs text-red-600 font-kanit font-bold">
+                          ฉุกเฉิน
+                        </Text>
+                      </View>
+                    )}
                   </View>
 
-                  <View className="mt-4">
-                    <Text className="text-gray-400 font-kanit text-xs mb-1">
-                      ชีพจร
+                  <View className="flex-row justify-between items-end">
+                    <Text className="text-gray-400 font-kanit text-xs">
+                      อัปเดตล่าสุด : {formatTime(lastFallUpdate)}
                     </Text>
-                    <View className="flex-row items-baseline">
-                      <Text
-                        className={`text-3xl font-kanit font-bold mr-1 ${isConnected ? "text-gray-800" : "text-gray-400"
+
+                    {fallStatus === "FALL" && (
+                      <TouchableOpacity
+                        onPress={handleResetStatus}
+                        className="bg-red-500 px-5 py-2.5 rounded-xl shadow-sm active:bg-red-600"
+                      >
+                        <Text className="text-white font-kanit font-bold text-sm">
+                          รีเซ็ตสถานะ
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                </View>
+
+                {/* Grid: Device & Heart Rate */}
+                <View className="flex-row mb-6">
+                  <TouchableOpacity
+                    onPress={() => router.push("/(features)/(device)/details")}
+                    className="flex-1 bg-white p-5 rounded-[24px] border border-gray-100 shadow-sm mr-1.5 active:bg-gray-50"
+                  >
+                    <View className="flex-row justify-between items-start">
+                      <View
+                        className={`w-12 h-12 rounded-2xl items-center justify-center ${!elderInfo?.device
+                          ? "bg-gray-100"
+                          : isConnected
+                            ? "bg-green-100"
+                            : "bg-red-100"
                           }`}
                       >
-                        {heartRate && isConnected ? heartRate : "--"}
+                        <MaterialIcons
+                          name="devices"
+                          size={24}
+                          color={
+                            !elderInfo?.device
+                              ? "#9CA3AF"
+                              : isConnected
+                                ? "#16AD78"
+                                : "#EF4444"
+                          }
+                        />
+                      </View>
+                      <View className="flex-row items-center gap-2">
+                        <View
+                          className={`w-3 h-3 rounded-full ${!elderInfo?.device
+                            ? "bg-gray-300"
+                            : isConnected
+                              ? "bg-green-500"
+                              : "bg-red-500"
+                            }`}
+                        />
+                        <MaterialIcons name="chevron-right" size={28} color="#9CA3AF" />
+                      </View>
+                    </View>
+
+                    <View className="mt-4">
+                      <Text className="text-gray-400 font-kanit text-xs mb-1">
+                        อุปกรณ์
                       </Text>
-                      <Text className="text-xs text-gray-400 font-kanit">
-                        BPM
+                      <Text
+                        className={`text-lg font-kanit font-bold ${!elderInfo?.device
+                          ? "text-gray-400"
+                          : isConnected
+                            ? "text-gray-800"
+                            : "text-red-500"
+                          }`}
+                      >
+                        {!elderInfo?.device ? "ไม่มีอุปกรณ์" : isConnected ? "ออนไลน์" : "ออฟไลน์"}
                       </Text>
+                    </View>
+                  </TouchableOpacity>
+
+                  {/* Heart Rate */}
+                  <View className="flex-1 bg-white p-5 rounded-[24px] border border-gray-100 shadow-sm ml-1.5">
+                    <View className="flex-row justify-between items-start">
+                      <Animated.View
+                        style={heartAnimatedStyle}
+                        className={`w-12 h-12 rounded-2xl items-center justify-center ${isConnected ? "bg-rose-100" : "bg-gray-100"
+                          }`}
+                      >
+                        <MaterialIcons
+                          name="favorite"
+                          size={24}
+                          color={isConnected ? "#E11D48" : "#9CA3AF"}
+                        />
+                      </Animated.View>
+                      {(heartRate || 0) > 0 &&
+                        ((heartRate || 0) < 60 || (heartRate || 0) > 100) ? (
+                        <View
+                          className={`px-2 py-1 rounded-md ${(heartRate || 0) > 100 ? "bg-red-100" : "bg-blue-100"
+                            }`}
+                        >
+                          <Text
+                            className={`text-[10px] font-bold ${(heartRate || 0) > 100
+                              ? "text-red-600"
+                              : "text-blue-600"
+                              }`}
+                          >
+                            {(heartRate || 0) > 100 ? "สูง" : "ต่ำ"}
+                          </Text>
+                        </View>
+                      ) : null}
+                    </View>
+
+                    <View className="mt-4">
+                      <Text className="text-gray-400 font-kanit text-xs mb-1">
+                        ชีพจร
+                      </Text>
+                      <View className="flex-row items-baseline">
+                        <Text
+                          className={`text-3xl font-kanit font-bold mr-1 ${isConnected ? "text-gray-800" : "text-gray-400"
+                            }`}
+                        >
+                          {heartRate && isConnected ? heartRate : "--"}
+                        </Text>
+                        <Text className="text-xs text-gray-400 font-kanit">
+                          BPM
+                        </Text>
+                      </View>
                     </View>
                   </View>
                 </View>
-              </View>
 
-              {/* Elder Info Card (Clickable) */}
-              <Link href="/(features)/(elder)" asChild>
-                <TouchableOpacity className="bg-white p-6 rounded-[28px] border border-gray-100 shadow-sm flex-row items-center justify-between active:bg-gray-50">
+                {/* Elder Info Card (Clickable) */}
+                {/* Elder Info Card (Clickable) */}
+                <TouchableOpacity
+                  onPress={() => router.push("/(features)/(elder)")}
+                  className="bg-white p-6 rounded-[28px] border border-gray-100 shadow-sm flex-row items-center justify-between active:bg-gray-50"
+                >
                   <View className="flex-row items-center gap-5">
                     <View className="w-16 h-16 bg-blue-50 rounded-full items-center justify-center border border-blue-100 overflow-hidden shadow-sm">
                       {elderInfo?.profileImage ? (
@@ -592,20 +629,20 @@ export default function Home() {
                       </View>
                     </View>
                   </View>
-                  <View className="w-10 h-10 rounded-full bg-gray-50 items-center justify-center">
-                    <MaterialIcons
-                      name="chevron-right"
-                      size={24}
-                      color="#9CA3AF"
-                    />
-                  </View>
+                  <MaterialIcons
+                    name="chevron-right"
+                    size={32}
+                    color="#9CA3AF"
+                  />
                 </TouchableOpacity>
-              </Link>
-            </View>
+              </View>
 
-            {/* Emergency Call Button - Docked to Bottom */}
-            <Link href="/(features)/(emergency)/call" asChild>
-              <TouchableOpacity className="bg-[#FF4B4B] rounded-[24px] p-5 flex-row justify-center items-center shadow-lg shadow-red-200 active:bg-red-600 mt-4">
+              {/* Emergency Call Button - Docked to Bottom */}
+
+              <TouchableOpacity
+                onPress={() => router.push("/(features)/(emergency)/call")}
+                className="bg-[#FF4B4B] rounded-[24px] p-5 flex-row justify-center items-center shadow-lg shadow-red-200 active:bg-red-600 mt-4"
+              >
                 <View className="bg-white/20 p-2 rounded-full mr-3">
                   <MaterialIcons name="phone-in-talk" size={24} color="white" />
                 </View>
@@ -613,10 +650,14 @@ export default function Home() {
                   โทรฉุกเฉิน
                 </Text>
               </TouchableOpacity>
-            </Link>
-          </>
-        ) : null}
-      </View>
-    </ScreenWrapper>
+            </>
+          ) : null}
+        </View>
+      </ScreenWrapper>
+      <NotificationModal
+        visible={showNotifications}
+        onClose={() => setShowNotifications(false)}
+      />
+    </View >
   );
 }

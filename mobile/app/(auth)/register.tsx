@@ -36,26 +36,9 @@ export default function RegisterScreen() {
   const [emailError, setEmailError] = useState("");
   const [password, setPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
-  const [isScrollEnabled, setIsScrollEnabled] = useState(false); // Default to fixed
-
   const router = useRouter();
   const scrollViewRef = useRef<ScrollView>(null);
   const { signIn } = useAuth(); // Access auth context
-
-  // Toggle scroll based on keyboard visibility
-  useEffect(() => {
-    const showSubscription = Keyboard.addListener("keyboardDidShow", () => {
-      setIsScrollEnabled(true);
-    });
-    const hideSubscription = Keyboard.addListener("keyboardDidHide", () => {
-      setIsScrollEnabled(false);
-    });
-
-    return () => {
-      showSubscription.remove();
-      hideSubscription.remove();
-    };
-  }, []);
 
   // ==========================================
   // ⚙️ LAYER: Logic (Mutation)
@@ -66,15 +49,16 @@ export default function RegisterScreen() {
       return await register(data);
     },
     onSuccess: async (data) => {
-      // Vital: Update AuthContext state so the app knows we are logged in
-      if (data && data.token) {
-        await signIn(data.token);
-      }
+      // Don't sign in immediately to avoid race condition with ProtectedRoute
+      // Pass token to Success screen instead
 
       // Redirect to success screen
       router.replace({
         pathname: "/(auth)/success",
-        params: { type: "register" },
+        params: {
+          type: "register",
+          token: data.token // Pass token for manual sign-in later
+        },
       });
     },
     onError: (error: any) => {
@@ -135,7 +119,6 @@ export default function RegisterScreen() {
       scrollViewProps={{
         bounces: false, // iOS: ห้ามเด้งดึ๋ง
         overScrollMode: "never", // Android: ห้ามเด้งแสง
-        scrollEnabled: isScrollEnabled, // ✅ Only scroll when keyboard is open
       }}
       scrollViewRef={scrollViewRef} // Pass ref correctly
       header={

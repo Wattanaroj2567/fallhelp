@@ -17,11 +17,11 @@ export function useProtectedRoute() {
   useEffect(() => {
     if (isLoading) return;
 
-    const inAuthGroup = segments[0] === '(auth)' || segments[0] === '(setup)';
+    const inAuthGroup = segments[0] === '(auth)';
     const inTabsGroup = segments[0] === '(tabs)';
-    
-    Logger.info('Auth State Check:', { 
-      isSignedIn, 
+
+    Logger.info('Auth State Check:', {
+      isSignedIn,
       currentSegment: segments[0],
       inAuthGroup,
       inTabsGroup,
@@ -33,13 +33,19 @@ export function useProtectedRoute() {
       // Redirect to Login
       hasCheckedSetup.current = false;
       router.replace('/(auth)/login');
-    } else if (isSignedIn && inAuthGroup && segments[0] !== '(setup)') {
+    } else if (isSignedIn && inAuthGroup) {
       // User IS signed in, but is on an auth screen (login/register)
+
+      // EXCEPTION: Allow "Success" screen to stay visible
+      // The user will manually navigate away from it
+      if (segments[1] === 'success') return;
+
       // Check if they have elder data before redirecting
       hasCheckedSetup.current = false;
       checkElderAndRedirect();
-    } else if (isSignedIn && inTabsGroup && !hasCheckedSetup.current) {
-      // User IS signed in and on tabs → check setup completion ONCE
+    } else if (isSignedIn && !hasCheckedSetup.current) {
+      // User IS signed in, on any other screen (tabs, setup, features)
+      // Check setup completion if not done yet
       checkElderAndRedirect();
     }
   }, [isSignedIn, segments, isLoading]);
@@ -48,11 +54,11 @@ export function useProtectedRoute() {
     // Prevent concurrent checks
     if (checkingRef.current) return;
     checkingRef.current = true;
-    
+
     try {
       const { getUserElders } = require('../services/userService');
       const elders = await getUserElders();
-      
+
       if (!elders || elders.length === 0) {
         // No elder data → redirect to step 1 (via empty-state)
         hasCheckedSetup.current = true;
@@ -63,12 +69,12 @@ export function useProtectedRoute() {
       // Has elder → setup is considered complete
       // Mark as checked and allow staying in tabs
       hasCheckedSetup.current = true;
-      
+
       // Only redirect to tabs if we're NOT already there
       if (segments[0] !== '(tabs)') {
         router.replace('/(tabs)');
       }
-      
+
     } catch (error) {
       Logger.error('Failed to check elder data:', error);
       // Mark as checked to prevent loops

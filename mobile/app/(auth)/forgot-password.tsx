@@ -89,12 +89,12 @@ export default function ForgotPasswordScreen() {
   // ==========================================
   return (
     <ScreenWrapper
-      useScrollView={false} // ห้ามเลื่อนหน้าตามที่ขอ
       contentContainerStyle={{
         paddingHorizontal: 24,
-        flex: 1,
-        justifyContent: "flex-start",
+        paddingBottom: 40,
+        flexGrow: 1,
       }}
+      scrollViewProps={{ bounces: false }}
       header={<ScreenHeader title="ลืมรหัสผ่าน" onBack={router.back} />}
     >
       <View>
