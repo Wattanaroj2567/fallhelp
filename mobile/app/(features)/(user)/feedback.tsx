@@ -83,7 +83,7 @@ export default function FeedbackScreen() {
       scrollViewProps={{ bounces: false }}
       header={<ScreenHeader title="ส่งความคิดเห็น" onBack={() => router.back()} />}
     >
-      <View className="px-6 pt-2">
+      <View className="pt-2">
         {/* Description */}
         <View className="bg-blue-50 rounded-2xl p-4 mb-6">
           <Text

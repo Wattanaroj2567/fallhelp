@@ -42,7 +42,7 @@ export const getErrorMessage = (error: any): string => {
 
   // Authentication Errors
   if (message.includes('Invalid email') || message.includes('password') || message.includes('credentials')) {
-    return 'อีเมลหรือรหัสผ่านไม่ถูกต้อง';
+    return 'อีเมลหรือรหัสผ่านไม่ถูกต้อง กรุณาตรวจสอบอีกครั้ง';
   }
   if (message.includes('deactivated')) {
     return 'บัญชีนี้ถูกระงับการใช้งาน กรุณาติดต่อผู้ดูแลระบบ';

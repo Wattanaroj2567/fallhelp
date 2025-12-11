@@ -70,19 +70,28 @@ export function useProtectedRoute() {
       // Mark as checked and allow staying in tabs
       hasCheckedSetup.current = true;
 
-      // Only redirect to tabs if we're NOT already in a valid post-setup route (tabs or features)
-      const inValidAppRoute = segments[0] === '(tabs)' || segments[0] === '(features)';
-      if (!inValidAppRoute) {
+      // Logic: If we are here, setup is complete.
+      // We should ONLY redirect if the user is currently on a "forbidden" route for a fully set-up user.
+      // Forbidden routes: (auth) group, (setup) group.
+      // Allowed routes: (tabs), (features), or empty/loading state (let Router resolve).
+
+      const isForbidden = segments[0] === '(auth)' || segments[0] === '(setup)';
+
+      if (isForbidden) {
         router.replace('/(tabs)');
+      } else {
+        // If on (tabs), (features), or valid deep link, STAY THERE.
+        // Do not force redirect to tabs.
       }
 
     } catch (error) {
       Logger.error('Failed to check elder data:', error);
       // Mark as checked to prevent loops
       hasCheckedSetup.current = true;
-      // On error, assume setup is complete and stay/go to tabs
-      const inValidAppRoute = segments[0] === '(tabs)' || segments[0] === '(features)';
-      if (!inValidAppRoute) {
+
+      // Same fallback logic on error
+      const isForbidden = segments[0] === '(auth)' || segments[0] === '(setup)';
+      if (isForbidden) {
         router.replace('/(tabs)');
       }
     } finally {

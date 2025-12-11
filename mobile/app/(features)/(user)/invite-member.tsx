@@ -116,7 +116,7 @@ export default function InviteMember() {
       scrollViewProps={{ bounces: false }}
       header={<ScreenHeader title="เชิญสมาชิก" onBack={() => router.back()} />}
     >
-      <View className="px-6 pt-2">
+      <View className="pt-2">
         {/* Icon */}
         <View className="items-center mb-6 mt-2">
           <View className="w-20 h-20 rounded-full bg-green-100 items-center justify-center">

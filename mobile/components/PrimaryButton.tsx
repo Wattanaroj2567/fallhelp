@@ -1,10 +1,10 @@
 import React from "react";
 import {
-  TouchableOpacity,
   Text,
   ActivityIndicator,
   TouchableOpacityProps,
 } from "react-native";
+import { Bounceable } from "./Bounceable";
 
 interface PrimaryButtonProps extends TouchableOpacityProps {
   title: string;
@@ -39,12 +39,12 @@ export const PrimaryButton: React.FC<PrimaryButtonProps> = ({
   const opacity = disabled || loading ? 0.7 : 1;
 
   return (
-    <TouchableOpacity
+    <Bounceable
       testID={props.testID || "primary-button"}
       className={`${baseStyle} ${bgStyle}`}
       style={[{ opacity }, style]}
       disabled={disabled || loading}
-      activeOpacity={0.8}
+      scale={0.96}
       {...props}
     >
       {loading ? (
@@ -57,6 +57,6 @@ export const PrimaryButton: React.FC<PrimaryButtonProps> = ({
           {title}
         </Text>
       )}
-    </TouchableOpacity>
+    </Bounceable>
   );
 };

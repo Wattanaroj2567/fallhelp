@@ -86,6 +86,8 @@ export const FloatingLabelInput: React.FC<FloatingLabelInputProps> = ({
   const displayLabel =
     typeof label === "string" ? label : "";
 
+  const inputRef = React.useRef<any>(null);
+
   return (
     <View style={[{ marginBottom: 16, marginTop: 4 }, containerStyle]}>
       {/* Custom External Label - ควบคุมได้ 100% */}
@@ -98,12 +100,15 @@ export const FloatingLabelInput: React.FC<FloatingLabelInputProps> = ({
           },
         ]}
         numberOfLines={1}
+        onPress={() => inputRef.current?.focus()}
+        suppressHighlighting={true}
       >
         {displayLabel}
         {isRequired && <Text style={{ color: "#EF4444" }}> *</Text>}
       </Animated.Text>
 
       <TextInput
+        ref={inputRef}
         testID={props.testID || "floating-label-input"}
         mode="outlined"
         // ️ ซ่อน Label ของ React Native Paper

@@ -14,6 +14,7 @@ import * as SecureStore from 'expo-secure-store';
 import { ScreenWrapper } from '@/components/ScreenWrapper';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { PrimaryButton } from '@/components/PrimaryButton';
+import { Bounceable } from '@/components/Bounceable';
 
 // ==========================================
 // 📱 LAYER: View (Component)
@@ -166,11 +167,11 @@ export default function Profile() {
       >
         {/* Profile Picture - Tappable */}
         <View className="items-center mb-8 mt-4">
-          <TouchableOpacity
+          <Bounceable
             onPress={handleChangeProfileImage}
             disabled={uploading}
-            activeOpacity={0.7}
             className="relative"
+            scale={0.9}
           >
             <View className="w-28 h-28 rounded-full bg-gray-100 items-center justify-center overflow-hidden">
               {uploading ? (
@@ -196,7 +197,7 @@ export default function Profile() {
             <View className="absolute bottom-0 right-0 bg-[#16AD78] w-8 h-8 rounded-full items-center justify-center border-2 border-white">
               <MaterialIcons name="photo-camera" size={18} color="white" />
             </View>
-          </TouchableOpacity>
+          </Bounceable>
         </View>
 
         {/* Profile Fields - Box with Border */}

@@ -196,11 +196,10 @@ export default function Notifications() {
       <TouchableOpacity
         onPress={() => handleItemPress(item)}
         activeOpacity={0.7}
-        className={`flex-row items-start p-4 mb-3 rounded-2xl border shadow-sm ${
-          item.isRead
-            ? "bg-white border-gray-100"
-            : "bg-blue-50/50 border-blue-100"
-        }`}
+        className={`flex-row items-start p-4 mb-3 rounded-[24px] border ${item.isRead
+          ? "bg-white border-gray-100"
+          : "bg-blue-50/50 border-blue-100"
+          }`}
       >
         {/* Icon */}
         <View
@@ -217,9 +216,8 @@ export default function Notifications() {
         <View className="flex-1">
           <View className="flex-row justify-between items-start">
             <Text
-              className={`font-kanit text-gray-800 text-[16px] flex-1 mr-2 ${
-                item.isRead ? "font-medium" : "font-bold"
-              }`}
+              className={`font-kanit text-gray-800 text-[16px] flex-1 mr-2 ${item.isRead ? "font-medium" : "font-bold"
+                }`}
             >
               {item.title || config.title}
             </Text>
@@ -229,9 +227,8 @@ export default function Notifications() {
           </View>
 
           <Text
-            className={`font-kanit text-sm mt-1 ${
-              item.isRead ? "text-gray-500" : "text-gray-700"
-            }`}
+            className={`font-kanit text-sm mt-1 ${item.isRead ? "text-gray-500" : "text-gray-700"
+              }`}
           >
             {item.message || config.desc}
           </Text>
@@ -253,22 +250,27 @@ export default function Notifications() {
   // Purpose: Render UI
   // ==========================================
   return (
-    <ScreenWrapper edges={["top", "left", "right"]} useScrollView={false}>
-      <ScreenHeader
-        title="ประวัติการแจ้งเตือน"
-        onBack={() => router.back()}
-        rightElement={
-          notifications && notifications.length > 0 ? (
-            <TouchableOpacity onPress={handleClearAll} className="p-2 -mr-2">
-              <MaterialIcons name="delete-outline" size={24} color="#EF4444" />
-            </TouchableOpacity>
-          ) : undefined
-        }
-      />
+    <ScreenWrapper
+      edges={["top"]} // Match Settings
+      useScrollView={false}
+      header={
+        <ScreenHeader
+          title="ประวัติการแจ้งเตือน"
+          onBack={() => router.back()}
+          rightElement={
+            notifications && notifications.length > 0 ? (
+              <TouchableOpacity onPress={handleClearAll} className="p-2 -mr-2">
+                <MaterialIcons name="delete-outline" size={24} color="#EF4444" />
+              </TouchableOpacity>
+            ) : undefined
+          }
+        />
+      }
+    >
 
       {/* Action Bar */}
       {notifications && notifications.length > 0 && (
-        <View className="px-6 mb-2 flex-row justify-end">
+        <View className="px-4 mb-2 flex-row justify-end">
           <TouchableOpacity onPress={handleMarkAllRead}>
             <Text className="font-kanit text-sm text-[#16AD78]">
               อ่านทั้งหมด
@@ -282,7 +284,7 @@ export default function Notifications() {
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={{
-          paddingHorizontal: 24,
+          paddingHorizontal: 16,
           paddingBottom: 100,
           paddingTop: 8,
         }}

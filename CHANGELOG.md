@@ -20,6 +20,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **NativeWind Crash**: Fixed `TypeError: state.className.split is not a function` by removing function-based className logic in `Pressable`.
   - **Component Structure**: Fixed `React.Children.only` error in `TouchableHighlight` by ensuring single-child View wrapper.
 
+## [1.5.1] - 2025-12-12
+
+### Changed
+- **UI Alignment**:
+  - **Screen Width**: Standardized "Invite Member" and "Feedback" screens to match "Manage Members" layout (`px-6`).
+  - **Settings Header**: Strictly aligned Settings screen header height with History screen by removing extra margin and reducing padding (`pt-4` -> `pt-2`).
+- **Form Interaction**:
+  - **Floating Labels**: Enabled "Touch-to-Focus" on floating labels for easier input selection.
+  - **Touch Feedback**: Removed default gray highlight on label press for smoother UX.
+- **Bug Fixes**:
+  - **Missing Labels**: Fixed invisible labels in "Edit Elder Info" screen by converting complex React Nodes to simple strings with `isRequired` support.
+
+## [1.5.0] - 2025-12-12
+
+### Added
+- **Premium Interaction System**:
+  - Created `Bounceable` component using `react-native-reanimated` for iOS-like scale feedback.
+  - Applied to all primary buttons, headers, profile pictures, and home screen cards.
+- **Home Screen Enhancements**:
+  - Increased "Fall Status Card" height and visual weight.
+  - Added sticky header layout for "Elder Edit" screen description.
+
+### Fixed
+- **Navigation & Routing**:
+  - **Redirect Loop**: Fixed "Elder Info" redirect bug by implementing Blocklist strategy in `useProtectedRoute`.
+  - **Root Fallback**: Added `app/index.tsx` to prevent undefined behavior on root reload.
+  - **Home Sync**: Resolved data staleness (Profile/Elder Info not updating) by implementing `useFocusEffect` refetching.
+- **UI/UX Refinements**:
+  - **History Screen**: Adjusted header bottom padding for better list alignment.
+  - **Login Flow**: Updated error messages to be softer and more user-friendly.
+
 ## [1.4.0] - 2025-12-12
 
 ### Fixed

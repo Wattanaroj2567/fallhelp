@@ -184,8 +184,8 @@ export default function HistoryScreen() {
     const displayIndex = totalEvents - index;
 
     return (
-      <View className="mb-4 bg-white rounded-[24px] shadow-lg shadow-black/15 android:elevation-10">
-        <View className="rounded-[24px] overflow-hidden border border-gray-100">
+      <View className="mb-4 bg-white rounded-[24px] border border-gray-100">
+        <View className="rounded-[24px] overflow-hidden">
           {/* Number Badge */}
           <View className="absolute top-3 right-3 w-8 h-8 rounded-full bg-gray-100 items-center justify-center z-10">
             <Text
@@ -285,6 +285,10 @@ export default function HistoryScreen() {
   // 🖼️ LAYER: View (Main Render)
   // Purpose: Render the main UI
   // ==========================================
+  // ==========================================
+  // 🖼️ LAYER: View (Main Render)
+  // Purpose: Render the main UI
+  // ==========================================
   return (
     <ScreenWrapper
       edges={["top"]}
@@ -309,8 +313,8 @@ export default function HistoryScreen() {
         />
       }
     >
-      {/* Navigation & Filter Card - Like settings.tsx */}
-      <View className="px-6 py-4">
+      <View className="flex-1 px-4 pt-4">
+        {/* Navigation & Filter Card - Matches Settings Section */}
         <View className="bg-white rounded-[24px] shadow-lg shadow-black/15 android:elevation-10 mb-4">
           <View className="rounded-[24px] overflow-hidden border border-gray-100">
             {/* Report Summary Link */}
@@ -401,47 +405,45 @@ export default function HistoryScreen() {
             </View>
           </View>
         </View>
-      </View>
 
-      {/* List */}
-      {isLoading && !useMockData ? (
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#16AD78" />
-          <Text className="font-kanit text-gray-500 mt-4">
-            กำลังโหลดข้อมูล...
-          </Text>
-        </View>
-      ) : (
-        <FlatList
-          data={limitedEvents}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.id}
-          refreshControl={
-            <RefreshControl
-              refreshing={!useMockData && isLoading}
-              onRefresh={refetch}
-              colors={["#16AD78"]}
-            />
-          }
-          contentContainerStyle={{
-            paddingHorizontal: 24,
-            paddingTop: 8,
-            paddingBottom: 20,
-          }}
-          ListEmptyComponent={
-            <View className="mt-20 items-center">
-              <MaterialIcons name="event-note" size={64} color="#D1D5DB" />
-              <Text
-                style={{ fontSize: 16 }}
-                className="font-kanit text-gray-400 mt-4"
-              >
-                ไม่มีประวัติเหตุการณ์ผิดปกติ
-              </Text>
-            </View>
-          }
-          showsVerticalScrollIndicator={false}
-        />
-      )}
+        {/* List */}
+        {isLoading && !useMockData ? (
+          <View className="flex-1 items-center justify-center">
+            <ActivityIndicator size="large" color="#16AD78" />
+            <Text className="font-kanit text-gray-500 mt-4">
+              กำลังโหลดข้อมูล...
+            </Text>
+          </View>
+        ) : (
+          <FlatList
+            data={limitedEvents}
+            renderItem={renderItem}
+            keyExtractor={(item) => item.id}
+            refreshControl={
+              <RefreshControl
+                refreshing={!useMockData && isLoading}
+                onRefresh={refetch}
+                colors={["#16AD78"]}
+              />
+            }
+            contentContainerStyle={{
+              paddingBottom: 20,
+            }}
+            ListEmptyComponent={
+              <View className="mt-20 items-center">
+                <MaterialIcons name="event-note" size={64} color="#D1D5DB" />
+                <Text
+                  style={{ fontSize: 16 }}
+                  className="font-kanit text-gray-400 mt-4"
+                >
+                  ไม่มีประวัติเหตุการณ์ผิดปกติ
+                </Text>
+              </View>
+            }
+            showsVerticalScrollIndicator={false}
+          />
+        )}
+      </View>
     </ScreenWrapper>
   );
 }

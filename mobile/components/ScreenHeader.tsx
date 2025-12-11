@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Bounceable } from "./Bounceable";
 
 interface ScreenHeaderProps {
   title: string;
@@ -10,6 +11,7 @@ interface ScreenHeaderProps {
   transparent?: boolean;
   backgroundColor?: string;
   noSafeArea?: boolean;
+  style?: any;
 }
 
 export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
@@ -19,6 +21,7 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
   transparent = false,
   backgroundColor,
   noSafeArea = false,
+  style,
 }) => {
   const insets = useSafeAreaInsets();
 
@@ -26,27 +29,27 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
     <View
       className={`${(transparent && !noSafeArea) ? "bg-black/30" : ""
         } ${!noSafeArea ? "rounded-b-[32px] pb-2" : ""}`}
-      style={{
+      style={[{
         paddingTop: (transparent && !noSafeArea) ? insets.top : 0,
         backgroundColor: (transparent && !noSafeArea) ? undefined : (backgroundColor || (!noSafeArea ? "white" : undefined))
-      }}
+      }, style]}
     >
       <View className="flex-row items-center justify-between px-4 py-4">
         {/* Left: Back Button or Placeholder */}
         {onBack ? (
-          <TouchableOpacity
+          <Bounceable
             testID="back-button"
             onPress={onBack}
             className="p-2 -ml-2"
-            activeOpacity={0.7}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            scale={0.9}
           >
             <MaterialIcons
               name="arrow-back"
               size={28}
               color={transparent ? "white" : "#374151"}
             />
-          </TouchableOpacity>
+          </Bounceable>
         ) : (
           <View className="w-8" />
         )}

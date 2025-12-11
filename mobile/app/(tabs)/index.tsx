@@ -13,6 +13,7 @@ import {
 import { MaterialIcons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { ScreenWrapper } from "@/components/ScreenWrapper";
 import { NotificationModal } from "@/components/NotificationModal";
+import { Bounceable } from "@/components/Bounceable";
 import { router, useFocusEffect } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, {
@@ -83,7 +84,7 @@ export default function Home() {
   });
 
   // 1.5. Fetch User Profile (for profile image)
-  const { data: userProfile } = useQuery({
+  const { data: userProfile, refetch: refetchUserProfile } = useQuery({
     queryKey: ["userProfile"],
     queryFn: getProfile,
     enabled: isSignedIn, // Only fetch when logged in
@@ -97,12 +98,14 @@ export default function Home() {
   // Refetch data when screen is focused
   useFocusEffect(
     React.useCallback(() => {
-      // Invalidate all relevant queries to ensure fresh data
-      queryClient.invalidateQueries({ queryKey: ["userProfile"] });
-      queryClient.invalidateQueries({ queryKey: ["userElders"] });
+      // Force refetch active queries to ensure UI is in sync
+      refetch();
+      refetchUserProfile();
+
+      // Also invalidate others just in case
       queryClient.invalidateQueries({ queryKey: ["initialEvents"] });
       queryClient.invalidateQueries({ queryKey: ["unreadCount"] });
-    }, [queryClient])
+    }, [refetch, refetchUserProfile, queryClient])
   );
 
   // 2. Fetch Initial Events (for initial state before socket updates)
@@ -310,9 +313,10 @@ export default function Home() {
           </View>
 
           <View className="flex-row items-center gap-5">
-            <TouchableOpacity
+            <Bounceable
               onPress={() => setShowNotifications(true)}
               className="p-1 relative"
+              scale={0.9}
             >
               <MaterialIcons
                 name="notifications-none"
@@ -322,11 +326,12 @@ export default function Home() {
               {unreadCount > 0 && (
                 <View className="absolute top-1 right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white" />
               )}
-            </TouchableOpacity>
+            </Bounceable>
 
-            <TouchableOpacity
+            <Bounceable
               onPress={() => router.push("/(features)/(user)/(profile)")}
               className="rounded-full overflow-hidden"
+              scale={0.9}
             >
               {userProfile?.profileImage && !imageError ? (
                 <Image
@@ -343,7 +348,7 @@ export default function Home() {
                   <MaterialIcons name="person" size={28} color="#9CA3AF" />
                 </View>
               )}
-            </TouchableOpacity>
+            </Bounceable>
           </View>
         </View >
 
@@ -367,7 +372,7 @@ export default function Home() {
                 {/* Fall Status Card (Hero - Colorful with Border) */}
                 {/* Fall Status Card (Hero - 3D Card Style) */}
                 <View
-                  className={`p-6 rounded-[24px] mb-6 border bg-white shadow-sm ${fallStatus === "FALL" ? "border-red-100" : "border-gray-100"
+                  className={`px-6 py-10 rounded-[28px] mb-6 border bg-white shadow-sm ${fallStatus === "FALL" ? "border-red-100" : "border-gray-100"
                     }`}
                 >
                   <View className="flex-row justify-between items-start mb-6">
@@ -433,23 +438,25 @@ export default function Home() {
                     </Text>
 
                     {fallStatus === "FALL" && (
-                      <TouchableOpacity
+                      <Bounceable
                         onPress={handleResetStatus}
-                        className="bg-red-500 px-5 py-2.5 rounded-xl shadow-sm active:bg-red-600"
+                        className="bg-red-500 px-5 py-2.5 rounded-xl shadow-sm"
+                        scale={0.95}
                       >
                         <Text className="text-white font-kanit font-bold text-sm">
                           รีเซ็ตสถานะ
                         </Text>
-                      </TouchableOpacity>
+                      </Bounceable>
                     )}
                   </View>
                 </View>
 
                 {/* Grid: Device & Heart Rate */}
                 <View className="flex-row mb-6">
-                  <TouchableOpacity
+                  <Bounceable
                     onPress={() => router.push("/(features)/(device)/details")}
-                    className="flex-1 bg-white p-5 rounded-[24px] border border-gray-100 shadow-sm mr-1.5 active:bg-gray-50"
+                    className="flex-1 bg-white p-5 rounded-[24px] border border-gray-100 shadow-sm mr-1.5"
+                    scale={0.98}
                   >
                     <View className="flex-row justify-between items-start">
                       <View
@@ -500,7 +507,7 @@ export default function Home() {
                         {!elderInfo?.device ? "ไม่มีอุปกรณ์" : isConnected ? "ออนไลน์" : "ออฟไลน์"}
                       </Text>
                     </View>
-                  </TouchableOpacity>
+                  </Bounceable>
 
                   {/* Heart Rate */}
                   <View className="flex-1 bg-white p-5 rounded-[24px] border border-gray-100 shadow-sm ml-1.5">
@@ -555,9 +562,10 @@ export default function Home() {
 
                 {/* Elder Info Card (Clickable) */}
                 {/* Elder Info Card (Clickable) */}
-                <TouchableOpacity
+                <Bounceable
                   onPress={() => router.push("/(features)/(elder)")}
-                  className="bg-white p-6 rounded-[28px] border border-gray-100 shadow-sm flex-row items-center justify-between active:bg-gray-50"
+                  className="bg-white p-6 rounded-[28px] border border-gray-100 shadow-sm flex-row items-center justify-between"
+                  scale={0.98}
                 >
                   <View className="flex-row items-center gap-5">
                     <View className="w-16 h-16 bg-blue-50 rounded-full items-center justify-center border border-blue-100 overflow-hidden shadow-sm">
@@ -627,14 +635,15 @@ export default function Home() {
                     size={32}
                     color="#9CA3AF"
                   />
-                </TouchableOpacity>
+                </Bounceable>
               </View>
 
               {/* Emergency Call Button - Docked to Bottom */}
 
-              <TouchableOpacity
+              <Bounceable
                 onPress={() => router.push("/(features)/(emergency)/call")}
-                className="bg-[#FF4B4B] rounded-[24px] p-5 flex-row justify-center items-center shadow-lg shadow-red-200 active:bg-red-600 mt-4"
+                className="bg-[#FF4B4B] rounded-[24px] p-5 flex-row justify-center items-center shadow-lg shadow-red-200 mt-4"
+                scale={0.97}
               >
                 <View className="bg-white/20 p-2 rounded-full mr-3">
                   <MaterialIcons name="phone-in-talk" size={24} color="white" />
@@ -642,7 +651,7 @@ export default function Home() {
                 <Text className="text-white font-kanit font-bold text-xl">
                   โทรฉุกเฉิน
                 </Text>
-              </TouchableOpacity>
+              </Bounceable>
             </>
           ) : null}
         </View>

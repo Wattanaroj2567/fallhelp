@@ -267,29 +267,32 @@ export default function EditElderInfo() {
       }}
       scrollViewRef={scrollViewRef}
       header={
-        <ScreenHeader
-          title={isReadOnly ? "ข้อมูลผู้สูงอายุ" : "แก้ไขข้อมูลผู้สูงอายุ"}
-          onBack={() => router.back()}
-        />
+        <View>
+          <ScreenHeader
+            title={isReadOnly ? "ข้อมูลผู้สูงอายุ" : "แก้ไขข้อมูลผู้สูงอายุ"}
+            onBack={() => router.back()}
+          />
+          <View className="px-6 pb-2 bg-white">
+            {isReadOnly ? (
+              <View className="bg-yellow-50 rounded-2xl p-4 border border-yellow-100 flex-row items-center">
+                <MaterialIcons name="lock" size={20} color="#CA8A04" style={{ marginRight: 8 }} />
+                <Text className="font-kanit text-yellow-700 flex-1" style={{ fontSize: 14 }}>
+                  คุณอยู่ในสถานะ "ดูได้อย่างเดียว" ไม่สามารถแก้ไขข้อมูลได้ กรุณาติดต่อญาติผู้ดูแลหลักหากต้องการเปลี่ยนแปลง
+                </Text>
+              </View>
+            ) : (
+              <View className="bg-blue-50 rounded-2xl p-4">
+                <Text className="font-kanit text-blue-700" style={{ fontSize: 14 }}>
+                  ปรับข้อมูลผู้สูงอายุให้เป็นปัจจุบัน
+                  เพื่อช่วยให้การติดตามและแจ้งเตือนแม่นยำ
+                </Text>
+              </View>
+            )}
+          </View>
+        </View>
       }
     >
-      <View>
-        {/* Info Note or Read Only Warning */}
-        {isReadOnly ? (
-          <View className="bg-yellow-50 rounded-2xl p-4 mb-6 mt-2 border border-yellow-100 flex-row items-center">
-            <MaterialIcons name="lock" size={20} color="#CA8A04" style={{ marginRight: 8 }} />
-            <Text className="font-kanit text-yellow-700 flex-1" style={{ fontSize: 14 }}>
-              คุณอยู่ในสถานะ "ดูได้อย่างเดียว" ไม่สามารถแก้ไขข้อมูลได้ กรุณาติดต่อญาติผู้ดูแลหลักหากต้องการเปลี่ยนแปลง
-            </Text>
-          </View>
-        ) : (
-          <View className="bg-blue-50 rounded-2xl p-4 mb-6 mt-2">
-            <Text className="font-kanit text-blue-700" style={{ fontSize: 14 }}>
-              ปรับข้อมูลผู้สูงอายุให้เป็นปัจจุบัน
-              เพื่อช่วยให้การติดตามและแจ้งเตือนแม่นยำ
-            </Text>
-          </View>
-        )}
+      <View className="pt-4">
 
         <View className="w-full" style={{ opacity: isReadOnly ? 0.8 : 1 }} pointerEvents={isReadOnly ? 'none' : 'auto'}>
           {/* Elder Name & Lastname - FloatingLabelInput Match Register */}
@@ -399,26 +402,20 @@ export default function EditElderInfo() {
           <View className="flex-row gap-3 mb-2">
             <View className="flex-1">
               <FloatingLabelInput
-                label={
-                  <Text className="font-kanit">
-                    บ้านเลขที่ <Text style={{ color: "#EF4444" }}>*</Text>
-                  </Text>
-                }
+                label="บ้านเลขที่"
                 value={houseNumber}
                 onChangeText={setHouseNumber}
                 editable={!isReadOnly}
+                isRequired={true}
               />
             </View>
             <View className="flex-1">
               <FloatingLabelInput
-                label={
-                  <Text className="font-kanit">
-                    หมู่ที่/หมู่บ้าน <Text style={{ color: "#EF4444" }}>*</Text>
-                  </Text>
-                }
+                label="หมู่ที่/หมู่บ้าน"
                 value={village}
                 onChangeText={setVillage}
                 editable={!isReadOnly}
+                isRequired={true}
               />
             </View>
           </View>
