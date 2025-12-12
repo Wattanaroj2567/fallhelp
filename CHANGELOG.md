@@ -9,6 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Production Build Readiness**:
+  - **EAS Build**: Added `eas.json` configuration for development, preview, and production builds.
+  - **App Config**: Updated `app.json` with Android Package Name and iOS Bundle Identifier (`com.fallhelp.mobile`).
+  - **Permissions**: Added Camera usage description for QR Code scanning in `app.json`.
+  - **Network Config**: Implemented Hybrid IP detection in `Config.ts` to support both Auto-IP (Expo Go) and Fallback IP (Standalone).
+  - **iOS Support**: Enabled `NSAllowsArbitraryLoads` for local testing via HTTP.
+
+### Changed
+
+- **Dependencies**: Upgraded core Expo packages to latest compatible versions (Expo 52/54 ecosystem).
+
+## [1.6.0] - 2025-12-12
+
+### Added
+
 - **UI/UX Standardization (Master Style)**:
   - **3D Card Aesthetic**: Implemented "Nested View" strategy (Outer Shadow + Inner Clip) for Settings and History screens to ensure consistent deep shadows (`shadow-lg`, `elevation-10`) on both Android and iOS.
   - **Interactive Feedback**: Replaced `TouchableOpacity`/`Pressable` with `TouchableHighlight` (Underlay: `#E5E7EB`) in Settings and History menus for robust, high-contrast touch feedback.
