@@ -103,24 +103,4 @@ export const getDeviceConfig = asyncHandler(async (req: Request, res: Response) 
   });
 });
 
-/**
- * PUT /api/devices/:id/config
- */
-export const updateDeviceConfig = asyncHandler(async (req: Request, res: Response) => {
-  const userId = req.user!.userId;
-  const { id } = req.params;
-  const { fallThreshold, hrLowThreshold, hrHighThreshold, fallCancelTime } = req.body;
 
-  const config = await deviceService.updateDeviceConfig(userId, id, {
-    fallThreshold,
-    hrLowThreshold,
-    hrHighThreshold,
-    fallCancelTime,
-  });
-
-  res.json({
-    success: true,
-    message: 'Device config updated successfully',
-    data: config,
-  });
-});

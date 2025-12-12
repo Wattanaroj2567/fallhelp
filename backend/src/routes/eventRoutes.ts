@@ -13,8 +13,8 @@ router.use(authenticate);
 
 router.get('/', eventController.getEvents);
 router.get('/recent', eventController.getRecentEvents);
-router.get('/stats/daily', eventController.getDailyStats);
-router.get('/stats/monthly', eventController.getMonthlyStats);
+router.get('/summary/daily', eventController.getDailySummary);
+router.get('/summary/monthly', eventController.getMonthlySummary);
 router.get('/:id', eventController.getEventById);
 router.post('/:id/cancel', eventController.cancelFallEvent);
 

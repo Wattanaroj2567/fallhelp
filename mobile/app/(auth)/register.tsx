@@ -139,123 +139,132 @@ export default function RegisterScreen() {
         </View>
       }
     >
-      <View>
-        {/* Row 1: Name & Lastname */}
-        <View className="flex-row gap-3">
-          {/* First Name */}
-          <FloatingLabelInput
-            testID="firstName-input"
-            label="ชื่อ"
-            value={firstName}
-            onChangeText={setFirstName}
-            containerStyle={{ flex: 1 }}
-          />
-
-          {/* Last Name */}
-          <FloatingLabelInput
-            testID="lastName-input"
-            label="นามสกุล"
-            value={lastName}
-            onChangeText={setLastName}
-            containerStyle={{ flex: 1 }}
-          />
-        </View>
-
-        {/* Row 2: Gender */}
-        <GenderSelect value={gender} onChange={setGender} />
-
-        {/* Row 3: Phone */}
-        <FloatingLabelInput
-          testID="phone-input"
-          label="เบอร์โทรศัพท์"
-          value={phone}
-          onChangeText={(text) => {
-            const cleaned = text.replace(/[^0-9]/g, "");
-            if (cleaned.length <= 10) {
-              setPhone(cleaned);
-            }
-          }}
-          keyboardType="number-pad"
-          maxLength={10}
-          containerStyle={{ marginBottom: 16 }}
-        />
-
-        {/* Row 4: Email */}
-        <FloatingLabelInput
-          testID="email-input"
-          label="อีเมล"
-          value={email}
-          onChangeText={(text) => {
-            setEmail(text);
-            if (/[ก-๙]/.test(text)) {
-              setEmailError("กรุณากรอกอีเมลเป็นภาษาอังกฤษ");
-            } else {
-              setEmailError("");
-            }
-          }}
-          error={emailError}
-          autoCapitalize="none"
-          autoCorrect={false}
-          spellCheck={false}
-          keyboardType="email-address"
-          containerStyle={{ marginBottom: 16 }}
-        />
-
-        {/* Row 5: Password */}
-        <FloatingLabelInput
-          testID="password-input"
-          label="รหัสผ่าน"
-          value={password}
-          onChangeText={(text) => {
-            setPassword(text);
-            if (/[ก-๙]/.test(text)) {
-              setPasswordError("กรุณากรอกรหัสผ่านเป็นภาษาอังกฤษ");
-            } else {
-              setPasswordError("");
-            }
-          }}
-          error={passwordError}
-          isPassword
-          autoCapitalize="none"
-          textContentType="password"
-          containerStyle={{ marginBottom: 16 }}
-        />
-
-        {/* Requirements */}
-        <View className="bg-blue-50 rounded-2xl p-4 mb-8">
-          <Text
-            style={{ fontSize: 12, fontWeight: "600" }}
-            className="font-kanit text-blue-700 mb-2"
-          >
-            ข้อกำหนดรหัสผ่าน:
-          </Text>
-          <View className="flex-row items-start mb-1">
-            <Text
-              style={{ fontSize: 12 }}
-              className="font-kanit text-blue-700 mr-2"
-            >
-              •
-            </Text>
-            <Text
-              style={{ fontSize: 12 }}
-              className="font-kanit text-blue-700 flex-1"
-            >
-              อย่างน้อย 8 ตัวอักษร
-            </Text>
+      <View className="mt-4">
+        {/* Card Container */}
+        <View className="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100 mb-6">
+          {/* Row 1: Name & Lastname */}
+          <View className="flex-row gap-3 mb-5">
+            {/* First Name */}
+            <View className="flex-1">
+              <FloatingLabelInput
+                testID="firstName-input"
+                label="ชื่อ"
+                value={firstName}
+                onChangeText={setFirstName}
+              />
+            </View>
+            {/* Last Name */}
+            <View className="flex-1">
+              <FloatingLabelInput
+                testID="lastName-input"
+                label="นามสกุล"
+                value={lastName}
+                onChangeText={setLastName}
+              />
+            </View>
           </View>
-          <View className="flex-row items-start">
+
+          {/* Row 2: Gender */}
+          <View className="mb-5">
+            <GenderSelect value={gender} onChange={setGender} />
+          </View>
+
+          {/* Row 3: Phone */}
+          <View className="mb-5">
+            <FloatingLabelInput
+              testID="phone-input"
+              label="เบอร์โทรศัพท์"
+              value={phone}
+              onChangeText={(text) => {
+                const cleaned = text.replace(/[^0-9]/g, "");
+                if (cleaned.length <= 10) {
+                  setPhone(cleaned);
+                }
+              }}
+              keyboardType="number-pad"
+              maxLength={10}
+            />
+          </View>
+
+          {/* Row 4: Email */}
+          <View className="mb-5">
+            <FloatingLabelInput
+              testID="email-input"
+              label="อีเมล"
+              value={email}
+              onChangeText={(text) => {
+                setEmail(text);
+                if (/[ก-๙]/.test(text)) {
+                  setEmailError("กรุณากรอกอีเมลเป็นภาษาอังกฤษ");
+                } else {
+                  setEmailError("");
+                }
+              }}
+              error={emailError}
+              autoCapitalize="none"
+              autoCorrect={false}
+              spellCheck={false}
+              keyboardType="email-address"
+            />
+          </View>
+
+          {/* Row 5: Password */}
+          <View className="mb-5">
+            <FloatingLabelInput
+              testID="password-input"
+              label="รหัสผ่าน"
+              value={password}
+              onChangeText={(text) => {
+                setPassword(text);
+                if (/[ก-๙]/.test(text)) {
+                  setPasswordError("กรุณากรอกรหัสผ่านเป็นภาษาอังกฤษ");
+                } else {
+                  setPasswordError("");
+                }
+              }}
+              error={passwordError}
+              isPassword
+              autoCapitalize="none"
+              textContentType="password"
+            />
+          </View>
+
+          {/* Requirements */}
+          <View className="bg-blue-50 rounded-2xl p-4">
             <Text
-              style={{ fontSize: 12 }}
-              className="font-kanit text-blue-700 mr-2"
+              style={{ fontSize: 12, fontWeight: "600" }}
+              className="font-kanit text-blue-700 mb-2"
             >
-              •
+              ข้อกำหนดรหัสผ่าน:
             </Text>
-            <Text
-              style={{ fontSize: 12 }}
-              className="font-kanit text-blue-700 flex-1"
-            >
-              มีตัวอักษรพิมพ์ใหญ่-เล็กและตัวเลข
-            </Text>
+            <View className="flex-row items-start mb-1">
+              <Text
+                style={{ fontSize: 12 }}
+                className="font-kanit text-blue-700 mr-2"
+              >
+                •
+              </Text>
+              <Text
+                style={{ fontSize: 12 }}
+                className="font-kanit text-blue-700 flex-1"
+              >
+                อย่างน้อย 8 ตัวอักษร
+              </Text>
+            </View>
+            <View className="flex-row items-start">
+              <Text
+                style={{ fontSize: 12 }}
+                className="font-kanit text-blue-700 mr-2"
+              >
+                •
+              </Text>
+              <Text
+                style={{ fontSize: 12 }}
+                className="font-kanit text-blue-700 flex-1"
+              >
+                มีตัวอักษรพิมพ์ใหญ่-เล็กและตัวเลข
+              </Text>
+            </View>
           </View>
         </View>
 

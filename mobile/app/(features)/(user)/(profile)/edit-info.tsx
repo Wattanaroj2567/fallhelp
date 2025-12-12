@@ -120,48 +120,56 @@ export default function EditUserInfo() {
         <ScreenHeader title="แก้ไขชื่อ-นามสกุล" onBack={() => router.back()} />
       }
     >
-      <View>
-        <Text
-          className="font-kanit"
-          style={{
-            fontSize: 14,
-            color: "#6B7280",
-            marginBottom: 24,
-            textAlign: "left",
-          }}
-        >
-          กรุณากรอกชื่อและนามสกุลของคุณ
-        </Text>
+      <View className="flex-1 pt-6">
+        <View className="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100 mb-6">
+          <Text
+            className="font-kanit"
+            style={{
+              fontSize: 14,
+              color: "#6B7280",
+              marginBottom: 20,
+              textAlign: "left",
+            }}
+          >
+            กรุณากรอกชื่อและนามสกุลของคุณ
+          </Text>
 
-        {/* First Name & Last Name */}
-        <View className="flex-row gap-4 mb-4">
-          <FloatingLabelInput
-            label="ชื่อ"
-            value={firstName}
-            onChangeText={setFirstName}
-            containerStyle={{ flex: 1 }}
-          />
-          <FloatingLabelInput
-            label="นามสกุล"
-            value={lastName}
-            onChangeText={setLastName}
-            containerStyle={{ flex: 1 }}
-          />
+          {/* First Name & Last Name */}
+          <View className="flex-row gap-4 mb-5">
+            <View className="flex-1">
+              <FloatingLabelInput
+                label="ชื่อ"
+                value={firstName}
+                onChangeText={setFirstName}
+              />
+            </View>
+            <View className="flex-1">
+              <FloatingLabelInput
+                label="นามสกุล"
+                value={lastName}
+                onChangeText={setLastName}
+              />
+            </View>
+          </View>
+
+          {/* Gender Selection */}
+          <View>
+            <GenderSelect
+              value={(gender as string) || ""}
+              onChange={(val) => setGender((val as Gender) || null)}
+              isRequired={false}
+            />
+          </View>
         </View>
 
-        {/* Gender Selection */}
-        <GenderSelect
-          value={(gender as string) || ""}
-          onChange={(val) => setGender((val as Gender) || null)}
-          isRequired={false}
-        />
-
         {/* Save Button */}
-        <PrimaryButton
-          title="บันทึกข้อมูล"
-          onPress={handleSave}
-          loading={updateMutation.isPending}
-        />
+        <View className="mt-2">
+          <PrimaryButton
+            title="บันทึกข้อมูล"
+            onPress={handleSave}
+            loading={updateMutation.isPending}
+          />
+        </View>
       </View>
     </ScreenWrapper>
   );

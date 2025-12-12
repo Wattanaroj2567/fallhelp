@@ -114,59 +114,67 @@ export default function InviteMember() {
     <ScreenWrapper
       contentContainerStyle={{ paddingBottom: 40, flexGrow: 1 }}
       scrollViewProps={{ bounces: false }}
-      header={<ScreenHeader title="เชิญสมาชิก" onBack={() => router.back()} />}
+      header={
+        <View style={{ backgroundColor: "#FFFFFF" }}>
+          <ScreenHeader title="เชิญสมาชิก" onBack={() => router.back()} />
+          <View className="px-6 pb-4 border-b border-gray-50">
+            {/* Icon */}
+            <View className="items-center mb-4">
+              <View className="w-16 h-16 rounded-full bg-green-100 items-center justify-center">
+                <MaterialIcons name="person-add" size={32} color="#16AD78" />
+              </View>
+            </View>
+
+            {/* Info Text */}
+            <View className="bg-blue-50 rounded-2xl p-4">
+              <Text
+                style={{ fontSize: 15, fontWeight: "500" }}
+                className="font-kanit text-blue-700 mb-1"
+              >
+                กรุณากรอกอีเมลผู้ใช้ที่คุณต้องการเชิญ
+              </Text>
+              <Text style={{ fontSize: 13 }} className="font-kanit text-blue-600">
+                สมาชิกใหม่จะได้รับสิทธิ์ "ดูได้อย่างเดียว" เป็นค่าเริ่มต้น คุณสามารถปรับเปลี่ยนสิทธิ์ให้ช่วยแก้ไขข้อมูลได้ในภายหลัง
+              </Text>
+            </View>
+          </View>
+        </View>
+      }
     >
-      <View className="pt-2">
-        {/* Icon */}
-        <View className="items-center mb-6 mt-2">
-          <View className="w-20 h-20 rounded-full bg-green-100 items-center justify-center">
-            <MaterialIcons name="person-add" size={40} color="#16AD78" />
+      <View className="flex-1 pt-6">
+
+        {/* Email Input Card */}
+        <View className="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100 mb-6">
+          <View>
+            <FloatingLabelInput
+              label="อีเมล"
+              value={email}
+              onChangeText={(text) => {
+                setEmail(text);
+                if (/[ก-๙]/.test(text)) {
+                  setEmailError("กรุณากรอกอีเมลเป็นภาษาอังกฤษ");
+                } else {
+                  setEmailError("");
+                }
+              }}
+              error={emailError}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+              textContentType="emailAddress"
+            />
           </View>
         </View>
 
-        {/* Info Text */}
-        <View className="bg-blue-50 rounded-2xl p-4 mb-6">
-          <Text
-            style={{ fontSize: 15, fontWeight: "500" }}
-            className="font-kanit text-blue-700 mb-1"
-          >
-            กรุณากรอกอีเมลผู้ใช้ที่คุณต้องการเชิญ
-          </Text>
-          <Text style={{ fontSize: 13 }} className="font-kanit text-blue-600">
-            สมาชิกใหม่จะได้รับสิทธิ์ "ดูได้อย่างเดียว" เป็นค่าเริ่มต้น คุณสามารถปรับเปลี่ยนสิทธิ์ให้ช่วยแก้ไขข้อมูลได้ในภายหลัง
-          </Text>
-        </View>
-
-        {/* Email Input */}
-        <View className="mb-6">
-          <FloatingLabelInput
-            label="อีเมล"
-            value={email}
-            onChangeText={(text) => {
-              setEmail(text);
-              if (/[ก-๙]/.test(text)) {
-                setEmailError("กรุณากรอกอีเมลเป็นภาษาอังกฤษ");
-              } else {
-                setEmailError("");
-              }
-            }}
-            error={emailError}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoCorrect={false}
-            textContentType="emailAddress"
-          />
-        </View>
-
-        {/* Features List */}
-        <View className="bg-white rounded-2xl p-4 mb-6 border border-gray-100">
+        {/* Features List (Already Card-like, just refine style) */}
+        <View className="bg-white rounded-[24px] p-6 mb-6 border border-gray-100 shadow-sm">
           <Text
             style={{ fontSize: 15, fontWeight: "600" }}
-            className="font-kanit text-gray-900 mb-3"
+            className="font-kanit text-gray-900 mb-4"
           >
             สิทธิ์ของสมาชิกที่ถูกเชิญ:
           </Text>
-          <View className="flex-row items-start mb-2">
+          <View className="flex-row items-start mb-3">
             <MaterialIcons name="check-circle" size={20} color="#16AD78" />
             <Text
               style={{ fontSize: 14 }}
@@ -175,7 +183,7 @@ export default function InviteMember() {
               ดูข้อมูลผู้สูงอายุ
             </Text>
           </View>
-          <View className="flex-row items-start mb-2">
+          <View className="flex-row items-start mb-3">
             <MaterialIcons name="check-circle" size={20} color="#16AD78" />
             <Text
               style={{ fontSize: 14 }}
@@ -184,7 +192,7 @@ export default function InviteMember() {
               ดูแดชบอร์ดและสถานะ Real-time
             </Text>
           </View>
-          <View className="flex-row items-start mb-2">
+          <View className="flex-row items-start mb-3">
             <MaterialIcons name="check-circle" size={20} color="#16AD78" />
             <Text
               style={{ fontSize: 14 }}
@@ -205,12 +213,14 @@ export default function InviteMember() {
         </View>
 
         {/* Invite Button */}
-        <PrimaryButton
-          title="ส่งคำเชิญ"
-          onPress={handleInvite}
-          loading={inviteMutation.isPending}
-          disabled={!email.trim() || !!emailError}
-        />
+        <View className="mt-2 text-center pb-8">
+          <PrimaryButton
+            title="ส่งคำเชิญ"
+            onPress={handleInvite}
+            loading={inviteMutation.isPending}
+            disabled={!email.trim() || !!emailError}
+          />
+        </View>
       </View>
     </ScreenWrapper>
   );

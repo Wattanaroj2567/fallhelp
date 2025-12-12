@@ -16,6 +16,7 @@ export interface BounceableProps extends PressableProps {
         damping?: number;
     };
     style?: StyleProp<ViewStyle>;
+    debounceTime?: number;
 }
 
 export const Bounceable: React.FC<BounceableProps> = ({
@@ -23,10 +24,27 @@ export const Bounceable: React.FC<BounceableProps> = ({
     style,
     scale = 0.96,
     springConfig = { mass: 0.5, stiffness: 300, damping: 13 },
+    debounceTime = 1000, // Default debounce time 1000ms
     disabled,
+    onPress,
     ...props
 }) => {
     const isPressed = useSharedValue(false);
+    const lastPressTime = React.useRef(0);
+
+    const handlePress = React.useCallback((event: any) => {
+        if (!onPress || disabled) return;
+
+        const now = Date.now();
+        const timeSinceLastPress = now - lastPressTime.current;
+
+        if (timeSinceLastPress > debounceTime) {
+            lastPressTime.current = now;
+            onPress(event);
+        } else {
+            console.log(`Blocked double click. Time since last: ${timeSinceLastPress}ms`);
+        }
+    }, [onPress, debounceTime, disabled]);
 
     const animatedStyle = useAnimatedStyle(() => {
         // Only animate scale if not disabled
@@ -48,6 +66,7 @@ export const Bounceable: React.FC<BounceableProps> = ({
     return (
         <AnimatedPressable
             {...props}
+            onPress={handlePress}
             disabled={disabled}
             onPressIn={(e) => {
                 isPressed.value = true;

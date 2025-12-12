@@ -159,84 +159,91 @@ export default function EditEmergencyContact() {
     <ScreenWrapper
       contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 120, flexGrow: 1 }}
       header={
-        <ScreenHeader
-          title="แก้ไขเบอร์ติดต่อฉุกเฉิน"
-          onBack={() => router.back()}
-        />
+        <View style={{ backgroundColor: "#FFFFFF" }}>
+          <ScreenHeader
+            title="แก้ไขเบอร์ติดต่อฉุกเฉิน"
+            onBack={() => router.back()}
+          />
+          {/* Fixed Info Note */}
+          <View className="px-6 pb-4 border-b border-gray-50">
+            <View className="bg-blue-50 rounded-2xl p-4">
+              <Text className="font-kanit text-blue-700" style={{ fontSize: 13, lineHeight: 20 }}>
+                กรุณากรอกข้อมูลให้ถูกต้องเพื่อให้ระบบติดต่อญาติได้ทันทีเมื่อเกิดเหตุฉุกเฉิน
+              </Text>
+            </View>
+          </View>
+        </View>
       }
     >
-      <View>
-        {/* Info Note */}
-        <View className="bg-blue-50 rounded-2xl p-4 mb-6 mt-2">
-          <Text className="font-kanit text-blue-700" style={{ fontSize: 14 }}>
-            กรุณากรอกข้อมูลให้ถูกต้องเพื่อให้ระบบติดต่อญาติได้ทันทีเมื่อเกิดเหตุฉุกเฉิน
-          </Text>
-        </View>
-
-        {/* Priority Badge */}
+      <View className="flex-1 pt-6">
+        {/* Priority Badge - Centered outside card */}
         {contact && (
-          <View className="items-center mb-8">
-            <View className="w-20 h-20 rounded-full bg-[#4A90E2] items-center justify-center shadow-sm">
+          <View className="items-center mb-6">
+            <View className="w-16 h-16 rounded-full bg-[#4A90E2] items-center justify-center shadow-sm border-2 border-white ring-2 ring-blue-100">
               <Text
-                style={{ fontSize: 32, fontWeight: "700" }}
+                style={{ fontSize: 24, fontWeight: "700" }}
                 className="font-kanit text-white"
               >
                 {contact.priority}
               </Text>
             </View>
             <Text
-              style={{ fontSize: 14 }}
-              className="font-kanit text-gray-500 mt-3"
+              style={{ fontSize: 13 }}
+              className="font-kanit text-gray-500 mt-2"
             >
               ลำดับความสำคัญ
             </Text>
           </View>
         )}
 
-        {/* Name Field */}
-        <View className="mb-4">
-          <FloatingLabelInput
-            label="ชื่อผู้ติดต่อ"
-            value={name}
-            onChangeText={setName}
-            isRequired={true}
-          />
-        </View>
+        {/* Form Container */}
+        <View className="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100 mb-6">
+          {/* Name Field */}
+          <View className="mb-5">
+            <FloatingLabelInput
+              label="ชื่อผู้ติดต่อ"
+              value={name}
+              onChangeText={setName}
+              isRequired={true}
+            />
+          </View>
 
-        {/* Phone Field */}
-        <View className="mb-4">
-          <FloatingLabelInput
-            label="เบอร์ติดต่อ"
-            value={phone}
-            onChangeText={(text) => {
-              const cleaned = text.replace(/[^0-9]/g, "");
-              if (cleaned.length <= 10) {
-                setPhone(cleaned);
-              }
-            }}
-            keyboardType="phone-pad"
-            maxLength={10}
-            isRequired={true}
-          />
-        </View>
+          {/* Phone Field */}
+          <View className="mb-5">
+            <FloatingLabelInput
+              label="เบอร์ติดต่อ"
+              value={phone}
+              onChangeText={(text) => {
+                const cleaned = text.replace(/[^0-9]/g, "");
+                if (cleaned.length <= 10) {
+                  setPhone(cleaned);
+                }
+              }}
+              keyboardType="phone-pad"
+              maxLength={10}
+              isRequired={true}
+            />
+          </View>
 
-        {/* Relationship Field */}
-        <View className="mb-8">
-          <FloatingLabelInput
-            label="ความสัมพันธ์ (ถ้ามี)"
-            value={relationship}
-            onChangeText={setRelationship}
-            placeholder="เช่น บุตร, พี่, น้อง"
-          />
+          {/* Relationship Field */}
+          <View>
+            <FloatingLabelInput
+              label="ความสัมพันธ์ (ถ้ามี)"
+              value={relationship}
+              onChangeText={setRelationship}
+              placeholder="เช่น บุตร, พี่, น้อง"
+            />
+          </View>
         </View>
 
         {/* Save Button */}
-        <PrimaryButton
-          title="บันทึกการแก้ไข"
-          onPress={handleSave}
-          loading={updateMutation.isPending}
-          style={{ marginBottom: 32 }}
-        />
+        <View className="mt-2">
+          <PrimaryButton
+            title="บันทึกการแก้ไข"
+            onPress={handleSave}
+            loading={updateMutation.isPending}
+          />
+        </View>
       </View>
     </ScreenWrapper>
   );

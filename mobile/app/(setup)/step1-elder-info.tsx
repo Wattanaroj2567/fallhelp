@@ -425,157 +425,165 @@ export default function Step1() {
       }
     >
       <View className="flex-1 mt-4">
-        {/* Info Note Removed from here */}
+        {/* Form Card */}
+        <View className="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100 mb-6">
+          {/* Elder Name & Lastname */}
+          <View className="flex-row gap-3 mb-5">
+            {/* First Name */}
+            <View className="flex-1">
+              <FloatingLabelInput
+                label={
+                  <Text className="font-kanit">
+                    ชื่อ <Text style={{ color: "#EF4444" }}>*</Text>
+                  </Text>
+                }
+                value={firstName}
+                onChangeText={setFirstName}
+              />
+            </View>
+            {/* Last Name */}
+            <View className="flex-1">
+              <FloatingLabelInput
+                label={
+                  <Text className="font-kanit">
+                    นามสกุล <Text style={{ color: "#EF4444" }}>*</Text>
+                  </Text>
+                }
+                value={lastName}
+                onChangeText={setLastName}
+              />
+            </View>
+          </View>
 
-        {/* Elder Name & Lastname */}
-        <View className="flex-row gap-3">
-          {/* First Name */}
-          <FloatingLabelInput
-            label={
-              <Text className="font-kanit">
-                ชื่อ <Text style={{ color: "#EF4444" }}>*</Text>
-              </Text>
-            }
-            value={firstName}
-            onChangeText={setFirstName}
-            containerStyle={{ flex: 1 }}
-          />
-          {/* Last Name */}
-          <FloatingLabelInput
-            label={
-              <Text className="font-kanit">
-                นามสกุล <Text style={{ color: "#EF4444" }}>*</Text>
-              </Text>
-            }
-            value={lastName}
-            onChangeText={setLastName}
-            containerStyle={{ flex: 1 }}
-          />
-        </View>
+          {/* Gender */}
+          <View className="mb-5">
+            <GenderSelect value={gender} onChange={setGender} isRequired={true} />
+          </View>
 
-        {/* Gender */}
-        <GenderSelect value={gender} onChange={setGender} isRequired={true} />
-
-        {/* Birth Date - Using Theme Colors */}
-        <View className="mb-4">
-          <TouchableOpacity
-            onPress={() => {
-              Keyboard.dismiss(); // Close other inputs to prevent double focus
-              setShowDatePicker(true);
-            }}
-            className="bg-white rounded-2xl px-4 justify-center"
-            style={{
-              height: 60,
-              borderWidth: 1,
-              borderColor: showDatePicker ? theme.colors.primary : "#E5E7EB",
-            }}
-          >
-            {dateOfBirth ? (
-              <View className="absolute -top-2.5 left-3 bg-white px-1 z-10">
-                <Text
-                  className="font-kanit"
-                  style={{
-                    fontSize: 12,
-                    color: showDatePicker ? theme.colors.primary : "#a3a6af"
-                  }}
-                >
-                  วัน/เดือน/ปีเกิด <Text style={{ color: "#EF4444" }}>*</Text>
-                </Text>
-              </View>
-            ) : null}
-            <Text
-              className="font-kanit text-[16px]"
+          {/* Birth Date - Using Theme Colors */}
+          <View className="mb-5">
+            <TouchableOpacity
+              onPress={() => {
+                Keyboard.dismiss(); // Close other inputs to prevent double focus
+                setShowDatePicker(true);
+              }}
+              className="bg-white rounded-2xl px-4 justify-center"
               style={{
-                color: dateOfBirth ? theme.colors.onSurface : "#a3a6af",
+                height: 60,
+                borderWidth: 1,
+                borderColor: showDatePicker ? theme.colors.primary : "#E5E7EB",
               }}
             >
               {dateOfBirth ? (
-                formatDate(dateOfBirth)
-              ) : (
-                <>
-                  วัน/เดือน/ปีเกิด <Text style={{ color: "#EF4444" }}>*</Text>
-                </>
-              )}
-            </Text>
+                <View className="absolute -top-2.5 left-3 bg-white px-1 z-10">
+                  <Text
+                    className="font-kanit"
+                    style={{
+                      fontSize: 12,
+                      color: showDatePicker ? theme.colors.primary : "#a3a6af"
+                    }}
+                  >
+                    วัน/เดือน/ปีเกิด <Text style={{ color: "#EF4444" }}>*</Text>
+                  </Text>
+                </View>
+              ) : null}
+              <Text
+                className="font-kanit text-[16px]"
+                style={{
+                  color: dateOfBirth ? theme.colors.onSurface : "#a3a6af",
+                }}
+              >
+                {dateOfBirth ? (
+                  formatDate(dateOfBirth)
+                ) : (
+                  <>
+                    วัน/เดือน/ปีเกิด <Text style={{ color: "#EF4444" }}>*</Text>
+                  </>
+                )}
+              </Text>
 
-            <View className="absolute right-4 top-5">
-              <MaterialIcons
-                name="calendar-today"
-                size={20}
-                color={showDatePicker ? theme.colors.primary : "#a3a6af"}
+              <View className="absolute right-4 top-5">
+                <MaterialIcons
+                  name="calendar-today"
+                  size={20}
+                  color={showDatePicker ? theme.colors.primary : "#a3a6af"}
+                />
+              </View>
+            </TouchableOpacity>
+          </View>
+
+          {/* Height and Weight */}
+          <View className="flex-row gap-3 mb-5">
+            <View className="flex-1">
+              <FloatingLabelInput
+                label={
+                  <Text className="font-kanit">
+                    ส่วนสูง (cm) <Text style={{ color: "#EF4444" }}>*</Text>
+                  </Text>
+                }
+                value={height}
+                onChangeText={setHeight}
+                keyboardType="numeric"
               />
             </View>
-          </TouchableOpacity>
-        </View>
+            <View className="flex-1">
+              <FloatingLabelInput
+                label={
+                  <Text className="font-kanit">
+                    น้ำหนัก (kg) <Text style={{ color: "#EF4444" }}>*</Text>
+                  </Text>
+                }
+                value={weight}
+                onChangeText={setWeight}
+                keyboardType="numeric"
+              />
+            </View>
+          </View>
 
-        {/* Height and Weight */}
-        <View className="flex-row gap-3 mb-2">
-          <View className="flex-1">
+          {/* Medical Condition - Single line */}
+          <View className="mb-5">
             <FloatingLabelInput
-              label={
-                <Text className="font-kanit">
-                  ส่วนสูง (cm) <Text style={{ color: "#EF4444" }}>*</Text>
-                </Text>
-              }
-              value={height}
-              onChangeText={setHeight}
-              keyboardType="numeric"
+              label="โรคประจำตัว หรือ เคยป่วย (ถ้ามี)"
+              value={medicalCondition}
+              onChangeText={setMedicalCondition}
             />
           </View>
-          <View className="flex-1">
-            <FloatingLabelInput
-              label={
-                <Text className="font-kanit">
-                  น้ำหนัก (kg) <Text style={{ color: "#EF4444" }}>*</Text>
-                </Text>
-              }
-              value={weight}
-              onChangeText={setWeight}
-              keyboardType="numeric"
-            />
-          </View>
-        </View>
 
-        {/* Medical Condition - Single line */}
-        <FloatingLabelInput
-          label="โรคประจำตัว หรือ เคยป่วย (ถ้ามี)"
-          value={medicalCondition}
-          onChangeText={setMedicalCondition}
-          containerStyle={{ marginBottom: 16 }}
-        />
-
-        {/* House Number and Village */}
-        <View className="flex-row gap-3 mb-2">
-          <View className="flex-1">
-            <FloatingLabelInput
-              label={
-                <Text className="font-kanit">
-                  บ้านเลขที่ <Text style={{ color: "#EF4444" }}>*</Text>
-                </Text>
-              }
-              value={houseNumber}
-              onChangeText={setHouseNumber}
-            />
+          {/* House Number and Village */}
+          <View className="flex-row gap-3 mb-5">
+            <View className="flex-1">
+              <FloatingLabelInput
+                label={
+                  <Text className="font-kanit">
+                    บ้านเลขที่ <Text style={{ color: "#EF4444" }}>*</Text>
+                  </Text>
+                }
+                value={houseNumber}
+                onChangeText={setHouseNumber}
+              />
+            </View>
+            <View className="flex-1">
+              <FloatingLabelInput
+                label={
+                  <Text className="font-kanit">
+                    หมู่ที่/หมู่บ้าน <Text style={{ color: "#EF4444" }}>*</Text>
+                  </Text>
+                }
+                value={village}
+                onChangeText={setVillage}
+              />
+            </View>
           </View>
-          <View className="flex-1">
-            <FloatingLabelInput
-              label={
-                <Text className="font-kanit">
-                  หมู่ที่/หมู่บ้าน <Text style={{ color: "#EF4444" }}>*</Text>
-                </Text>
-              }
-              value={village}
-              onChangeText={setVillage}
+
+          {/* Address - Autocomplete Search */}
+          <View>
+            <ThaiAddressAutocomplete
+              value={address}
+              onChange={setAddress}
+              isRequired
             />
           </View>
         </View>
-
-        {/* Address - Autocomplete Search */}
-        <ThaiAddressAutocomplete
-          value={address}
-          onChange={setAddress}
-          isRequired
-        />
 
         {/* Next Button */}
         <PrimaryButton

@@ -83,64 +83,71 @@ export default function AddEmergencyContact() {
     <ScreenWrapper
       contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 120, flexGrow: 1 }}
       header={
-        <ScreenHeader
-          title="เพิ่มเบอร์ติดต่อฉุกเฉิน"
-          onBack={() => router.back()}
-        />
+        <View style={{ backgroundColor: "#FFFFFF" }}>
+          <ScreenHeader
+            title="เพิ่มเบอร์ติดต่อฉุกเฉิน"
+            onBack={() => router.back()}
+          />
+          {/* Fixed Info Note */}
+          <View className="px-6 pb-4 border-b border-gray-50">
+            <View className="bg-blue-50 rounded-2xl p-4">
+              <Text className="font-kanit text-blue-700" style={{ fontSize: 13, lineHeight: 20 }}>
+                กรุณากรอกข้อมูลให้ถูกต้องเพื่อให้ระบบติดต่อญาติได้ทันทีเมื่อเกิดเหตุฉุกเฉิน
+              </Text>
+            </View>
+          </View>
+        </View>
       }
     >
-      <View>
-        {/* Info Note */}
-        <View className="bg-blue-50 rounded-2xl p-4 mb-6 mt-2">
-          <Text className="font-kanit text-blue-700" style={{ fontSize: 14 }}>
-            กรุณากรอกข้อมูลให้ถูกต้องเพื่อให้ระบบติดต่อญาติได้ทันทีเมื่อเกิดเหตุฉุกเฉิน
-          </Text>
-        </View>
+      <View className="flex-1 pt-6">
+        {/* Form Container */}
+        <View className="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100 mb-6">
+          {/* Name Field */}
+          <View className="mb-5">
+            <FloatingLabelInput
+              label="ชื่อผู้ติดต่อ"
+              value={name}
+              onChangeText={setName}
+              isRequired={true}
+            />
+          </View>
 
-        {/* Name Field */}
-        <View className="mb-4">
-          <FloatingLabelInput
-            label="ชื่อผู้ติดต่อ"
-            value={name}
-            onChangeText={setName}
-            isRequired={true}
-          />
-        </View>
+          {/* Phone Field */}
+          <View className="mb-5">
+            <FloatingLabelInput
+              label="เบอร์ติดต่อ"
+              value={phone}
+              onChangeText={(text) => {
+                const cleaned = text.replace(/[^0-9]/g, "");
+                if (cleaned.length <= 10) {
+                  setPhone(cleaned);
+                }
+              }}
+              keyboardType="phone-pad"
+              maxLength={10}
+              isRequired={true}
+            />
+          </View>
 
-        {/* Phone Field */}
-        <View className="mb-4">
-          <FloatingLabelInput
-            label="เบอร์ติดต่อ"
-            value={phone}
-            onChangeText={(text) => {
-              const cleaned = text.replace(/[^0-9]/g, "");
-              if (cleaned.length <= 10) {
-                setPhone(cleaned);
-              }
-            }}
-            keyboardType="phone-pad"
-            maxLength={10}
-            isRequired={true}
-          />
-        </View>
-
-        {/* Relationship Field */}
-        <View className="mb-8">
-          <FloatingLabelInput
-            label="ความสัมพันธ์ (ถ้ามี)"
-            value={relationship}
-            onChangeText={setRelationship}
-            placeholder="เช่น บุตร, พี่, น้อง"
-          />
+          {/* Relationship Field */}
+          <View>
+            <FloatingLabelInput
+              label="ความสัมพันธ์ (ถ้ามี)"
+              value={relationship}
+              onChangeText={setRelationship}
+              placeholder="เช่น บุตร, พี่, น้อง"
+            />
+          </View>
         </View>
 
         {/* Submit Button */}
-        <PrimaryButton
-          title="บันทึกข้อมูล"
-          onPress={handleSave}
-          loading={loading}
-          style={{ marginBottom: 32 }}
-        />
+        <View className="mt-2">
+          <PrimaryButton
+            title="บันทึกข้อมูล"
+            onPress={handleSave}
+            loading={loading}
+          />
+        </View>
       </View>
     </ScreenWrapper>
   );

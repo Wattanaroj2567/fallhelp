@@ -12,14 +12,14 @@ const router = Router();
 router.use(authenticate);
 router.use(requireAdmin);
 
-router.get('/dashboard', adminController.getDashboardStats);
+router.get('/dashboard', adminController.getDashboardSummary);
 router.get('/users', adminController.getAllUsers);
 router.get('/elders', adminController.getAllElders);
 router.post('/devices', adminController.createDevice);
 router.get('/devices', adminController.getAllDevices);
 router.delete('/devices/:id', adminController.deleteDevice);
 router.post('/devices/:id/unpair', adminController.forceUnpairDevice);
-router.get('/events', adminController.getSystemEvents);
-router.get('/events/stats', adminController.getEventStatistics);
+
+router.get('/events/summary', adminController.getEventSummary);
 
 export default router;

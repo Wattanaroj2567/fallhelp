@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.5.1] - 2025-12-12
 
 ### Changed
+
 - **UI Alignment**:
   - **Screen Width**: Standardized "Invite Member" and "Feedback" screens to match "Manage Members" layout (`px-6`).
   - **Settings Header**: Strictly aligned Settings screen header height with History screen by removing extra margin and reducing padding (`pt-4` -> `pt-2`).
@@ -35,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.5.0] - 2025-12-12
 
 ### Added
+
 - **Premium Interaction System**:
   - Created `Bounceable` component using `react-native-reanimated` for iOS-like scale feedback.
   - Applied to all primary buttons, headers, profile pictures, and home screen cards.
@@ -43,6 +45,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added sticky header layout for "Elder Edit" screen description.
 
 ### Fixed
+
 - **Navigation & Routing**:
   - **Redirect Loop**: Fixed "Elder Info" redirect bug by implementing Blocklist strategy in `useProtectedRoute`.
   - **Root Fallback**: Added `app/index.tsx` to prevent undefined behavior on root reload.
@@ -56,6 +59,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **Mobile App - Critical Navigation & Error Handling Issues**
+
   - ✅ **GO_BACK Navigation Error**: Fixed `SectionErrorBoundary` error when pressing back button. Added proper error handling with fallback to home screen
   - ✅ **Post-Login Routing Bug**: Added Authentication Guard at root layout level (`_layout.tsx`). App now correctly routes to `(tabs)` after login instead of `(features)/(elder)`
   - ✅ **Console Logging Violations**: Replaced all `console.log`, `console.error`, `console.debug` with `Logger` utility in 7 files.
@@ -71,11 +75,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Mobile App - Loading States Enhancement (Skeleton Screens)**
+
   - Created `ListItemSkeleton`, `CardSkeleton`, `ProfileSkeleton`
   - Implemented in Emergency Contacts and Profile screens
   - Smooth shimmer animation
 
 - **Mobile App - Input Component Refactoring**
+
   - Created reusable `FloatingLabelInput` component
   - Refactored Auth, Setup, Profile, Settings, Elderly & Emergency Contact screens
   - Centralized input styling and animation logic
@@ -259,7 +265,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Elder management (CRUD, profile image, medical history)
   - Device management (QR Scanner, manual pairing, WiFi configuration)
   - Emergency contact management (CRUD, priority ordering, quick call)
-  - Event history with timeline view and statistics
+  - Event history with timeline view and summary
   - Push notifications (Expo Notifications integration)
   - Multi-user access (invite members, OWNER/VIEWER roles)
   - Profile management and settings
@@ -269,7 +275,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
   - Vite + React 18 + TypeScript + TailwindCSS
   - Authentication with protected routes
-  - Dashboard with statistics overview
+  - Dashboard with summary overview
   - User, Elder, and Device management
   - Feedback management with status workflow
 
@@ -278,7 +284,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Mobile: Send feedback screen in settings
   - Admin: Feedback management with status updates
 
-### Stats
+### Summary
 
 - Mobile: 50+ files, ~8,000+ lines, 30+ screens
 - Admin: 25+ files, ~3,500+ lines
@@ -337,7 +343,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `postman_collection.json` for API testing
   - `PROJECT_COMPLETE.md`
 
-### Stats
+### Summary
 
 - 11 IoT files, ~1,000+ lines
 - 42+ REST API endpoints
@@ -387,9 +393,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `userService.ts` - Profile CRUD, Password change
   - `elderService.ts` - Elder CRUD, Multi-user access (OWNER/VIEWER)
   - `deviceService.ts` - Create device, Pair/Unpair, WiFi config
-  - `eventService.ts` - TimescaleDB queries, Daily/Monthly stats
+  - `eventService.ts` - TimescaleDB queries, Daily/Monthly summary
   - `notificationService.ts` - Expo Push integration for alerts
-  - `adminService.ts` - Dashboard statistics
+  - `adminService.ts` - Dashboard summary
 
 ---
 

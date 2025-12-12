@@ -97,78 +97,82 @@ export default function ChangeEmail() {
       contentContainerStyle={{ paddingHorizontal: 24, flexGrow: 1 }}
       header={<ScreenHeader title="แก้ไขอีเมล" onBack={() => router.back()} />}
     >
-      <View>
-        <Text
-          className="font-kanit"
-          style={{
-            fontSize: 14,
-            color: "#6B7280",
-            marginBottom: 24,
-            textAlign: "left",
-          }}
-        >
-          กรุณากรอกอีเมลใหม่ของคุณ
-        </Text>
-
-        {/* Current Email (Read-only) */}
-        <View className="mb-4">
+      <View className="flex-1 pt-6">
+        <View className="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100 mb-6">
           <Text
-            style={{ fontSize: 12 }}
-            className="font-kanit text-gray-500 mb-2 ml-1"
+            className="font-kanit"
+            style={{
+              fontSize: 14,
+              color: "#6B7280",
+              marginBottom: 20,
+              textAlign: "left",
+            }}
           >
-            อีเมลปัจจุบัน
+            กรุณากรอกอีเมลใหม่ของคุณ
           </Text>
-          <View
-            className="bg-gray-100 rounded-2xl px-4 border border-gray-200 justify-center"
-            style={{ height: 60 }}
-          >
-            <Text style={{ fontSize: 16 }} className="font-kanit text-gray-500">
-              {currentEmail}
+
+          {/* Current Email (Read-only) */}
+          <View className="mb-5">
+            <Text
+              style={{ fontSize: 13 }}
+              className="font-kanit text-gray-500 mb-2 ml-1"
+            >
+              อีเมลปัจจุบัน
+            </Text>
+            <View
+              className="bg-gray-50 rounded-2xl px-4 border border-gray-200 justify-center"
+              style={{ height: 60 }}
+            >
+              <Text style={{ fontSize: 16 }} className="font-kanit text-gray-500">
+                {currentEmail}
+              </Text>
+            </View>
+          </View>
+
+          {/* New Email */}
+          <View className="mb-6">
+            <FloatingLabelInput
+              label="อีเมลใหม่"
+              value={newEmail}
+              onChangeText={(text) => {
+                setNewEmail(text);
+                if (/[ก-๙]/.test(text)) {
+                  setEmailError("กรุณากรอกอีเมลเป็นภาษาอังกฤษ");
+                } else {
+                  setEmailError("");
+                }
+              }}
+              error={emailError}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+          </View>
+
+          {/* Info Box inside Card */}
+          <View className="bg-blue-50 rounded-2xl p-4 flex-row">
+            <MaterialIcons
+              name="info"
+              size={20}
+              color="#3B82F6"
+              style={{ marginTop: 2 }}
+            />
+            <Text
+              style={{ fontSize: 13, lineHeight: 20 }}
+              className="font-kanit text-blue-700 flex-1 ml-2"
+            >
+              คุณจะต้องใช้อีเมลใหม่ในการเข้าสู่ระบบครั้งถัดไป
             </Text>
           </View>
         </View>
 
-        {/* New Email */}
-        <View className="mb-8">
-          <FloatingLabelInput
-            label="อีเมลใหม่"
-            value={newEmail}
-            onChangeText={(text) => {
-              setNewEmail(text);
-              if (/[ก-๙]/.test(text)) {
-                setEmailError("กรุณากรอกอีเมลเป็นภาษาอังกฤษ");
-              } else {
-                setEmailError("");
-              }
-            }}
-            error={emailError}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-        </View>
-
-        {/* Info Box */}
-        <View className="bg-blue-50 rounded-2xl p-4 mb-8 flex-row">
-          <MaterialIcons
-            name="info"
-            size={20}
-            color="#3B82F6"
-            style={{ marginTop: 2 }}
-          />
-          <Text
-            style={{ fontSize: 12 }}
-            className="font-kanit text-blue-700 flex-1 ml-2"
-          >
-            คุณจะต้องใช้อีเมลใหม่ในการเข้าสู่ระบบครั้งถัดไป
-          </Text>
-        </View>
-
         {/* Save Button */}
-        <PrimaryButton
-          title="บันทึกข้อมูล"
-          onPress={handleSave}
-          loading={saving}
-        />
+        <View className="mt-2">
+          <PrimaryButton
+            title="บันทึกข้อมูล"
+            onPress={handleSave}
+            loading={saving}
+          />
+        </View>
       </View>
     </ScreenWrapper>
   );

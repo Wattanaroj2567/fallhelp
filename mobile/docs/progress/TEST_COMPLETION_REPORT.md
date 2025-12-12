@@ -21,7 +21,7 @@
 
 ## 📈 Test Coverage Overview
 
-### Test Suite Statistics
+### Test Suite Summary
 
 | Category            | Tests   | Status           |
 | ------------------- | ------- | ---------------- |
@@ -59,7 +59,7 @@ utils/__tests__/
 
 - ✅ `Elder` type: Removed non-existent `nickname`, fixed `birthDate` → `dateOfBirth`
 - ✅ `Event` type: Removed `description`, `latitude`, `longitude` (not in actual schema)
-- ✅ `DailyStat`/`MonthlyStat`: Changed `fallCount` → `fall`, `heartRateAlertCount` → `heartRateHigh`
+- ✅ `DailySummary`/`MonthlySummary`: Changed `fallCount` → `fall`, `heartRateAlertCount` → `heartRateHigh`
 - ✅ `Paginated` type: Removed `totalPages` (not in actual schema)
 
 **Files Modified**:
@@ -135,7 +135,7 @@ All service functions tested are **production-critical**:
 
 - ✅ **authService**: Login, register, OTP, password reset, profile operations
 - ✅ **userService**: Profile management, elder CRUD, push tokens, account deletion
-- ✅ **eventService**: Event listing, filtering, statistics (daily/monthly)
+- ✅ **eventService**: Event listing, filtering, summary (daily/monthly)
 - ✅ **emergencyContactService**: Contact CRUD operations
 
 ---
@@ -226,7 +226,7 @@ All service functions tested are **production-critical**:
    - Recent events retrieval
    - Single event details
    - Event cancellation
-   - Daily/monthly statistics
+   - Daily/monthly summary
 
 **Testing Strategy**:
 
@@ -374,7 +374,7 @@ hooks/
 
 services/__tests__/
   ├── userService.test.ts (fixed Elder mock types)
-  └── eventService.test.ts (fixed Event/Stats mock types)
+  └── eventService.test.ts (fixed Event/Summary mock types)
 ```
 
 ---

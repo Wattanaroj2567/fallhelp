@@ -176,7 +176,7 @@ fallhelp/
 - [x] IoT communication (MQTT)
 - [x] Push notifications (Expo Push API)
 - [x] Time-series data storage (TimescaleDB)
-- [x] Event statistics (Daily/Monthly)
+- [x] Event summary (Daily/Monthly)
 - [x] ESP32 firmware with Arduino IDE
 - [x] Admin dashboard API
 
@@ -187,7 +187,7 @@ fallhelp/
 - [x] Device pairing with QR scanner
 - [x] Real-time event monitoring
 - [x] Event timeline
-- [x] Statistics dashboard
+- [x] System overview dashboard
 - [x] Push notification handling
 - [x] Emergency contact management
 - [x] Notification History

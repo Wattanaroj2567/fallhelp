@@ -34,47 +34,8 @@ const formatDate = (dateString: string) => {
   return `${day}/${month}/${year} เวลา ${time} น.`;
 };
 
-// ==========================================
-// 🎨 LAYER: Mock Data (for UI Preview)
-// ==========================================
-// Generate 60 mock events for testing filters (25, 50, All)
-const generateMockEvents = (): Event[] => {
-  const events: Event[] = [];
-  const types: Array<"FALL" | "HEART_RATE_HIGH" | "HEART_RATE_LOW"> = [
-    "FALL",
-    "HEART_RATE_HIGH",
-    "HEART_RATE_LOW",
-  ];
-  const baseDate = new Date("2025-01-05T23:00:00");
 
-  for (let i = 0; i < 60; i++) {
-    const typeIndex = i % 3; // Rotate through types
-    const type = types[typeIndex];
-    const hoursAgo = i * 4; // Events every 4 hours going back
-    const timestamp = new Date(baseDate.getTime() - hoursAgo * 60 * 60 * 1000);
 
-    events.push({
-      id: `mock-${i + 1}`,
-      elderId: "mock-elder",
-      deviceId: "mock-device",
-      type,
-      severity: type === "FALL" ? "CRITICAL" : "WARNING",
-      value:
-        type === "FALL"
-          ? null
-          : type === "HEART_RATE_HIGH"
-            ? 110 + (i % 20)
-            : 45 + (i % 10),
-      isCancelled: false,
-      isNotified: true,
-      timestamp: timestamp.toISOString(),
-    });
-  }
-
-  return events;
-};
-
-const MOCK_EVENTS = generateMockEvents();
 
 // ==========================================
 // 📱 LAYER: View (Component)
@@ -83,10 +44,7 @@ const MOCK_EVENTS = generateMockEvents();
 export default function HistoryScreen() {
   const router = useRouter();
 
-  // TODO: REMOVE IN PRODUCTION
-  // This toggle is for UI preview during development only.
-  // Set to false and remove the toggle button before production deployment.
-  const [useMockData, setUseMockData] = React.useState(false); // Toggle for preview
+
   const [displayLimit, setDisplayLimit] = React.useState<number | null>(25); // 25, 50, or null (All)
 
   // ==========================================
@@ -124,10 +82,10 @@ export default function HistoryScreen() {
 
       return filteredEvents;
     },
-    enabled: !useMockData, // Only fetch when not using mock data
+    enabled: true,
   });
 
-  const displayEvents = useMockData ? MOCK_EVENTS : events || [];
+  const displayEvents = events || [];
   const limitedEvents = displayLimit
     ? displayEvents.slice(0, displayLimit)
     : displayEvents;
@@ -237,7 +195,7 @@ export default function HistoryScreen() {
     );
   };
 
-  if (isError && !useMockData) {
+  if (isError) {
     return (
       <ScreenWrapper
         edges={["top"]}
@@ -247,18 +205,6 @@ export default function HistoryScreen() {
         header={
           <ScreenHeader
             title="ประวัติเหตุการณ์"
-            rightElement={
-              <TouchableOpacity
-                onPress={() => setUseMockData(!useMockData)}
-                className="p-2 -mr-2"
-              >
-                <MaterialIcons
-                  name={useMockData ? "visibility" : "visibility-off"}
-                  size={28}
-                  color="#6B7280"
-                />
-              </TouchableOpacity>
-            }
           />
         }
       >
@@ -298,18 +244,6 @@ export default function HistoryScreen() {
       header={
         <ScreenHeader
           title="ประวัติเหตุการณ์"
-          rightElement={
-            <TouchableOpacity
-              onPress={() => setUseMockData(!useMockData)}
-              className="p-2 -mr-2"
-            >
-              <MaterialIcons
-                name={useMockData ? "visibility" : "visibility-off"}
-                size={28}
-                color="#6B7280"
-              />
-            </TouchableOpacity>
-          }
         />
       }
     >
@@ -349,21 +283,8 @@ export default function HistoryScreen() {
             <View className="p-5">
               <View className="flex-row items-center justify-between mb-4">
                 <Text style={{ fontSize: 14 }} className="font-kanit text-gray-500">
-                  {useMockData
-                    ? "แสดงข้อมูลตัวอย่าง"
-                    : `แสดง ${totalEvents} จาก ${displayEvents.length} เหตุการณ์`}
+                  {`แสดง ${totalEvents} จาก ${displayEvents.length} เหตุการณ์`}
                 </Text>
-                {/* TODO: REMOVE THIS BADGE IN PRODUCTION */}
-                {useMockData && (
-                  <View className="bg-blue-50 px-3 py-1 rounded-full">
-                    <Text
-                      style={{ fontSize: 12 }}
-                      className="font-kanit text-blue-600"
-                    >
-                      MOCK DATA
-                    </Text>
-                  </View>
-                )}
               </View>
 
               {/* Limit Filter Chips */}
@@ -407,7 +328,7 @@ export default function HistoryScreen() {
         </View>
 
         {/* List */}
-        {isLoading && !useMockData ? (
+        {isLoading ? (
           <View className="flex-1 items-center justify-center">
             <ActivityIndicator size="large" color="#16AD78" />
             <Text className="font-kanit text-gray-500 mt-4">
@@ -421,7 +342,7 @@ export default function HistoryScreen() {
             keyExtractor={(item) => item.id}
             refreshControl={
               <RefreshControl
-                refreshing={!useMockData && isLoading}
+                refreshing={isLoading}
                 onRefresh={refetch}
                 colors={["#16AD78"]}
               />

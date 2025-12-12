@@ -4,7 +4,7 @@ import prisma from '../prisma.js';
 
 // ==========================================
 // ⚙️ LAYER: Business Logic (Service)
-// Purpose: Handle event creation, retrieval, cancellation, and statistics
+// Purpose: Handle event creation, retrieval, cancellation, and summary
 // ==========================================
 
 /**
@@ -260,9 +260,9 @@ export const cancelFallEvent = async (userId: string, eventId: string, timestamp
 };
 
 /**
- * Get daily event statistics
+ * Get daily event summary
  */
-export const getDailyStats = async (userId: string, elderId: string, days: number = 7) => {
+export const getDailySummary = async (userId: string, elderId: string, days: number = 7) => {
   // Check access
   const access = await prisma.userElderAccess.findUnique({
     where: {
@@ -296,13 +296,13 @@ export const getDailyStats = async (userId: string, elderId: string, days: numbe
   });
 
   // Group by date
-  const statsByDate: Record<string, any> = {};
+  const summaryByDate: Record<string, any> = {};
 
   events.forEach((event) => {
     const date = event.timestamp.toISOString().split('T')[0];
 
-    if (!statsByDate[date]) {
-      statsByDate[date] = {
+  if (!summaryByDate[date]) {
+      summaryByDate[date] = {
         date,
         total: 0,
         falls: 0,
@@ -313,31 +313,31 @@ export const getDailyStats = async (userId: string, elderId: string, days: numbe
       };
     }
 
-    statsByDate[date].total++;
+    summaryByDate[date].total++;
 
     if (event.type === 'FALL') {
-      statsByDate[date].falls++;
+      summaryByDate[date].falls++;
       if (event.isCancelled) {
-        statsByDate[date].cancelledFalls++;
+        summaryByDate[date].cancelledFalls++;
       }
     } else if (event.type === 'HEART_RATE_HIGH') {
-      statsByDate[date].heartRateHigh++;
+      summaryByDate[date].heartRateHigh++;
     } else if (event.type === 'HEART_RATE_LOW') {
-      statsByDate[date].heartRateLow++;
+      summaryByDate[date].heartRateLow++;
     } else if (event.type === 'DEVICE_OFFLINE') {
-      statsByDate[date].deviceOffline++;
+      summaryByDate[date].deviceOffline++;
     }
   });
 
-  return Object.values(statsByDate).sort((a: any, b: any) =>
+  return Object.values(summaryByDate).sort((a: any, b: any) =>
     a.date.localeCompare(b.date)
   );
 };
 
 /**
- * Get monthly event statistics
+ * Get monthly event summary
  */
-export const getMonthlyStats = async (userId: string, elderId: string, year: number, month: number) => {
+export const getMonthlySummary = async (userId: string, elderId: string, year: number, month: number) => {
   // Check access
   const access = await prisma.userElderAccess.findUnique({
     where: {
@@ -365,7 +365,7 @@ export const getMonthlyStats = async (userId: string, elderId: string, year: num
     },
   });
 
-  const stats = {
+  const summary = {
     year,
     month,
     totalEvents: events.length,
@@ -385,16 +385,16 @@ export const getMonthlyStats = async (userId: string, elderId: string, year: num
 
   events.forEach((event) => {
     if (event.type === 'FALL') {
-      stats.fallCount++;
+      summary.fallCount++;
       if (event.isCancelled) {
-        stats.cancelledFalls++;
+        summary.cancelledFalls++;
       }
     } else if (event.type === 'HEART_RATE_HIGH') {
-      stats.heartRateHighCount++;
+      summary.heartRateHighCount++;
     } else if (event.type === 'HEART_RATE_LOW') {
-      stats.heartRateLowCount++;
+      summary.heartRateLowCount++;
     } else if (event.type === 'DEVICE_OFFLINE') {
-      stats.deviceOfflineCount++;
+      summary.deviceOfflineCount++;
     }
 
     if (event.value && ['HEART_RATE_HIGH', 'HEART_RATE_LOW', 'HEART_RATE_NORMAL'].includes(event.type)) {
@@ -405,12 +405,12 @@ export const getMonthlyStats = async (userId: string, elderId: string, year: num
   });
 
   if (heartRateCount > 0) {
-    stats.avgHeartRate = Math.round(heartRateSum / heartRateCount);
-    stats.maxHeartRate = Math.max(...heartRates);
-    stats.minHeartRate = Math.min(...heartRates);
+    summary.avgHeartRate = Math.round(heartRateSum / heartRateCount);
+    summary.maxHeartRate = Math.max(...heartRates);
+    summary.minHeartRate = Math.min(...heartRates);
   }
 
-  return stats;
+  return summary;
 };
 
 /**

@@ -2,7 +2,7 @@
 
 ## Overview
 
-The FallHelp Admin Panel is a web-based dashboard for system administrators to manage devices, view statistics, and monitor user feedback.
+The FallHelp Admin Panel is a web-based dashboard for system administrators to manage devices, view system overview, and monitor user feedback.
 
 **Technology Stack:**
 
@@ -37,7 +37,7 @@ The FallHelp Admin Panel is a web-based dashboard for system administrators to m
 
 ### 2. Dashboard
 
-**Statistics Overview:**
+**System Overview:**
 
 - Total Users count
 - Total Elders count

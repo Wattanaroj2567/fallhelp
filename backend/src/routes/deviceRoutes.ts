@@ -17,7 +17,7 @@ router.post('/pair', deviceController.pairDevice);
 router.delete('/:id/unpair', deviceController.unpairDevice);
 router.put('/:id/wifi', deviceController.configureWiFi);
 router.get('/:id/config', deviceController.getDeviceConfig);
-router.put('/:id/config', deviceController.updateDeviceConfig);
+
 
 // Admin routes
 router.post('/', requireAdmin, deviceController.createDevice);

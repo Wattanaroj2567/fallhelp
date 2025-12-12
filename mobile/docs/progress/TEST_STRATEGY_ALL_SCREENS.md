@@ -80,10 +80,10 @@
 
 #### Monitoring (2 screens)
 
-| Screen            | Path                                         | Complexity | Test Focus                     |
-| ----------------- | -------------------------------------------- | ---------- | ------------------------------ |
-| ⬜ Notifications  | `(features)/(monitoring)/notifications.tsx`  | Medium     | Push notification list         |
-| ⬜ Report Summary | `(features)/(monitoring)/report-summary.tsx` | High       | Statistics, charts, date range |
+| Screen            | Path                                         | Complexity | Test Focus             |
+| ----------------- | -------------------------------------------- | ---------- | ---------------------- |
+| ⬜ Notifications  | `(features)/(monitoring)/notifications.tsx`  | Medium     | Push notification list |
+| ⬜ Report Summary | `(features)/(monitoring)/report-summary.tsx` | High       | Summary, date range    |
 
 ---
 

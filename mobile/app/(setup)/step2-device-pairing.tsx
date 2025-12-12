@@ -184,113 +184,117 @@ export default function Step2() {
         onBack={handleBack}
         contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 100 }}
       >
-        {existingDeviceId && (
-          <View className="bg-green-50 rounded-2xl p-4 mb-6 mt-6 border border-green-200">
-            <View className="flex-row items-center mb-2">
-              <Ionicons name="checkmark-circle" size={24} color="#16AD78" />
+        <View className="mt-6">
+          {existingDeviceId && (
+            <View className="bg-green-50 rounded-2xl p-4 mb-6 border border-green-200">
+              <View className="flex-row items-center mb-2">
+                <Ionicons name="checkmark-circle" size={24} color="#16AD78" />
+                <Text
+                  style={{ fontSize: 16, fontWeight: "600" }}
+                  className="font-kanit text-green-800 ml-2"
+                >
+                  อุปกรณ์ถูกผูกแล้ว
+                </Text>
+              </View>
               <Text
-                style={{ fontSize: 16, fontWeight: "600" }}
-                className="font-kanit text-green-800 ml-2"
+                style={{ fontSize: 14 }}
+                className="font-kanit text-green-700 mb-3"
               >
-                อุปกรณ์ถูกผูกแล้ว
+                คุณสามารถไปขั้นตอนต่อไป หรือเปลี่ยนอุปกรณ์ใหม่
+              </Text>
+              <View className="flex-row gap-3">
+                <TouchableOpacity
+                  onPress={() => router.push("/(setup)/step3-wifi-setup")}
+                  className="flex-1 bg-green-600 rounded-xl py-3 items-center"
+                >
+                  <Text
+                    style={{ fontSize: 14, fontWeight: "600" }}
+                    className="font-kanit text-white"
+                  >
+                    ไปขั้นตอนถัดไป
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={handleChangeDevice}
+                  className="flex-1 bg-white border border-green-600 rounded-xl py-3 items-center"
+                >
+                  <Text
+                    style={{ fontSize: 14, fontWeight: "600" }}
+                    className="font-kanit text-green-600"
+                  >
+                    เปลี่ยนอุปกรณ์
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+
+          <View className="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100 mb-6">
+            <View className="bg-blue-50 rounded-2xl p-4 mb-6">
+              <Text
+                style={{ fontSize: 13 }}
+                className="font-kanit text-blue-700 mb-1"
+              >
+                กรุณากรอกรหัสอุปกรณ์ 8 หลัก
+              </Text>
+              <Text
+                style={{ fontSize: 13 }}
+                className="font-kanit text-blue-700"
+              >
+                ที่ติดบนสติ๊กเกอร์ของอุปกรณ์
+              </Text>
+              <Text
+                style={{ fontSize: 13, fontWeight: "600" }}
+                className="font-kanit text-blue-900 mt-2"
+              >
+                ตัวอย่าง: 832CE051
               </Text>
             </View>
-            <Text
-              style={{ fontSize: 14 }}
-              className="font-kanit text-green-700 mb-3"
-            >
-              คุณสามารถไปขั้นตอนต่อไป หรือเปลี่ยนอุปกรณ์ใหม่
-            </Text>
-            <View className="flex-row gap-3">
-              <TouchableOpacity
-                onPress={() => router.push("/(setup)/step3-wifi-setup")}
-                className="flex-1 bg-green-600 rounded-xl py-3 items-center"
-              >
-                <Text
-                  style={{ fontSize: 14, fontWeight: "600" }}
-                  className="font-kanit text-white"
-                >
-                  ไปขั้นตอนถัดไป
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={handleChangeDevice}
-                className="flex-1 bg-white border border-green-600 rounded-xl py-3 items-center"
-              >
-                <Text
-                  style={{ fontSize: 14, fontWeight: "600" }}
-                  className="font-kanit text-green-600"
-                >
-                  เปลี่ยนอุปกรณ์
-                </Text>
-              </TouchableOpacity>
+
+            <View className="items-center mb-6">
+              <View className="w-24 h-24 rounded-full bg-gray-50 items-center justify-center border border-gray-100">
+                <Ionicons
+                  name="hardware-chip-outline"
+                  size={48}
+                  color="#16AD78"
+                />
+              </View>
             </View>
-          </View>
-        )}
 
-        <View className="bg-blue-50 rounded-2xl p-4 mb-6 mt-6">
-          <Text
-            style={{ fontSize: 14 }}
-            className="font-kanit text-blue-700 mb-2"
-          >
-            กรุณากรอกรหัสอุปกรณ์ 8 หลัก
-          </Text>
-          <Text
-            style={{ fontSize: 14 }}
-            className="font-kanit text-blue-700"
-          >
-            ที่ติดบนสติ๊กเกอร์ของอุปกรณ์
-          </Text>
-          <Text
-            style={{ fontSize: 14, fontWeight: "600" }}
-            className="font-kanit text-blue-900 mt-2"
-          >
-            ตัวอย่าง: 832CE051
-          </Text>
-        </View>
-
-        <View className="items-center mb-6">
-          <View className="w-32 h-32 rounded-full bg-gray-100 items-center justify-center mb-4">
-            <Ionicons
-              name="hardware-chip-outline"
-              size={64}
-              color="#16AD78"
+            <FloatingLabelInput
+              label="รหัสอุปกรณ์ (Device Code)"
+              value={macAddress}
+              onChangeText={(text) =>
+                setMacAddress(
+                  text
+                    .toUpperCase()
+                    .replace(/[^A-Z0-9]/g, "")
+                    .slice(0, 8)
+                )
+              }
+              autoCapitalize="characters"
+              maxLength={8}
             />
           </View>
+
+          <TouchableOpacity
+            onPress={handleManualPairing}
+            disabled={pairMutation.isPending}
+            className="bg-[#16AD78] rounded-2xl py-4 items-center mb-4 shadow-sm"
+            style={{ opacity: pairMutation.isPending ? 0.6 : 1 }}
+          >
+            {pairMutation.isPending ? (
+              <ActivityIndicator size="small" color="#FFFFFF" />
+            ) : (
+              <Text
+                style={{ fontSize: 16, fontWeight: "600" }}
+                className="font-kanit text-white"
+              >
+                ยืนยัน
+              </Text>
+            )}
+          </TouchableOpacity>
         </View>
-
-        <FloatingLabelInput
-          label="รหัสอุปกรณ์ (Device Code)"
-          value={macAddress}
-          onChangeText={(text) =>
-            setMacAddress(
-              text
-                .toUpperCase()
-                .replace(/[^A-Z0-9]/g, "")
-                .slice(0, 8)
-            )
-          }
-          autoCapitalize="characters"
-          maxLength={8}
-        />
-
-        <TouchableOpacity
-          onPress={handleManualPairing}
-          disabled={pairMutation.isPending}
-          className="bg-[#16AD78] rounded-2xl py-4 items-center mb-4"
-          style={{ opacity: pairMutation.isPending ? 0.6 : 1 }}
-        >
-          {pairMutation.isPending ? (
-            <ActivityIndicator size="small" color="#FFFFFF" />
-          ) : (
-            <Text
-              style={{ fontSize: 16, fontWeight: "600" }}
-              className="font-kanit text-white"
-            >
-              ยืนยัน
-            </Text>
-          )}
-        </TouchableOpacity>
       </WizardLayout>
     );
   }

@@ -49,7 +49,7 @@ export default function Dashboard() {
   const { user: currentUser } = useAuth();
 
   const { data, isLoading: dashboardLoading } = useQuery({
-    queryKey: ["dashboardStats"],
+    queryKey: ["dashboardSummary"],
     queryFn: async () => {
       const response = await api.get("/admin/dashboard");
       return response.data.data;
@@ -86,7 +86,7 @@ export default function Dashboard() {
     );
   }
 
-  const stats = [
+  const summary = [
     {
       label: "Total Users",
       value: data?.totalUsers || users?.length || 0,
@@ -118,26 +118,26 @@ export default function Dashboard() {
             Dashboard Overview
           </h1>
           <p className="text-gray-500">
-            Real-time system monitoring and statistics
+            Real-time system monitoring and summary
           </p>
         </div>
 
-        {/* Stats Cards */}
+        {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {stats.map((stat, index) => (
+          {summary.map((item, index) => (
             <div
               key={index}
               className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all"
             >
               <div className="flex items-center justify-between mb-4">
                 <div
-                  className={`p-2.5 rounded-xl bg-linear-to-br ${stat.gradient} shadow-lg`}
+                  className={`p-2.5 rounded-xl bg-linear-to-br ${item.gradient} shadow-lg`}
                 >
-                  <stat.icon size={20} className="text-white" />
+                  <item.icon size={20} className="text-white" />
                 </div>
               </div>
-              <p className="text-sm text-gray-500 mb-1">{stat.label}</p>
-              <p className={`text-3xl font-bold ${stat.text}`}>{stat.value}</p>
+              <p className="text-sm text-gray-500 mb-1">{item.label}</p>
+              <p className={`text-3xl font-bold ${item.text}`}>{item.value}</p>
             </div>
           ))}
         </div>

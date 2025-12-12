@@ -146,7 +146,7 @@ export type Paginated<T> = {
   pageSize?: number;
 };
 
-export type DailyStat = {
+export type DailySummary = {
   date: string;
   total: number;
   fall?: number;
@@ -154,7 +154,7 @@ export type DailyStat = {
   heartRateLow?: number;
 };
 
-export type MonthlyStat = {
+export type MonthlySummary = {
   month: string;
   total: number;
   fall?: number;

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useRouter, useSegments } from 'expo-router';
+import { useRouter, useSegments, useRootNavigationState } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
 import Logger from '@/utils/logger';
 
@@ -11,11 +11,13 @@ export function useProtectedRoute() {
   const { isSignedIn, isLoading } = useAuth();
   const segments = useSegments();
   const router = useRouter();
+  const rootNavigationState = useRootNavigationState(); // ✅ Check navigation state
   const checkingRef = useRef(false);
   const hasCheckedSetup = useRef(false);
 
   useEffect(() => {
     if (isLoading) return;
+    if (!rootNavigationState?.key) return; // ✅ Wait for navigation to be ready
 
     const inAuthGroup = segments[0] === '(auth)';
     const inTabsGroup = segments[0] === '(tabs)';

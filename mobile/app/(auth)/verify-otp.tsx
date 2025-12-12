@@ -124,72 +124,75 @@ export default function VerifyOtpScreen() {
         <Text className="font-kanit text-sm text-gray-500 text-center leading-6">
           เราได้ส่งรหัสยืนยัน (OTP) ไปยังอีเมลของคุณ
         </Text>
-        <Text className="font-kanit text-sm text-gray-500 text-center mb-5">
+        <Text className="font-kanit text-sm text-gray-500 text-center mb-8">
           {email}
         </Text>
 
-        <Text className="font-kanit text-sm text-gray-500 text-center mb-8">
-          กรุณากรอกรหัส 6 หลัก ด้านล่างเพื่อดำเนินการต่อ
-        </Text>
-
-        {/* OTP Inputs */}
-        <View className="mb-12 items-center w-full">
-          <TextInput
-            ref={inputRef}
-            testID="otp-input"
-            value={code}
-            onChangeText={handleCodeChange}
-            keyboardType="number-pad"
-            maxLength={OTP_LENGTH}
-            className="w-0 h-0 opacity-0"
-            autoFocus={true}
-          />
-
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={() => inputRef.current?.focus()}
-            className="flex-row justify-center gap-2.5"
-            testID="otp-boxes"
-          >
-            {[...Array(OTP_LENGTH)].map((_, index) => {
-              const hasValue = index < code.length;
-              return (
-                <View
-                  key={index}
-                  className={`w-[45px] h-[55px] border rounded-xl items-center justify-center ${
-                    hasValue
-                      ? "border-gray-200 bg-white"
-                      : "border-gray-200 bg-white"
-                  }`}
-                >
-                  <Text className="font-kanit text-2xl text-gray-800">
-                    {hasValue ? code[index] : ""}
-                  </Text>
-                </View>
-              );
-            })}
-          </TouchableOpacity>
-        </View>
-
-        {/* Resend Timer */}
-        <View className="flex-row justify-center items-center mb-8">
-          <Text className="font-kanit text-gray-500 text-sm">
-            ไม่ได้รับ OTP ?{" "}
+        {/* Card Container for Inputs */}
+        <View className="bg-white rounded-[24px] p-8 shadow-sm border border-gray-100 mb-8 w-full">
+          <Text className="font-kanit text-sm text-gray-500 text-center mb-6">
+            กรุณากรอกรหัส 6 หลัก ด้านล่างเพื่อดำเนินการต่อ
           </Text>
-          {timer > 0 ? (
-            <Text className="font-kanit text-gray-400 text-sm">
-              รอ {formattedTimer} เพื่อส่งอีกครั้ง
-            </Text>
-          ) : (
-            <TouchableOpacity onPress={handleResendOtp} testID="resend-button">
-              <Text
-                className="font-kanit font-bold underline"
-                style={{ color: THEME_COLOR }}
-              >
-                ส่งรหัสอีกครั้ง
-              </Text>
+
+          {/* OTP Inputs */}
+          <View className="items-center w-full mb-6">
+            <TextInput
+              ref={inputRef}
+              testID="otp-input"
+              value={code}
+              onChangeText={handleCodeChange}
+              keyboardType="number-pad"
+              maxLength={OTP_LENGTH}
+              className="w-0 h-0 opacity-0"
+              autoFocus={true}
+            />
+
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={() => inputRef.current?.focus()}
+              className="flex-row justify-center gap-2"
+              testID="otp-boxes"
+            >
+              {[...Array(OTP_LENGTH)].map((_, index) => {
+                const hasValue = index < code.length;
+                return (
+                  <View
+                    key={index}
+                    className={`w-[40px] h-[50px] border rounded-xl items-center justify-center ${
+                      hasValue
+                        ? "border-gray-300 bg-gray-50"
+                        : "border-gray-200 bg-white"
+                    }`}
+                  >
+                    <Text className="font-kanit text-2xl text-gray-800">
+                      {hasValue ? code[index] : ""}
+                    </Text>
+                  </View>
+                );
+              })}
             </TouchableOpacity>
-          )}
+          </View>
+
+          {/* Resend Timer */}
+          <View className="flex-row justify-center items-center">
+            <Text className="font-kanit text-gray-500 text-sm">
+              ไม่ได้รับ OTP ?{" "}
+            </Text>
+            {timer > 0 ? (
+              <Text className="font-kanit text-gray-400 text-sm">
+                รอ {formattedTimer} เพื่อส่งอีกครั้ง
+              </Text>
+            ) : (
+              <TouchableOpacity onPress={handleResendOtp} testID="resend-button">
+                <Text
+                  className="font-kanit font-bold underline"
+                  style={{ color: THEME_COLOR }}
+                >
+                  ส่งรหัสอีกครั้ง
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
 
         {/* Submit Button */}

@@ -1,76 +1,34 @@
-# FallHelp Documentation
+# FallHelp Documentation Index
 
-ยินดีต้อนรับสู่เอกสารของโปรเจค FallHelp — คู่มือสั้นๆ สำหรับผู้อ่านใหม่เพื่อทำความเข้าใจโปรเจค และลิงก์ไปยังไฟล์รายงาน/เอกสารทั้งหมด
-
----
-
-## 🔎 ภาพรวมสั้นๆ
-
-FallHelp คือระบบตรวจจับการหกล้มของผู้สูงอายุแบบ Real-time ประกอบด้วย:
-
-- **Backend:** Node.js + Express + TypeScript + PostgreSQL/TimescaleDB + MQTT + Socket.io
-- **Mobile App:** React Native + Expo (✅ Complete)
-- **Admin Panel:** Vite + React + TypeScript + TailwindCSS (✅ Complete)
-- **IoT:** ESP32 + Accelerometer + Heart Rate
-
-**สถานะโปรเจค:** ✅ Mobile App และ Admin Panel เสร็จสมบูรณ์ (December 5, 2025 - v1.3.0)
-
-ภาพรวมเชิงเทคนิคและการตั้งค่าแบบรวบรัดอยู่ใน README หลักของโปรเจค (root) ซึ่งยังคงเป็นแหล่งข้อมูลหลักสำหรับ Quick Start
+> 📚 **Official Documentation Hub**
+> This directory contains the single source of truth for all project documentation.
 
 ---
 
-## 📚 ลิงก์เอกสารสำคัญ
+## ✅ Current Documentation (Use These)
 
-- **Backend Summary:** `backend/docs/IMPLEMENTATION_SUMMARY.md`
-- **Backend Troubleshooting:** `backend/docs/TROUBLESHOOTING.md`
-- **Mobile Progress:** `mobile/docs/progress/PROGRESS.md`
-- **Mobile Troubleshooting:** `mobile/docs/TROUBLESHOOTING.md`
-- **Admin Panel:** `admin/docs/README.md` ✨ NEW
-- **ESP32 Firmware Guide:** `arduino/README.md`
-- **UI Features (Mobile):** `docs/UI_FEATURES.md`
-- **Project Structure:** `docs/PROJECT_STRUCTURE.md`
-- **Postman Collection:** `backend/postman_collection.json`
-
----
-
-## 🚀 เริ่มต้นใช้งาน (Quick Start)
-
-- **Backend:** ดูส่วน Quick Start ใน `README.md` (root)
-  - ติดตั้ง, config `.env`, migrate, รัน `npm run dev`
-- **Mobile:** ดูส่วน Mobile Setup ใน `README.md` (root)
-  - `cd mobile && npm install && npm start`
-- **ESP32 Firmware:** ดูคู่มือใน `arduino/README.md`
+| Document                                                               | Description                                                          |
+| :--------------------------------------------------------------------- | :------------------------------------------------------------------- |
+| **[Project Structure](architecture/PROJECT_STRUCTURE.md)**             | Technical stack, directory layout, database schema, and API summary. |
+| **[Functional Requirements](architecture/FUNCTIONAL_REQUIREMENTS.md)** | Detailed features list, user roles, and development phases.          |
+| **[System Design](architecture/SYSTEM_DESIGN.md)**                     | Architecture details for Database, Mobile, Admin, and Notifications. |
+| **[UI Features & Flow](features/UI_FEATURES.md)**                      | Comprehensive UI/UX requirements, screen flows, and states.          |
+| **[Admin Panel](features/ADMIN_PANEL.md)**                             | Specific features and endpoints for the Admin Web Panel.             |
+| **[Feedback System](features/FEEDBACK_SYSTEM.md)**                     | Implementation details for the User Feedback loop.                   |
 
 ---
 
-## 🧭 เส้นทางการอ่านที่แนะนำ
+## 📂 Directories
 
-1. อ่าน `README.md` (root) เพื่อเข้าใจภาพรวม + Quick Start
-2. อ่าน `backend/docs/IMPLEMENTATION_SUMMARY.md` เพื่อรายละเอียด Implementation และ API
-3. อ่าน `docs/UI_FEATURES.md` เพื่อเข้าใจ Flow/UI ฝั่ง Mobile
-4. อ้างอิง `docs/PROJECT_STRUCTURE.md` เพื่อดูแผนผังโค้ดทั้งหมด
-5. ตั้งค่า ESP32 Device → `arduino/README.md`
+- **`architecture/`**: High-level system design and requirements.
+- **`features/`**: Detailed specifications for specific sub-systems (Mobile, Admin, UI).
+- **`archive/`** (Planned): Location for older progress logs and deprecated files.
 
 ---
 
-## 🧪 การทดสอบเบื้องต้น
+## ⚠️ Deprecated Locations
 
-- **ทดสอบ API:** ใช้ Postman Collection ที่ `backend/postman_collection.json`
-- **ทดสอบ IoT:** ใช้ ESP32 จริงพร้อม MPU6050 และ Pulse Sensor
+Please ignore documentation in the following folders as they may be outdated. Always refer to the files listed above.
 
----
-
-## 🤝 แนวทางการพัฒนา/Commit
-
-- ดู Git Workflow + ชื่อ Commit ที่แนะนำใน `README.md` (root)
-- ดู AI Agent Guidelines ใน `AGENT.md` (root)
-
----
-
-## 🗺️ แผนภาพสถาปัตยกรรม
-
-- แผนภาพ ASCII และคำอธิบายอยู่ใน `README.md` (root)
-
----
-
-**Last Updated:** December 5, 2025
+- `backend/docs/` -> See `architecture/` instead.
+- `mobile/docs/` -> See `features/MOBILE.md` or `UI_FEATURES.md` instead.

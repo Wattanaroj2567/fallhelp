@@ -38,7 +38,7 @@ npm run db:verify --prefix backend
 
 - **Extension**: Confirms `timescaledb` is installed.
 - **Hypertable**: Checks if `events` is a valid hypertable.
-- **Continuous Aggregates**: Verifies `events_daily_stats` view existence.
+- **Continuous Aggregates**: Verifies `events_daily_summary` view existence.
 - **Jobs/Policies**: Lists active background jobs (Compression, Refresh).
 
 ---

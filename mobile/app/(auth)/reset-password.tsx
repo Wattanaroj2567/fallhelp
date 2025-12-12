@@ -108,48 +108,51 @@ export default function ResetPasswordScreen() {
         </Text>
 
         <View className="w-full">
-          {/* New Password Input */}
-          <View className="mb-3">
-            <FloatingLabelInput
-              testID="newPassword-input"
-              label="รหัสผ่านใหม่"
-              value={newPassword}
-              onChangeText={setNewPassword}
-              isPassword
-              autoCapitalize="none"
-              textContentType="password"
-              accentColor={THEME_COLOR}
-            />
+          {/* Card for Inputs */}
+          <View className="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100 mb-6">
+            {/* New Password Input */}
+            <View className="mb-5">
+              <FloatingLabelInput
+                testID="newPassword-input"
+                label="รหัสผ่านใหม่"
+                value={newPassword}
+                onChangeText={setNewPassword}
+                isPassword
+                autoCapitalize="none"
+                textContentType="password"
+                accentColor={THEME_COLOR}
+              />
 
-            {/* Requirements Text (From Image) */}
-            <View className="mt-2 ml-2">
-              <Text
-                className="font-kanit"
-                style={{ fontSize: 12, color: "#6B7280", marginBottom: 2 }}
-              >
-                • อย่างน้อย 8 ตัวอักษร
-              </Text>
-              <Text
-                className="font-kanit"
-                style={{ fontSize: 12, color: "#6B7280" }}
-              >
-                • มีตัวอักษรพิมพ์ใหญ่-เล็กและตัวเลข
-              </Text>
+              {/* Requirements Text (From Image) */}
+              <View className="mt-2 ml-2">
+                <Text
+                  className="font-kanit"
+                  style={{ fontSize: 12, color: "#6B7280", marginBottom: 2 }}
+                >
+                  • อย่างน้อย 8 ตัวอักษร
+                </Text>
+                <Text
+                  className="font-kanit"
+                  style={{ fontSize: 12, color: "#6B7280" }}
+                >
+                  • มีตัวอักษรพิมพ์ใหญ่-เล็กและตัวเลข
+                </Text>
+              </View>
             </View>
-          </View>
 
-          {/* Confirm Password Input */}
-          <View className="mb-8">
-            <FloatingLabelInput
-              testID="confirmPassword-input"
-              label="ยืนยันรหัสผ่าน"
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              isPassword
-              autoCapitalize="none"
-              textContentType="password"
-              accentColor={THEME_COLOR}
-            />
+            {/* Confirm Password Input */}
+            <View>
+              <FloatingLabelInput
+                testID="confirmPassword-input"
+                label="ยืนยันรหัสผ่าน"
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                isPassword
+                autoCapitalize="none"
+                textContentType="password"
+                accentColor={THEME_COLOR}
+              />
+            </View>
           </View>
 
           {/* Submit Button */}

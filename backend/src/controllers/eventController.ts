@@ -71,13 +71,13 @@ export const cancelFallEvent = asyncHandler(async (req: Request, res: Response) 
 });
 
 /**
- * GET /api/events/stats/daily
+ * GET /api/events/summary/daily
  */
-export const getDailyStats = asyncHandler(async (req: Request, res: Response) => {
+export const getDailySummary = asyncHandler(async (req: Request, res: Response) => {
   const userId = req.user!.userId;
   const { elderId, days } = req.query;
 
-  const stats = await eventService.getDailyStats(
+  const summary = await eventService.getDailySummary(
     userId,
     elderId as string,
     days ? parseInt(days as string) : 7
@@ -85,18 +85,18 @@ export const getDailyStats = asyncHandler(async (req: Request, res: Response) =>
 
   res.json({
     success: true,
-    data: stats,
+    data: summary,
   });
 });
 
 /**
- * GET /api/events/stats/monthly
+ * GET /api/events/summary/monthly
  */
-export const getMonthlyStats = asyncHandler(async (req: Request, res: Response) => {
+export const getMonthlySummary = asyncHandler(async (req: Request, res: Response) => {
   const userId = req.user!.userId;
   const { elderId, year, month } = req.query;
 
-  const stats = await eventService.getMonthlyStats(
+  const summary = await eventService.getMonthlySummary(
     userId,
     elderId as string,
     parseInt(year as string),
@@ -105,7 +105,7 @@ export const getMonthlyStats = asyncHandler(async (req: Request, res: Response) 
 
   res.json({
     success: true,
-    data: stats,
+    data: summary,
   });
 });
 

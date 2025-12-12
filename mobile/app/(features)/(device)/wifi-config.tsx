@@ -6,7 +6,8 @@ import {
   ActivityIndicator,
   Modal,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+import { MaterialIcons } from "@expo/vector-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useMutation } from "@tanstack/react-query";
 import { configureWifi } from "@/services/deviceService";
@@ -93,96 +94,85 @@ export default function WifiConfig() {
   // ==========================================
   // 🖼️ LAYER: View (Header Component)
   // ==========================================
-  const renderHeader = () => (
-    <View style={{ backgroundColor: "#FFFFFF" }}>
-      <ScreenHeader title="ตั้งค่า WiFi" onBack={handleBack} />
-      <View style={{ paddingHorizontal: 24, paddingBottom: 8 }}>
-        <Text
-          style={{ fontSize: 20, fontWeight: "600", marginBottom: 8, marginTop: 8 }}
-          className="font-kanit text-gray-900"
-        >
-          ตั้งค่าเครือข่าย WiFi สำหรับอุปกรณ์
-        </Text>
-        <Text
-          style={{ fontSize: 14, marginBottom: 8 }}
-          className="font-kanit text-gray-600"
-        >
-          กรุณากรอกชื่อ WiFi (SSID) และรหัสผ่านเพื่อเชื่อมต่ออุปกรณ์กับอินเทอร์เน็ต
-        </Text>
-      </View>
-    </View>
-  );
-
+  // Keep header simpler - just the nav bar
+  // The content will be in the main scroll view
+  
   // ==========================================
   // 🖼️ LAYER: View (Main Render)
   // ==========================================
   return (
     <ScreenWrapper
       keyboardAvoiding={true}
-      contentContainerStyle={{ paddingHorizontal: 24, flexGrow: 1, paddingTop: 16 }}
+      contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 24 }}
       edges={["top", "left", "right"]}
       useScrollView={true}
-      header={renderHeader()}
+      header={
+        <View style={{ backgroundColor: "#FFFFFF" }}>
+          <ScreenHeader title="ตั้งค่า WiFi" onBack={handleBack} />
+          <View className="items-center pb-6 px-6 border-b border-gray-50">
+            <View className="w-16 h-16 bg-green-50 rounded-full items-center justify-center mb-3 border border-green-100">
+              <MaterialIcons name="wifi" size={32} color="#16AD78" />
+            </View>
+            <Text
+              style={{ fontSize: 20, fontWeight: "600" }}
+              className="font-kanit text-gray-900 text-center mb-1"
+            >
+              เชื่อมต่อ WiFi
+            </Text>
+            <Text
+              style={{ fontSize: 13, lineHeight: 20 }}
+              className="font-kanit text-gray-500 text-center px-4"
+            >
+              กรุณากรอกชื่อ WiFi (SSID) และรหัสผ่าน
+              {deviceCode ? ` สำหรับอุปกรณ์ ${deviceCode}` : ""}
+            </Text>
+          </View>
+        </View>
+      }
     >
-      <View style={{ flex: 1 }}>
-        <View
-          style={{
-            backgroundColor: "#FEF9C3",
-            borderRadius: 16,
-            padding: 16,
-            marginBottom: 24,
-            borderWidth: 1,
-            borderColor: "#FDE68A",
-          }}
-        >
-          <Text
-            style={{ fontSize: 12, fontWeight: "600", marginBottom: 4 }}
-            className="font-kanit text-yellow-800"
-          >
-            📝 หมายเหตุสำหรับ Production:
-          </Text>
-          <Text style={{ fontSize: 11 }} className="font-kanit text-yellow-700">
-            • ต้องรองรับเฉพาะ WiFi 2.4GHz{"\n"}• ต้องเชื่อมต่อกับ ESP32 ผ่าน
-            BLE/MQTT{"\n"}• แสดง loading จริงจนกว่า ESP32 จะตอบกลับ{"\n"}•
-            Handle timeout และ error cases
-          </Text>
+      <View className="flex-1 pt-6">
+        {/* Form Inputs */}
+        <View className="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100 mb-6">
+          <View className="mb-5">
+            <FloatingLabelInput
+              label="ชื่อ WiFi (SSID)"
+              value={manualSsid}
+              onChangeText={setManualSsid}
+              autoCorrect={false}
+              autoCapitalize="none"
+            />
+          </View>
+
+          <View>
+            <FloatingLabelInput
+              label="รหัสผ่าน WiFi"
+              value={manualPassword}
+              onChangeText={setManualPassword}
+              isPassword
+              autoCorrect={false}
+              autoCapitalize="none"
+              textContentType="password"
+            />
+          </View>
         </View>
 
-        <View style={{ marginBottom: 16 }}>
-          <FloatingLabelInput
-            label="ชื่อ WiFi (SSID)"
-            value={manualSsid}
-            onChangeText={setManualSsid}
-            autoCorrect={false}
-            autoCapitalize="none"
+        {/* Action Button */}
+        <View className="mt-2">
+          <PrimaryButton
+            title="เชื่อมต่อ"
+            onPress={handleConnect}
+            loading={configureWifiMutation.isPending}
+            icon={<MaterialIcons name="arrow-forward" size={20} color="white" />}
           />
         </View>
-
-        <View style={{ marginBottom: 24 }}>
-          <FloatingLabelInput
-            label="รหัสผ่าน WiFi"
-            value={manualPassword}
-            onChangeText={setManualPassword}
-            isPassword
-            autoCorrect={false}
-            autoCapitalize="none"
-            textContentType="password"
-          />
-        </View>
-
-        <PrimaryButton
-          title="เชื่อมต่อ"
-          onPress={handleConnect}
-          loading={configureWifiMutation.isPending}
-          style={{ marginBottom: 32 }}
-        />
       </View>
 
-      <Modal visible={configureWifiMutation.isPending} transparent>
+      {/* Loading Modal */}
+      <Modal visible={configureWifiMutation.isPending} transparent animationType="fade">
         <View
           style={{
             flex: 1,
-            backgroundColor: "rgba(0,0,0,0.5)",
+            backgroundColor: "rgba(0,0,0,0.6)",
             justifyContent: "center",
             alignItems: "center",
             padding: 24,
@@ -194,14 +184,26 @@ export default function WifiConfig() {
               borderRadius: 24,
               padding: 32,
               alignItems: "center",
+              width: '80%',
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.2,
+              shadowRadius: 12,
+              elevation: 8,
             }}
           >
             <ActivityIndicator size="large" color="#16AD78" />
             <Text
-              style={{ fontSize: 16, marginTop: 16 }}
-              className="text-gray-900 font-kanit"
+              style={{ fontSize: 18, fontWeight: "600", marginTop: 24, marginBottom: 8 }}
+              className="text-gray-900 font-kanit text-center"
             >
-              กำลังเชื่อมต่อ WiFi กับอุปกรณ์...
+              กำลังเชื่อมต่อ...
+            </Text>
+            <Text
+              style={{ fontSize: 14 }}
+              className="text-gray-500 font-kanit text-center"
+            >
+              กำลังส่งข้อมูล WiFi ไปยังอุปกรณ์
             </Text>
           </View>
         </View>

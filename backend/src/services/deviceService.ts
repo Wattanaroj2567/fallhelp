@@ -4,6 +4,9 @@ import crypto from 'crypto';
 import prisma from '../prisma.js';
 import createDebug from 'debug';
 import { AppError } from '../utils/AppError.js';
+import { encrypt, decrypt } from '../utils/encryption.js';
+import { mqttClient } from '../iot/mqtt/mqttClient.js';
+import { MQTT_TOPICS } from '../iot/mqtt/topics.js';
 
 const log = createDebug('fallhelp:device');
 
@@ -244,8 +247,8 @@ export const configureWiFi = async (
     },
   });
 
-  if (!access || access.accessLevel !== 'OWNER') {
-    throw new Error('Only owner can configure WiFi');
+  if (!access || (access.accessLevel !== 'OWNER' && access.accessLevel !== 'EDITOR')) {
+    throw new Error('Only owner or editor can configure WiFi');
   }
 
   // Update WiFi config
@@ -254,12 +257,12 @@ export const configureWiFi = async (
     create: {
       deviceId,
       ssid,
-      wifiPassword: password, // TODO: Encrypt password
+      wifiPassword: encrypt(password),
       wifiStatus: 'CONFIGURING',
     },
     update: {
       ssid,
-      wifiPassword: password, // TODO: Encrypt password
+      wifiPassword: encrypt(password),
       wifiStatus: 'CONFIGURING',
     },
   });
@@ -267,6 +270,14 @@ export const configureWiFi = async (
   // Real-world flow: Mobile app sends WiFi credentials to Backend
   // Then ESP32 fetches config via MQTT or HTTP polling
   // No QR code needed - more realistic UX
+
+  // Publish config to device via MQTT
+  // CRITICAL: ESP32 subscribes to topic with Serial Number, not DB ID
+  const topic = MQTT_TOPICS.getConfigTopic(device.serialNumber);
+  mqttClient.publish(topic, {
+      wifiSSID: ssid,
+      wifiPassword: password, // Sending plaintext to device (secure transport assumed e.g. MQTTS)
+  });
 
   return {
     config,
@@ -303,51 +314,21 @@ export const getDeviceConfig = async (userId: string, deviceId: string) => {
     throw new Error('Access denied');
   }
 
-  return device.config;
-};
-
-/**
- * Update device config
- */
-export const updateDeviceConfig = async (
-  userId: string,
-  deviceId: string,
-  data: {
-    fallThreshold?: number;
-    hrLowThreshold?: number;
-    hrHighThreshold?: number;
-    fallCancelTime?: number;
+  const config = device.config;
+  if (config && config.wifiPassword) {
+    try {
+      config.wifiPassword = decrypt(config.wifiPassword);
+    } catch (e) {
+      // Logic: If decryption fails (old plaintext data), return as is or handle error
+      // Ideally, we might want to migrate old data, but for now we fallback or leave it
+    }
   }
-) => {
-  const device = await prisma.device.findUnique({
-    where: { id: deviceId },
-  });
-
-  if (!device || !device.elderId) {
-    throw new Error('Device not found or not paired');
-  }
-
-  // Check if user is OWNER
-  const access = await prisma.userElderAccess.findUnique({
-    where: {
-      userId_elderId: {
-        userId,
-        elderId: device.elderId,
-      },
-    },
-  });
-
-  if (!access || access.accessLevel !== 'OWNER') {
-    throw new Error('Only owner can update device config');
-  }
-
-  const config = await prisma.deviceConfig.update({
-    where: { deviceId },
-    data,
-  });
 
   return config;
 };
+
+
+
 
 /**
  * Update device status

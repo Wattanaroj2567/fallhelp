@@ -105,8 +105,7 @@ export default function LoginScreen() {
         </View>
 
         {/* Form Section */}
-        <View className="w-full max-w-md mx-auto">
-          {/* Identifier Input with Floating Label */}
+        <View className="w-full max-w-md mx-auto bg-white rounded-[24px] p-6 shadow-sm border border-gray-100">
           {/* Identifier Input with Floating Label */}
           <FloatingLabelInput
             testID="email-input"
@@ -127,24 +126,25 @@ export default function LoginScreen() {
           />
 
           {/* Password Input with Floating Label */}
-          {/* Password Input with Floating Label */}
-          <FloatingLabelInput
-            testID="password-input"
-            label="รหัสผ่าน"
-            value={password}
-            onChangeText={setPassword}
-            isPassword
-            autoCapitalize="none"
-            textContentType="password"
-          />
+          <View className="mt-4">
+            <FloatingLabelInput
+              testID="password-input"
+              label="รหัสผ่าน"
+              value={password}
+              onChangeText={setPassword}
+              isPassword
+              autoCapitalize="none"
+              textContentType="password"
+            />
+          </View>
 
           {/* Forgot Password */}
           <TouchableOpacity
-            className="self-end mb-8"
+            className="self-end mb-8 mt-2"
             onPress={() => router.push("/(auth)/forgot-password")}
             activeOpacity={0.7}
           >
-            <Text style={{ fontSize: 14 }} className="font-kanit text-gray-500">
+            <Text style={{ fontSize: 13 }} className="font-kanit text-gray-500">
               ลืมรหัสผ่าน ?
             </Text>
           </TouchableOpacity>
@@ -171,7 +171,7 @@ export default function LoginScreen() {
                 className="font-kanit text-primary font-semibold"
                 style={{ fontSize: 14, color: "#EB6A6A" }}
               >
-                สมัครสมาชิก
+                 สมัครสมาชิก
               </Text>
             </TouchableOpacity>
           </View>

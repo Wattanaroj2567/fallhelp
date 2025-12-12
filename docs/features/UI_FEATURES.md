@@ -322,6 +322,7 @@
 - **Header Text:** "ตั้งค่าเครือข่าย WiFi สำหรับอุปกรณ์"
 - **คำอธิบาย:**
   - "เลือก WiFi จากรายการ หรือกรอกด้วยตนเองสำหรับเครือข่ายที่ซ่อน SSID"
+  - **สิทธิ์การเข้าถึง:** Owner และ Editor เท่านั้นที่สามารถตั้งค่า WiFi ได้
 
 ---
 
@@ -446,9 +447,8 @@
 
 - **เมนู:**
   1. **ตั้งค่าการเชื่อม WiFi ใหม่** → หน้าตั้งค่า WiFi (เหมือน Step 3)
-  2. **ตั้งค่าการเชื่อมอุปกรณ์ใหม่** → หน้า Scan QR / Manual Entry (เหมือน Step 2)
-  3. จัดการสมาชิก → Invite Members Flow
-  4. แชร์ข้อมูลระบบ → Share Feature
+  2. จัดการสมาชิก → Invite Members Flow
+  3. แชร์ข้อมูลระบบ → Share Feature
 
 ---
 
@@ -493,7 +493,7 @@
 
 **API/Socket:**
 
-- Socket Event: `device:status`
+- Socket Event: `device_status_update`
 - API: `GET /api/devices/:deviceId/status`
 
 ---
@@ -515,7 +515,7 @@
 
 **API/Socket:**
 
-- Socket Event: `fall:detected`, `fall:cancelled`, `fall:confirmed`
+- Socket Event: `fall_detected`, `event_status_changed`
 - API: `GET /api/elders/:elderId/events?type=FALL&latest=true`
 
 ---
@@ -543,7 +543,7 @@
 
 **API/Socket:**
 
-- Socket Event: `heartrate:update`, `heartrate:anomaly`
+- Socket Event: `heart_rate_update`, `heart_rate_alert`
 - API: `GET /api/elders/:elderId/heart-rate/latest`
 
 ---
@@ -609,8 +609,9 @@
   - **เข้าถึงได้:**
     - Settings Menu (Section 8)
       - ตั้งค่าการเชื่อม WiFi ใหม่
-      - ตั้งค่าการเชื่อมอุปกรณ์ใหม่
-      - จัดการสมาชิก (Section 8.3 - Multi-User Access & Member Management)
+      - จัดการสมาชิก (Member Management)
+        - เชิญสมาชิก (Owner only)
+        - กำหนดสิทธิ์: Editor (แก้ไขได้), Viewer (ดูได้อย่างเดียว)
       - ออกจากระบบ
 
 **Styles:**
@@ -649,8 +650,9 @@ Socket Event: `fall:detected`
 Dashboard Update:
     ├─ การ์ดหกล้ม: "ตรวจพบการหกล้ม" (เหลือง)
     ├─ แสดงปุ่ม "ยกเลิก" + Timer 30 วินาที
+    │   └─ *คำอธิบาย:* ช่วงเวลานี้คือการรอให้ผู้สูงอายุกดปุ่มยกเลิกที่อุปกรณ์ (False Alarm) หากพ้นเวลาให้สันนิษฐานว่าเกิดเหตุจริง (Silence implies Emergency) หรือหากญาติมีช่องทางตรวจสอบอื่น (เช่น กล้อง) ก็สามารถกดยกเลิกแทนได้ (Backup)
     ├─ Push Notification ส่งไปหา caregivers ทุกคน
-    └─ ถ้าไม่กด "ยกเลิก" ภายใน 30s → โทรหาเบอร์ฉุกเฉิน
+    └─ ถ้าไม่กด "ยกเลิก" ภายใน 30s → เปลี่ยนสถานะเป็น "Confirmed" (แดง) และแสดงปุ่มโทรฉุกเฉิน
 ```
 
 #### **Scenario 3: Heart Rate Anomaly**
@@ -1108,7 +1110,7 @@ Dashboard Update:
 - จำนวนผู้ใช้งานที่ Active
 - จำนวนอุปกรณ์ที่ลงทะเบียน (Total Devices)
 - จำนวนอุปกรณ์ที่เชื่อมต่ออยู่ (Active Devices)
-- สถิติเบื้องต้น (กราฟแสดงแนวโน้ม)
+- ข้อมูลสรุปเบื้องต้น
 
 ---
 
@@ -1146,7 +1148,7 @@ Dashboard Update:
 
 **หน้า: Admin Dashboard**
 
-**การ์ดแสดงสถิติ (Cards):**
+**การ์ดแสดงข้อมูลสรุป (Cards):**
 
 1. **Total Users**
 
@@ -1167,11 +1169,6 @@ Dashboard Update:
    - จำนวนอุปกรณ์ที่เชื่อมต่ออยู่ (Online)
    - ไอคอน 🟢
 
-**กราฟ (Charts):**
-
-- กราฟแนวโน้มผู้ใช้งาน (User Growth Trend)
-- กราฟแนวโน้มอุปกรณ์ (Device Registration Trend)
-
 **ตารางรายการอุปกรณ์ (Device List Table):**
 
 - Device ID
@@ -1182,8 +1179,8 @@ Dashboard Update:
 
 **API Endpoints:**
 
-- `GET /api/admin/dashboard/stats` - ดึงสถิติโดยรวม
-- `GET /api/admin/dashboard/trends` - ดึงข้อมูลกราฟแนวโน้ม
+- `GET /api/admin/dashboard` - ดึงข้อมูลสรุปภาพรวม
+
 - `GET /api/admin/devices/list` - ดึงรายการอุปกรณ์
 
 ---
@@ -1212,12 +1209,10 @@ Dashboard Update:
 - `GET /api/admin/devices/:deviceId` - ดูข้อมูลอุปกรณ์รายละเอียด
 - `GET /api/admin/devices/:deviceId/qrcode` - ดาวน์โหลด QR Code ของอุปกรณ์
 
-#### Dashboard & Analytics APIs
+#### Dashboard & Summary APIs
 
-- `GET /api/admin/dashboard/stats` - สถิติภาพรวมระบบ
+- `GET /api/admin/dashboard` - ข้อมูลสรุปภาพรวมระบบ
   - Response: `{ totalUsers, activeUsers, totalDevices, activeDevices }`
-- `GET /api/admin/dashboard/trends` - ข้อมูลกราฟแนวโน้ม
-  - Response: `{ userGrowth: [...], deviceRegistration: [...] }`
 
 ---
 
@@ -1285,6 +1280,18 @@ Dashboard Update:
 - แสดงจุดสีแดงพร้อมตัวเลขบนไอคอนกระดิ่งในหน้า Home
 - อัปเดต Real-time (ทุก 30 วินาที)
 
+### 10.3 Push Notification Behavior (การทำงานเมื่อแตะแจ้งเตือน)
+
+- **Behavior:** เมื่อผู้ใช้งานแตะที่ Push Notification (ไม่ว่าจะเป็น Fall, Heart Rate, หรือ Offline)
+- **Target Screen:** ระบบจะนำทางไปที่ **"หน้าหลัก" (Dashboard Home)** เสมอ
+- **Reason:** เพื่อให้ญาติผู้ดูแลเห็นสถานะปัจจุบัน (Real-time Status) ของผู้สูงอายุก่อนตัดสินใจดำเนินการใดๆ (เช่น การกดโทรฉุกเฉิน หรือ ดูรายละเอียดเพิ่มเติม)
+- **Flow:**
+  1. User Taps Notification
+  2. App Opens / Resumes
+  3. Navigate to `(tabs)/index` (Dashboard)
+  4. User sees the Status Card (e.g., Fall Detected Card)
+  5. User decides action (Call / Cancel / View Details)
+
 ---
 
 ---
@@ -1292,7 +1299,7 @@ Dashboard Update:
 ## 11. Emergency Call Behavior
 
 > **ประเภท:** Native Phone Dialer Integration  
-> **ทริกเกอร์เมื่อ:** เกิดเหตุการณ์หกล้ม (Fall Detected) หรือกดปุ่มโทรฉุกเฉิน  
+> **ทริกเกอร์เมื่อ:** ผู้ใช้งานกดปุ่มโทรฉุกเฉิน (จากหน้า Dashboard)  
 > **พฤติกรรม:** เด้งเข้าหน้า Native Dialer ของมือถือโดยตรง (ไม่ใช่ Custom UI)
 
 ### 11.1 Call Screen
@@ -1475,6 +1482,33 @@ Dashboard Update:
 
 ---
 
+### **9. Admin Panel (Web Dashboard)**
+
+> **สำหรับผู้ดูแลระบบเท่านั้น (Admin Role)**
+
+**Dashboard Overview:**
+
+- **Metrics:** แสดงจำนวนผู้ใช้งาน (Active Users), ผู้สูงอายุ (Active Elders), และสถิติการล้มรายวัน
+- **Graphs:** กราฟสรุปเหตุการณ์รายเดือน
+
+**User & Elder Management:**
+
+- ดูรายการผู้ใช้ทั้งหมด และสถานะบัญชี
+- ดูรายการผู้สูงอายุ, อุปกรณ์ที่ผูก, และประวัติ
+
+**Device Management:**
+
+- สร้าง Device Code ใหม่ (Generative)
+- ดูสถานะอุปกรณ์ (Online/Offline)
+- บังคับ Unpair อุปกรณ์ (Force Unpair)
+
+**Feedback & Issues:**
+
+- ดูรายการ Feedback / แจ้งซ่อม (Repair Requests)
+- อัปเดตสถานะ Ticket (REP-XXX) : Pending → Reviewed → Resolved
+
+---
+
 ### **3. Device Management APIs**
 
 #### 3.1 Device Pairing & Setup
@@ -1497,10 +1531,10 @@ Dashboard Update:
   - **Response:** `{ id, deviceId, macAddress, name, status, wifiStatus, config: { ssid, signalStrength }, elderId, lastSeen, createdAt }`
   - **UI:** Device Info Screen
 
-- **`DELETE /api/devices/:deviceId`**
+- **`DELETE /api/devices/:deviceId/unpair`**
   - **Request:** Header: Authorization Bearer token
-  - **Response:** `{ success: true, message: "Device removed successfully" }`
-  - **UI:** Remove Device
+  - **Response:** `{ success: true, message: "Device unpaired successfully" }`
+  - **UI:** Remove Device (Unpair)
 
 #### 3.2 WiFi Configuration
 
@@ -1581,11 +1615,11 @@ Dashboard Update:
 
 ### **5. User Access Management APIs (Multi-User / Share Data)**
 
-- **`POST /api/elders/:elderId/invite`**
+- **`POST /api/elders/:elderId/members`**
 
-  - **Request:** `{ email, accessLevel: "FULL_ACCESS" | "VIEW_ONLY" }`
-  - **Response:** `{ success: true, message: "Invitation sent to email" }`
-  - **UI:** Invite Members → Success
+  - **Request:** `{ email }`
+  - **Response:** `{ success: true, message: "Member added successfully" }`
+  - **UI:** Add Member (Direct Add)
 
 - **`GET /api/elders/:elderId/members`**
 
@@ -1599,28 +1633,11 @@ Dashboard Update:
   - **Response:** `{ success: true, message: "Member removed successfully" }`
   - **UI:** Remove Member (❌ button)
 
-- **`PUT /api/elders/:elderId/members/:userId`**
+- **`PATCH /api/elders/:elderId/members/:userId`**
 
-  - **Request:** `{ accessLevel: "FULL_ACCESS" | "VIEW_ONLY" }`
+  - **Request:** `{ accessLevel: "EDITOR" | "VIEWER" }`
   - **Response:** `{ success: true, member: {...} }`
   - **UI:** Change Member Access Level
-
-- **`GET /api/invitations`**
-
-  - **Request:** Header: Authorization Bearer token
-  - **Response:** `{ invitations: [{ id, elderId, elderName, invitedBy, accessLevel, createdAt, status: "PENDING" | "ACCEPTED" | "REJECTED" }] }`
-  - **UI:** Pending Invitations (notification)
-
-- **`POST /api/invitations/:invitationId/accept`**
-
-  - **Request:** Header: Authorization Bearer token
-  - **Response:** `{ success: true, elderAccess: {...} }`
-  - **UI:** Accept Invitation
-
-- **`POST /api/invitations/:invitationId/reject`**
-  - **Request:** Header: Authorization Bearer token
-  - **Response:** `{ success: true }`
-  - **UI:** Reject Invitation
 
 ---
 
@@ -1697,7 +1714,7 @@ Dashboard Update:
   - **Response:** `{ bpm, timestamp, status: "NORMAL" | "LOW" | "HIGH" }`
   - **UI:** Dashboard - Real-time BPM Display
 
-#### 6.3 Monthly Reports & Analytics
+#### 6.3 Monthly Reports & Summary
 
 - **`GET /api/elders/:elderId/events/summary`**
 
@@ -1785,18 +1802,18 @@ Dashboard Update:
 
 #### 8.2 Device Status
 
-- **Event: `device:status`**
+- **Event: `device_status_update`**
 
   - **Payload:** `{ deviceId, status: "ONLINE" | "OFFLINE", timestamp }`
   - **UI:** Dashboard - สถานะของอุปกรณ์
 
-- **Event: `device:wifi-status`**
+- **Event: `device_wifi_status`**
   - **Payload:** `{ deviceId, wifiStatus: "CONNECTED" | "DISCONNECTED", ssid, signalStrength }`
   - **UI:** Dashboard - WiFi indicator
 
 #### 8.3 Fall Detection (Real-time)
 
-- **Event: `fall:detected`**
+- **Event: `fall_detected`**
 
   - **Payload:**
     ```json
@@ -1813,23 +1830,19 @@ Dashboard Update:
     ```
   - **UI:** Dashboard - แจ้งเตือนสีเหลือง + Timer 30s
 
-- **Event: `fall:cancelled`**
+- **Event: `event_status_changed`**
 
-  - **Payload:** `{ eventId, cancelledBy, cancelledAt }`
-  - **UI:** ยกเลิกการแจ้งเตือน
-
-- **Event: `fall:confirmed`**
-  - **Payload:** `{ eventId, emergencyContactsCalled: [{ name, phoneNumber }] }`
-  - **UI:** โทรหาผู้ติดต่อฉุกเฉิน
+  - **Payload:** `{ eventId, status: "RESOLVED" | "CANCELLED", cancelledBy, cancelledAt }`
+  - **UI:** ยกเลิกการแจ้งเตือน / เปลี่ยนสถานะ
 
 #### 8.4 Heart Rate (Real-time)
 
-- **Event: `heartrate:update`**
+- **Event: `heart_rate_update`**
 
   - **Payload:** `{ elderId, bpm, status: "NORMAL" | "LOW" | "HIGH", timestamp }`
   - **UI:** Dashboard - ❤️ BPM Display (อัปเดตทุก 5 วินาที)
 
-- **Event: `heartrate:anomaly`**
+- **Event: `heart_rate_alert`**
   - **Payload:** `{ elderId, bpm, status: "LOW" | "HIGH", threshold, timestamp }`
   - **UI:** แจ้งเตือนชีพจรผิดปกติ (สีแดง)
 

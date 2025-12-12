@@ -35,14 +35,7 @@ export default function Step3() {
   // Purpose: Configure WiFi for the device
   // ==========================================
 
-  // 🚧 TODO: ข้อมูลปลอมชั่วคราว - ใช้เพื่อทดสอบ flow เท่านั้น
-  // เมื่อใช้งานจริง ต้องเปลี่ยนเป็น:
-  // 1. เรียก API configureWifi() จริง ไปที่ backend
-  // 2. Backend ส่งคำสั่งไปที่อุปกรณ์ ESP32 ผ่าน MQTT/WebSocket
-  // 3. ESP32 connect WiFi ตาม SSID/Password ที่ส่งมา
-  // 4. ESP32 ส่ง response กลับว่า connect สำเร็จหรือไม่
-  // 5. ถ้าสำเร็จ → บันทึก wifiSsid ลง Device table
-  // 6. ถ้าล้มเหลว → แสดง error ให้ user ลองใหม่
+
 
   const configureWifiMutation = useMutation({
     mutationFn: async (payload: { ssid: string; wifiPassword: string }) => {
@@ -50,12 +43,10 @@ export default function Step3() {
       if (!deviceId)
         throw new Error("ไม่พบข้อมูลอุปกรณ์ กรุณากลับไปทำขั้นตอนที่ 2 ใหม่");
 
-      // 🚧 MOCK: ข้ามการเรียก API จริง - ใช้ delay แทน
-      // await configureWifi(deviceId, payload);
-      await new Promise((resolve) => setTimeout(resolve, 2000)); // Mock delay 2 วินาที
-
-      // 🚧 MOCK: สมมติว่า WiFi config สำเร็จเสมอ
-      Logger.info("🚧 MOCK WiFi Config Success:", {
+      // Call Real API
+      await configureWifi(deviceId, payload);
+      
+      Logger.info("WiFi Config Success:", {
         deviceId,
         ssid: payload.ssid,
       });
@@ -89,8 +80,7 @@ export default function Step3() {
       return;
     }
 
-    // 🚧 MOCK: ยอมรับ SSID/Password อะไรก็ได้ในช่วงทดสอบ
-    // เมื่อใช้งานจริง จะมี validation และส่งไปที่ ESP32 จริง
+    // ส่งข้อมูล WiFi Config ไปที่ Backend เพื่อส่งต่อให้ ESP32
     configureWifiMutation.mutate({
       ssid: manualSsid,
       wifiPassword: manualPassword,
@@ -152,62 +142,48 @@ export default function Step3() {
       onBack={handleBack}
       contentContainerStyle={{ paddingHorizontal: 24, flexGrow: 1 }}
     >
-      <View>
-        {/* Title */}
-        <Text
-          style={{ fontSize: 20, fontWeight: "600" }}
-          className="font-kanit text-gray-900 mb-2 mt-4"
-        >
-          ตั้งค่าเครือข่าย WiFi สำหรับอุปกรณ์
-        </Text>
-        <Text
-          style={{ fontSize: 14 }}
-          className="font-kanit text-gray-600 mb-6"
-        >
-          กรุณากรอกชื่อ WiFi (SSID)
-          และรหัสผ่านเพื่อเชื่อมต่ออุปกรณ์กับอินเทอร์เน็ต
-        </Text>
-
-        <View className="bg-blue-50 rounded-2xl p-4 mb-6">
-          <Text style={{ fontSize: 14 }} className="font-kanit text-blue-700">
-            🚧 โหมดทดสอบ: ใส่ WiFi อะไรก็ได้ (ยังไม่ connect จริง)
-          </Text>
-        </View>
-
-        <View className="bg-yellow-50 rounded-2xl p-4 mb-6 border border-yellow-200">
+      <View className="flex-1 mt-4">
+        {/* Title inside Card or above? Usually WizardLayout title is enough.
+            But here we have extra instructions. Let's put instructions in the Card or just above.
+            The user wants "Card Style" for form.
+        */}
+        <View className="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100 mb-6">
           <Text
-            style={{ fontSize: 12, fontWeight: "600" }}
-            className="font-kanit text-yellow-800 mb-1"
+            style={{ fontSize: 18, fontWeight: "600" }}
+            className="font-kanit text-gray-900 mb-4"
           >
-            📝 หมายเหตุสำหรับ Production:
+            ตั้งค่าเครือข่าย WiFi สำหรับอุปกรณ์
           </Text>
-          <Text style={{ fontSize: 11 }} className="font-kanit text-yellow-700">
-            • ต้องรองรับเฉพาะ WiFi 2.4GHz{"\n"}• ต้องเชื่อมต่อกับ ESP32 ผ่าน
-            BLE/MQTT{"\n"}• แสดง loading จริงจนกว่า ESP32 จะตอบกลับ{"\n"}•
-            Handle timeout และ error cases
+          <Text
+            style={{ fontSize: 14 }}
+            className="font-kanit text-gray-600 mb-6"
+          >
+            กรุณากรอกชื่อ WiFi (SSID)
+            และรหัสผ่านเพื่อเชื่อมต่ออุปกรณ์กับอินเทอร์เน็ต
           </Text>
-        </View>
 
-        <View className="mb-4">
-          <FloatingLabelInput
-            label="ชื่อ WiFi (SSID)"
-            value={manualSsid}
-            onChangeText={setManualSsid}
-            autoCorrect={false}
-            autoCapitalize="none"
-          />
-        </View>
+          <View className="mb-5">
+            <FloatingLabelInput
+              label="ชื่อ WiFi (SSID)"
+              value={manualSsid}
+              onChangeText={setManualSsid}
+              autoCorrect={false}
+              autoCapitalize="none"
+              // Remove leftIcon prop if it was there, but here it wasn't.
+            />
+          </View>
 
-        <View className="mb-6">
-          <FloatingLabelInput
-            label="รหัสผ่าน WiFi"
-            value={manualPassword}
-            onChangeText={setManualPassword}
-            isPassword
-            autoCorrect={false}
-            autoCapitalize="none"
-            textContentType="password"
-          />
+          <View>
+            <FloatingLabelInput
+              label="รหัสผ่าน WiFi"
+              value={manualPassword}
+              onChangeText={setManualPassword}
+              isPassword
+              autoCorrect={false}
+              autoCapitalize="none"
+              textContentType="password"
+            />
+          </View>
         </View>
 
         <PrimaryButton

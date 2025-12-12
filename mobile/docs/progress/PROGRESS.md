@@ -62,7 +62,7 @@
 - ✅ Elder Management (List, Detail, Add, Edit)
 - ✅ Device Management (Pairing, WiFi Config)
 - ✅ Emergency Contacts (CRUD)
-- ✅ Events & History (Timeline, Stats, Reports)
+- ✅ Events & History (Timeline, Summary, Reports)
 - ✅ Profile Management (Edit Profile, Change Password)
 - ✅ Settings (WiFi, Device, Members, Logout)
 - ✅ Notifications & Alerts (Fall Detection, Heart Rate)
@@ -208,10 +208,10 @@
 | ------------------- | -------- | --------------- |
 | Event Timeline      | 📝 To Do | 8h              |
 | Event Detail Screen | 📝 To Do | 4h              |
-| Daily Statistics    | 📝 To Do | 6h              |
+| Daily Summary       | 📝 To Do | 6h              |
 | Monthly Report      | 📝 To Do | 8h              |
 | Fall Event Card     | 📝 To Do | 3h              |
-| Heart Rate Chart    | 📝 To Do | 8h              |
+| Heart Rate Summary  | 📝 To Do | 8h              |
 | Filter & Search     | 📝 To Do | 5h              |
 
 **Total:** 42 hours
@@ -291,7 +291,7 @@
 
 ---
 
-## 📊 Development Statistics
+## 📊 Development Summary
 
 ### 🚨 5-Hour Sprint Breakdown
 
@@ -324,7 +324,6 @@
 - 📝 Expo Push Notifications (To Install)
 - 📝 React Native Camera (To Install)
 - 📝 Zustand/Context (State Management)
-- 📝 React Native Chart Kit (To Install)
 
 ### Dependencies to Install
 
@@ -338,7 +337,7 @@
     "expo-camera": "~15.0.0",
     "expo-barcode-scanner": "~13.0.0",
     "zustand": "^4.5.0",
-    "react-native-chart-kit": "^6.12.0",
+
     "react-native-svg": "15.2.0"
   }
 }

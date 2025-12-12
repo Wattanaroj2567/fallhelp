@@ -3,11 +3,11 @@ import {
   getRecentEvents,
   getEvent,
   cancelEvent,
-  getDailyStats,
-  getMonthlyStats,
+  getDailySummary,
+  getMonthlySummary,
 } from '../eventService';
 import { apiClient } from '../api';
-import type { Event, Paginated, DailyStat, MonthlyStat } from '../types';
+import type { Event, Paginated, DailySummary, MonthlySummary } from '../types';
 
 // Mock dependencies
 jest.mock('../api', () => ({
@@ -214,13 +214,13 @@ describe('eventService', () => {
   });
 
   // ==========================================
-  // ✅ Test Group 5: Daily Statistics
-  // จากโค้ดจริง: getDailyStats() function
+  // ✅ Test Group 5: Daily Summary
+  // จากโค้ดจริง: getDailySummary() function
   // ==========================================
 
-  describe('getDailyStats', () => {
-    it('should fetch daily statistics successfully', async () => {
-      const mockDailyStats: DailyStat[] = [
+  describe('getDailySummary', () => {
+    it('should fetch daily summary successfully', async () => {
+      const mockDailySummary: DailySummary[] = [
         {
           date: '2024-01-15',
           fall: 2,
@@ -235,32 +235,32 @@ describe('eventService', () => {
         },
       ];
 
-      mockApiClient.get.mockResolvedValueOnce({ data: mockDailyStats });
+      mockApiClient.get.mockResolvedValueOnce({ data: mockDailySummary });
 
-      const result = await getDailyStats();
+      const result = await getDailySummary();
 
-      expect(mockApiClient.get).toHaveBeenCalledWith('/api/events/stats/daily');
-      expect(result).toEqual(mockDailyStats);
+      expect(mockApiClient.get).toHaveBeenCalledWith('/api/events/summary/daily');
+      expect(result).toEqual(mockDailySummary);
       expect(result).toHaveLength(2);
     });
 
     it('should handle no statistics available', async () => {
       mockApiClient.get.mockResolvedValueOnce({ data: [] });
 
-      const result = await getDailyStats();
+      const result = await getDailySummary();
 
       expect(result).toEqual([]);
     });
   });
 
   // ==========================================
-  // ✅ Test Group 6: Monthly Statistics
-  // จากโค้ดจริง: getMonthlyStats() function
+  // ✅ Test Group 6: Monthly Summary
+  // จากโค้ดจริง: getMonthlySummary() function
   // ==========================================
 
-  describe('getMonthlyStats', () => {
-    it('should fetch monthly statistics successfully', async () => {
-      const mockMonthlyStats: MonthlyStat[] = [
+  describe('getMonthlySummary', () => {
+    it('should fetch monthly summary successfully', async () => {
+      const mockMonthlySummary: MonthlySummary[] = [
         {
           month: '2024-01',
           fall: 15,
@@ -275,12 +275,12 @@ describe('eventService', () => {
         },
       ];
 
-      mockApiClient.get.mockResolvedValueOnce({ data: mockMonthlyStats });
+      mockApiClient.get.mockResolvedValueOnce({ data: mockMonthlySummary });
 
-      const result = await getMonthlyStats();
+      const result = await getMonthlySummary();
 
-      expect(mockApiClient.get).toHaveBeenCalledWith('/api/events/stats/monthly');
-      expect(result).toEqual(mockMonthlyStats);
+      expect(mockApiClient.get).toHaveBeenCalledWith('/api/events/summary/monthly');
+      expect(result).toEqual(mockMonthlySummary);
       expect(result).toHaveLength(2);
     });
 
@@ -290,7 +290,7 @@ describe('eventService', () => {
         message: 'Failed to calculate statistics',
       });
 
-      await expect(getMonthlyStats()).rejects.toMatchObject({
+      await expect(getMonthlySummary()).rejects.toMatchObject({
         status: 500,
         message: 'Failed to calculate statistics',
       });

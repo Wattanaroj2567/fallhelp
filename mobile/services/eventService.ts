@@ -1,10 +1,10 @@
 /**
  * @fileoverview Event Service
- * @description Handles fall detection and heart rate event queries and statistics
+ * @description Handles fall detection and heart rate event queries and summary
  */
 
 import { apiClient, toApiError } from './api';
-import type { DailyStat, Event, MonthlyStat, Paginated } from './types';
+import type { DailySummary, Event, MonthlySummary, Paginated } from './types';
 
 export type EventFilters = {
   elderId?: string;
@@ -51,18 +51,18 @@ export async function cancelEvent(eventId: string): Promise<Event> {
   }
 }
 
-export async function getDailyStats(): Promise<DailyStat[]> {
+export async function getDailySummary(): Promise<DailySummary[]> {
   try {
-    const { data } = await apiClient.get<DailyStat[]>('/api/events/stats/daily');
+    const { data } = await apiClient.get<DailySummary[]>('/api/events/summary/daily');
     return data;
   } catch (error) {
     throw toApiError(error);
   }
 }
 
-export async function getMonthlyStats(): Promise<MonthlyStat[]> {
+export async function getMonthlySummary(): Promise<MonthlySummary[]> {
   try {
-    const { data } = await apiClient.get<MonthlyStat[]>('/api/events/stats/monthly');
+    const { data } = await apiClient.get<MonthlySummary[]>('/api/events/summary/monthly');
     return data;
   } catch (error) {
     throw toApiError(error);

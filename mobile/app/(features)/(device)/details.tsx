@@ -259,7 +259,7 @@ export default function DeviceDetails() {
                                 </TouchableHighlight>
 
                                 {/* Unpair - Only for Owner */}
-                                {!isReadOnly && (
+                                {elderInfo?.accessLevel === 'OWNER' && (
                                     <TouchableHighlight
                                         onPress={handleUnpair}
                                         underlayColor="#FEF2F2"

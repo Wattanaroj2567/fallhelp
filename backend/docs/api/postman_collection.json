@@ -691,16 +691,16 @@
           ]
         },
         {
-          "name": "GET /events/stats/daily",
+          "name": "GET /events/summary/daily",
           "request": {
             "method": "GET",
             "header": [
               { "key": "Authorization", "value": "Bearer {{authToken}}" }
             ],
             "url": {
-              "raw": "{{baseUrl}}/events/stats/daily?elderId={{elderId}}&days=7",
+              "raw": "{{baseUrl}}/events/summary/daily?elderId={{elderId}}&days=7",
               "host": ["{{baseUrl}}"],
-              "path": ["events", "stats", "daily"],
+              "path": ["events", "summary", "daily"],
               "query": [
                 { "key": "elderId", "value": "{{elderId}}" },
                 { "key": "days", "value": "7" }
@@ -716,16 +716,16 @@
           ]
         },
         {
-          "name": "GET /events/stats/monthly",
+          "name": "GET /events/summary/monthly",
           "request": {
             "method": "GET",
             "header": [
               { "key": "Authorization", "value": "Bearer {{authToken}}" }
             ],
             "url": {
-              "raw": "{{baseUrl}}/events/stats/monthly?elderId={{elderId}}&year=2025&month=11",
+              "raw": "{{baseUrl}}/events/summary/monthly?elderId={{elderId}}&year=2025&month=11",
               "host": ["{{baseUrl}}"],
-              "path": ["events", "stats", "monthly"],
+              "path": ["events", "summary", "monthly"],
               "query": [
                 { "key": "elderId", "value": "{{elderId}}" },
                 { "key": "year", "value": "2025" },
@@ -1139,16 +1139,16 @@
           ]
         },
         {
-          "name": "GET /admin/events/stats",
+          "name": "GET /admin/events/summary",
           "request": {
             "method": "GET",
             "header": [
               { "key": "Authorization", "value": "Bearer {{authToken}}" }
             ],
             "url": {
-              "raw": "{{baseUrl}}/admin/events/stats?days=30",
+              "raw": "{{baseUrl}}/admin/events/summary?days=30",
               "host": ["{{baseUrl}}"],
-              "path": ["admin", "events", "stats"],
+              "path": ["admin", "events", "summary"],
               "query": [{ "key": "days", "value": "30" }]
             }
           },

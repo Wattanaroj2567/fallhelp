@@ -109,8 +109,8 @@ export default function ForgotPasswordScreen() {
 
         {/* Form Section */}
         <View className="w-full max-w-md mx-auto">
-          {/* Email Input with Floating Label */}
-          <View className="mb-8">
+          {/* Card for Inputs */}
+          <View className="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100 mb-6">
             <FloatingLabelInput
               testID="email-input"
               label="อีเมล"

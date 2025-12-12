@@ -15,7 +15,7 @@ export interface FeedbackItem {
   type: FeedbackType;
   ticketNumber?: string; // REP-001, REP-002 for repair requests
   createdAt: string;
-  status: 'PENDING' | 'IN_PROGRESS' | 'RESOLVED' | 'REJECTED';
+  status: 'PENDING' | 'REVIEWED' | 'RESOLVED';
 }
 
 /**

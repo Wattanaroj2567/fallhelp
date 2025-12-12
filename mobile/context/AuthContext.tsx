@@ -24,10 +24,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     useEffect(() => {
         const bootstrap = async () => {
             try {
-                const token = await getToken();
+                let token = null;
+                try {
+                    token = await getToken();
+                } catch (error) {
+                    // Retry once if native storage is not ready immediately (common in dev/restart)
+                    Logger.warn('Auth bootstrap failed, retrying...', error);
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    token = await getToken();
+                }
+
                 setIsSignedIn(!!token);
             } catch (e) {
-                Logger.error('Auth bootstrap error', e);
+                Logger.error('Auth bootstrap fatal error', e);
+                // If it fails twice, we assume signed out.
             } finally {
                 setIsLoading(false);
             }

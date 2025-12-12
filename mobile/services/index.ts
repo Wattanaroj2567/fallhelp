@@ -44,8 +44,8 @@ export type {
   Notification,
   // Utilities
   Paginated,
-  DailyStat,
-  MonthlyStat,
+  DailySummary,
+  MonthlySummary,
 } from './types';
 
 // =============================================================================
@@ -134,8 +134,8 @@ export {
   getRecentEvents,
   getEvent,
   cancelEvent,
-  getDailyStats,
-  getMonthlyStats,
+  getDailySummary,
+  getMonthlySummary,
 } from './eventService';
 export type { EventFilters } from './eventService';
 

@@ -158,6 +158,7 @@ Content-Type: application/json
 **Location:** `mobile/app/(setting-features)/feedback.tsx`
 
 **Features:**
+
 - Text area for feedback message
 - Character count (optional)
 - Submit button
@@ -165,6 +166,7 @@ Content-Type: application/json
 - Loading state
 
 **Navigation:**
+
 - Access from Settings → "ส่งความคิดเห็น"
 
 **Code Example:**
@@ -173,11 +175,11 @@ Content-Type: application/json
 const submitFeedback = useMutation({
   mutationFn: (message: string) => feedbackService.submitFeedback(message),
   onSuccess: () => {
-    Alert.alert('สำเร็จ', 'ส่งความคิดเห็นเรียบร้อยแล้ว');
+    Alert.alert("สำเร็จ", "ส่งความคิดเห็นเรียบร้อยแล้ว");
     router.back();
   },
   onError: () => {
-    Alert.alert('ผิดพลาด', 'ไม่สามารถส่งความคิดเห็นได้');
+    Alert.alert("ผิดพลาด", "ไม่สามารถส่งความคิดเห็นได้");
   },
 });
 ```
@@ -191,6 +193,7 @@ const submitFeedback = useMutation({
 **Location:** `admin/src/pages/Feedback.tsx`
 
 **Features:**
+
 - Table view of all feedback
 - User information display (name, email, avatar)
 - Status badges (PENDING, REVIEWED, RESOLVED)
@@ -199,11 +202,13 @@ const submitFeedback = useMutation({
 - Loading and empty states
 
 **Status Colors:**
+
 - PENDING: Yellow (`bg-yellow-100 text-yellow-800`)
 - REVIEWED: Blue (`bg-blue-100 text-blue-800`)
 - RESOLVED: Green (`bg-green-100 text-green-800`)
 
 **Actions:**
+
 - Mark as Reviewed (Clock icon)
 - Mark as Resolved (CheckCircle icon)
 
@@ -243,6 +248,7 @@ RESOLVED (Green)
 ```
 
 **Status Descriptions:**
+
 - **PENDING:** New feedback, not yet reviewed
 - **REVIEWED:** Admin has read the feedback
 - **RESOLVED:** Issue has been addressed or feedback implemented
@@ -252,6 +258,7 @@ RESOLVED (Green)
 ## Files Created/Modified
 
 ### Backend
+
 - `backend/prisma/schema.prisma` (Modified)
 - `backend/src/routes/feedbackRoutes.ts` (New)
 - `backend/src/services/feedbackService.ts` (New)
@@ -259,11 +266,13 @@ RESOLVED (Green)
 - `backend/src/routes/index.ts` (Modified)
 
 ### Mobile App
+
 - `mobile/app/(setting-features)/feedback.tsx` (New)
 - `mobile/services/feedbackService.ts` (New)
 - `mobile/app/(tabs)/settings.tsx` (Modified)
 
 ### Admin Panel
+
 - `admin/src/pages/Feedback.tsx` (New)
 - `admin/src/layouts/DashboardLayout.tsx` (Modified)
 - `admin/src/App.tsx` (Modified)
@@ -275,6 +284,7 @@ RESOLVED (Green)
 ### Manual Testing
 
 **Test Case 1: Submit Feedback**
+
 1. Login to mobile app
 2. Go to Settings → Send Feedback
 3. Enter message: "Test feedback"
@@ -282,12 +292,14 @@ RESOLVED (Green)
 5. Verify success message
 
 **Test Case 2: View Feedback (Admin)**
+
 1. Login to Admin Panel
 2. Navigate to Feedback page
 3. Verify feedback appears in list
 4. Verify user information is correct
 
 **Test Case 3: Update Status**
+
 1. Click "Mark as Reviewed" button
 2. Verify status changes to REVIEWED
 3. Click "Mark as Resolved" button
@@ -301,7 +313,7 @@ RESOLVED (Green)
 - [ ] Feedback categories (Bug, Feature Request, General)
 - [ ] Admin reply to feedback
 - [ ] Email notification to user when feedback is resolved
-- [ ] Feedback analytics (most common issues)
+- [ ] Feedback summary (most common issues)
 - [ ] Export feedback to CSV
 
 ---

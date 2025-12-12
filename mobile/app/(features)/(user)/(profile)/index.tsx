@@ -56,7 +56,7 @@ export default function Profile() {
     mutationFn: updateProfile,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['userProfile'] });
-      // Alert.alert('สำเร็จ', 'อัปเดตรูปโปรไฟล์เรียบร้อยแล้ว'); // Suppress alert for demo flow
+      // Alert.alert('สำเร็จ', 'อัปเดตรูปโปรไฟล์เรียบร้อยแล้ว');
     },
     onError: (error) => {
       Logger.error('Error updating profile image:', error);

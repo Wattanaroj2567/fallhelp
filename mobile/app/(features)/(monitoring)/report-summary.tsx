@@ -47,19 +47,7 @@ const THAI_MONTHS = [
   "ธันวาคม",
 ];
 
-// ==========================================
-// 🎨 LAYER: Mock Data (for UI Preview)
-// ==========================================
-const MOCK_SUMMARY: MonthlySummary = {
-  month: "มกราคม",
-  year: 2568,
-  peakTimeRange: "14:00 - 15:00 น.",
-  totalFallEvents: 3,
-  heartRateAnomalies: {
-    high: 5,
-    low: 2,
-  },
-};
+
 
 // ==========================================
 // 📱 LAYER: View (Component)
@@ -68,9 +56,7 @@ const MOCK_SUMMARY: MonthlySummary = {
 export default function ReportSummary() {
   const router = useRouter();
 
-  // TODO: REMOVE IN PRODUCTION
-  // This toggle is for UI preview during development only.
-  const [useMockData, setUseMockData] = React.useState(false);
+
 
   // ==========================================
   // 🧩 LAYER: Logic (Local State)
@@ -171,10 +157,10 @@ export default function ReportSummary() {
         },
       } as MonthlySummary;
     },
-    enabled: !!currentElder?.id && !useMockData,
+    enabled: !!currentElder?.id,
   });
 
-  const displaySummary = useMockData ? MOCK_SUMMARY : summary;
+  const displaySummary = summary;
 
   // ==========================================
   // 🎮 LAYER: Logic (Event Handlers)
@@ -215,7 +201,7 @@ export default function ReportSummary() {
     );
   };
 
-  if (isError && !useMockData) {
+  if (isError) {
     return (
       <ScreenWrapper
         edges={["top"]}
@@ -262,19 +248,6 @@ export default function ReportSummary() {
         <ScreenHeader
           title="รายงานสรุปประจำเดือน"
           onBack={() => router.back()}
-          rightElement={
-            <TouchableHighlight
-              onPress={() => setUseMockData(!useMockData)}
-              className="p-2 -mr-2 rounded-full"
-              underlayColor="#E5E7EB"
-            >
-              <MaterialIcons
-                name={useMockData ? "visibility" : "visibility-off"}
-                size={28}
-                color="#6B7280"
-              />
-            </TouchableHighlight>
-          }
         />
       }
     >
@@ -309,16 +282,6 @@ export default function ReportSummary() {
                   </Text>
                   <MaterialIcons name="arrow-drop-down" size={28} color="#6B7280" />
                 </View>
-                {useMockData && (
-                  <View className="bg-blue-50 px-3 py-1 rounded-full mt-2">
-                    <Text
-                      style={{ fontSize: 12 }}
-                      className="font-kanit text-blue-600"
-                    >
-                      MOCK DATA
-                    </Text>
-                  </View>
-                )}
               </View>
             </TouchableHighlight>
 
@@ -335,7 +298,7 @@ export default function ReportSummary() {
             </TouchableHighlight>
           </View>
 
-          {isLoading && !useMockData ? (
+          {isLoading ? (
             <View className="items-center justify-center py-12">
               <ActivityIndicator size="large" color="#16AD78" />
               <Text

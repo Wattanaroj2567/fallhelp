@@ -14,9 +14,11 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.fallhelp.mobile"
     },
     "android": {
+      "package": "com.fallhelp.mobile",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/logoicon.png",
         "backgroundColor": "#ffffff"
@@ -43,11 +45,16 @@
       ],
       "expo-secure-store",
       "expo-web-browser",
-      "expo-font"
+      "expo-web-browser",
+      "expo-font",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow FallHelp to access your camera for scanning QR codes to pair devices."
+        }
+      ]
     ],
     "extra": {
-      "apiUrl": "http://192.168.1.102:3000",
-      "socketUrl": "http://192.168.1.102:3000",
       "router": {},
       "eas": {
         "projectId": "e7494794-3e1d-4904-8d3a-72ad2c0fea2d"

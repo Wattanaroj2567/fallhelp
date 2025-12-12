@@ -63,17 +63,17 @@
 
 ### Device & Events
 
-| File               | Endpoints/Functions        | Status | Lines | Time  |
-| ------------------ | -------------------------- | ------ | ----- | ----- |
-| `deviceService.ts` | pair, unpair, config       | ✅     | 298   | 17:30 |
-| `eventService.ts`  | TimescaleDB queries, stats | ✅     | 412   | 19:00 |
+| File               | Endpoints/Functions          | Status | Lines | Time  |
+| ------------------ | ---------------------------- | ------ | ----- | ----- |
+| `deviceService.ts` | pair, unpair, config         | ✅     | 298   | 17:30 |
+| `eventService.ts`  | TimescaleDB queries, summary | ✅     | 412   | 19:00 |
 
 ### Notifications & Admin
 
 | File                     | Endpoints/Functions     | Status | Lines | Time  |
 | ------------------------ | ----------------------- | ------ | ----- | ----- |
 | `notificationService.ts` | Expo Push notifications | ✅     | 187   | 19:45 |
-| `adminService.ts`        | Dashboard statistics    | ✅     | 234   | 20:30 |
+| `adminService.ts`        | Dashboard summary       | ✅     | 234   | 20:30 |
 
 **Total Files:** 7  
 **Total Lines:** ~1,940 lines  
@@ -202,7 +202,7 @@
 
 ---
 
-## 📊 Overall Backend Statistics
+## 📊 Overall Backend Metrics
 
 ### Development Metrics
 

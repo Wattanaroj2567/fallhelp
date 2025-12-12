@@ -121,8 +121,8 @@ export interface EventQueryParams {
   limit?: number;
 }
 
-// Statistics types
-export interface DashboardStats {
+// Summary types
+export interface DashboardSummary {
   totalUsers: number;
   activeUsers: number;
   totalDevices: number;
@@ -133,7 +133,7 @@ export interface DashboardStats {
   todayFalls: number;
 }
 
-export interface EventStats {
+export interface EventSummary {
   totalEvents: number;
   fallCount: number;
   heartRateHighCount: number;
@@ -142,7 +142,7 @@ export interface EventStats {
   cancelledFalls: number;
 }
 
-export interface MonthlyStats {
+export interface MonthlySummary {
   month: string;
   year: number;
   totalEvents: number;

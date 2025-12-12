@@ -80,6 +80,7 @@ export default function ChangePassword() {
   return (
     <ScreenWrapper
       contentContainerStyle={{ paddingHorizontal: 24, flexGrow: 1 }}
+      keyboardAvoiding
       header={
         <ScreenHeader title="เปลี่ยนรหัสผ่าน" onBack={() => router.back()} />
       }
@@ -97,77 +98,80 @@ export default function ChangePassword() {
           กรุณากรอกรหัสผ่านปัจจุบันและรหัสผ่านใหม่ของคุณ
         </Text>
 
-        {/* Current Password */}
-        <View className="mb-2">
-          <FloatingLabelInput
-            label="รหัสผ่านปัจจุบัน"
-            value={currentPassword}
-            onChangeText={setCurrentPassword}
-            isPassword
-            autoCapitalize="none"
-            textContentType="password"
-          />
-        </View>
-
-        {/* New Password */}
-        <View className="mb-2">
-          <FloatingLabelInput
-            label="รหัสผ่านใหม่"
-            value={newPassword}
-            onChangeText={setNewPassword}
-            isPassword
-            autoCapitalize="none"
-            textContentType="password"
-          />
-        </View>
-
-        {/* Confirm Password */}
-        <View className="mb-2">
-          <FloatingLabelInput
-            label="ยืนยันรหัสผ่านใหม่"
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-            isPassword
-            autoCapitalize="none"
-            textContentType="password"
-          />
-        </View>
-
-        {/* Password Requirements */}
-        <View className="bg-blue-50 rounded-2xl p-4 mb-8">
-          <Text
-            style={{ fontSize: 12, fontWeight: "600" }}
-            className="font-kanit text-blue-700 mb-2"
-          >
-            ข้อกำหนดรหัสผ่าน:
-          </Text>
-          <View className="flex-row items-start mb-1">
-            <Text
-              style={{ fontSize: 12 }}
-              className="font-kanit text-blue-700 mr-2"
-            >
-              •
-            </Text>
-            <Text
-              style={{ fontSize: 12 }}
-              className="font-kanit text-blue-700 flex-1"
-            >
-              ใช้ตัวอักษร 8 ตัวขึ้นไป
-            </Text>
+        {/* Card Container */}
+        <View className="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100 mb-6">
+          {/* Current Password */}
+          <View className="mb-5">
+            <FloatingLabelInput
+              label="รหัสผ่านปัจจุบัน"
+              value={currentPassword}
+              onChangeText={setCurrentPassword}
+              isPassword
+              autoCapitalize="none"
+              textContentType="password"
+            />
           </View>
-          <View className="flex-row items-start">
+
+          {/* New Password */}
+          <View className="mb-5">
+            <FloatingLabelInput
+              label="รหัสผ่านใหม่"
+              value={newPassword}
+              onChangeText={setNewPassword}
+              isPassword
+              autoCapitalize="none"
+              textContentType="password"
+            />
+          </View>
+
+          {/* Confirm Password */}
+          <View className="mb-5">
+            <FloatingLabelInput
+              label="ยืนยันรหัสผ่านใหม่"
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              isPassword
+              autoCapitalize="none"
+              textContentType="password"
+            />
+          </View>
+
+          {/* Password Requirements */}
+          <View className="bg-blue-50 rounded-2xl p-4">
             <Text
-              style={{ fontSize: 12 }}
-              className="font-kanit text-blue-700 mr-2"
+              style={{ fontSize: 12, fontWeight: "600" }}
+              className="font-kanit text-blue-700 mb-2"
             >
-              •
+              ข้อกำหนดรหัสผ่าน:
             </Text>
-            <Text
-              style={{ fontSize: 12 }}
-              className="font-kanit text-blue-700 flex-1"
-            >
-              มีตัวเลขอย่างน้อย 1 ตัวและอักขระพิเศษ
-            </Text>
+            <View className="flex-row items-start mb-1">
+              <Text
+                style={{ fontSize: 12 }}
+                className="font-kanit text-blue-700 mr-2"
+              >
+                •
+              </Text>
+              <Text
+                style={{ fontSize: 12 }}
+                className="font-kanit text-blue-700 flex-1"
+              >
+                ใช้ตัวอักษร 8 ตัวขึ้นไป
+              </Text>
+            </View>
+            <View className="flex-row items-start">
+              <Text
+                style={{ fontSize: 12 }}
+                className="font-kanit text-blue-700 mr-2"
+              >
+                •
+              </Text>
+              <Text
+                style={{ fontSize: 12 }}
+                className="font-kanit text-blue-700 flex-1"
+              >
+                มีตัวเลขอย่างน้อย 1 ตัวและอักขระพิเศษ
+              </Text>
+            </View>
           </View>
         </View>
 

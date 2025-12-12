@@ -29,11 +29,11 @@ async function main() {
         console.table(hypertables);
 
         // 3. Check Continuous Aggregates
-        console.log('\n--- 3. Checking Continuous Aggregates (events_daily_stats) ---');
+        console.log('\n--- 3. Checking Continuous Aggregates (events_daily_summary) ---');
         const aggregates = await prisma.$queryRaw`
             SELECT view_schema, view_name 
             FROM timescaledb_information.continuous_aggregates 
-            WHERE view_name = 'events_daily_stats';
+            WHERE view_name = 'events_daily_summary';
         `;
         console.table(aggregates);
 
@@ -42,7 +42,7 @@ async function main() {
         const jobs = await prisma.$queryRaw`
             SELECT hypertable_name, schedule_interval::text 
             FROM timescaledb_information.jobs 
-            WHERE hypertable_name = 'events' OR hypertable_name = 'events_daily_stats';
+            WHERE hypertable_name = 'events' OR hypertable_name = 'events_daily_summary';
         `;
         console.table(jobs);
 

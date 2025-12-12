@@ -3,6 +3,7 @@ import {
   Text,
   ActivityIndicator,
   TouchableOpacityProps,
+  View,
 } from "react-native";
 import { Bounceable } from "./Bounceable";
 
@@ -11,6 +12,7 @@ interface PrimaryButtonProps extends TouchableOpacityProps {
   loading?: boolean;
   variant?: "primary" | "danger" | "outline";
   testID?: string;
+  icon?: React.ReactNode;
 }
 
 export const PrimaryButton: React.FC<PrimaryButtonProps> = ({
@@ -19,6 +21,7 @@ export const PrimaryButton: React.FC<PrimaryButtonProps> = ({
   variant = "primary",
   style,
   disabled,
+  icon,
   ...props
 }) => {
   // Base styles
@@ -53,9 +56,12 @@ export const PrimaryButton: React.FC<PrimaryButtonProps> = ({
           color={variant === "outline" ? "#374151" : "#FFFFFF"}
         />
       ) : (
-        <Text className={`font-kanit text-[16px] font-semibold ${textStyle}`}>
-          {title}
-        </Text>
+        <View className="flex-row items-center justify-center">
+          {icon && <View className="mr-2">{icon}</View>}
+          <Text className={`font-kanit text-[16px] font-semibold ${textStyle}`}>
+            {title}
+          </Text>
+        </View>
       )}
     </Bounceable>
   );

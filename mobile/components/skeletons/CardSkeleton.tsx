@@ -14,7 +14,7 @@ interface CardSkeletonProps {
 
 /**
  * Skeleton loader for card-based layouts
- * Used for dashboard cards, stats, etc.
+ * Used for dashboard cards, summary, etc.
  */
 export const CardSkeleton: React.FC<CardSkeletonProps> = ({ height = 120 }) => {
     const opacity = useSharedValue(0.3);

@@ -3,13 +3,13 @@ import * as deviceService from './deviceService.js';
 
 // ==========================================
 // ⚙️ LAYER: Business Logic (Service)
-// Purpose: Handle admin dashboard statistics and system-wide data retrieval
+// Purpose: Handle admin dashboard summary and system-wide data retrieval
 // ==========================================
 
 /**
- * Get dashboard statistics
+ * Get dashboard summary
  */
-export const getDashboardStats = async () => {
+export const getDashboardSummary = async () => {
   const [
     totalUsers,
     activeUsers,
@@ -224,69 +224,12 @@ export const deleteDevice = async (id: string) => {
   });
 };
 
-/**
- * Get system events (Admin only)
- */
-export const getSystemEvents = async (options: {
-  page?: number;
-  limit?: number;
-  type?: string;
-  severity?: string;
-} = {}) => {
-  const page = options.page || 1;
-  const limit = options.limit || 50;
-  const skip = (page - 1) * limit;
 
-  const where: any = {};
-  if (options.type) {
-    where.type = options.type;
-  }
-  if (options.severity) {
-    where.severity = options.severity;
-  }
-
-  const [events, total] = await Promise.all([
-    prisma.event.findMany({
-      where,
-      include: {
-        elder: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-          },
-        },
-        device: {
-          select: {
-            deviceCode: true,
-            serialNumber: true,
-          },
-        },
-      },
-      orderBy: {
-        timestamp: 'desc',
-      },
-      skip,
-      take: limit,
-    }),
-    prisma.event.count({ where }),
-  ]);
-
-  return {
-    events,
-    pagination: {
-      page,
-      limit,
-      total,
-      totalPages: Math.ceil(total / limit),
-    },
-  };
-};
 
 /**
- * Get event statistics for admin
+ * Get event summary for admin
  */
-export const getEventStatistics = async (days: number = 30) => {
+export const getEventSummary = async (days: number = 30) => {
   const startDate = new Date();
   startDate.setDate(startDate.getDate() - days);
 
@@ -304,7 +247,7 @@ export const getEventStatistics = async (days: number = 30) => {
     },
   });
 
-  const stats = {
+  const summary = {
     totalEvents: events.length,
     fallCount: 0,
     cancelledFalls: 0,
@@ -317,24 +260,24 @@ export const getEventStatistics = async (days: number = 30) => {
 
   events.forEach((event) => {
     if (event.type === 'FALL') {
-      stats.fallCount++;
+      summary.fallCount++;
       if (event.isCancelled) {
-        stats.cancelledFalls++;
+        summary.cancelledFalls++;
       }
     } else if (event.type === 'HEART_RATE_HIGH') {
-      stats.heartRateHighCount++;
+      summary.heartRateHighCount++;
     } else if (event.type === 'HEART_RATE_LOW') {
-      stats.heartRateLowCount++;
+      summary.heartRateLowCount++;
     } else if (event.type === 'DEVICE_OFFLINE') {
-      stats.deviceOfflineCount++;
+      summary.deviceOfflineCount++;
     }
 
     if (event.severity === 'CRITICAL') {
-      stats.criticalEvents++;
+      summary.criticalEvents++;
     } else if (event.severity === 'WARNING') {
-      stats.warningEvents++;
+      summary.warningEvents++;
     }
   });
 
-  return stats;
+  return summary;
 };

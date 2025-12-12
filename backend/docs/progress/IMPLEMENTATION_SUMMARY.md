@@ -38,9 +38,9 @@
 - **userService.ts** - Profile CRUD, Password change
 - **elderService.ts** - Elder CRUD, Multi-user access (OWNER/VIEWER), Invite/Remove members
 - **deviceService.ts** - Create device, Pair/Unpair, WiFi config, Threshold configuration
-- **eventService.ts** - TimescaleDB queries, Daily/Monthly stats, Cancel fall events
+- **eventService.ts** - TimescaleDB queries, Daily/Monthly summary, Cancel fall events
 - **notificationService.ts** - Expo Push integration, Fall/HR/Offline alerts
-- **adminService.ts** - Dashboard statistics, System-wide queries
+- **adminService.ts** - Dashboard summary, System-wide queries
 
 ### ✅ Phase 8: Controllers Layer
 
@@ -50,7 +50,7 @@
 - `userController.ts` - 4 endpoints (profile CRUD, password change)
 - `elderController.ts` - 8 endpoints (CRUD + member management)
 - `deviceController.ts` - 7 endpoints (create, QR, pair, unpair, WiFi, config)
-- `eventController.ts` - 6 endpoints (list, stats, cancel)
+- `eventController.ts` - 6 endpoints (list, summary, cancel)
 - `emergencyContactController.ts` - 4 endpoints (CRUD)
 - `notificationController.ts` - 5 endpoints (list, unread count, mark read, clear)
 - `adminController.ts` - 7 endpoints (dashboard, users, elders, devices, events)
@@ -250,8 +250,8 @@ GET    /api/events              - List events with filters
 GET    /api/events/recent       - Get recent events (last 24h)
 GET    /api/events/:id          - Get event details
 POST   /api/events/:id/cancel   - Cancel fall event (30-second window)
-GET    /api/events/stats/daily  - Daily statistics (7 days)
-GET    /api/events/stats/monthly - Monthly statistics
+GET    /api/events/summary/daily  - Daily summary (7 days)
+GET    /api/events/summary/monthly - Monthly summary
 ```
 
 ### Emergency Contacts (4 endpoints)
@@ -276,12 +276,12 @@ DELETE /api/notifications       - Clear all notifications
 ### Admin (7 endpoints)
 
 ```
-GET    /api/admin/dashboard     - Dashboard statistics
+GET    /api/admin/dashboard     - Dashboard summary
 GET    /api/admin/users         - List all users
 GET    /api/admin/elders        - List all elders
 GET    /api/admin/devices       - List all devices
 GET    /api/admin/events        - List all events
-GET    /api/admin/events/stats  - Event statistics
+GET    /api/admin/events/summary  - Event summary
 ```
 
 ### Health Check
@@ -430,7 +430,7 @@ const count = simulationManager.getCount();
 - **Partitioning:** 7-day chunks
 - **Compression:** Automatic after 30 days
 - **Fall Cancellation:** 30-second window from event timestamp
-- **Statistics:** Daily (7 days) and Monthly aggregation
+- **Summary:** Daily (7 days) and Monthly aggregation
 
 ### Real-time Flow
 
@@ -516,7 +516,7 @@ npm run dev
 - [ ] Test fall event creation
 - [ ] Test heart rate alert
 - [ ] Test event cancellation (30-second window)
-- [ ] Test daily/monthly statistics
+- [ ] Test daily/monthly summary
 - [ ] Test admin dashboard
 
 ### Real-time Testing
@@ -566,7 +566,7 @@ npm run dev
 - [ ] Handle push notifications
 - [ ] Implement QR code scanner
 - [ ] Create event timeline UI
-- [ ] Add statistics dashboard
+- [ ] Add summary dashboard
 
 ---
 
@@ -632,7 +632,7 @@ SELECT create_hypertable('Event', 'timestamp', chunk_time_interval => INTERVAL '
   - ✅ Mock mode for development without SMTP
 - ✅ Server Integration & Testing
 
-### 📊 Statistics
+### 📊 Project Metrics
 
 - **Total Files:** 55+ TypeScript files
 - **Total Lines:** ~5,500+ lines of code

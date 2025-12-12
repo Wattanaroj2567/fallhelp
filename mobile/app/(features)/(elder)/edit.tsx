@@ -292,38 +292,42 @@ export default function EditElderInfo() {
         </View>
       }
     >
-      <View className="pt-4">
+      <View className="flex-1 pt-6">
 
-        <View className="w-full" style={{ opacity: isReadOnly ? 0.8 : 1 }} pointerEvents={isReadOnly ? 'none' : 'auto'}>
+        <View className="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100 mb-6" style={{ opacity: isReadOnly ? 0.8 : 1 }} pointerEvents={isReadOnly ? 'none' : 'auto'}>
           {/* Elder Name & Lastname - FloatingLabelInput Match Register */}
-          <View className="flex-row gap-3">
+          <View className="flex-row gap-3 mb-5">
             {/* First Name */}
-            <FloatingLabelInput
-              label="ชื่อ"
-              value={firstName}
-              onChangeText={setFirstName}
-              isRequired={true}
-              containerStyle={{ flex: 1 }}
-              editable={!isReadOnly}
-            />
+            <View className="flex-1">
+              <FloatingLabelInput
+                label="ชื่อ"
+                value={firstName}
+                onChangeText={setFirstName}
+                isRequired={true}
+                editable={!isReadOnly}
+              />
+            </View>
 
             {/* Last Name */}
-            <FloatingLabelInput
-              label="นามสกุล"
-              value={lastName}
-              onChangeText={setLastName}
-              isRequired={true}
-              containerStyle={{ flex: 1 }}
-              editable={!isReadOnly}
-            />
+            <View className="flex-1">
+              <FloatingLabelInput
+                label="นามสกุล"
+                value={lastName}
+                onChangeText={setLastName}
+                isRequired={true}
+                editable={!isReadOnly}
+              />
+            </View>
           </View>
 
           {/* Gender - Replaced with Reusable Component */}
           {/* We might need to make GenderSelect support readonly/disabled prop, or just pointerEvents='none' handles it */}
-          <GenderSelect value={gender} onChange={setGender} isRequired={true} />
+          <View className="mb-5">
+            <GenderSelect value={gender} onChange={setGender} isRequired={true} />
+          </View>
 
           {/* Birth Date - Using Theme Colors */}
-          <View className="mb-4">
+          <View className="mb-5">
             <TouchableOpacity
               onPress={() => !isReadOnly && setShowDatePicker(true)}
               className="bg-white rounded-2xl px-4 justify-center"
@@ -366,7 +370,7 @@ export default function EditElderInfo() {
           </View>
 
           {/* Height and Weight - FloatingLabelInput Match Register */}
-          <View className="flex-row gap-3 mb-2">
+          <View className="flex-row gap-3 mb-5">
             <View className="flex-1">
               <FloatingLabelInput
                 label="ส่วนสูง (cm)"
@@ -390,16 +394,17 @@ export default function EditElderInfo() {
           </View>
 
           {/* Medical Condition - Changed to Single Line as requested */}
-          <FloatingLabelInput
-            label="โรคประจำตัว หรือ เคยป่วย (ถ้ามี)"
-            value={medicalCondition}
-            onChangeText={setMedicalCondition}
-            containerStyle={{ marginBottom: 16 }}
-            editable={!isReadOnly}
-          />
+          <View className="mb-5">
+            <FloatingLabelInput
+              label="โรคประจำตัว หรือ เคยป่วย (ถ้ามี)"
+              value={medicalCondition}
+              onChangeText={setMedicalCondition}
+              editable={!isReadOnly}
+            />
+          </View>
 
           {/* House Number and Village */}
-          <View className="flex-row gap-3 mb-2">
+          <View className="flex-row gap-3 mb-5">
             <View className="flex-1">
               <FloatingLabelInput
                 label="บ้านเลขที่"
@@ -421,7 +426,7 @@ export default function EditElderInfo() {
           </View>
 
           {/* Address - Autocomplete Search */}
-          <View className="mb-6">
+          <View>
             <ThaiAddressAutocomplete
               value={address}
               onChange={setAddress}
@@ -429,17 +434,18 @@ export default function EditElderInfo() {
             // Need to pass editable or similar prop if component supports it, otherwise View pointerEvents handles it
             />
           </View>
+        </View>
 
-          {/* Save Button - Hide if Read Only */}
-          {!isReadOnly && (
+        {/* Save Button - Hide if Read Only */}
+        {!isReadOnly && (
+          <View className="mt-2 mb-8">
             <PrimaryButton
               title="บันทึกข้อมูล"
               onPress={handleSave}
               loading={updateMutation.isPending}
-              style={{ marginBottom: 32 }}
             />
-          )}
-        </View>
+          </View>
+        )}
       </View>
 
       {/* Date Picker Modal (iOS) or standard (Android) */}

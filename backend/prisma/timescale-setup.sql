@@ -56,11 +56,11 @@ SELECT add_compression_policy(
 -- SELECT add_retention_policy('events', INTERVAL '1 year', if_not_exists => TRUE);
 
 -- ========================================
--- Continuous Aggregates for Analytics (Optional)
+-- Continuous Aggregates for Summary (Optional)
 -- ========================================
 
--- Create materialized view for daily event statistics
-CREATE MATERIALIZED VIEW IF NOT EXISTS events_daily_stats
+-- Create materialized view for daily event summary
+CREATE MATERIALIZED VIEW IF NOT EXISTS events_daily_summary
 WITH (timescaledb.continuous) AS
 SELECT
   time_bucket('1 day', timestamp) AS day,
@@ -80,7 +80,7 @@ WITH NO DATA;
 
 -- Add refresh policy: refresh every hour for last 2 days
 SELECT add_continuous_aggregate_policy(
-  'events_daily_stats',
+  'events_daily_summary',
   start_offset => INTERVAL '3 days',
   end_offset => INTERVAL '1 hour',
   schedule_interval => INTERVAL '1 hour',
@@ -88,7 +88,7 @@ SELECT add_continuous_aggregate_policy(
 );
 
 -- Refresh the materialized view for existing data
-CALL refresh_continuous_aggregate('events_daily_stats', NULL, NULL);
+CALL refresh_continuous_aggregate('events_daily_summary', NULL, NULL);
 
 -- ========================================
 -- Verification Queries
@@ -107,4 +107,4 @@ SELECT * FROM timescaledb_information.jobs
 WHERE hypertable_name = 'events';
 
 COMMENT ON TABLE events IS 'TimescaleDB hypertable for storing fall detection and heart rate events with 7-day partitions';
-COMMENT ON VIEW events_daily_stats IS 'Daily aggregated statistics for events (auto-refreshed every hour)';
+COMMENT ON VIEW events_daily_summary IS 'Daily aggregated summary for events (auto-refreshed every hour)';

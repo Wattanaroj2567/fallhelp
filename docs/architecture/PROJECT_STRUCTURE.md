@@ -382,7 +382,7 @@ model DeviceConfig {
   wifiStatus      WifiStatus @default(DISCONNECTED)
   ipAddress       String?
 
-  // Sensor Thresholds
+  // Sensor Thresholds (Managed by Firmware/Factory)
   fallThreshold   Float     @default(2.5)  // g-force threshold
   hrLowThreshold  Int       @default(50)   // BPM
   hrHighThreshold Int       @default(120)  // BPM
@@ -633,7 +633,7 @@ const elders = await prisma.elder.findMany({
 ### Admin
 
 - `POST /api/admin/devices/register`
-- `GET /api/admin/dashboard/stats`
+- `GET /api/admin/dashboard`
 - `GET /api/admin/devices/list`
 
 ---
@@ -729,7 +729,7 @@ export const SOCKET_URL = "http://localhost:3000";
 - Setup Retool dashboard
 - Connect to backend APIs
 - Implement device registration
-- Create analytics views
+- Create summary views
 
 ### Phase 4: Testing & Integration (Day 5)
 

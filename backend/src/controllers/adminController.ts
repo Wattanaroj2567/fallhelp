@@ -11,12 +11,12 @@ import { asyncHandler } from '../middlewares/errorHandler';
 /**
  * GET /api/admin/dashboard
  */
-export const getDashboardStats = asyncHandler(async (req: Request, res: Response) => {
-  const stats = await adminService.getDashboardStats();
+export const getDashboardSummary = asyncHandler(async (req: Request, res: Response) => {
+  const summary = await adminService.getDashboardSummary();
 
   res.json({
     success: true,
-    data: stats,
+    data: summary,
   });
 });
 
@@ -116,38 +116,20 @@ export const forceUnpairDevice = asyncHandler(async (req: Request, res: Response
   });
 });
 
-/**
- * GET /api/admin/events
- */
-export const getSystemEvents = asyncHandler(async (req: Request, res: Response) => {
-  const { page, limit, type, severity } = req.query;
 
-  const result = await adminService.getSystemEvents({
-    page: page ? parseInt(page as string) : undefined,
-    limit: limit ? parseInt(limit as string) : undefined,
-    type: type as string,
-    severity: severity as string,
-  });
-
-  res.json({
-    success: true,
-    data: result.events,
-    pagination: result.pagination,
-  });
-});
 
 /**
  * GET /api/admin/events/stats
  */
-export const getEventStatistics = asyncHandler(async (req: Request, res: Response) => {
+export const getEventSummary = asyncHandler(async (req: Request, res: Response) => {
   const { days } = req.query;
 
-  const stats = await adminService.getEventStatistics(
+  const summary = await adminService.getEventSummary(
     days ? parseInt(days as string) : 30
   );
 
   res.json({
     success: true,
-    data: stats,
+    data: summary,
   });
 });
