@@ -1,4 +1,4 @@
-ไ# FallHelp - Fall Detection System for Elderly Care
+# FallHelp - Fall Detection System for Elderly Care
 
 # ระบบตรวจจับการหกล้มสำหรับดูแลผู้สูงอายุ
 
