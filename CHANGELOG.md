@@ -11,6 +11,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+### Changed
+
+### Fixed
+
+---
+
+## [1.7.0] - 2025-12-14
+
+### Added
+
+- `FloatingLabelDatePicker` component for standardized date inputs (same height/style as text inputs)
+- Static label design for Read-Only fields (e.g., "Current Email") to prevent floating label background conflicts
+
+### Changed
+
+- **Form Standardization & Spacing**
+  - Standardized vertical rhythm (20px gap) across all forms (`edit.tsx`, `step1`, `edit-info.tsx`)
+  - Refactored `GenderSelect` and `ThaiAddressAutocomplete` to manage their own margins (removed manual wrappers)
+  - Fixed "Double Margin" bug in gender selection
+- **Dashboard UX**
+  - Increased spacing between "Overview Cards" and "Emergency Call Button" (`mt-10`) to prevent accidental clicks
+- **UI Refinements**
+  - Updated "Change Email" screen to use a clearer static label + gray read-only box design
+  - Adjusted font size (16px) and color (Gray 600) for read-only text to match active inputs
+
+---
+
+## [1.6.1] - 2025-12-13
+
+### Added
+
 - EAS Build configuration (`eas.json`) for development, preview, and production
 - Hybrid IP detection in `Config.ts` for Expo Go and Standalone builds
 - iOS `NSAllowsArbitraryLoads` for local HTTP testing
@@ -271,7 +302,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[Unreleased]: https://github.com/fallhelp/fallhelp/compare/v1.6.0...HEAD
+[Unreleased]: https://github.com/fallhelp/fallhelp/compare/v1.7.0...HEAD
+[1.7.0]: https://github.com/fallhelp/fallhelp/compare/v1.6.1...v1.7.0
+[1.6.1]: https://github.com/fallhelp/fallhelp/compare/v1.6.0...v1.6.1
 [1.6.0]: https://github.com/fallhelp/fallhelp/compare/v1.5.1...v1.6.0
 [1.5.1]: https://github.com/fallhelp/fallhelp/compare/v1.5.0...v1.5.1
 [1.5.0]: https://github.com/fallhelp/fallhelp/compare/v1.4.0...v1.5.0
