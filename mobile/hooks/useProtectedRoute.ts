@@ -19,6 +19,11 @@ export function useProtectedRoute() {
     if (isLoading) return;
     if (!rootNavigationState?.key) return; // ✅ Wait for navigation to be ready
 
+    // ✅ FIX: Fast Refresh / Reload Race Condition
+    // During HMR or initialization, segments might be empty for a split second.
+    // If we proceed, logic thinks we are NOT in (auth) and redirects to Login.
+    if ((segments as string[]).length === 0) return;
+
     const inAuthGroup = segments[0] === '(auth)';
     const inTabsGroup = segments[0] === '(tabs)';
 

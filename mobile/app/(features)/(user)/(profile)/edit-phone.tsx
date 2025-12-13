@@ -105,59 +105,59 @@ export default function EditPhone() {
   return (
     <ScreenWrapper
       contentContainerStyle={{ paddingHorizontal: 24, flexGrow: 1 }}
+      useScrollView={false}
       header={
-        <ScreenHeader title="แก้ไขเบอร์โทรศัพท์" onBack={() => router.back()} />
-      }
-    >
-      <View className="flex-1 pt-6">
-        <View className="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100 mb-6">
-          <Text
-            className="font-kanit"
-            style={{
-              fontSize: 14,
-              color: "#6B7280",
-              marginBottom: 20,
-              textAlign: "left",
-            }}
-          >
-            กรุณากรอกเบอร์โทรศัพท์ของคุณ (10 หลัก)
-          </Text>
-
-          {/* Phone Input */}
-          <View className="mb-6">
-            <FloatingLabelInput
-              label="เบอร์โทรศัพท์"
-              value={phone}
-              onChangeText={(text) => {
-                const cleaned = text.replace(/[^0-9]/g, "");
-                if (cleaned.length <= 10) {
-                  setPhone(cleaned);
-                }
-              }}
-              keyboardType="phone-pad"
-              maxLength={10}
-            />
-          </View>
-
-          {/* Info Box inside Card */}
-          <View className="bg-blue-50 rounded-2xl p-4 flex-row">
-            <MaterialIcons
-              name="info"
-              size={20}
-              color="#3B82F6"
-              style={{ marginTop: 2 }}
-            />
+        <View style={{ backgroundColor: "#FFFFFF" }}>
+          <ScreenHeader title="แก้ไขเบอร์โทรศัพท์" onBack={() => router.back()} />
+          <View className="items-center pb-6 px-6 border-b border-gray-50">
+            <View className="w-16 h-16 bg-green-50 rounded-full items-center justify-center mb-3 border border-green-100">
+              <MaterialIcons name="phone-iphone" size={32} color="#16AD78" />
+            </View>
             <Text
               style={{ fontSize: 13, lineHeight: 20 }}
-              className="font-kanit text-blue-700 flex-1 ml-2"
+              className="font-kanit text-gray-500 text-center px-4"
             >
-              คุณจะต้องใช้เบอร์โทรศัพท์ใหม่ในการเข้าสู่ระบบครั้งถัดไป
+              กรุณากรอกเบอร์โทรศัพท์ของคุณ (10 หลัก)
             </Text>
           </View>
         </View>
+      }
+    >
+      <View className="flex-1 pt-6 px-4">
+        {/* Phone Input */}
+        <View>
+          <FloatingLabelInput
+            label="เบอร์โทรศัพท์"
+            value={phone}
+            onChangeText={(text) => {
+              const cleaned = text.replace(/[^0-9]/g, "");
+              if (cleaned.length <= 10) {
+                setPhone(cleaned);
+              }
+            }}
+            keyboardType="phone-pad"
+            maxLength={10}
+          />
+        </View>
+
+        {/* Info Box */}
+        <View className="bg-blue-50 rounded-2xl p-4 flex-row mb-8">
+          <MaterialIcons
+            name="info"
+            size={20}
+            color="#3B82F6"
+            style={{ marginTop: 2 }}
+          />
+          <Text
+            style={{ fontSize: 13, lineHeight: 20 }}
+            className="font-kanit text-blue-700 flex-1 ml-2"
+          >
+            คุณจะต้องใช้เบอร์โทรศัพท์ใหม่ในการเข้าสู่ระบบครั้งถัดไป
+          </Text>
+        </View>
 
         {/* Save Button */}
-        <View className="mt-2">
+        <View>
           <PrimaryButton
             title="บันทึกข้อมูล"
             onPress={handleSave}

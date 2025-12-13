@@ -27,7 +27,7 @@ import { useTheme } from "react-native-paper";
 import { FloatingLabelInput } from "@/components/FloatingLabelInput";
 import { WizardLayout } from "@/components/WizardLayout";
 import { PrimaryButton } from "@/components/PrimaryButton";
-import DateTimePicker from "@react-native-community/datetimepicker";
+import { FloatingLabelDatePicker } from "@/components/FloatingLabelDatePicker";
 import {
   ThaiAddressAutocomplete,
   AddressData,
@@ -415,6 +415,10 @@ export default function Step1() {
       title="ข้อมูลผู้สูงอายุ"
       onBack={handleBack}
       contentContainerStyle={{ paddingHorizontal: 24, flexGrow: 1 }}
+      scrollViewProps={{
+        bounces: false,
+        overScrollMode: "never",
+      }}
       scrollViewRef={scrollViewRef}
       headerExtra={
         <View className="bg-blue-50 rounded-2xl p-4 mb-2">
@@ -428,120 +432,65 @@ export default function Step1() {
         {/* Form Card */}
         <View className="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100 mb-6">
           {/* Elder Name & Lastname */}
-          <View className="flex-row gap-3 mb-5">
+          <View className="flex-row gap-3">
             {/* First Name */}
             <View className="flex-1">
               <FloatingLabelInput
-                label={
-                  <Text className="font-kanit">
-                    ชื่อ <Text style={{ color: "#EF4444" }}>*</Text>
-                  </Text>
-                }
+                label="ชื่อ"
                 value={firstName}
                 onChangeText={setFirstName}
+                isRequired
               />
             </View>
             {/* Last Name */}
             <View className="flex-1">
               <FloatingLabelInput
-                label={
-                  <Text className="font-kanit">
-                    นามสกุล <Text style={{ color: "#EF4444" }}>*</Text>
-                  </Text>
-                }
+                label="นามสกุล"
                 value={lastName}
                 onChangeText={setLastName}
+                isRequired
               />
             </View>
           </View>
 
           {/* Gender */}
-          <View className="mb-5">
-            <GenderSelect value={gender} onChange={setGender} isRequired={true} />
-          </View>
+          <GenderSelect value={gender} onChange={setGender} isRequired={true} />
 
-          {/* Birth Date - Using Theme Colors */}
-          <View className="mb-5">
-            <TouchableOpacity
-              onPress={() => {
-                Keyboard.dismiss(); // Close other inputs to prevent double focus
-                setShowDatePicker(true);
-              }}
-              className="bg-white rounded-2xl px-4 justify-center"
-              style={{
-                height: 60,
-                borderWidth: 1,
-                borderColor: showDatePicker ? theme.colors.primary : "#E5E7EB",
-              }}
-            >
-              {dateOfBirth ? (
-                <View className="absolute -top-2.5 left-3 bg-white px-1 z-10">
-                  <Text
-                    className="font-kanit"
-                    style={{
-                      fontSize: 12,
-                      color: showDatePicker ? theme.colors.primary : "#a3a6af"
-                    }}
-                  >
-                    วัน/เดือน/ปีเกิด <Text style={{ color: "#EF4444" }}>*</Text>
-                  </Text>
-                </View>
-              ) : null}
-              <Text
-                className="font-kanit text-[16px]"
-                style={{
-                  color: dateOfBirth ? theme.colors.onSurface : "#a3a6af",
-                }}
-              >
-                {dateOfBirth ? (
-                  formatDate(dateOfBirth)
-                ) : (
-                  <>
-                    วัน/เดือน/ปีเกิด <Text style={{ color: "#EF4444" }}>*</Text>
-                  </>
-                )}
-              </Text>
-
-              <View className="absolute right-4 top-5">
-                <MaterialIcons
-                  name="calendar-today"
-                  size={20}
-                  color={showDatePicker ? theme.colors.primary : "#a3a6af"}
-                />
-              </View>
-            </TouchableOpacity>
-          </View>
+          {/* Birth Date */}
+          <FloatingLabelDatePicker
+            value={dateOfBirth}
+            onChange={(date) => {
+              // Close other inputs
+              Keyboard.dismiss();
+              setDateOfBirth(date);
+            }}
+            isRequired={true}
+          />
 
           {/* Height and Weight */}
-          <View className="flex-row gap-3 mb-5">
+          <View className="flex-row gap-3">
             <View className="flex-1">
               <FloatingLabelInput
-                label={
-                  <Text className="font-kanit">
-                    ส่วนสูง (cm) <Text style={{ color: "#EF4444" }}>*</Text>
-                  </Text>
-                }
+                label="ส่วนสูง (cm)"
                 value={height}
                 onChangeText={setHeight}
                 keyboardType="numeric"
+                isRequired
               />
             </View>
             <View className="flex-1">
               <FloatingLabelInput
-                label={
-                  <Text className="font-kanit">
-                    น้ำหนัก (kg) <Text style={{ color: "#EF4444" }}>*</Text>
-                  </Text>
-                }
+                label="น้ำหนัก (kg)"
                 value={weight}
                 onChangeText={setWeight}
                 keyboardType="numeric"
+                isRequired
               />
             </View>
           </View>
 
           {/* Medical Condition - Single line */}
-          <View className="mb-5">
+          <View>
             <FloatingLabelInput
               label="โรคประจำตัว หรือ เคยป่วย (ถ้ามี)"
               value={medicalCondition}
@@ -550,39 +499,31 @@ export default function Step1() {
           </View>
 
           {/* House Number and Village */}
-          <View className="flex-row gap-3 mb-5">
+          <View className="flex-row gap-3">
             <View className="flex-1">
               <FloatingLabelInput
-                label={
-                  <Text className="font-kanit">
-                    บ้านเลขที่ <Text style={{ color: "#EF4444" }}>*</Text>
-                  </Text>
-                }
+                label="บ้านเลขที่"
                 value={houseNumber}
                 onChangeText={setHouseNumber}
+                isRequired
               />
             </View>
             <View className="flex-1">
               <FloatingLabelInput
-                label={
-                  <Text className="font-kanit">
-                    หมู่ที่/หมู่บ้าน <Text style={{ color: "#EF4444" }}>*</Text>
-                  </Text>
-                }
+                label="หมู่ที่/หมู่บ้าน"
                 value={village}
                 onChangeText={setVillage}
+                isRequired
               />
             </View>
           </View>
 
           {/* Address - Autocomplete Search */}
-          <View>
-            <ThaiAddressAutocomplete
-              value={address}
-              onChange={setAddress}
-              isRequired
-            />
-          </View>
+          <ThaiAddressAutocomplete
+            value={address}
+            onChange={setAddress}
+            isRequired
+          />
         </View>
 
         {/* Next Button */}
@@ -594,56 +535,6 @@ export default function Step1() {
         />
       </View>
 
-      {/* Date Picker Modal (iOS) or standard (Android) */}
-      {
-        Platform.OS === "ios" ? (
-          <Modal
-            transparent={true}
-            visible={showDatePicker}
-            animationType="slide"
-            onRequestClose={() => setShowDatePicker(false)}
-          >
-            <Pressable
-              className="flex-1 justify-end bg-black/50"
-              onPress={() => setShowDatePicker(false)}
-            >
-              <Pressable
-                className="bg-white pb-6 rounded-t-3xl"
-                onPress={(e) => e.stopPropagation()}
-              >
-                <View className="flex-row justify-between items-center p-4 border-b border-gray-100">
-                  <Text className="font-kanit text-lg font-bold">
-                    เลือกวันเกิด
-                  </Text>
-                  <TouchableOpacity onPress={() => setShowDatePicker(false)}>
-                    <Text className="font-kanit text-blue-600 text-lg font-bold">
-                      เสร็จสิ้น
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-                <DateTimePicker
-                  value={dateOfBirth || new Date()}
-                  maximumDate={new Date()}
-                  mode="date"
-                  display="spinner"
-                  onChange={onDateChange}
-                  locale="th-TH"
-                  textColor="#000000"
-                />
-              </Pressable>
-            </Pressable>
-          </Modal>
-        ) : (
-          showDatePicker && (
-            <DateTimePicker
-              value={dateOfBirth || new Date()}
-              maximumDate={new Date()}
-              mode="date"
-              display="default"
-              onChange={onDateChange}
-            />
-          )
-        )
       }
     </WizardLayout >
   );

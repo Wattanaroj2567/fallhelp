@@ -6,6 +6,7 @@ import {
     TouchableWithoutFeedback,
     Keyboard,
     Platform,
+    Pressable,
 } from 'react-native';
 import { SafeAreaView, Edge } from 'react-native-safe-area-context';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
@@ -42,39 +43,45 @@ export const ScreenWrapper: React.FC<ScreenWrapperProps> = ({
 
     return (
         <Container className={baseClassName} edges={useSafeArea ? edges : undefined} style={style}>
-            {header}
             {useScrollView ? (
-                // ✅ Use "Ready-made" standard library for form handling
-                <KeyboardAwareScrollView
-                    ref={scrollViewRef}
-                    style={{ flex: 1 }}
-                    contentContainerStyle={[
-                        { paddingHorizontal: 24, paddingBottom: 24, flexGrow: 1 },
-                        contentContainerStyle,
-                    ]}
-                    enableOnAndroid={true}
-                    enableAutomaticScroll={true}
-                    enableResetScrollToCoords={true} // Smart Reset enabled
-                    extraHeight={120}
-                    extraScrollHeight={120}
-                    viewIsInsideTabBar={false}
-                    keyboardShouldPersistTaps="handled"
-                    {...scrollViewProps} // Pass through other props like bounces/scrollEnabled
-                >
-                    {children}
-                </KeyboardAwareScrollView>
+                <>
+                    {header}
+                    {/* ✅ Use "Ready-made" standard library for form handling */}
+                    <KeyboardAwareScrollView
+                        ref={scrollViewRef}
+                        style={{ flex: 1 }}
+                        contentContainerStyle={[
+                            { paddingHorizontal: 24, paddingBottom: 24, flexGrow: 1 },
+                            contentContainerStyle,
+                        ]}
+                        enableOnAndroid={true}
+                        enableAutomaticScroll={true}
+                        enableResetScrollToCoords={true} // Smart Reset enabled
+                        extraHeight={120}
+                        extraScrollHeight={120}
+                        viewIsInsideTabBar={false}
+                        keyboardShouldPersistTaps="handled"
+                        {...scrollViewProps} // Pass through other props like bounces/scrollEnabled
+                    >
+                        {children}
+                    </KeyboardAwareScrollView>
+                </>
             ) : keyboardAvoiding ? (
-                // Fixed view with keyboard dismiss
-                <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+                // Fixed view with keyboard dismiss - Using Pressable for better reliability
+                <Pressable onPress={Keyboard.dismiss} style={{ flex: 1 }}>
+                    {header}
                     <View style={[{ flex: 1 }, contentContainerStyle]}>
                         {children}
                     </View>
-                </TouchableWithoutFeedback>
+                </Pressable>
             ) : (
                 // Fixed view without dismiss (for Lists)
-                <View style={[{ flex: 1 }, contentContainerStyle]}>
-                    {children}
-                </View>
+                <>
+                    {header}
+                    <View style={[{ flex: 1 }, contentContainerStyle]}>
+                        {children}
+                    </View>
+                </>
             )}
         </Container>
     );

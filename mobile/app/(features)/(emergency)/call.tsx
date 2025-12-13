@@ -15,6 +15,7 @@ import { useCurrentElder } from "@/hooks/useCurrentElder";
 import { ScreenWrapper } from "@/components/ScreenWrapper";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import Logger from "@/utils/logger";
+import { Bounceable } from "@/components/Bounceable";
 
 export default function EmergencyCallScreen() {
   const router = useRouter();
@@ -69,14 +70,13 @@ export default function EmergencyCallScreen() {
         onBack={() => router.back()}
         rightElement={
           isOwner ? (
-            <TouchableOpacity
+            <Bounceable
               className="p-2"
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               onPress={() => router.push("/(features)/(emergency)")}
-              activeOpacity={0.8}
             >
               <MaterialIcons name="settings" size={24} color="#374151" />
-            </TouchableOpacity>
+            </Bounceable>
           ) : (
             // Placeholder to prevent layout shift if loading or not owner
             <View style={{ width: 40 }} />
@@ -107,10 +107,9 @@ export default function EmergencyCallScreen() {
             <>
               {topContacts.map((item, index) => (
                 <View key={item.id} className="flex-1 max-h-28">
-                  <TouchableOpacity
+                  <Bounceable
                     onPress={() => handleCall(item.phone)}
                     className="flex-1 bg-white px-5 rounded-2xl border border-gray-100 shadow-sm flex-row items-center justify-between active:bg-gray-50"
-                    activeOpacity={0.7}
                   >
                     <View className="flex-row items-center gap-4">
                       <View className="w-12 h-12 rounded-full bg-red-50 items-center justify-center border border-red-100">
@@ -130,7 +129,7 @@ export default function EmergencyCallScreen() {
                     <View className="w-11 h-11 rounded-full bg-green-500 items-center justify-center shadow-sm">
                       <MaterialIcons name="phone" size={24} color="white" />
                     </View>
-                  </TouchableOpacity>
+                  </Bounceable>
                 </View>
               ))}
               {/* Fill remaining space if less than 3 contacts */}
@@ -147,15 +146,14 @@ export default function EmergencyCallScreen() {
 
               {/* Add Contact Button - Hide if Read Only */}
               {isOwner && (
-                <TouchableOpacity
+                <Bounceable
                   onPress={() => router.push("/(features)/(emergency)")}
                   className="mt-4 bg-blue-500 px-6 py-3 rounded-full"
-                  activeOpacity={0.85}
                 >
                   <Text className="text-white font-kanit text-base">
                     เพิ่มผู้ติดต่อ
                   </Text>
-                </TouchableOpacity>
+                </Bounceable>
               )}
             </View>
           )}
@@ -167,10 +165,9 @@ export default function EmergencyCallScreen() {
         <Text className="text-base font-bold text-gray-800 font-kanit mb-3">
           เบอร์โทรฉุกเฉินสาธารณะ
         </Text>
-        <TouchableOpacity
+        <Bounceable
           onPress={() => handleCall("1669")}
           className="bg-red-500 p-4 rounded-2xl shadow-md flex-row items-center justify-between active:bg-red-600"
-          activeOpacity={0.85}
         >
           <View className="flex-row items-center gap-4">
             <View className="w-10 h-10 rounded-full bg-white/20 items-center justify-center">
@@ -186,7 +183,7 @@ export default function EmergencyCallScreen() {
             </View>
           </View>
           <MaterialIcons name="phone-in-talk" size={24} color="white" />
-        </TouchableOpacity>
+        </Bounceable>
       </View>
     </ScreenWrapper>
   );

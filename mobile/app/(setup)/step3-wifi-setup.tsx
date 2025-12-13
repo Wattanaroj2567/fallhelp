@@ -162,7 +162,7 @@ export default function Step3() {
             และรหัสผ่านเพื่อเชื่อมต่ออุปกรณ์กับอินเทอร์เน็ต
           </Text>
 
-          <View className="mb-5">
+          <View>
             <FloatingLabelInput
               label="ชื่อ WiFi (SSID)"
               value={manualSsid}

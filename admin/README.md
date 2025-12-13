@@ -1,47 +1,62 @@
 # FallHelp Admin Panel
 
-The web-based administration interface for the FallHelp system. Built with React, Vite, and TypeScript.
+# แผงควบคุมผู้ดูแลระบบ
 
-## 📚 Documentation
+Web-based administration interface for the FallHelp system.
 
-- **[Documentation Index](docs/README.md)**: Start here for detailed guides.
-- **[Development Progress](docs/progress/PROGRESS.md)**: Track feature completion status.
+---
 
-## 🚀 Quick Start
+## Documentation (เอกสาร)
+
+- **[Documentation Index](docs/README.md)** - Start here
+- **[Admin Panel Features](../docs/features/ADMIN_PANEL.md)**
+- **[Development Progress](../docs/progress/ADMIN_PROGRESS.md)**
+
+---
+
+## Quick Start
 
 ### Prerequisites
 
 - Node.js (LTS version)
-- Backend server running (usually on port 3000)
+- Backend server running (port 3333)
 
 ### Installation
 
 ```bash
-# Install dependencies
 npm install
 ```
 
 ### Development
 
 ```bash
-# Start the dev server
 npm run dev
 ```
 
-Access the admin panel at `http://localhost:5173`.
+Access at: `http://localhost:5173`
 
-## 🛠️ Tech Stack
+---
 
-- **Framework:** React + Vite
-- **Language:** TypeScript
-- **Styling:** TailwindCSS
-- **State Management:** React Query (TanStack Query)
-- **Routing:** React Router DOM
+## Technology Stack
 
-## 🔑 Key Features
+| Technology   | Purpose           |
+| ------------ | ----------------- |
+| React + Vite | Framework & Build |
+| TypeScript   | Type Safety       |
+| TailwindCSS  | Styling           |
+| React Query  | Data Fetching     |
+| React Router | Routing           |
 
-- **Dashboard:** Real-time overview of system status.
-- **Elder Management:** View and manage elderly profiles.
-- **Device Management:** Monitor and configure IoT devices.
-- **Notification Management:** View system-wide notifications.
-- **User Management:** Manage system access.
+---
+
+## Features (ฟีเจอร์)
+
+- **Dashboard** - Real-time system overview
+- **User Management** - Manage system users
+- **Elder Management** - View elderly profiles
+- **Device Management** - Monitor IoT devices
+- **Feedback Management** - Handle user feedback
+
+---
+
+**Last Updated:** December 13, 2025

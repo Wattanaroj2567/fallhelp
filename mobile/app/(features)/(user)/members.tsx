@@ -2,8 +2,6 @@ import React from "react";
 import {
   View,
   Text,
-  TouchableOpacity,
-  TouchableHighlight,
   FlatList,
   ActivityIndicator,
   Alert,
@@ -19,6 +17,7 @@ import Logger from "@/utils/logger";
 import { ScreenWrapper } from "@/components/ScreenWrapper";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { PrimaryButton } from "@/components/PrimaryButton";
+import { Bounceable } from "@/components/Bounceable";
 
 interface MemberDisplay {
   id: string;
@@ -60,12 +59,12 @@ const MemberItem = React.memo(
     };
 
     return (
-      <TouchableHighlight
+      <Bounceable
         onPress={handlePress}
         disabled={isMe}
-        underlayColor="#F9FAFB"
+        scale={1}
         style={{ borderRadius: 24, marginBottom: 12 }}
-        className={`bg-white rounded-[24px] shadow-sm border border-gray-100 ${isMe ? "opacity-90" : ""}`}
+        className={`bg-white rounded-[24px] shadow-sm border border-gray-100 ${isMe ? "opacity-90" : ""} active:bg-gray-50`}
       >
         <View className="p-5 flex-row items-center justify-between">
           {/* Left Content */}
@@ -140,7 +139,7 @@ const MemberItem = React.memo(
             </View>
           )}
         </View>
-      </TouchableHighlight>
+      </Bounceable>
     );
   }
 );
@@ -234,14 +233,13 @@ export default function Members() {
           <Text className="font-kanit text-red-500 mb-4">
             เกิดข้อผิดพลาดในการโหลดข้อมูล
           </Text>
-          <TouchableHighlight
+          <Bounceable
             onPress={() => refetch()}
             className="p-3 rounded-lg"
-            underlayColor="#E5E7EB"
             style={{ backgroundColor: "#E5E7EB" }}
           >
             <Text className="font-kanit">ลองใหม่</Text>
-          </TouchableHighlight>
+          </Bounceable>
         </View>
       </ScreenWrapper>
     );
@@ -259,7 +257,7 @@ export default function Members() {
     >
       {/* Header */}
       <ScreenHeader
-        title={`จัดการสมาชิก (${members?.length || 0})`}
+        title={`จัดการสมาชิก (${Math.max(0, (members?.length || 0) - 1)})`}
         onBack={() => router.back()}
         backgroundColor="#F9FAFB"
       />

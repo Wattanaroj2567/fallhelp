@@ -23,7 +23,7 @@ import { ScreenWrapper } from "@/components/ScreenWrapper";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { GenderSelect } from "@/components/GenderSelect";
-import DateTimePicker from "@react-native-community/datetimepicker";
+import { FloatingLabelDatePicker } from "@/components/FloatingLabelDatePicker";
 import {
   ThaiAddressAutocomplete,
   AddressData,
@@ -261,9 +261,8 @@ export default function EditElderInfo() {
       contentContainerStyle={{ paddingHorizontal: 24, flexGrow: 1 }}
       keyboardAvoiding
       scrollViewProps={{
-        bounces: true, // Allow bounce for better UX
-        overScrollMode: "always",
-        // scrollEnabled: true by default
+        bounces: false, // Match register.tsx: No elastic bounce
+        overScrollMode: "never", // Match register.tsx: No glow effect
       }}
       scrollViewRef={scrollViewRef}
       header={
@@ -296,7 +295,7 @@ export default function EditElderInfo() {
 
         <View className="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100 mb-6" style={{ opacity: isReadOnly ? 0.8 : 1 }} pointerEvents={isReadOnly ? 'none' : 'auto'}>
           {/* Elder Name & Lastname - FloatingLabelInput Match Register */}
-          <View className="flex-row gap-3 mb-5">
+          <View className="flex-row gap-3">
             {/* First Name */}
             <View className="flex-1">
               <FloatingLabelInput
@@ -322,55 +321,22 @@ export default function EditElderInfo() {
 
           {/* Gender - Replaced with Reusable Component */}
           {/* We might need to make GenderSelect support readonly/disabled prop, or just pointerEvents='none' handles it */}
-          <View className="mb-5">
-            <GenderSelect value={gender} onChange={setGender} isRequired={true} />
-          </View>
+          {/* Gender */}
+          <GenderSelect value={gender} onChange={setGender} isRequired={true} />
 
-          {/* Birth Date - Using Theme Colors */}
-          <View className="mb-5">
-            <TouchableOpacity
-              onPress={() => !isReadOnly && setShowDatePicker(true)}
-              className="bg-white rounded-2xl px-4 justify-center"
-              style={{ height: 60, borderWidth: 1, borderColor: "#E5E7EB", backgroundColor: isReadOnly ? '#F3F4F6' : 'white' }}
-              disabled={isReadOnly}
-            >
-              {dateOfBirth ? (
-                <View className={`absolute -top-2.5 left-3 px-1 z-10 ${isReadOnly ? 'bg-gray-100' : 'bg-white'}`}>
-                  <Text
-                    className="font-kanit"
-                    style={{ fontSize: 12, color: "#a3a6af" }}
-                  >
-                    วัน/เดือน/ปีเกิด <Text style={{ color: "#EF4444" }}>*</Text>
-                  </Text>
-                </View>
-              ) : null}
-              <Text
-                className="font-kanit text-[16px]"
-                style={{
-                  color: dateOfBirth ? theme.colors.onSurface : "#a3a6af",
-                }}
-              >
-                {dateOfBirth ? (
-                  formatDate(dateOfBirth)
-                ) : (
-                  <>
-                    วัน/เดือน/ปีเกิด <Text style={{ color: "#EF4444" }}>*</Text>
-                  </>
-                )}
-              </Text>
-
-              <View className="absolute right-4 top-5">
-                <MaterialIcons
-                  name="calendar-today"
-                  size={20}
-                  color="#a3a6af"
-                />
-              </View>
-            </TouchableOpacity>
-          </View>
+          {/* Birth Date */}
+          <FloatingLabelDatePicker
+            value={dateOfBirth}
+            onChange={(date) => {
+              if (isReadOnly) return;
+              setDateOfBirth(date);
+            }}
+            isRequired={true}
+            disabled={isReadOnly}
+          />
 
           {/* Height and Weight - FloatingLabelInput Match Register */}
-          <View className="flex-row gap-3 mb-5">
+          <View className="flex-row gap-3">
             <View className="flex-1">
               <FloatingLabelInput
                 label="ส่วนสูง (cm)"
@@ -394,7 +360,7 @@ export default function EditElderInfo() {
           </View>
 
           {/* Medical Condition - Changed to Single Line as requested */}
-          <View className="mb-5">
+          <View>
             <FloatingLabelInput
               label="โรคประจำตัว หรือ เคยป่วย (ถ้ามี)"
               value={medicalCondition}
@@ -404,7 +370,7 @@ export default function EditElderInfo() {
           </View>
 
           {/* House Number and Village */}
-          <View className="flex-row gap-3 mb-5">
+          <View className="flex-row gap-3">
             <View className="flex-1">
               <FloatingLabelInput
                 label="บ้านเลขที่"
@@ -426,14 +392,12 @@ export default function EditElderInfo() {
           </View>
 
           {/* Address - Autocomplete Search */}
-          <View>
-            <ThaiAddressAutocomplete
-              value={address}
-              onChange={setAddress}
-              isRequired
-            // Need to pass editable or similar prop if component supports it, otherwise View pointerEvents handles it
-            />
-          </View>
+          <ThaiAddressAutocomplete
+            value={address}
+            onChange={setAddress}
+            isRequired
+          // Need to pass editable or similar prop if component supports it, otherwise View pointerEvents handles it
+          />
         </View>
 
         {/* Save Button - Hide if Read Only */}
@@ -449,54 +413,7 @@ export default function EditElderInfo() {
       </View>
 
       {/* Date Picker Modal (iOS) or standard (Android) */}
-      {!isReadOnly && Platform.OS === "ios" ? (
-        <Modal
-          transparent={true}
-          visible={showDatePicker}
-          animationType="slide"
-          onRequestClose={() => setShowDatePicker(false)}
-        >
-          <Pressable
-            className="flex-1 justify-end bg-black/50"
-            onPress={() => setShowDatePicker(false)}
-          >
-            <Pressable
-              className="bg-white pb-6 rounded-t-3xl"
-              onPress={(e) => e.stopPropagation()}
-            >
-              <View className="flex-row justify-between items-center p-4 border-b border-gray-100">
-                <Text className="font-kanit text-lg font-bold">
-                  เลือกวันเกิด
-                </Text>
-                <TouchableOpacity onPress={() => setShowDatePicker(false)}>
-                  <Text className="font-kanit text-blue-600 text-lg font-bold">
-                    เสร็จสิ้น
-                  </Text>
-                </TouchableOpacity>
-              </View>
-              <DateTimePicker
-                value={dateOfBirth || new Date()}
-                maximumDate={new Date()}
-                mode="date"
-                display="spinner"
-                onChange={onDateChange}
-                locale="th-TH"
-                textColor="#000000"
-              />
-            </Pressable>
-          </Pressable>
-        </Modal>
-      ) : (
-        showDatePicker && (
-          <DateTimePicker
-            value={dateOfBirth || new Date()}
-            maximumDate={new Date()}
-            mode="date"
-            display="default"
-            onChange={onDateChange}
-          />
-        )
-      )}
+
     </ScreenWrapper>
   );
 }

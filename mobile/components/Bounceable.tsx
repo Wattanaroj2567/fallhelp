@@ -32,6 +32,8 @@ export const Bounceable: React.FC<BounceableProps> = ({
     const isPressed = useSharedValue(false);
     const lastPressTime = React.useRef(0);
 
+    const [isActive, setIsActive] = React.useState(false);
+
     const handlePress = React.useCallback((event: any) => {
         if (!onPress || disabled) return;
 
@@ -49,7 +51,7 @@ export const Bounceable: React.FC<BounceableProps> = ({
     const animatedStyle = useAnimatedStyle(() => {
         // Only animate scale if not disabled
         const targetScale = isPressed.value && !disabled ? scale : 1;
-
+        
         return {
             transform: [
                 {
@@ -70,13 +72,19 @@ export const Bounceable: React.FC<BounceableProps> = ({
             disabled={disabled}
             onPressIn={(e) => {
                 isPressed.value = true;
+                if (!disabled && scale === 1) setIsActive(true);
                 props.onPressIn?.(e);
             }}
             onPressOut={(e) => {
                 isPressed.value = false;
+                if (!disabled && scale === 1) setIsActive(false);
                 props.onPressOut?.(e);
             }}
-            style={[style, animatedStyle]}
+            style={[
+                style,
+                isActive && { backgroundColor: '#E5E7EB', opacity: 0.8 },
+                animatedStyle
+            ]}
         >
             {children}
         </AnimatedPressable>

@@ -96,17 +96,10 @@ export default function Login() {
                         {loading ? 'Signing in...' : 'Sign In'}
                     </button>
 
-                    <div className="text-center mt-4 space-y-2">
-                        <div>
-                            <Link to="/forgot-password" className="text-sm text-gray-500 hover:text-primary">
-                                ลืมรหัสผ่าน?
-                            </Link>
-                        </div>
-                        <div>
-                            <Link to="/register" className="text-sm text-primary hover:underline">
-                                Create new Admin account
-                            </Link>
-                        </div>
+                    <div className="text-center mt-4">
+                        <Link to="/forgot-password" className="text-sm text-gray-500 hover:text-primary">
+                            ลืมรหัสผ่าน?
+                        </Link>
                     </div>
                 </form>
             </div>

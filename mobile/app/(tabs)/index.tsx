@@ -456,7 +456,7 @@ export default function Home() {
                   <Bounceable
                     onPress={() => router.push("/(features)/(device)/details")}
                     className="flex-1 bg-white p-5 rounded-[24px] border border-gray-100 shadow-sm mr-1.5"
-                    scale={0.98}
+                    scale={0.95}
                   >
                     <View className="flex-row justify-between items-start">
                       <View
@@ -565,7 +565,7 @@ export default function Home() {
                 <Bounceable
                   onPress={() => router.push("/(features)/(elder)")}
                   className="bg-white p-6 rounded-[28px] border border-gray-100 shadow-sm flex-row items-center justify-between"
-                  scale={0.98}
+                  scale={0.95}
                 >
                   <View className="flex-row items-center gap-5">
                     <View className="w-16 h-16 bg-blue-50 rounded-full items-center justify-center border border-blue-100 overflow-hidden shadow-sm">
@@ -642,7 +642,7 @@ export default function Home() {
 
               <Bounceable
                 onPress={() => router.push("/(features)/(emergency)/call")}
-                className="bg-[#FF4B4B] rounded-[24px] p-5 flex-row justify-center items-center shadow-lg shadow-red-200 mt-4"
+                className="bg-[#FF4B4B] rounded-[24px] p-5 flex-row justify-center items-center shadow-lg shadow-red-200 mt-10"
                 scale={0.97}
               >
                 <View className="bg-white/20 p-2 rounded-full mr-3">

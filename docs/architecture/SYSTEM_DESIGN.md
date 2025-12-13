@@ -1,6 +1,8 @@
 # System Design & Architecture
 
-This document consolidates the technical design details for key system components: Database, Mobile App, and Admin Panel.
+# สถาปัตยกรรมและการออกแบบระบบ
+
+เอกสารนี้รวบรวมรายละเอียดทางเทคนิคของส่วนประกอบหลัก: Database, Mobile App, Admin Panel, และ Notification System
 
 ---
 
@@ -112,23 +114,9 @@ The Notification System is designed to provide real-time alerts and a persistent
 
 #### **Backend**
 
-1.  **Notification Controller** (`backend/src/controllers/notificationController.ts`):
-
-    - Manages CRUD operations for notifications.
-    - Handles "Mark as Read" and "Clear All" logic.
-    - Provides unread counts for badges.
-
-2.  **Notification Routes** (`backend/src/routes/notificationRoutes.ts`):
-
-    - `GET /api/notifications`: List paginated notifications.
-    - `GET /api/notifications/unread-count`: Get unread badge count.
-    - `PATCH /api/notifications/:id/read`: Mark specific item as read.
-    - `PATCH /api/notifications/read-all`: Mark all as read.
-    - `DELETE /api/notifications`: Clear all notifications.
-
-3.  **Prisma Model**:
-    - `Notification` model links to `User` and optional `Event`.
-    - Tracks `isRead`, `readAt`, and `pushToken` status.
+- **Notification Controller** - จัดการ CRUD operations
+- **Notification Routes** - ดู API endpoints ที่ **[API_DOCUMENTATION.md](../API_DOCUMENTATION.md)**
+- **Prisma Model** - Notification model links to User and Event
 
 #### **Mobile App**
 
@@ -146,3 +134,7 @@ The Notification System is designed to provide real-time alerts and a persistent
 3.  **Unread Badge**:
     - Integrated into the Home Screen (`(tabs)/index.tsx`) bell icon.
     - Polls `getUnreadCount` every 30 seconds.
+
+---
+
+**Last Updated:** December 13, 2025

@@ -1,253 +1,247 @@
-# FallHelp - Fall Detection System for Elderly Care
+ไ# FallHelp - Fall Detection System for Elderly Care
 
-## ✅ PROJECT STATUS: COMPLETE
-
-**Backend API:** ✅ **100% Complete** (November 26, 2025)  
-**Mobile App:** ✅ **100% Complete** (December 1, 2025)  
-**Admin Panel:** ✅ **100% Complete** (December 1, 2025)  
-**IoT Hardware:** ✅ **Hardware Ready** (ESP32 with firmware)
+# ระบบตรวจจับการหกล้มสำหรับดูแลผู้สูงอายุ
 
 ---
 
-## 📖 Project Description
+## Project Status (สถานะโปรเจค)
+
+| Component    | Status   | Date              |
+| ------------ | -------- | ----------------- |
+| Backend API  | Complete | November 26, 2025 |
+| Mobile App   | Complete | December 1, 2025  |
+| Admin Panel  | Complete | December 1, 2025  |
+| IoT Hardware | Complete | December 5, 2025  |
+
+---
+
+## Project Description (คำอธิบายโปรเจค)
 
 **FallHelp** เป็นระบบตรวจจับการหกล้มของผู้สูงอายุแบบ Real-time ที่ประกอบด้วย:
 
-- **Backend API** (Node.js + Express + TypeScript) - ✅ **100% Complete**
-- **Mobile App** (React Native + Expo) - ✅ **100% Complete**
-- **Admin Panel** (React + TypeScript + Vite) - ✅ **100% Complete**
-- **IoT Device** (ESP32 + MPU6050 + Pulse Sensor) - ✅ **Hardware Ready**
+- **Backend API** - Node.js + Express + TypeScript
+- **Mobile App** - React Native + Expo
+- **Admin Panel** - React + TypeScript + Vite
+- **IoT Device** - ESP32 + MPU6050 + Pulse Sensor
 
-ระบบสามารถแจ้งเตือนผู้ดูแลทันทีเมื่อตรวจพบการหกล้ม พร้อมข้อมูลตำแหน่ง GPS และสัญญาณชีพของผู้สูงอายุ
+ระบบสามารถแจ้งเตือนผู้ดูแลทันทีเมื่อตรวจพบการหกล้ม พร้อมข้อมูลชีพจรของผู้สูงอายุ
 
 ---
 
-## 🚀 Quick Start
+## Quick Start (เริ่มต้นใช้งาน)
 
 ### Prerequisites
 
-- Node.js 18+ (สำหรับ Backend)
-- PostgreSQL with TimescaleDB extension
-- MQTT Broker (Mosquitto recommended - optional)
-- Expo CLI (สำหรับ Mobile App)
+- Node.js 18+
+- PostgreSQL with TimescaleDB
+- MQTT Broker (Mosquitto - optional)
+- Expo CLI
 
 ### Backend Setup
 
 ```bash
-# เข้าโฟลเดอร์ backend
 cd backend
-
-# ติดตั้ง dependencies
 npm install
-
-# สร้างไฟล์ .env (copy from .env.example)
 cp .env.example .env
-
-# แก้ไข .env ให้ตรงกับ environment ของคุณ
-nano .env
-
-# Run database migrations
 npx prisma migrate dev
-
-# Start development server
 npm run dev
 ```
 
-เซิร์ฟเวอร์จะรันที่ `http://localhost:3333`
+Server runs at `http://localhost:3333`
 
 ### Mobile App Setup
 
 ```bash
-# เข้าโฟลเดอร์ mobile
 cd mobile
-
-# ติดตั้ง dependencies
 npm install
-
-# Start Expo development server
 npm start
+```
+
+### Admin Panel Setup
+
+```bash
+cd admin
+npm install
+npm run dev
 ```
 
 ---
 
-## 📁 Project Structure
+## Project Structure (โครงสร้างโปรเจค)
 
 ```
 fallhelp/
 ├── backend/              # Backend API (Express + TypeScript)
-│   ├── prisma/          # Database schema & migrations
+│   ├── prisma/           # Database schema & migrations
 │   ├── src/
-│   │   ├── utils/       # Utility functions
-│   │   ├── types/       # TypeScript types
-│   │   ├── middlewares/ # Express middlewares
-│   │   ├── services/    # Business logic
-│   │   ├── controllers/ # Request handlers
-│   │   ├── routes/      # API routes
-│   │   ├── iot/         # MQTT + Socket.io
-│   │   ├── app.ts       # Express app
-│   │   └── server.ts    # HTTP server
-│   ├── package.json
-│   └── tsconfig.json
+│   │   ├── controllers/  # Request handlers
+│   │   ├── services/     # Business logic
+│   │   ├── routes/       # API routes
+│   │   ├── middlewares/  # Express middlewares
+│   │   ├── iot/          # MQTT + Socket.io
+│   │   └── utils/        # Utility functions
+│   └── package.json
 │
-├── mobile/              # Mobile App (React Native + Expo)
-│   ├── app/            # App screens & navigation
-│   ├── components/     # Reusable components
-│   ├── assets/         # Images, fonts, etc.
-│   ├── package.json
-│   └── tsconfig.json
+├── mobile/               # Mobile App (React Native + Expo)
+│   ├── app/              # App screens & navigation
+│   ├── components/       # Reusable components
+│   ├── services/         # API services
+│   └── package.json
 │
-└── README.md           # This file
+├── admin/                # Admin Panel (React + Vite)
+│   ├── src/
+│   │   ├── pages/        # Page components
+│   │   └── components/   # UI components
+│   └── package.json
+│
+├── arduino/              # ESP32 Firmware
+│
+├── docs/                 # Documentation (consolidated)
+│   ├── README.md         # Documentation index
+│   ├── architecture/     # System design docs
+│   ├── features/         # Feature documentation
+│   ├── guides/           # Setup & troubleshooting
+│   ├── progress/         # Development history
+│   └── testing/          # Test reports
+│
+└── README.md             # This file
 ```
 
 ---
 
-## 🛠️ Technology Stack
+## Technology Stack (เทคโนโลยีที่ใช้)
 
 ### Backend
 
-- **Runtime:** Node.js
-- **Framework:** Express v5
-- **Language:** TypeScript
-- **Database:** PostgreSQL + TimescaleDB
-- **ORM:** Prisma
-- **Real-time:** Socket.io, MQTT
-- **Authentication:** JWT
-- **Push Notifications:** Expo Push Notification API
-- **Logging:** Debug library with namespaces
+| Technology               | Purpose                |
+| ------------------------ | ---------------------- |
+| Node.js + Express v5     | Web framework          |
+| TypeScript               | Type safety            |
+| PostgreSQL + TimescaleDB | Database + Time-series |
+| Prisma ORM               | Database ORM           |
+| Socket.io                | Real-time updates      |
+| MQTT                     | IoT communication      |
+| JWT                      | Authentication         |
+| Expo Push API            | Push notifications     |
 
 ### Mobile
 
-- **Framework:** React Native
-- **Platform:** Expo
-- **Navigation:** Expo Router
-- **State Management:** (TBD)
-- **UI Library:** (TBD)
+| Technology         | Purpose              |
+| ------------------ | -------------------- |
+| React Native       | Mobile framework     |
+| Expo SDK 52        | Development platform |
+| Expo Router        | File-based routing   |
+| React Native Paper | UI components        |
 
-### IoT
+### Admin Panel
 
-- **Microcontroller:** ESP32
-- **Sensors:** MPU6050 (Accelerometer), MAX30102 (Heart Rate)
-- **Protocol:** MQTT
-- **WiFi:** ESP32 built-in
+| Technology  | Purpose       |
+| ----------- | ------------- |
+| React       | UI framework  |
+| Vite        | Build tool    |
+| TypeScript  | Type safety   |
+| TailwindCSS | Styling       |
+| React Query | Data fetching |
+
+### IoT Hardware
+
+| Component           | Purpose                        |
+| ------------------- | ------------------------------ |
+| ESP32               | Microcontroller                |
+| MPU6050             | Accelerometer (Fall Detection) |
+| Pulse Sensor XD-58C | Heart Rate Monitor             |
+| MQTT                | Communication protocol         |
 
 ---
 
-## 📡 System Architecture
+## System Architecture (สถาปัตยกรรมระบบ)
 
 ```
 ┌─────────────┐      MQTT       ┌──────────────┐      REST API     ┌────────────┐
-│  IoT Device │ ───────────────> │   Backend    │ <──────────────── │ Mobile App │
+│  IoT Device │ ───────────────→ │   Backend    │ ←──────────────── │ Mobile App │
 │   (ESP32)   │                  │   Server     │                   │  (Expo)    │
 └─────────────┘                  └──────────────┘                   └────────────┘
-      │                                  │                                  │
-      │                                  │                                  │
-      └──────── Fall Detection ──────────┤                                  │
-                                         │                                  │
-                                    ┌────▼────┐                             │
-                                    │PostgreSQL│                            │
-                                    │TimescaleDB│                           │
-                                    └─────────┘                             │
-                                         │                                  │
-                                         │                                  │
-                                    ┌────▼────────┐                         │
-                                    │   Socket.io  │ ◄───────────────────────┘
-                                    │  Real-time   │
-                                    └──────────────┘
-                                         │
-                                         ▼
-                                    ┌────────────┐
-                                    │ Expo Push  │
-                                    │Push Notify │
-                                    └────────────┘
+                                        │
+                                   Socket.io
+                                        │
+                                        ▼
+                                ┌──────────────┐
+                                │ Push Notify  │
+                                │   (Expo)     │
+                                └──────────────┘
 ```
 
 ---
 
-## 📊 Key Features
+## Key Features (ฟีเจอร์หลัก)
 
-### ✅ Implemented (Backend)
+### Backend
 
-- [x] User Authentication (JWT)
-- [x] Multi-user elder management (OWNER/VIEWER roles)
-- [x] Device pairing with QR code
-- [x] Fall detection event logging
-- [x] Heart rate monitoring with alerts
-- [x] Real-time notifications (Socket.io)
-- [x] IoT communication (MQTT)
-- [x] Push notifications (Expo Push API)
-- [x] Time-series data storage (TimescaleDB)
-- [x] Event summary (Daily/Monthly)
-- [x] ESP32 firmware with Arduino IDE
-- [x] Admin dashboard API
+- User Authentication (JWT)
+- Multi-user Elder Management (Owner/Editor/Viewer)
+- Device Pairing with QR Code
+- Fall Detection Event Logging
+- Heart Rate Monitoring with Alerts
+- Real-time Notifications (Socket.io)
+- IoT Communication (MQTT)
+- Push Notifications (Expo Push API)
+- Time-series Data Storage (TimescaleDB)
+- Event Summary (Daily/Monthly)
+- Admin Dashboard API
 
-### ✅ Implemented (Mobile)
+### Mobile App
 
-- [x] User authentication UI
-- [x] Elder management UI
-- [x] Device pairing with QR scanner
-- [x] Real-time event monitoring
-- [x] Event timeline
-- [x] System overview dashboard
-- [x] Push notification handling
-- [x] Emergency contact management
-- [x] Notification History
+- User Authentication UI
+- Elder Management UI
+- Device Pairing with QR Scanner
+- Real-time Event Monitoring
+- Event Timeline
+- Dashboard Overview
+- Push Notification Handling
+- Emergency Contact Management
+- Notification History
+- Multi-user Access
 
----
+### Admin Panel
 
-## 📚 Documentation
-
-### Backend API
-
-สำหรับรายละเอียด API endpoints, IoT communication, และวิธีใช้งาน:
-
-- [📖 Backend Implementation Summary](./backend/docs/IMPLEMENTATION_SUMMARY.md)
-
-### API Endpoints
-
-- **Authentication:** `/api/auth/*`
-- **Users:** `/api/users/*`
-- **Elders:** `/api/elders/*`
-- **Devices:** `/api/devices/*`
-- **Events:** `/api/events/*`
-- **Notifications:** `/api/notifications/*`
-- **Emergency Contacts:** `/api/elders/:elderId/contacts/*`
-- **Admin:** `/api/admin/*`
-
-ดู API documentation เต็มรูปแบบได้ใน [IMPLEMENTATION_SUMMARY.md](./backend/docs/IMPLEMENTATION_SUMMARY.md)
+- Admin Authentication
+- Dashboard Overview
+- User Management
+- Elder Management
+- Device Management
+- Feedback Management
 
 ---
 
-## 🧪 Testing
+## Documentation (เอกสาร)
 
-### Backend Testing
+All documentation is consolidated in `docs/` folder:
 
-```bash
-cd backend
-
-# Test REST API with HTTP client
-# (Postman, Thunder Client, Insomnia, etc.)
-
-# Start backend server
-npm run dev
-```
-
-### IoT Testing (ESP32)
-
-ดู `arduino/README.md` สำหรับการตั้งค่า ESP32 และการทดสอบกับ MQTT broker
-
-### Mobile Testing
-
-```bash
-cd mobile
-npm start
-# Press 'i' for iOS simulator
-# Press 'a' for Android emulator
-# Scan QR code for physical device
-```
+| Document                                                            | Description               |
+| ------------------------------------------------------------------- | ------------------------- |
+| [Documentation Index](./docs/README.md)                             | Central documentation hub |
+| [Project Structure](./docs/architecture/PROJECT_STRUCTURE.md)       | Full project layout       |
+| [System Design](./docs/architecture/SYSTEM_DESIGN.md)               | Architecture details      |
+| [Implementation Summary](./docs/progress/IMPLEMENTATION_SUMMARY.md) | Backend API reference     |
 
 ---
 
-## 🔐 Environment Variables
+## API Endpoints (API หลัก)
+
+| Category           | Endpoint                          |
+| ------------------ | --------------------------------- |
+| Authentication     | `/api/auth/*`                     |
+| Users              | `/api/users/*`                    |
+| Elders             | `/api/elders/*`                   |
+| Devices            | `/api/devices/*`                  |
+| Events             | `/api/events/*`                   |
+| Notifications      | `/api/notifications/*`            |
+| Emergency Contacts | `/api/elders/:elderId/contacts/*` |
+| Admin              | `/api/admin/*`                    |
+
+---
+
+## Environment Variables (ตัวแปรสภาพแวดล้อม)
 
 ### Backend `.env`
 
@@ -260,45 +254,56 @@ MQTT_BROKER_URL="mqtt://localhost:1883"
 DEBUG="fallhelp:*"
 ```
 
-**Environment Variables:**
+---
 
-- `DATABASE_URL` - PostgreSQL connection string
-- `PORT` - Backend server port (default: 3333)
-- `JWT_SECRET` - Secret key for JWT authentication
-- `CORS_ORIGIN` - Frontend URL for CORS (use `FRONTEND_URL` in production)
-- `MQTT_BROKER_URL` - MQTT broker connection string
-- `DEBUG` - Debug namespaces (`fallhelp:*` for all, `fallhelp:mqtt:*` for MQTT only)
+## Testing (การทดสอบ)
 
-ดู `.env.example` สำหรับตัวอย่างเต็มรูปแบบ
+### Backend
+
+```bash
+cd backend
+npm run dev
+# Use Postman or similar HTTP client
+```
+
+### Mobile
+
+```bash
+cd mobile
+npm test    # Run Jest tests
+npm start   # Start Expo dev server
+```
+
+### Admin
+
+```bash
+cd admin
+npm run dev
+```
 
 ---
 
-## 📝 Development Timeline
+## Development Timeline (ไทม์ไลน์การพัฒนา)
 
-- **Phase 1-11:** Backend Development (Nov 24-25, 2025) ✅ **COMPLETED**
-- **Phase 12-15:** Mobile App Development (Nov 26 - Dec 1, 2025) ✅ **COMPLETED**
-- **Phase 16-18:** IoT Device Development (Dec 1-5, 2025) ✅ **COMPLETED**
-- **Phase 19:** Integration Testing (Dec 5, 2025) ✅ **COMPLETED**
-- **Phase 20:** Deployment (Ready) ✅ **COMPLETED**
+| Phase                  | Date                 | Status   |
+| ---------------------- | -------------------- | -------- |
+| Backend Development    | Nov 24-26, 2025      | Complete |
+| Mobile App Development | Nov 26 - Dec 1, 2025 | Complete |
+| IoT Device Development | Dec 1-5, 2025        | Complete |
+| Integration Testing    | Dec 5, 2025          | Complete |
+| Documentation Refactor | Dec 13, 2025         | Complete |
 
 ---
 
-## 🤝 Contributing
+## Contributing (การมีส่วนร่วม)
 
 ### Git Workflow
 
 ```bash
-# Create feature branch
 git checkout -b feature/your-feature-name
-
-# Make changes and commit
 git add .
 git commit -m "Add: your feature description"
-
-# Push to remote
 git push origin feature/your-feature-name
-
-# Create Pull Request on GitHub
 ```
 
 ### Commit Message Convention
@@ -306,51 +311,23 @@ git push origin feature/your-feature-name
 ```
 Add: เพิ่มฟีเจอร์ใหม่
 Fix: แก้ไข bug
-Update: อัพเดทโค้ดที่มีอยู่แล้ว
-Remove: ลบโค้ดที่ไม่ใช้แล้ว
-Docs: อัพเดทเอกสาร
-Test: เพิ่ม/แก้ไข tests
+Update: อัปเดตโค้ดที่มีอยู่
+Remove: ลบโค้ดที่ไม่ใช้
+Docs: อัปเดตเอกสาร
 ```
 
 ---
 
-## 📜 License
+## License
 
-This project is licensed under the MIT License.
-
----
-
-## 👥 Team
-
-- **Developer:** Tawan (Senior Project 2024-2025)
-- **Advisor:** (TBD)
-- **University:** (TBD)
+MIT License
 
 ---
 
-## 🙏 Acknowledgments
-
-- **GitHub Copilot** (Claude Sonnet 4.5) - AI Assistant for code development
-- **Express.js** - Web framework
-- **Prisma** - Database ORM
-- **TimescaleDB** - Time-series database
-- **Socket.io** - Real-time communication
-- **Expo** - React Native development platform
-
----
-
-## 📞 Contact
-
-สำหรับคำถามหรือข้อเสนอแนะ:
+## Contact
 
 - GitHub: [@Wattanaroj2567](https://github.com/Wattanaroj2567)
 
 ---
 
-## 🎉 Status
-
-**Backend:** ✅ **PRODUCTION READY** (100% Complete)  
-**Mobile App:** ✅ **PRODUCTION READY** (100% Complete)  
-**IoT Device:** ✅ **PRODUCTION READY** (100% Complete)
-
-**Last Updated:** December 5, 2025
+**Last Updated:** December 13, 2025

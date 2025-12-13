@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TouchableHighlight, ActivityIndicator, RefreshControl, Alert } from 'react-native';
+import { View, Text, ScrollView, ActivityIndicator, RefreshControl, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, useNavigation } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/services/api';
@@ -22,6 +22,7 @@ import { Bounceable } from '@/components/Bounceable';
 // ==========================================
 export default function Profile() {
   const router = useRouter();
+  const navigation = useNavigation();
   const queryClient = useQueryClient();
   const [uploading, setUploading] = useState(false);
   const [imageError, setImageError] = useState(false);
@@ -133,14 +134,14 @@ export default function Profile() {
           <Text style={{ fontSize: 18 }} className="font-kanit text-gray-700 mt-4 text-center">
             ไม่พบข้อมูลโปรไฟล์
           </Text>
-          <TouchableHighlight
+          <Bounceable
             onPress={() => refetch()}
             className="mt-4 p-3 rounded-lg"
-            underlayColor="#E5E7EB"
+            scale={1}
             style={{ backgroundColor: "#E5E7EB" }}
           >
             <Text className="font-kanit">ลองใหม่</Text>
-          </TouchableHighlight>
+          </Bounceable>
         </View>
       </SafeAreaView>
     );
@@ -155,7 +156,16 @@ export default function Profile() {
   return (
     <ScreenWrapper edges={['top', 'left', 'right']} useScrollView={false}>
       {/* Header */}
-      <ScreenHeader title="ข้อมูลส่วนตัว" onBack={() => router.back()} />
+      <ScreenHeader 
+        title="ข้อมูลส่วนตัว" 
+        onBack={() => {
+          if (navigation.canGoBack()) {
+            router.back();
+          } else {
+            router.replace("/(tabs)");
+          }
+        }} 
+      />
 
       <ScrollView
         className="flex-1"
@@ -204,10 +214,10 @@ export default function Profile() {
         <View className="bg-white rounded-[24px] shadow-lg shadow-black/15 android:elevation-10 mb-4">
           <View className="rounded-[24px] overflow-hidden border border-gray-100">
             {/* Name & Gender Group */}
-            <TouchableHighlight
+            <Bounceable
               onPress={() => router.push('/(features)/(user)/(profile)/edit-info')}
-              className="border-b border-gray-100"
-              underlayColor="#E5E7EB"
+              className="border-b border-gray-100 active:bg-gray-50"
+              scale={1}
               style={{ backgroundColor: 'white' }}
             >
               <View className="flex-row items-center justify-between p-5">
@@ -242,13 +252,13 @@ export default function Profile() {
                   แก้ไข
                 </Text>
               </View>
-            </TouchableHighlight>
+              </Bounceable>
 
             {/* Phone */}
-            <TouchableHighlight
+            <Bounceable
               onPress={() => router.push('/(features)/(user)/(profile)/edit-phone')}
-              className="border-b border-gray-100"
-              underlayColor="#E5E7EB"
+              className="border-b border-gray-100 active:bg-gray-50"
+              scale={1}
               style={{ backgroundColor: 'white' }}
             >
               <View className="flex-row items-center justify-between p-5">
@@ -264,13 +274,13 @@ export default function Profile() {
                   แก้ไข
                 </Text>
               </View>
-            </TouchableHighlight>
+              </Bounceable>
 
             {/* Email */}
-            <TouchableHighlight
+            <Bounceable
               onPress={() => router.push('/(features)/(user)/(profile)/change-email')}
-              className="border-b border-gray-100"
-              underlayColor="#E5E7EB"
+              className="border-b border-gray-100 active:bg-gray-50"
+              scale={1}
               style={{ backgroundColor: 'white' }}
             >
               <View className="flex-row items-center justify-between p-5">
@@ -286,13 +296,13 @@ export default function Profile() {
                   แก้ไข
                 </Text>
               </View>
-            </TouchableHighlight>
+              </Bounceable>
 
             {/* Password */}
-            <TouchableHighlight
+            <Bounceable
               onPress={() => router.push('/(features)/(user)/(profile)/change-password')}
-              className={isOwner ? "border-b border-gray-100" : ""}
-              underlayColor="#E5E7EB"
+              className="active:bg-gray-50"
+              scale={1}
               style={{ backgroundColor: 'white' }}
             >
               <View className="flex-row items-center justify-between p-5">
@@ -308,28 +318,10 @@ export default function Profile() {
                   เปลี่ยน
                 </Text>
               </View>
-            </TouchableHighlight>
+              </Bounceable>
 
-            {/* Emergency Contacts - Only for Owner */}
-            {isOwner && (
-              <TouchableHighlight
-                onPress={() => router.push('/(features)/(emergency)')}
-                underlayColor="#E5E7EB"
-                style={{ backgroundColor: 'white' }}
-              >
-                <View className="flex-row items-center justify-between p-5">
-                  <View className="flex-1">
-                    <Text style={{ fontSize: 12 }} className="font-kanit text-gray-500 mb-1">
-                      ผู้ติดต่อฉุกเฉิน
-                    </Text>
-                    <Text style={{ fontSize: 16 }} className="font-kanit text-gray-900">
-                      จัดการรายชื่อ
-                    </Text>
-                  </View>
-                  <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
-                </View>
-              </TouchableHighlight>
-            )}
+            {/* Emergency Contacts - MOVED TO SETTINGS as per plan */}
+            {/* The user requested to remove this from Profile and put it in Settings */}
           </View>
         </View>
 
@@ -342,47 +334,53 @@ export default function Profile() {
         </View>
 
         {/* Delete Account Button */}
-        <PrimaryButton
-          title="ลบบัญชีถาวร"
-          variant="danger"
-          onPress={() => {
-            Alert.alert(
-              'ยืนยันการลบบัญชี',
-              'คุณแน่ใจหรือไม่ที่จะลบบัญชีถาวร? การกระทำนี้ไม่สามารถย้อนกลับได้',
-              [
-                { text: 'ยกเลิก', style: 'cancel' },
-                {
-                  text: 'ยืนยันอีกครั้ง',
-                  style: 'destructive',
-                  onPress: () => {
-                    Alert.alert(
-                      'คำเตือนสุดท้าย',
-                      'ข้อมูลทั้งหมดของคุณจะถูกลบถาวร รวมถึงข้อมูลผู้สูงอายุที่คุณดูแล คุณต้องการดำเนินการต่อหรือไม่?',
-                      [
-                        { text: 'ยกเลิก', style: 'cancel' },
-                        {
-                          text: 'ลบบัญชีถาวร',
-                          style: 'destructive',
-                          onPress: async () => {
-                            try {
-                              await deleteAccount();
-                              await SecureStore.deleteItemAsync('token');
-                              queryClient.clear();
-                              router.replace('/(auth)/login');
-                              Alert.alert('สำเร็จ', 'ลบบัญชีเรียบร้อยแล้ว');
-                            } catch (error: any) {
-                              Alert.alert('ผิดพลาด', error.message || 'ไม่สามารถลบบัญชีได้');
-                            }
+        {/* Delete Account Link (Discreet) */}
+        <View className="items-center mt-4 mb-8">
+          <Bounceable
+            scale={0.98}
+            onPress={() => {
+              Alert.alert(
+                'ยืนยันการลบบัญชี',
+                'คุณแน่ใจหรือไม่ที่จะลบบัญชีถาวร? การกระทำนี้ไม่สามารถย้อนกลับได้',
+                [
+                  { text: 'ยกเลิก', style: 'cancel' },
+                  {
+                    text: 'ยืนยันอีกครั้ง',
+                    style: 'destructive',
+                    onPress: () => {
+                      Alert.alert(
+                        'คำเตือนสุดท้าย',
+                        'ข้อมูลทั้งหมดของคุณจะถูกลบถาวร รวมถึงข้อมูลผู้สูงอายุที่คุณดูแล คุณต้องการดำเนินการต่อหรือไม่?',
+                        [
+                          { text: 'ยกเลิก', style: 'cancel' },
+                          {
+                            text: 'ลบบัญชีถาวร',
+                            style: 'destructive',
+                            onPress: async () => {
+                              try {
+                                await deleteAccount();
+                                await SecureStore.deleteItemAsync('token');
+                                queryClient.clear();
+                                router.replace('/(auth)/login');
+                                Alert.alert('สำเร็จ', 'ลบบัญชีเรียบร้อยแล้ว');
+                              } catch (error: any) {
+                                Alert.alert('ผิดพลาด', error.message || 'ไม่สามารถลบบัญชีได้');
+                              }
+                            },
                           },
-                        },
-                      ]
-                    );
+                        ]
+                      );
+                    },
                   },
-                },
-              ]
-            );
-          }}
-        />
+                ]
+              );
+            }}
+          >
+            <Text className="text-red-400 font-kanit text-sm underline opacity-70">
+              ลบบัญชีผู้ใช้ถาวร
+            </Text>
+          </Bounceable>
+        </View>
       </ScrollView>
     </ScreenWrapper>
   );

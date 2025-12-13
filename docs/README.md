@@ -1,34 +1,71 @@
 # FallHelp Documentation Index
 
-> 📚 **Official Documentation Hub**
-> This directory contains the single source of truth for all project documentation.
+# สารบัญเอกสารโปรเจค FallHelp
+
+เอกสารนี้เป็นศูนย์รวมเอกสารหลักของโปรเจค FallHelp ทั้งหมด  
+This directory contains the single source of truth for all project documentation.
 
 ---
 
-## ✅ Current Documentation (Use These)
+## Architecture (สถาปัตยกรรมและโครงสร้างระบบ)
 
-| Document                                                               | Description                                                          |
-| :--------------------------------------------------------------------- | :------------------------------------------------------------------- |
-| **[Project Structure](architecture/PROJECT_STRUCTURE.md)**             | Technical stack, directory layout, database schema, and API summary. |
-| **[Functional Requirements](architecture/FUNCTIONAL_REQUIREMENTS.md)** | Detailed features list, user roles, and development phases.          |
-| **[System Design](architecture/SYSTEM_DESIGN.md)**                     | Architecture details for Database, Mobile, Admin, and Notifications. |
-| **[UI Features & Flow](features/UI_FEATURES.md)**                      | Comprehensive UI/UX requirements, screen flows, and states.          |
-| **[Admin Panel](features/ADMIN_PANEL.md)**                             | Specific features and endpoints for the Admin Web Panel.             |
-| **[Feedback System](features/FEEDBACK_SYSTEM.md)**                     | Implementation details for the User Feedback loop.                   |
+| เอกสาร                                                             | คำอธิบาย                                                       |
+| :----------------------------------------------------------------- | :------------------------------------------------------------- |
+| [Project Structure](architecture/PROJECT_STRUCTURE.md)             | โครงสร้างโปรเจค, Tech Stack, Directory Layout, Database Schema |
+| [Functional Requirements](architecture/FUNCTIONAL_REQUIREMENTS.md) | ความต้องการเชิงฟังก์ชัน, Actors, Use Cases                     |
+| [System Design](architecture/SYSTEM_DESIGN.md)                     | การออกแบบระบบ: Database, Mobile, Admin, Notification           |
+| [Development Plan](architecture/DEVELOPMENT_PLAN.md)               | แผนพัฒนา 4 ระยะ สำหรับ Software และ Hardware                   |
 
 ---
 
-## 📂 Directories
+## Features (ฟีเจอร์และคุณสมบัติ)
 
-- **`architecture/`**: High-level system design and requirements.
-- **`features/`**: Detailed specifications for specific sub-systems (Mobile, Admin, UI).
-- **`archive/`** (Planned): Location for older progress logs and deprecated files.
+| เอกสาร                                         | คำอธิบาย                                   |
+| :--------------------------------------------- | :----------------------------------------- |
+| [UI Features & Flow](features/UI_FEATURES.md)  | UI/UX ทั้งหมดของ Mobile App (1,971 บรรทัด) |
+| [Admin Panel](features/ADMIN_PANEL.md)         | ฟีเจอร์และ Endpoints ของ Admin Panel       |
+| [Feedback System](features/FEEDBACK_SYSTEM.md) | ระบบรับความคิดเห็นจากผู้ใช้                |
 
 ---
 
-## ⚠️ Deprecated Locations
+## Guides (คู่มือการใช้งาน)
 
-Please ignore documentation in the following folders as they may be outdated. Always refer to the files listed above.
+| เอกสาร                                                       | คำอธิบาย                      |
+| :----------------------------------------------------------- | :---------------------------- |
+| [Device Pairing Flow](guides/DEVICE_PAIRING_FLOW.md)         | ขั้นตอนการจับคู่อุปกรณ์ ESP32 |
+| [Expo Push Notification](guides/EXPO_PUSH_NOTIFICATION.md)   | การตั้งค่า Push Notification  |
+| [Production Deployment](guides/PRODUCTION_DEPLOYMENT.md)     | การ Deploy ขึ้น Production    |
+| [Troubleshooting Backend](guides/TROUBLESHOOTING_BACKEND.md) | แก้ปัญหาฝั่ง Backend          |
+| [Troubleshooting Mobile](guides/TROUBLESHOOTING_MOBILE.md)   | แก้ปัญหาฝั่ง Mobile           |
 
-- `backend/docs/` -> See `architecture/` instead.
-- `mobile/docs/` -> See `features/MOBILE.md` or `UI_FEATURES.md` instead.
+---
+
+## Testing (การทดสอบ)
+
+| เอกสาร                                                      | คำอธิบาย               |
+| :---------------------------------------------------------- | :--------------------- |
+| [Test Completion Report](testing/TEST_COMPLETION_REPORT.md) | ผลการทดสอบและ Coverage |
+
+---
+
+## References (เอกสารอ้างอิง)
+
+| เอกสาร                                           | คำอธิบาย                           |
+| :----------------------------------------------- | :--------------------------------- |
+| [API Documentation](API_DOCUMENTATION.md)        | เอกสาร API ครบทุก Endpoints        |
+| [SisFall Dataset](references/SISFALL_DATASET.md) | Dataset สำหรับพัฒนา Fall Detection |
+
+---
+
+## Progress (บันทึกความคืบหน้า)
+
+| เอกสาร                                           | คำอธิบาย                    |
+| :----------------------------------------------- | :-------------------------- |
+| [Backend Progress](progress/BACKEND_PROGRESS.md) | ประวัติการพัฒนา Backend     |
+| [Mobile Progress](progress/MOBILE_PROGRESS.md)   | ประวัติการพัฒนา Mobile App  |
+| [Admin Progress](progress/ADMIN_PROGRESS.md)     | ประวัติการพัฒนา Admin Panel |
+| [Doc Progress](progress/DOC_PROGRESS.md)         | ความคืบหน้าการจัดทำเอกสาร   |
+
+---
+
+**Last Updated:** December 13, 2025

@@ -19,6 +19,7 @@ interface FloatingLabelInputProps
   accentColor?: string;
   forceFocus?: boolean;
   testID?: string;
+  labelBackgroundColor?: string;
 }
 
 export const FloatingLabelInput: React.FC<FloatingLabelInputProps> = ({
@@ -32,6 +33,7 @@ export const FloatingLabelInput: React.FC<FloatingLabelInputProps> = ({
   value,
   style,
   multiline,
+  labelBackgroundColor = "#FFFFFF",
   ...props
 }) => {
   const theme = useTheme();
@@ -70,7 +72,7 @@ export const FloatingLabelInput: React.FC<FloatingLabelInputProps> = ({
       inputRange: [0, 1],
       outputRange: [16, 12],
     }),
-    backgroundColor: "#FFFFFF",
+    backgroundColor: labelBackgroundColor,
     paddingHorizontal: 4,
     // ️ สำคัญ: lineHeight สูงมากเพื่อรองรับ น้ำ (สระอำ + ไม้โท)
     lineHeight: 24,

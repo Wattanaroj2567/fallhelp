@@ -105,7 +105,7 @@ export default function WifiConfig() {
       keyboardAvoiding={true}
       contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 24 }}
       edges={["top", "left", "right"]}
-      useScrollView={true}
+      useScrollView={false}
       header={
         <View style={{ backgroundColor: "#FFFFFF" }}>
           <ScreenHeader title="ตั้งค่า WiFi" onBack={handleBack} />
@@ -130,34 +130,32 @@ export default function WifiConfig() {
         </View>
       }
     >
-      <View className="flex-1 pt-6">
+      <View className="flex-1 pt-6 px-4">
         {/* Form Inputs */}
-        <View className="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100 mb-6">
-          <View className="mb-5">
-            <FloatingLabelInput
-              label="ชื่อ WiFi (SSID)"
-              value={manualSsid}
-              onChangeText={setManualSsid}
-              autoCorrect={false}
-              autoCapitalize="none"
-            />
-          </View>
+        <View>
+          <FloatingLabelInput
+            label="ชื่อ WiFi (SSID)"
+            value={manualSsid}
+            onChangeText={setManualSsid}
+            autoCorrect={false}
+            autoCapitalize="none"
+          />
+        </View>
 
-          <View>
-            <FloatingLabelInput
-              label="รหัสผ่าน WiFi"
-              value={manualPassword}
-              onChangeText={setManualPassword}
-              isPassword
-              autoCorrect={false}
-              autoCapitalize="none"
-              textContentType="password"
-            />
-          </View>
+        <View>
+          <FloatingLabelInput
+            label="รหัสผ่าน WiFi"
+            value={manualPassword}
+            onChangeText={setManualPassword}
+            isPassword
+            autoCorrect={false}
+            autoCapitalize="none"
+            textContentType="password"
+          />
         </View>
 
         {/* Action Button */}
-        <View className="mt-2">
+        <View>
           <PrimaryButton
             title="เชื่อมต่อ"
             onPress={handleConnect}

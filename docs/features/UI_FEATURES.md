@@ -1,10 +1,13 @@
 # FallHelp - UI Features Documentation
 
-> 📱 Mobile App UI Flow และ Feature Requirements จาก Figma Design
+# เอกสาร UI และ UX ฟีเจอร์ทั้งหมด
+
+> **🎨 ถอดแบบจาก Figma Mockups:** `mobile/Mockup-UI-Figma/`  
+> Mobile App UI Flow และ Feature Requirements จาก Figma Design
 
 ---
 
-## 📋 Table of Contents
+## Table of Contents
 
 **👥 USER FEATURES (Sections 1-9)**
 
@@ -28,9 +31,9 @@
 12. [Empty States](#12-empty-states)
 13. [Success States](#13-success-states)
 
-**📊 API & TECHNICAL SPECIFICATIONS**
+**📊 TECHNICAL SPECIFICATIONS**
 
-14. [API Requirements Summary](#-api-requirements-summary)
+14. [API Requirements](#api-requirements) → ดูที่ [API_DOCUMENTATION.md](../API_DOCUMENTATION.md)
 
 ---
 
@@ -49,12 +52,6 @@
   - "ยังไม่มีบัญชี ? **สมัครสมาชิก**" (สีแดง #EB6A6A - ด้านล่างปุ่ม)
 - **Buttons:**
   - ปุ่ม "เข้าสู่ระบบ" (สีเขียว #16AD78, มุมโค้งมน)
-
-**API Endpoint:**
-
-- `POST /api/auth/login`
-- **Request Body:** `{ email, password }`
-- **Response:** `{ token, user: { id, email, firstName, lastName, ... } }`
 
 ---
 
@@ -81,13 +78,6 @@
 
 1. กดลงทะเบียน → แสดงหน้า "ลงทะเบียนสำเร็จ"
 2. ระบบพาไปหน้า Empty State (First-time User) อัตโนมัติ
-
-**API Endpoints:**
-
-- `POST /api/auth/register`
-  - **Request:** `{ firstName, lastName, gender, phoneNumber, email, password }`
-  - **Response:** `{ message: "Registration successful" }`
-  - **หมายเหตุ:** Flow สมัครไม่ใช้ OTP; OTP ใช้เฉพาะลืมรหัสผ่าน
 
 ---
 
@@ -127,18 +117,6 @@
 - **Sub-text:** "รอสักครู่ ! ระบบกำลังพาท่านไปหน้าเข้าสู่ระบบ"
 - Auto-redirect หรือ Manual "เข้าสู่ระบบ"
 
-**API Endpoints:**
-
-- `POST /api/auth/forgot-password`
-  - **Request:** `{ email }`
-  - **Response:** `{ message: "OTP sent" }`
-- `POST /api/auth/verify-reset-otp`
-  - **Request:** `{ email, otp }`
-  - **Response:** `{ resetToken }`
-- `POST /api/auth/reset-password`
-  - **Request:** `{ resetToken, newPassword }`
-  - **Response:** `{ success: true }`
-
 ---
 
 ## 2. Device Setup & Pairing
@@ -165,11 +143,6 @@
 
 - แสดง Bottom Navigation Bar:
   - 🏠 **หน้าหลัก** (Active - สีฟ้า)
-
-**API Endpoint:**
-
-- `GET /api/elders` - Check if user has any elders (empty array = show empty state)
-- `GET /api/devices` - Check if user has any devices
 
 **Behavior:**
 
@@ -216,12 +189,6 @@
 - **Button:**
   - ปุ่ม "ถัดไป" (สีเขียว #16AD78) - ไปยัง Step 2
 
-**API Endpoint:**
-
-- `POST /api/elders`
-  - **Request:** `{ name, gender, birthDate, height, weight, medicalCondition, address }` + profileImage (optional)
-  - **Response:** `{ success: true, elder: { id, ... } }`
-
 **Validation:**
 
 - ชื่อผู้สูงอายุ: Required
@@ -254,12 +221,6 @@
   - "ไม่พบอุปกรณ์ของคุณ? **กรอกรหัสอุปกรณ์ด้วยตนเอง**" (สีแดง #EB6A6A)
   - → คลิกแล้วไปหน้า **Manual Device Entry**
 
-**API Endpoint:**
-
-- `POST /api/devices/pair`
-  - **Request:** `{ qrData, elderId }` (qrData มี deviceId + macAddress encoded)
-  - **Response:** `{ success: true, device: { id, deviceId, macAddress, name } }`
-
 **Success State:**
 
 - Scan สำเร็จ → แสดง Modal/Screen:
@@ -287,12 +248,6 @@
 
 - **Button:**
   - ปุ่ม "ยืนยัน" (สีเขียว #16AD78) - Verify and pair device
-
-**API Endpoint:**
-
-- `POST /api/devices/pair`
-  - **Request:** `{ macAddress, elderId }`
-  - **Response:** `{ success: true, device: { id, deviceId, macAddress, name } }`
 
 **Success State:**
 
@@ -409,12 +364,6 @@
 - **Button:**
   - ปุ่ม "เชื่อมต่อ" (สีเขียว #16AD78)
 
-**API Endpoint:**
-
-- `POST /api/devices/:deviceId/wifi`
-  - **Request:** `{ ssid, password }`
-  - **Response:** `{ success: true, message: "WiFi configuration sent to device" }`
-
 **Success State:**
 
 - ✅ ไอคอนสีเขียว
@@ -491,11 +440,6 @@
 - ❌ **OFFLINE:** "ออฟไลน์" (สีเทา/แดง)
 - ⚠️ **CONNECTING:** "กำลังเชื่อมต่อ..." (สีเหลือง)
 
-**API/Socket:**
-
-- Socket Event: `device_status_update`
-- API: `GET /api/devices/:deviceId/status`
-
 ---
 
 #### **การ์ด 2: สถานะการหกล้ม**
@@ -512,11 +456,6 @@
 - 🟦 **NORMAL:** "ปกติ" (สีฟ้า) - No fall detected
 - 🟨 **WARNING:** "ตรวจพบการหกล้ม" (สีเหลือง) - Fall detected, 30s timer active
 - 🟥 **EMERGENCY:** "ฉุกเฉิน" (สีแดง) - Emergency contacts called
-
-**API/Socket:**
-
-- Socket Event: `fall_detected`, `event_status_changed`
-- API: `GET /api/elders/:elderId/events?type=FALL&latest=true`
 
 ---
 
@@ -541,11 +480,6 @@
 - อัปเดตทุก 5 วินาที (Socket.io)
 - แสดง Animation เมื่อ BPM เปลี่ยน
 
-**API/Socket:**
-
-- Socket Event: `heart_rate_update`, `heart_rate_alert`
-- API: `GET /api/elders/:elderId/heart-rate/latest`
-
 ---
 
 ### 3.3 ข้อมูลผู้สูงอายุ (Elder Info Card)
@@ -561,10 +495,6 @@
   - **อายุ:** "66 ปี" (คำนวณจากวันเกิด)
 - **Action:**
   - **ลูกศร →** (ด้านขวา) - กดเพื่อไปหน้า "Manage elderly info" (ดูรายละเอียดเต็ม)
-
-**API:**
-
-- `GET /api/elders` - ดึงข้อมูลผู้สูงอายุที่ user ดูแลอยู่
 
 ---
 
@@ -909,23 +839,6 @@ Dashboard Update:
     - "ชีพจรผิดปกติ: ชีพจรสูง 3 ครั้ง
       ชีพจรต่ำ 1 ครั้ง"
 
-**API Endpoint:**
-
-- `GET /api/elders/:elderId/events/summary?month=7&year=2566`
-  - **Response:**
-    ```json
-    {
-      "month": "กรกฎาคม",
-      "year": 2566,
-      "peakTimeRange": "16:00 - 18:00 น.",
-      "totalFallEvents": 3,
-      "heartRateAnomalies": {
-        "high": 3,
-        "low": 1
-      }
-    }
-    ```
-
 ---
 
 ## 8. Settings
@@ -995,35 +908,6 @@ Dashboard Update:
 - **Button:**
   - ปุ่ม "เชิญสมาชิกเข้ากลุ่มของคุณ" (สีเขียว #00A86B)
 
-**API Endpoint:**
-
-- `GET /api/elders/:elderId/members` - ดึงรายชื่อสมาชิกทั้งหมด
-  - **Response:**
-    ```json
-    {
-      "members": [
-        {
-          "userId": "user123",
-          "email": "member@example.com",
-          "firstName": "นายสมชาย",
-          "lastName": "ใจดี",
-          "accessLevel": "OWNER",
-          "role": "ญาติหลัก",
-          "joinedAt": "2024-01-15T10:30:00Z"
-        },
-        {
-          "userId": "user456",
-          "email": "viewer@example.com",
-          "firstName": "นางสาวสมชาย",
-          "lastName": "ช่วยดูแล",
-          "accessLevel": "VIEW_ONLY",
-          "role": "สมาชิก",
-          "joinedAt": "2024-02-20T14:15:00Z"
-        }
-      ]
-    }
-    ```
-
 ---
 
 #### 8.3.2 Invite Members (เชิญสมาชิกผู้ดูแล)
@@ -1039,13 +923,6 @@ Dashboard Update:
   - Placeholder: "อีเมล"
 - **Button:**
   - ปุ่ม "ยืนยัน" (สีเขียว #00A86B)
-
-**API Endpoint:**
-
-- `POST /api/elders/:elderId/invite`
-  - **Request:** `{ email, accessLevel: "VIEW_ONLY" }` (ตายตัวคือ VIEW_ONLY เสมอ)
-  - **Response:** `{ success: true, message: "Invitation sent to email" }`
-  - **หมายเหตุ:** สมาชิกที่ถูกเชิญจะได้รับ accessLevel = "VIEW_ONLY" โดยอัตโนมัติ
 
 ---
 
@@ -1065,11 +942,6 @@ Dashboard Update:
 - **Button:**
   - ปุ่ม "เชิญสมาชิกเข้ากลุ่มของคุณ" (สีเขียว)
 
-**API Endpoints:**
-
-- `GET /api/elders/:elderId/members` - ดึงรายชื่อสมาชิก
-- `DELETE /api/elders/:elderId/members/:userId` - ลบสมาชิก
-
 ---
 
 #### 8.3.4 Invite Success (เชิญสำเร็จ)
@@ -1086,15 +958,15 @@ Dashboard Update:
 
 ---
 
-## 9. Admin Panel (Retool)
+## 9. Admin Panel (Vite + React)
 
 > **👨‍💻 ผู้ใช้งาน:** System Administrator / Support Team  
-> **🖥️ Platform:** Retool (Web-based Admin Dashboard)  
+> **🖥️ Platform:** Vite + React + TypeScript + TailwindCSS  
 > **🎯 วัตถุประสงค์:** จัดการระบบ, ตรวจสอบข้อมูล, Support ผู้ใช้งาน
 
 ### 9.1 ภาพรวมของ Admin Panel
 
-**Retool Admin Dashboard** เป็นเครื่องมือสำหรับผู้ดูแลระบบในการ:
+**Admin Panel** เป็นเครื่องมือสำหรับผู้ดูแลระบบในการ:
 
 **1. ลงทะเบียนอุปกรณ์และสร้าง QR Code**
 
@@ -1136,12 +1008,6 @@ Dashboard Update:
 - แสดงข้อมูล: Device ID, MAC Address
 - แนะนำให้ติด QR Code บนอุปกรณ์
 
-**API Endpoint:**
-
-- `POST /api/admin/devices/register`
-  - **Request:** `{ deviceId, macAddress, deviceName, note }`
-  - **Response:** `{ success: true, device: {...}, qrCode: "base64_image" }`
-
 ---
 
 #### 9.2.2 Dashboard ภาพรวม
@@ -1177,12 +1043,6 @@ Dashboard Update:
 - Paired With (ผู้ใช้งาน)
 - Registration Date
 
-**API Endpoints:**
-
-- `GET /api/admin/dashboard` - ดึงข้อมูลสรุปภาพรวม
-
-- `GET /api/admin/devices/list` - ดึงรายการอุปกรณ์
-
 ---
 
 ### 9.3 การเข้าถึง Admin Panel
@@ -1191,28 +1051,12 @@ Dashboard Update:
 
 1. **Authentication:**
 
-   - Admin ต้อง Login ผ่าน Retool ด้วยบัญชี Admin ที่มีสิทธิ์พิเศษ
-   - รองรับ 2FA (Two-Factor Authentication)
+   - Admin ต้อง Login ผ่าน Admin Panel ด้วย Email และ Password
+   - ใช้ JWT Token สำหรับ Authentication
 
 2. **การเชื่อมต่อ:**
-   - Retool เชื่อมต่อกับ Backend API ผ่าน REST APIs
-   - ใช้ Admin API Token สำหรับ Authentication
-
----
-
-### 9.4 API Endpoints สำหรับ Admin
-
-#### Device Registration APIs
-
-- `POST /api/admin/devices/register` - ลงทะเบียนอุปกรณ์ใหม่และสร้าง QR Code
-- `GET /api/admin/devices/list` - ดึงรายการอุปกรณ์ทั้งหมด
-- `GET /api/admin/devices/:deviceId` - ดูข้อมูลอุปกรณ์รายละเอียด
-- `GET /api/admin/devices/:deviceId/qrcode` - ดาวน์โหลด QR Code ของอุปกรณ์
-
-#### Dashboard & Summary APIs
-
-- `GET /api/admin/dashboard` - ข้อมูลสรุปภาพรวมระบบ
-  - Response: `{ totalUsers, activeUsers, totalDevices, activeDevices }`
+   - Admin Panel เชื่อมต่อกับ Backend API ผ่าน REST APIs
+   - ใช้ React Query สำหรับ Data Fetching
 
 ---
 
@@ -1350,562 +1194,41 @@ Dashboard Update:
 
 ---
 
-## 📊 API Requirements Summary
+## API Requirements
 
-### **1. Authentication APIs**
-
-#### 1.1 Register & Login
-
-- **`POST /api/auth/register`**
-
-  - **Request:** `{ firstName, lastName, gender, phoneNumber, email, password }`
-  - **Response:** `{ message: "Registration successful" }`
-  - **UI:** Register Screen → Register Success → Empty State (First-time)
-
-- **`POST /api/auth/login`**
-
-  - **Request:** `{ email, password }`
-  - **Response:** `{ token, user: { id, email, firstName, lastName, profileImage, ... } }`
-  - **UI:** Login Screen → Dashboard
-
-#### 1.2 Forgot Password (OTP ใช้กับลืมรหัสผ่านเท่านั้น)
-
-- **`POST /api/auth/request-otp`**
-
-  - **Request:** `{ email, purpose: "PASSWORD_RESET" }`
-  - **Response:** `{ message: "OTP sent" }`
-  - **UI:** Forgot Password Screen → OTP Screen
-
-- **`POST /api/auth/verify-otp`**
-
-  - **Request:** `{ email, code, purpose: "PASSWORD_RESET" }`
-  - **Response:** `{ success: true }`
-  - **UI:** OTP Verification → ตั้งรหัสผ่านใหม่
-
-- **`POST /api/auth/reset-password`**
-
-  - **Request:** `{ email, code, newPassword }`
-  - **Response:** `{ success: true }`
-  - **UI:** ตั้งรหัสผ่านใหม่ → Success → นำทางไป Login
-
-- **`POST /api/auth/refresh-token`**
-  - **Request:** `{ refreshToken }`
-  - **Response:** `{ token, refreshToken }`
-  - **UI:** Auto-refresh when token expires
-
-#### 1.2 Forgot Password Flow
-
-- **`POST /api/auth/forgot-password`**
-
-  - **Request:** `{ email }`
-  - **Response:** `{ message: "OTP sent to email" }`
-  - **UI:** Forgot Password Screen → OTP Screen
-
-- **`POST /api/auth/verify-reset-otp`**
-
-  - **Request:** `{ email, otp }`
-  - **Response:** `{ resetToken }`
-  - **UI:** OTP Verification → Set New Password Screen
-
-- **`POST /api/auth/reset-password`**
-  - **Request:** `{ resetToken, newPassword }`
-  - **Response:** `{ success: true, message: "Password reset successful" }`
-  - **UI:** Set New Password → Success Screen → Login
-
-#### 1.3 Profile Management
-
-- **`GET /api/auth/profile`**
-
-  - **Request:** Header: Authorization Bearer token
-  - **Response:** `{ id, firstName, lastName, email, phoneNumber, gender, profileImage, createdAt }`
-  - **UI:** Manage Profile Info Screen
-
-- **`PUT /api/auth/profile`**
-
-  - **Request:** `{ firstName, lastName, gender }` + FormData (profileImage)
-  - **Response:** `{ success: true, user: {...} }`
-  - **UI:** Update Profile Picture & Info
-
-- **`PUT /api/auth/phone`**
-
-  - **Request:** `{ newPhoneNumber }`
-  - **Response:** `{ message: "OTP sent to new phone number" }`
-  - **UI:** Update Phone Number → OTP Verification
-
-- **`PUT /api/auth/email`**
-
-  - **Request:** `{ newEmail }`
-  - **Response:** `{ message: "OTP sent to new email" }`
-  - **UI:** Update Email → OTP Verification
-
-- **`POST /api/auth/verify-phone-change`**
-
-  - **Request:** `{ newPhoneNumber, otp }`
-  - **Response:** `{ success: true, user: {...} }`
-
-- **`POST /api/auth/verify-email-change`**
-  - **Request:** `{ newEmail, otp }`
-  - **Response:** `{ success: true, user: {...} }`
+> รายละเอียด API Endpoints ทั้งหมดดูได้ที่: **[API_DOCUMENTATION.md](../API_DOCUMENTATION.md)**
 
 ---
 
-### **2. Elder Management APIs**
+## Real-time Features (Socket.io)
 
-- **`GET /api/elders`**
+1. **สถานะอุปกรณ์:** Online/Offline
+2. **การหกล้ม:** แจ้งเตือนทันที + ปุ่มยกเลิกภายใน 30 วินาที
+3. **ชีพจร:** อัปเดต BPM แบบ real-time
+4. **การแจ้งเตือน:** Push notification ผ่าน Expo Push API---
 
-  - **Request:** Header: Authorization Bearer token
-  - **Response:** `{ elders: [{ id, name, gender, birthDate, age, height, weight, medicalCondition, address, profileImage, devices: [...], accessLevel }] }`
-  - **UI:** Dashboard - ข้อมูลผู้สูงอายุ
+## Notes
 
-- **`GET /api/elders/:elderId`**
-
-  - **Request:** Header: Authorization Bearer token
-  - **Response:** `{ id, name, gender, birthDate, age, height, weight, medicalCondition, address, profileImage, devices, emergencyContacts, accessLevel }`
-  - **UI:** Manage Elderly Info (ดูข้อมูล)
-
-- **`POST /api/elders`**
-
-  - **Request:** `{ name, gender, birthDate, height, weight, medicalCondition, address }` + FormData (profileImage)
-  - **Response:** `{ success: true, elder: {...} }`
-  - **UI:** Add Elder (First Time Setup)
-
-- **`PUT /api/elders/:elderId`**
-
-  - **Request:** `{ name, gender, birthDate, height, weight, medicalCondition, address }` + FormData (profileImage)
-  - **Response:** `{ success: true, elder: {...} }`
-  - **UI:** Update Elderly Info Screen
-
-- **`DELETE /api/elders/:elderId`**
-  - **Request:** Header: Authorization Bearer token
-  - **Response:** `{ success: true, message: "Elder deleted successfully" }`
-  - **UI:** Delete Elder (from Settings/Admin panel)
+- **Multi-language Support:** ไทย (default)
+- **Font:** Kanit จาก Google
+- **Responsive Design:** รองรับ iOS + Android แบบ Expo รันบนเครื่อง
+- **Offline Mode:** แสดงข้อความ "ไม่สามารถเชื่อมต่อได้" เมื่อไม่มี internet
+- **Loading States:** แสดง "กำลังโหลด..." หรือ Spinner
+- **Error Handling:** แสดงข้อความ error ที่เข้าใจง่าย
 
 ---
 
-### **9. Admin Panel (Web Dashboard)**
+## Bottom Navigation
 
-> **สำหรับผู้ดูแลระบบเท่านั้น (Admin Role)**
+**3 Tabs:**
 
-**Dashboard Overview:**
-
-- **Metrics:** แสดงจำนวนผู้ใช้งาน (Active Users), ผู้สูงอายุ (Active Elders), และสถิติการล้มรายวัน
-- **Graphs:** กราฟสรุปเหตุการณ์รายเดือน
-
-**User & Elder Management:**
-
-- ดูรายการผู้ใช้ทั้งหมด และสถานะบัญชี
-- ดูรายการผู้สูงอายุ, อุปกรณ์ที่ผูก, และประวัติ
-
-**Device Management:**
-
-- สร้าง Device Code ใหม่ (Generative)
-- ดูสถานะอุปกรณ์ (Online/Offline)
-- บังคับ Unpair อุปกรณ์ (Force Unpair)
-
-**Feedback & Issues:**
-
-- ดูรายการ Feedback / แจ้งซ่อม (Repair Requests)
-- อัปเดตสถานะ Ticket (REP-XXX) : Pending → Reviewed → Resolved
+1. **หน้าหลัก** (Home) - Dashboard + Real-time monitoring
+2. **ประวัติการตรวจกล้ม** (History) - Event history + Monthly reports
+3. **ตั้งค่า** (Settings) - WiFi, Device, Profile, Members, Logout
 
 ---
 
-### **3. Device Management APIs**
-
-#### 3.1 Device Pairing & Setup
-
-- **`POST /api/devices/pair`**
-
-  - **Request:** `{ qrData, elderId }` or `{ macAddress, deviceName, deviceId, elderId }`
-  - **Response:** `{ success: true, device: { id, deviceId, macAddress, name, status, elderId } }`
-  - **UI:** Scan QR Code → Device Paired Success
-
-- **`GET /api/devices`**
-
-  - **Request:** Header: Authorization Bearer token
-  - **Response:** `{ devices: [{ id, deviceId, macAddress, name, status, wifiStatus, elderId, elderName, lastSeen }] }`
-  - **UI:** Settings → Device List
-
-- **`GET /api/devices/:deviceId`**
-
-  - **Request:** Header: Authorization Bearer token
-  - **Response:** `{ id, deviceId, macAddress, name, status, wifiStatus, config: { ssid, signalStrength }, elderId, lastSeen, createdAt }`
-  - **UI:** Device Info Screen
-
-- **`DELETE /api/devices/:deviceId/unpair`**
-  - **Request:** Header: Authorization Bearer token
-  - **Response:** `{ success: true, message: "Device unpaired successfully" }`
-  - **UI:** Remove Device (Unpair)
-
-#### 3.2 WiFi Configuration
-
-- **`POST /api/devices/:deviceId/wifi`**
-
-  - **Request:** `{ ssid, password }`
-  - **Response:** `{ success: true, message: "WiFi configuration sent to device" }`
-  - **UI:** Setting Connect WiFi → Success
-
-- **`GET /api/devices/:deviceId/wifi-status`**
-
-  - **Request:** Header: Authorization Bearer token
-  - **Response:** `{ status: "CONNECTED" | "DISCONNECTED" | "CONNECTING", ssid, signalStrength, lastConnected }`
-  - **UI:** Dashboard - สถานะของอุปกรณ์
-
-- **`PUT /api/devices/:deviceId/wifi`**
-  - **Request:** `{ ssid, password }`
-  - **Response:** `{ success: true, message: "WiFi configuration updated" }`
-  - **UI:** ตั้งค่าการเชื่อม WiFi ใหม่
-
-#### 3.3 Device Status (Real-time via Socket.io)
-
-- **Socket Event: `device:status`**
-
-  - **Payload:** `{ deviceId, status: "ONLINE" | "OFFLINE", timestamp }`
-  - **UI:** Dashboard - สถานะของอุปกรณ์ (สีเขียว/แดง)
-
-- **Socket Event: `device:heartbeat`**
-  - **Payload:** `{ deviceId, timestamp }`
-  - **UI:** Keep connection alive
-
----
-
-### **4. Emergency Contact APIs**
-
-- **`GET /api/elders/:elderId/emergency-contacts`**
-
-  - **Request:** Header: Authorization Bearer token
-  - **Response:** `{ contacts: [{ id, name, phoneNumber, priority, createdAt }] }` (sorted by priority)
-  - **UI:** Manage Emergency Number Screen
-
-- **`POST /api/elders/:elderId/emergency-contacts`**
-
-  - **Request:** `{ name, phoneNumber }`
-  - **Response:** `{ success: true, contact: { id, name, phoneNumber, priority, elderId } }`
-  - **UI:** Add Emergency Number Info
-
-- **`GET /api/emergency-contacts/:contactId`**
-
-  - **Request:** Header: Authorization Bearer token
-  - **Response:** `{ id, name, phoneNumber, priority, elderId, createdAt }`
-  - **UI:** Emergency Number Info (ดูรายละเอียด)
-
-- **`PUT /api/emergency-contacts/:contactId`**
-
-  - **Request:** `{ name, phoneNumber }`
-  - **Response:** `{ success: true, contact: {...} }`
-  - **UI:** Edit Emergency Contact
-
-- **`DELETE /api/emergency-contacts/:contactId`**
-
-  - **Request:** Header: Authorization Bearer token
-  - **Response:** `{ success: true, message: "Contact deleted successfully" }`
-  - **UI:** Delete Contact (🗑️ button)
-
-- **`PUT /api/emergency-contacts/:contactId/priority`**
-
-  - **Request:** `{ priority: 1 | 2 | 3 }` or `{ newOrder: [id1, id2, id3] }`
-  - **Response:** `{ success: true, contacts: [...] }`
-  - **UI:** Drag-and-drop to reorder contacts
-
-- **`POST /api/emergency-contacts/:contactId/call`**
-  - **Request:** Header: Authorization Bearer token
-  - **Response:** `{ success: true, callInitiated: true, phoneNumber }`
-  - **UI:** Emergency Call Screen (dial phone)
-
----
-
-### **5. User Access Management APIs (Multi-User / Share Data)**
-
-- **`POST /api/elders/:elderId/members`**
-
-  - **Request:** `{ email }`
-  - **Response:** `{ success: true, message: "Member added successfully" }`
-  - **UI:** Add Member (Direct Add)
-
-- **`GET /api/elders/:elderId/members`**
-
-  - **Request:** Header: Authorization Bearer token
-  - **Response:** `{ members: [{ userId, firstName, lastName, email, profileImage, accessLevel, grantedAt }] }`
-  - **UI:** Manage Members Info Screen
-
-- **`DELETE /api/elders/:elderId/members/:userId`**
-
-  - **Request:** Header: Authorization Bearer token
-  - **Response:** `{ success: true, message: "Member removed successfully" }`
-  - **UI:** Remove Member (❌ button)
-
-- **`PATCH /api/elders/:elderId/members/:userId`**
-
-  - **Request:** `{ accessLevel: "EDITOR" | "VIEWER" }`
-  - **Response:** `{ success: true, member: {...} }`
-  - **UI:** Change Member Access Level
-
----
-
-### **7. Notification APIs**
-
-- **`GET /api/notifications`**
-
-  - **Request:** Query: `page`, `pageSize`, `isRead`
-  - **Response:** `{ data: [Notification], total, page, totalPages }`
-  - **UI:** Notification History List
-
-- **`GET /api/notifications/unread-count`**
-
-  - **Request:** Header: Authorization Bearer token
-  - **Response:** `{ count: number }`
-  - **UI:** Home Screen Badge
-
-- **`PATCH /api/notifications/:id/read`**
-
-  - **Request:** Param: `id`
-  - **Response:** `{ success: true }`
-  - **UI:** Tap on notification
-
-- **`PATCH /api/notifications/read-all`**
-
-  - **Request:** None
-  - **Response:** `{ success: true }`
-  - **UI:** "Mark all as read" button
-
-- **`DELETE /api/notifications`**
-
-  - **Request:** None
-  - **Response:** `{ success: true }`
-  - **UI:** "Clear all" button
-
-- **`DELETE /api/notifications/:id`**
-  - **Request:** Param: `id`
-  - **Response:** `{ success: true }`
-  - **UI:** Delete single item
-
----
-
-### **8. Event & History APIs**
-
-#### 6.1 Fall Detection Events
-
-- **`GET /api/elders/:elderId/events`**
-
-  - **Request:** Header: Authorization Bearer token, Query: `?type=FALL&startDate=...&endDate=...&page=1&limit=20`
-  - **Response:** `{ events: [{ id, type, severity, bpm, timestamp, cancelled, cancelledAt, resolvedBy, metadata }], total, page, limit }`
-  - **UI:** ประวัติการตรวจกล้ม (History Screen)
-
-- **`GET /api/events/:eventId`**
-
-  - **Request:** Header: Authorization Bearer token
-  - **Response:** `{ id, type, severity, bpm, timestamp, location, cancelled, cancelledAt, resolvedBy, notificationsSent, metadata }`
-  - **UI:** Event Detail Screen
-
-- **`POST /api/events/:eventId/cancel`**
-  - **Request:** Header: Authorization Bearer token (within 30 seconds)
-  - **Response:** `{ success: true, message: "Event cancelled successfully" }`
-  - **UI:** Dashboard - ปุ่มยกเลิกการแจ้งเตือน (30s timer)
-
-#### 6.2 Heart Rate Monitoring
-
-- **`GET /api/elders/:elderId/heart-rate`**
-
-  - **Request:** Header: Authorization Bearer token, Query: `?startDate=...&endDate=...`
-  - **Response:** `{ heartRates: [{ bpm, timestamp, status: "NORMAL" | "LOW" | "HIGH" }], average, min, max }`
-  - **UI:** Dashboard - สถานะของชีพจร
-
-- **`GET /api/elders/:elderId/heart-rate/latest`**
-  - **Request:** Header: Authorization Bearer token
-  - **Response:** `{ bpm, timestamp, status: "NORMAL" | "LOW" | "HIGH" }`
-  - **UI:** Dashboard - Real-time BPM Display
-
-#### 6.3 Monthly Reports & Summary
-
-- **`GET /api/elders/:elderId/events/summary`**
-
-  - **Request:** Header: Authorization Bearer token, Query: `?month=7&year=2566`
-  - **Response:**
-    ```json
-    {
-      "month": "กรกฎาคม",
-      "year": 2566,
-      "totalEvents": 3,
-      "fallEvents": 2,
-      "heartRateAnomalies": 1,
-      "peakTimeRange": "16:00 - 18:00 น.",
-      "averageBpm": 90,
-      "minBpm": 50,
-      "maxBpm": 120,
-      "eventsByHour": [
-        { "hour": 13, "count": 1 },
-        { "hour": 16, "count": 2 }
-      ],
-      "eventsByDay": [
-        { "day": 4, "count": 1 },
-        { "day": 16, "count": 1 },
-        { "day": 21, "count": 1 }
-      ]
-    }
-    ```
-  - **UI:** Report Summary Screen
-
-- **`GET /api/elders/:elderId/events/export`**
-  - **Request:** Header: Authorization Bearer token, Query: `?format=pdf&month=7&year=2566`
-  - **Response:** PDF/Excel file download
-  - **UI:** Export Report button
-
----
-
-### **7. Notification APIs**
-
-- **`GET /api/notifications`**
-
-  - **Request:** Header: Authorization Bearer token, Query: `?page=1&limit=20&read=false`
-  - **Response:** `{ notifications: [{ id, type, title, message, data, read, createdAt }], unreadCount, total }`
-  - **UI:** Notification List
-
-- **`GET /api/notifications/:notificationId`**
-
-  - **Request:** Header: Authorization Bearer token
-  - **Response:** `{ id, type, title, message, data: { elderId, eventId, ... }, read, createdAt }`
-  - **UI:** Notification Detail
-
-- **`PUT /api/notifications/:notificationId/read`**
-
-  - **Request:** Header: Authorization Bearer token
-  - **Response:** `{ success: true }`
-  - **UI:** Mark as Read
-
-- **`PUT /api/notifications/read-all`**
-
-  - **Request:** Header: Authorization Bearer token
-  - **Response:** `{ success: true, count: 5 }`
-  - **UI:** Mark All as Read button
-
-- **`DELETE /api/notifications/:notificationId`**
-  - **Request:** Header: Authorization Bearer token
-  - **Response:** `{ success: true }`
-  - **UI:** Delete Notification
-
-#### 7.1 Push Notification (Expo Push)
-
-- **`PUT /api/users/push-token`**
-
-  - **Request:** `{ pushToken }`
-  - **Response:** `{ success: true, message: "Push token registered" }`
-  - **UI:** App Launch → Register Expo Push token
-
----
-
-### **8. Real-time WebSocket Events (Socket.io)**
-
-#### 8.1 Connection & Authentication
-
-- **Event: `connection`**
-  - **Client sends:** `{ token: "Bearer ..." }`
-  - **Server responds:** `{ authenticated: true, userId }`
-
-#### 8.2 Device Status
-
-- **Event: `device_status_update`**
-
-  - **Payload:** `{ deviceId, status: "ONLINE" | "OFFLINE", timestamp }`
-  - **UI:** Dashboard - สถานะของอุปกรณ์
-
-- **Event: `device_wifi_status`**
-  - **Payload:** `{ deviceId, wifiStatus: "CONNECTED" | "DISCONNECTED", ssid, signalStrength }`
-  - **UI:** Dashboard - WiFi indicator
-
-#### 8.3 Fall Detection (Real-time)
-
-- **Event: `fall_detected`**
-
-  - **Payload:**
-    ```json
-    {
-      "eventId": "uuid",
-      "elderId": "uuid",
-      "elderName": "นางลาลิต นางสมศรี",
-      "severity": "HIGH",
-      "timestamp": "2024-11-24T10:05:00Z",
-      "location": { "lat": 0, "lng": 0 },
-      "bpm": 120,
-      "cancellationTimer": 30
-    }
-    ```
-  - **UI:** Dashboard - แจ้งเตือนสีเหลือง + Timer 30s
-
-- **Event: `event_status_changed`**
-
-  - **Payload:** `{ eventId, status: "RESOLVED" | "CANCELLED", cancelledBy, cancelledAt }`
-  - **UI:** ยกเลิกการแจ้งเตือน / เปลี่ยนสถานะ
-
-#### 8.4 Heart Rate (Real-time)
-
-- **Event: `heart_rate_update`**
-
-  - **Payload:** `{ elderId, bpm, status: "NORMAL" | "LOW" | "HIGH", timestamp }`
-  - **UI:** Dashboard - ❤️ BPM Display (อัปเดตทุก 5 วินาที)
-
-- **Event: `heart_rate_alert`**
-  - **Payload:** `{ elderId, bpm, status: "LOW" | "HIGH", threshold, timestamp }`
-  - **UI:** แจ้งเตือนชีพจรผิดปกติ (สีแดง)
-
-#### 8.5 Notifications
-
-- **Event: `notification:new`**
-  - **Payload:** `{ notificationId, type, title, message, data }`
-  - **UI:** แสดง Push Notification
-
----
-
-### **9. Settings & System APIs**
-
-- **`GET /api/settings`**
-
-  - **Request:** Header: Authorization Bearer token
-  - **Response:** `{ fallDetectionThreshold, heartRateThresholds: { low, high }, notificationEnabled, language: "th" }`
-  - **UI:** Settings Screen
-
-- **`PUT /api/settings`**
-
-  - **Request:** `{ fallDetectionThreshold, heartRateThresholds, notificationEnabled }`
-  - **Response:** `{ success: true, settings: {...} }`
-  - **UI:** Update Settings
-
-- **`GET /api/system/health`**
-  - **Request:** None (public endpoint)
-  - **Response:** `{ status: "healthy", timestamp, version: "1.0.0" }`
-  - **UI:** System health check
-
----
-
-### **10. MQTT Topics (IoT Device Communication)**
-
-#### 10.1 Device → Backend
-
-- **`fallhelp/device/{deviceId}/status`**
-
-  - **Payload:** `{ status: "ONLINE" | "OFFLINE", timestamp }`
-
-- **`fallhelp/device/{deviceId}/heartrate`**
-
-  - **Payload:** `{ bpm, timestamp }`
-
-- **`fallhelp/device/{deviceId}/fall`**
-
-  - **Payload:** `{ detected: true, accelerometer: { x, y, z }, gyroscope: { x, y, z }, timestamp }`
-
-- **`fallhelp/device/{deviceId}/wifi`**
-  - **Payload:** `{ status: "CONNECTED" | "DISCONNECTED", ssid, signalStrength, timestamp }`
-
-#### 10.2 Backend → Device
-
-- **`fallhelp/device/{deviceId}/config`**
-
-  - **Payload:** `{ ssid, password, serverUrl, updateInterval }`
-
-- **`fallhelp/device/{deviceId}/command`**
-  - **Payload:** `{ command: "RESTART" | "UPDATE_FIRMWARE" | "CALIBRATE", timestamp }`
-
----
-
-## 🎨 Design System ใช้ของทาง NativeWind (React Native)
+## Design System ใช้ของทาง NativeWind (React Native)
 
 ### **Colors**
 
@@ -1936,7 +1259,7 @@ Dashboard Update:
 
 ---
 
-## 📱 Bottom Navigation
+## Bottom Navigation
 
 **3 Tabs:**
 
@@ -1946,7 +1269,7 @@ Dashboard Update:
 
 ---
 
-## 🔔 Real-time Features (Socket.io)
+## Real-time Features (Socket.io)
 
 1. **สถานะอุปกรณ์:** Online/Offline
 2. **การหกล้ม:** แจ้งเตือนทันที + ปุ่มยกเลิกภายใน 30 วินาที
@@ -1955,7 +1278,7 @@ Dashboard Update:
 
 ---
 
-## 📝 Notes
+## Notes
 
 - **Multi-language Support:** ไทย (default)
 - **Font:** Kanit จาก Google
@@ -1966,5 +1289,5 @@ Dashboard Update:
 
 ---
 
-**Last Updated:** November 24, 2025  
+**Last Updated:** December 13, 2025  
 **Version:** 1.0.0

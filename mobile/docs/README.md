@@ -1,12 +1,25 @@
-# ⚠️ DEPRECIATED DOCUMENTATION
+# Mobile Documentation
 
-**Please do not rely on files in this directory.**
+> ⚠️ **Documentation has been consolidated**
 
-The official, up-to-date documentation for the Mobile App has been moved and consolidated to:
+All documentation has been moved to the central location:
 
-👉 **[d:\fallhelp\docs\README.md](../../docs/README.md)**
+👉 **[docs/README.md](../../docs/README.md)**
 
-Specifically:
+## Quick Links
 
-- **UI & Features:** [docs/features/UI_FEATURES.md](../../docs/features/UI_FEATURES.md)
-- **Functional Reqs:** [docs/architecture/FUNCTIONAL_REQUIREMENTS.md](../../docs/architecture/FUNCTIONAL_REQUIREMENTS.md)
+- [UI Features & Flow](../../docs/features/UI_FEATURES.md)
+- [Mobile Progress History](../../docs/progress/MOBILE_PROGRESS.md)
+- [Test Reports](../../docs/testing/)
+
+---
+
+## Quick Start
+
+```bash
+cd mobile
+npm install
+npm start
+# Press 'i' for iOS
+# Press 'a' for Android
+```

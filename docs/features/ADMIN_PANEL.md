@@ -1,288 +1,75 @@
 # Admin Panel Documentation
 
-## Overview
+ระบบ Admin Panel สำหรับผู้ดูแลระบบ FallHelp
 
-The FallHelp Admin Panel is a web-based dashboard for system administrators to manage devices, view system overview, and monitor user feedback.
+---
 
-**Technology Stack:**
+## Tech Stack
 
-- Vite + React 18
-- TypeScript
-- TailwindCSS
-- React Query (@tanstack/react-query)
-- React Router DOM
-- Axios
-
-**Status:** ✅ Complete (December 1, 2025)
+| เทคโนโลยี   | รุ่น                  |
+| ----------- | --------------------- |
+| Vite        | React 18              |
+| TypeScript  | -                     |
+| TailwindCSS | -                     |
+| React Query | @tanstack/react-query |
 
 ---
 
 ## Features
 
-### 1. Authentication
-
-- **Login Page:** Admin login with email and password
-- **Register Page:** Create new admin accounts
-- **Auth Context:** Global authentication state management
-- **Protected Routes:** Automatic redirect to login for unauthenticated users
-- **Token Management:** JWT token stored in localStorage
-
-**API Endpoints:**
-
-- `POST /api/auth/login`
-- `POST /api/auth/register`
-- `GET /api/auth/me`
-
----
-
-### 2. Dashboard
-
-**System Overview:**
-
-- Total Users count
-- Total Elders count
-- Total Devices count
-- Recent Events list
-
-**API Endpoint:**
-
-- `GET /api/admin/dashboard`
-
----
-
-### 3. User Management
-
-**Features:**
-
-- View all users
-- View caregivers
-- User details (name, email, role, created date)
-- Search and filter functionality
-
-**API Endpoints:**
-
-- `GET /api/admin/users`
-- `GET /api/admin/elders` (to see caregivers)
-
----
-
-### 4. Elder Management
-
-**Features:**
-
-- View all elders
-- Elder details with caregiver information
-- Medical history display
-- Search and filter functionality
-
-**API Endpoint:**
-
-- `GET /api/admin/elders`
-
----
-
-### 5. Device Management
-
-**Features:**
-
-- Register new device
-- Generate QR code for device pairing
-- View device list (with status, serial number, paired elder)
-- Delete device
-- Print device label (receipt style)
-
-**API Endpoints:**
-
-- `POST /api/admin/devices`
-- `GET /api/admin/devices`
-- `DELETE /api/admin/devices/:id`
-- `GET /api/devices/:code/qr`
-
----
-
-### 6. Feedback Management
-
-**Features:**
-
-- View all user feedback
-- Update feedback status (PENDING → REVIEWED → RESOLVED)
-- Filter by status
-- User information display (name, email)
-- Timestamp display
-
-**API Endpoints:**
-
-- `GET /api/feedback`
-- `PATCH /api/feedback/:id/status`
-
----
-
-### 7. Notification Management
-
-**Features:**
-
-- View all system notifications
-- Filter by type (Fall, Heart Rate, System)
-- View notification status (Sent, Read)
-
-**API Endpoints:**
-
-- `GET /api/admin/notifications` (if implemented)
-- `GET /api/notifications` (General list)
-
----
-
-## UI Components
-
-### Layout
-
-- **DashboardLayout:** Main layout with sidebar and content area
-- **Sidebar:** Collapsible navigation menu
-- **Header:** Page title and user info
-
-### Common Components
-
-- **Loading States:** Spinner animations
-- **Empty States:** Friendly messages when no data
-- **Error Handling:** Toast notifications for errors
-- **Responsive Design:** Mobile-friendly layout
+| หน้า          | ฟังก์ชัน                                             |
+| ------------- | ---------------------------------------------------- |
+| **Login**     | เข้าสู่ระบบ Admin (ไม่มี Register สาธารณะ)           |
+| **Dashboard** | แสดงภาพรวม (Users, Elders, Devices, Recent Events)   |
+| **Users**     | ดูรายชื่อผู้ใช้งานทั้งหมด                            |
+| **Elders**    | ดูรายชื่อผู้สูงอายุและข้อมูลการดูแล                  |
+| **Devices**   | ลงทะเบียน, สร้าง QR, ดูรายการ, ลบอุปกรณ์             |
+| **Feedback**  | ดูและจัดการ Feedback (PENDING → REVIEWED → RESOLVED) |
 
 ---
 
 ## Quick Start
 
-### Installation
-
 ```bash
 cd admin
 npm install
-```
-
-### Development
-
-```bash
-npm run dev
-# Access at http://localhost:5173
-```
-
-### Build for Production
-
-```bash
-npm run build
-npm run preview
+npm run dev     # http://localhost:5173
 ```
 
 ---
 
-## Configuration
+## สร้าง Admin Account
 
-### API Base URL
+> ⚠️ **ไม่มีหน้า Register สาธารณะ** - ใช้ Seed Script เพื่อความปลอดภัย
 
-Located in `src/services/api.ts`:
+### 1. ตั้งค่า Environment Variables
 
-```typescript
-const api = axios.create({
-  baseURL: "http://localhost:3000/api",
-});
-```
-
-### Environment Variables
-
-Create `.env` file:
+เพิ่มใน `backend/.env`:
 
 ```env
-VITE_API_URL=http://localhost:3000/api
+ADMIN_EMAIL="admin@fallhelp.com"
+ADMIN_PASSWORD="YourSecurePassword123!"
+ADMIN_FIRST_NAME="System"
+ADMIN_LAST_NAME="Admin"
 ```
 
----
-
-## File Structure
-
-```
-admin/
-├── src/
-│   ├── components/       # Reusable UI components
-│   ├── context/          # React Context (Auth)
-│   ├── layouts/          # Page layouts
-│   ├── pages/            # Page components
-│   │   ├── Login.tsx
-│   │   ├── Register.tsx
-│   │   ├── Dashboard.tsx
-│   │   ├── Users.tsx
-│   │   ├── Elders.tsx
-│   │   ├── Devices.tsx
-│   │   └── Feedback.tsx
-│   ├── services/         # API services
-│   │   └── api.ts
-│   ├── App.tsx           # Main app component
-│   └── main.tsx          # Entry point
-├── index.html
-├── package.json
-├── tailwind.config.js
-├── tsconfig.json
-└── vite.config.ts
-```
-
----
-
-## Authentication Flow
-
-1. User enters email and password
-2. Frontend sends `POST /api/auth/login`
-3. Backend validates credentials
-4. Backend returns JWT token + user data
-5. Frontend stores token in localStorage
-6. Frontend sets auth context
-7. User is redirected to dashboard
-
-**Auto-logout on 401:**
-
-- API interceptor detects 401 responses
-- Clears localStorage
-- Redirects to login page
-
----
-
-## Deployment
-
-### Build
+### 2. รัน Seed Script
 
 ```bash
-npm run build
+cd backend
+npx prisma db seed
 ```
 
-Output: `dist/` directory
+### 3. Login
 
-### Deploy to Vercel
-
-```bash
-npm install -g vercel
-vercel
-```
-
-### Deploy to Netlify
-
-```bash
-npm install -g netlify-cli
-netlify deploy --prod
-```
+ไปที่ `http://localhost:5173` แล้ว Login ด้วย credentials ที่ตั้งไว้
 
 ---
 
-## Screenshots
+## API Endpoints
 
-### Dashboard
-
-![Dashboard](../assets/screenshots/admin-dashboard.png)
-
-### Device Management
-
-![Devices](../assets/screenshots/admin-devices.png)
-
-### Feedback Management
-
-![Feedback](../assets/screenshots/admin-feedback.png)
+> รายละเอียด API ทั้งหมดดูได้ที่: **[API_DOCUMENTATION.md](../API_DOCUMENTATION.md)**
 
 ---
 
-**Last Updated:** December 5, 2025
+**Last Updated:** December 13, 2025

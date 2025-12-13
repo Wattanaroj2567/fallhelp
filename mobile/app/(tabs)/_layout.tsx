@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity } from "react-native";
 import { Tabs } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Bounceable } from "@/components/Bounceable";
 
 export default function TabLayout() {
   return (
@@ -50,7 +51,7 @@ export default function TabLayout() {
                   };
 
                   return (
-                    <TouchableOpacity
+                    <Bounceable
                       key={index}
                       accessibilityRole="button"
                       accessibilityState={isFocused ? { selected: true } : {}}
@@ -59,7 +60,7 @@ export default function TabLayout() {
                       onPress={onPress}
                       onLongPress={onLongPress}
                       className="flex-1 items-center justify-center pt-2"
-                      activeOpacity={0.8}
+                      scale={0.9}
                     >
                       {/* 💊 Pill Shape
                           - ปรับความสูง: h-8 -> h-9 (36px) เพื่อรองรับไอคอนที่ใหญ่ขึ้น
@@ -83,7 +84,7 @@ export default function TabLayout() {
                       >
                         {label as string}
                       </Text>
-                    </TouchableOpacity>
+                    </Bounceable>
                   );
                 })}
               </View>

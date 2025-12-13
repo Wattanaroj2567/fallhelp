@@ -7,6 +7,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getUserElders } from "@/services/userService";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { unpairDevice } from "@/services/deviceService";
+import { Bounceable } from "@/components/Bounceable";
 
 export default function DeviceDetails() {
     const router = useRouter();
@@ -181,17 +182,17 @@ export default function DeviceDetails() {
                                 </Text>
 
                                 {!isReadOnly && (
-                                    <TouchableHighlight
+                                    <Bounceable
                                         onPress={() => router.push("/(features)/(device)/pairing")}
                                         className="rounded-2xl shadow-sm"
-                                        underlayColor="#0B8E60"
+                                        scale={0.96}
                                         style={{ shadowColor: '#16AD78', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, backgroundColor: "#16AD78" }}
                                     >
                                         <View className="px-8 py-3.5 flex-row items-center gap-2">
                                             <MaterialIcons name="qr-code-scanner" size={20} color="#FFFFFF" />
                                             <Text className="text-white font-kanit font-bold text-base">จับคู่อุปกรณ์</Text>
                                         </View>
-                                    </TouchableHighlight>
+                                    </Bounceable>
                                 )}
                             </>
                         )}
@@ -209,10 +210,10 @@ export default function DeviceDetails() {
                         <View className="bg-white rounded-[24px] shadow-lg shadow-black/15 android:elevation-10">
                             <View className="rounded-[24px] overflow-hidden border border-gray-100">
                                 {/* Repair */}
-                                <TouchableHighlight
+                                <Bounceable
                                     onPress={() => router.push("/(features)/(device)/repair")}
-                                    className="border-b border-gray-100"
-                                    underlayColor="#E5E7EB"
+                                    className="border-b border-gray-100 active:bg-gray-50"
+                                    scale={1}
                                     style={{ backgroundColor: "white" }}
                                 >
                                     <View className="flex-row items-center justify-between p-5">
@@ -231,13 +232,13 @@ export default function DeviceDetails() {
                                         </View>
                                         <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
                                     </View>
-                                </TouchableHighlight>
+                                </Bounceable>
 
                                 {/* WiFi Config */}
-                                <TouchableHighlight
+                                <Bounceable
                                     onPress={handleWifiConfig}
-                                    className={!isReadOnly ? "border-b border-gray-100" : ""}
-                                    underlayColor="#E5E7EB"
+                                    className={`${!isReadOnly ? "border-b border-gray-100" : ""} active:bg-gray-50`}
+                                    scale={1}
                                     style={{ backgroundColor: "white" }}
                                 >
                                     <View className="flex-row items-center justify-between p-5">
@@ -256,13 +257,14 @@ export default function DeviceDetails() {
                                         </View>
                                         <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
                                     </View>
-                                </TouchableHighlight>
+                                </Bounceable>
 
                                 {/* Unpair - Only for Owner */}
                                 {elderInfo?.accessLevel === 'OWNER' && (
-                                    <TouchableHighlight
+                                    <Bounceable
                                         onPress={handleUnpair}
-                                        underlayColor="#FEF2F2"
+                                        scale={1}
+                                        className="active:bg-red-50"
                                         style={{ backgroundColor: "white" }}
                                     >
                                         <View className="flex-row items-center justify-between p-5">
@@ -285,7 +287,7 @@ export default function DeviceDetails() {
                                                 <MaterialIcons name="chevron-right" size={24} color="#FCA5A5" />
                                             )}
                                         </View>
-                                    </TouchableHighlight>
+                                    </Bounceable>
                                 )}
                             </View>
                         </View>

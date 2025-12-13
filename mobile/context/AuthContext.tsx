@@ -33,7 +33,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                     await new Promise(resolve => setTimeout(resolve, 500));
                     token = await getToken();
                 }
-
+                token = await getToken();
+                Logger.info("Auth Bootstrap: Token retrieval result", { hasToken: !!token });
                 setIsSignedIn(!!token);
             } catch (e) {
                 Logger.error('Auth bootstrap fatal error', e);

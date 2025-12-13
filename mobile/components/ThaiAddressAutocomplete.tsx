@@ -121,7 +121,7 @@ export function ThaiAddressAutocomplete({
     : "#E5E7EB"; // Always gray unless error (as per user request)
 
   return (
-    <View className="mb-4">
+    <View style={{ marginBottom: 16, marginTop: 4 }}>
       <TouchableOpacity
         onPress={handleOpen}
         className="bg-white rounded-2xl px-4 justify-center"

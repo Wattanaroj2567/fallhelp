@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Text, TouchableOpacity, View, Image, Alert } from "react-native";
+import React, { useState, useEffect } from "react";
+import { Text, TouchableOpacity, View, Image, Alert, Keyboard, Platform } from "react-native";
 import { useRouter } from "expo-router";
 import { useMutation } from "@tanstack/react-query";
 import { login } from "@/services/authService";
@@ -24,9 +24,25 @@ export default function LoginScreen() {
   const [identifier, setIdentifier] = useState("");
   const [identifierError, setIdentifierError] = useState("");
   const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
+  const [isKeyboardVisible, setKeyboardVisible] = useState(false); // Keyboard state
 
   const router = useRouter();
+
+  useEffect(() => {
+    const keyboardShowListener = Keyboard.addListener(
+      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
+      () => setKeyboardVisible(true)
+    );
+    const keyboardHideListener = Keyboard.addListener(
+      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide",
+      () => setKeyboardVisible(false)
+    );
+
+    return () => {
+      keyboardShowListener.remove();
+      keyboardHideListener.remove();
+    };
+  }, []);
 
   const loginMutation = useMutation({
     mutationFn: async () => {
@@ -86,26 +102,35 @@ export default function LoginScreen() {
   // ==========================================
   return (
     <ScreenWrapper
+      useScrollView={false} // Disable ScrollView completely as requested ("Static feel")
       contentContainerStyle={{
-        paddingHorizontal: 24,
-        paddingTop: 40,
+        paddingHorizontal: 32,
         paddingBottom: 40,
+        // Start centered (Middle), move to top (Flex-start) when typing
+        justifyContent: isKeyboardVisible ? "flex-start" : "center", 
+        // Add top padding only when keyboard is visible to keep it from hitting status bar directly
+        paddingTop: isKeyboardVisible ? 20 : 0,
         flexGrow: 1,
       }}
-      scrollViewProps={{ bounces: false }}
     >
       <View>
-        {/* Logo Section */}
-        <View className="items-center mb-8">
+        {/* Logo Section - Animate/Adjust based on keyboard */}
+        {/* Dynamic Margin: Reduced gap as requested (mb-10), Tight gap when typing (mb-1) */}
+        <View className={`items-center ${isKeyboardVisible ? "mb-1" : "mb-10"}`}>
           <Image
             source={require("../../assets/images/logoicon.png")}
-            style={{ width: 180, height: 180 }}
+            // Shrink logo when keyboard is visible to mimic Facebook style
+            style={{ 
+              width: isKeyboardVisible ? 140 : 180, 
+              height: isKeyboardVisible ? 140 : 180 
+            }}
             resizeMode="contain"
+            fadeDuration={0}
           />
         </View>
 
         {/* Form Section */}
-        <View className="w-full max-w-md mx-auto bg-white rounded-[24px] p-6 shadow-sm border border-gray-100">
+        <View className="w-full max-w-md mx-auto px-2">
           {/* Identifier Input with Floating Label */}
           <FloatingLabelInput
             testID="email-input"
@@ -126,17 +151,15 @@ export default function LoginScreen() {
           />
 
           {/* Password Input with Floating Label */}
-          <View className="mt-4">
-            <FloatingLabelInput
-              testID="password-input"
-              label="รหัสผ่าน"
-              value={password}
-              onChangeText={setPassword}
-              isPassword
-              autoCapitalize="none"
-              textContentType="password"
-            />
-          </View>
+          <FloatingLabelInput
+            testID="password-input"
+            label="รหัสผ่าน"
+            value={password}
+            onChangeText={setPassword}
+            isPassword
+            autoCapitalize="none"
+            textContentType="password"
+          />
 
           {/* Forgot Password */}
           <TouchableOpacity

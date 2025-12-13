@@ -143,7 +143,7 @@ export default function RegisterScreen() {
         {/* Card Container */}
         <View className="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100 mb-6">
           {/* Row 1: Name & Lastname */}
-          <View className="flex-row gap-3 mb-5">
+          <View className="flex-row gap-3">
             {/* First Name */}
             <View className="flex-1">
               <FloatingLabelInput
@@ -165,12 +165,12 @@ export default function RegisterScreen() {
           </View>
 
           {/* Row 2: Gender */}
-          <View className="mb-5">
+          <View>
             <GenderSelect value={gender} onChange={setGender} />
           </View>
 
           {/* Row 3: Phone */}
-          <View className="mb-5">
+          <View>
             <FloatingLabelInput
               testID="phone-input"
               label="เบอร์โทรศัพท์"
@@ -187,7 +187,7 @@ export default function RegisterScreen() {
           </View>
 
           {/* Row 4: Email */}
-          <View className="mb-5">
+          <View>
             <FloatingLabelInput
               testID="email-input"
               label="อีเมล"
@@ -209,7 +209,7 @@ export default function RegisterScreen() {
           </View>
 
           {/* Row 5: Password */}
-          <View className="mb-5">
+          <View>
             <FloatingLabelInput
               testID="password-input"
               label="รหัสผ่าน"

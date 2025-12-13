@@ -1,12 +1,22 @@
 # Admin Panel Documentation
 
-## 📂 Structure
+# เอกสาร Admin Panel
 
-- **[Progress Tracking](progress/PROGRESS.md)**: Development status and roadmap.
+> **หมายเหตุ:** เอกสารถูกรวมไว้ที่ส่วนกลางแล้ว
 
-## 🚀 Quick Start
+เอกสารทั้งหมดอยู่ที่: **[docs/README.md](../../docs/README.md)**
 
-The Admin Panel is built with **React + Vite + TypeScript**.
+---
+
+## Quick Links
+
+- [Admin Panel Features](../../docs/features/ADMIN_PANEL.md)
+- [Admin Progress History](../../docs/progress/ADMIN_PROGRESS.md)
+- [System Design](../../docs/architecture/SYSTEM_DESIGN.md)
+
+---
+
+## Quick Start
 
 ```bash
 cd admin

@@ -41,7 +41,7 @@ export function GenderSelect({
     ];
 
     return (
-        <View className="mb-0 relative">
+        <View style={{ position: "relative" }}>
             {/* Input Field Representation */}
             <View pointerEvents="none">
                 <FloatingLabelInput

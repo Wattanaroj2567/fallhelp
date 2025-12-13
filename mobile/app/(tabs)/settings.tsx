@@ -1,11 +1,12 @@
 import { useRouter } from "expo-router";
-import { Text, View, TouchableOpacity, TouchableHighlight, Alert, Linking, Image } from "react-native";
+import { Text, View, Alert, Linking, Image } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useMutation } from "@tanstack/react-query";
 import { logout } from "@/services/authService";
 import { useAuth } from "@/context/AuthContext";
 import { ScreenWrapper } from "@/components/ScreenWrapper";
 import { ScreenHeader } from "@/components/ScreenHeader";
+import { Bounceable } from "@/components/Bounceable";
 
 // Contact information
 const SUPPORT_PHONE = "0659655508";
@@ -82,10 +83,10 @@ export default function SettingsScreen() {
     iconColor?: string;
     bgColor?: string;
   }) => (
-    <TouchableHighlight
+    <Bounceable
       onPress={onPress}
-      className={`flex-row items-center justify-between p-5 ${!isLast ? "border-b border-gray-100" : ""}`}
-      underlayColor="#E5E7EB"
+      className={`flex-row items-center justify-between p-5 ${!isLast ? "border-b border-gray-100" : ""} active:bg-gray-50`}
+      scale={1}
       style={{ backgroundColor: "white" }}
     >
       <View className="flex-row items-center justify-between flex-1">
@@ -110,7 +111,7 @@ export default function SettingsScreen() {
         </View>
         <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
       </View>
-    </TouchableHighlight>
+    </Bounceable>
   );
 
   const ContactItem = ({
@@ -128,10 +129,10 @@ export default function SettingsScreen() {
     iconColor?: string;
     bgColor?: string;
   }) => (
-    <TouchableHighlight
+    <Bounceable
       onPress={onPress}
-      className="flex-row items-center p-5"
-      underlayColor="#E5E7EB"
+      className="flex-row items-center p-5 active:bg-gray-50"
+      scale={1}
       style={{ backgroundColor: "white" }}
     >
       {/* Content wrapper view to ensure flex direction works if TH behaves like a wrapper */}
@@ -149,7 +150,7 @@ export default function SettingsScreen() {
         </View>
         <MaterialIcons name="open-in-new" size={18} color="#9CA3AF" />
       </View>
-    </TouchableHighlight>
+    </Bounceable>
   );
 
   // ==========================================
@@ -159,7 +160,7 @@ export default function SettingsScreen() {
   return (
     <ScreenWrapper
       edges={["top"]}
-      useScrollView={false}
+      useScrollView={true}
       keyboardAvoiding={false}
       style={{ backgroundColor: "#FFFFFF" }}
       header={<ScreenHeader title="ตั้งค่า" />}
@@ -172,6 +173,11 @@ export default function SettingsScreen() {
               icon="people"
               title="จัดการสมาชิก"
               onPress={() => router.push("/(features)/(user)/members" as any)}
+            />
+            <MenuItem
+              icon="contact-phone"
+              title="จัดการเบอร์ฉุกเฉินผู้สูงอายุ"
+              onPress={() => router.push("/(features)/(emergency)" as any)}
             />
             <MenuItem
               icon="chat-bubble"
@@ -214,10 +220,10 @@ export default function SettingsScreen() {
               />
               <View className="border-t border-gray-100" />
               {/* LINE with custom icon */}
-              <TouchableHighlight
+              <Bounceable
                 onPress={handleOpenLine}
-                className="p-5"
-                underlayColor="#E5E7EB"
+                className="p-5 active:bg-gray-50"
+                scale={1}
                 style={{ backgroundColor: "white" }}
               >
                 <View className="flex-row items-center">
@@ -238,7 +244,7 @@ export default function SettingsScreen() {
                   </View>
                   <MaterialIcons name="open-in-new" size={18} color="#9CA3AF" />
                 </View>
-              </TouchableHighlight>
+              </Bounceable>
             </View>
           </View>
         </View>

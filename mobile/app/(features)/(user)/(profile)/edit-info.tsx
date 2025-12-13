@@ -116,50 +116,50 @@ export default function EditUserInfo() {
   return (
     <ScreenWrapper
       contentContainerStyle={{ paddingHorizontal: 24, flexGrow: 1 }}
+      useScrollView={false}
       header={
-        <ScreenHeader title="แก้ไขชื่อ-นามสกุล" onBack={() => router.back()} />
+        <View style={{ backgroundColor: "#FFFFFF" }}>
+          <ScreenHeader title="แก้ไขชื่อ-นามสกุล" onBack={() => router.back()} />
+          <View className="items-center pb-6 px-6 border-b border-gray-50">
+            <View className="w-16 h-16 bg-green-50 rounded-full items-center justify-center mb-3 border border-green-100">
+              <MaterialIcons name="person" size={32} color="#16AD78" />
+            </View>
+            <Text
+              style={{ fontSize: 13, lineHeight: 20 }}
+              className="font-kanit text-gray-500 text-center px-4"
+            >
+              กรุณากรอกชื่อและนามสกุลของคุณ
+            </Text>
+          </View>
+        </View>
       }
     >
-      <View className="flex-1 pt-6">
-        <View className="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100 mb-6">
-          <Text
-            className="font-kanit"
-            style={{
-              fontSize: 14,
-              color: "#6B7280",
-              marginBottom: 20,
-              textAlign: "left",
-            }}
-          >
-            กรุณากรอกชื่อและนามสกุลของคุณ
-          </Text>
-
-          {/* First Name & Last Name */}
-          <View className="flex-row gap-4 mb-5">
-            <View className="flex-1">
-              <FloatingLabelInput
-                label="ชื่อ"
-                value={firstName}
-                onChangeText={setFirstName}
-              />
-            </View>
-            <View className="flex-1">
-              <FloatingLabelInput
-                label="นามสกุล"
-                value={lastName}
-                onChangeText={setLastName}
-              />
-            </View>
-          </View>
-
-          {/* Gender Selection */}
-          <View>
-            <GenderSelect
-              value={(gender as string) || ""}
-              onChange={(val) => setGender((val as Gender) || null)}
-              isRequired={false}
+      <View className="flex-1 pt-6 px-4">
+        {/* First Name & Last Name */}
+        <View className="flex-row gap-4">
+          <View className="flex-1">
+            <FloatingLabelInput
+              label="ชื่อ"
+              value={firstName}
+              onChangeText={setFirstName}
             />
           </View>
+          <View className="flex-1">
+            <FloatingLabelInput
+              label="นามสกุล"
+              value={lastName}
+              onChangeText={setLastName}
+            />
+          </View>
+        </View>
+
+        {/* Gender Selection */}
+        <View>
+          <GenderSelect
+            value={(gender as string) || ""}
+            onChange={(val) => setGender((val as Gender) || null)}
+            isRequired={false}
+          />
         </View>
 
         {/* Save Button */}

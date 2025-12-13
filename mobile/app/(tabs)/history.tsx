@@ -16,6 +16,7 @@ import { getUserElders } from "@/services/userService";
 import { Event } from "@/services/types";
 import { ScreenWrapper } from "@/components/ScreenWrapper";
 import { ScreenHeader } from "@/components/ScreenHeader";
+import { Bounceable } from "@/components/Bounceable";
 
 // ==========================================
 // 🧩 LAYER: Logic (Helper Functions)
@@ -252,10 +253,10 @@ export default function HistoryScreen() {
         <View className="bg-white rounded-[24px] shadow-lg shadow-black/15 android:elevation-10 mb-4">
           <View className="rounded-[24px] overflow-hidden border border-gray-100">
             {/* Report Summary Link */}
-            <TouchableHighlight
-              className="p-5 border-b border-gray-100"
+            <Bounceable
+              className="p-5 border-b border-gray-100 active:bg-gray-50"
               onPress={() => router.push("/(features)/(monitoring)/report-summary")}
-              underlayColor="#E5E7EB"
+              scale={1}
               style={{ backgroundColor: "white" }}
             >
               <View className="flex-row items-center justify-between">
@@ -277,7 +278,7 @@ export default function HistoryScreen() {
                 </View>
                 <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
               </View>
-            </TouchableHighlight>
+            </Bounceable>
 
             {/* Event Count & Filter */}
             <View className="p-5">
@@ -301,12 +302,12 @@ export default function HistoryScreen() {
                     const label = limit === null ? "ทั้งหมด" : `${limit}`;
 
                     return (
-                      <TouchableOpacity
+                      <Bounceable
                         key={limit?.toString() || "all"}
                         onPress={() => setDisplayLimit(limit)}
                         className={`px-4 py-2 rounded-full ${isSelected ? "bg-[#16AD78]" : "bg-gray-100"
                           }`}
-                        activeOpacity={0.7}
+                        scale={0.97}
                       >
                         <Text
                           style={{
@@ -318,7 +319,7 @@ export default function HistoryScreen() {
                         >
                           {label}
                         </Text>
-                      </TouchableOpacity>
+                      </Bounceable>
                     );
                   })}
                 </View>
