@@ -3,7 +3,6 @@ import {
   View,
   Text,
   Alert,
-  ActivityIndicator,
   Modal,
   Pressable,
   TouchableOpacity,
@@ -33,6 +32,7 @@ import {
   ThaiAddressAutocomplete,
   AddressData,
 } from "@/components/ThaiAddressAutocomplete";
+import { LoadingScreen } from "@/components/LoadingScreen";
 
 const FORM_STORAGE_KEY = "setup_step1_form_data";
 
@@ -215,7 +215,7 @@ export default function Step1() {
       // Navigate to Step 2
       router.push("/(setup)/step2-device-pairing");
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       Logger.error("Save elder error:", error);
       showErrorMessage("ข้อผิดพลาด", error);
     },
@@ -399,11 +399,7 @@ export default function Step1() {
   };
 
   if (!isLoaded) {
-    return (
-      <View className="flex-1 justify-center items-center bg-white">
-        <ActivityIndicator size="large" color="#16AD78" />
-      </View>
-    );
+    return <LoadingScreen useScreenWrapper={true} />;
   }
 
   // ==========================================

@@ -1,46 +1,44 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, Alert, ScrollView, TextInput } from "react-native";
+import React, { useState } from "react";
+import { View, Text, Alert } from "react-native";
 import { useRouter } from "expo-router";
-import { MaterialIcons } from "@expo/vector-icons";
 import {
   createContact,
-  listContacts,
 } from "@/services/emergencyContactService";
-import { getUserElders } from "@/services/userService";
 import { useQueryClient } from "@tanstack/react-query";
+import { showErrorMessage } from "@/utils/errorHelper";
 import Logger from "@/utils/logger";
 import { FloatingLabelInput } from "@/components/FloatingLabelInput";
 import { ScreenWrapper } from "@/components/ScreenWrapper";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { PrimaryButton } from "@/components/PrimaryButton";
+import { useCurrentElder } from "@/hooks/useCurrentElder"; // [NEW] Use Hook
+import { LoadingScreen } from "@/components/LoadingScreen"; // [NEW] Standard Loading
+import { MaterialIcons } from "@expo/vector-icons";
 
 export default function AddEmergencyContact() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
-  const [elderId, setElderId] = useState<string | null>(null);
+
+  // [NEW] Use Hook instead of manual fetch
+  const { data: currentElder, isLoading: isElderLoading } = useCurrentElder();
+  const elderId = currentElder?.id;
+  const isReadOnly =
+    !currentElder ||
+    (currentElder.accessLevel !== "OWNER" &&
+      currentElder.accessLevel !== "EDITOR");
 
   // Form State
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [relationship, setRelationship] = useState("");
 
-  useEffect(() => {
-    fetchElderId();
-  }, []);
-
-  const fetchElderId = async () => {
-    try {
-      const elders = await getUserElders();
-      if (elders && elders.length > 0) {
-        setElderId(elders[0].id);
-      }
-    } catch (error) {
-      Logger.error("Error fetching elder:", error);
-    }
-  };
-
   const handleSave = async () => {
+    if (isReadOnly) {
+        Alert.alert("ไม่มีสิทธิ์", "คุณไม่มีสิทธิ์ในการเพิ่มข้อมูล");
+        return;
+    }
+
     if (!name.trim() || !phone.trim()) {
       Alert.alert("กรุณากรอกข้อมูล", "กรุณากรอกชื่อและเบอร์โทรศัพท์");
       return;
@@ -61,15 +59,18 @@ export default function AddEmergencyContact() {
 
       queryClient.invalidateQueries({ queryKey: ["emergencyContacts"] });
 
+      queryClient.invalidateQueries({ queryKey: ["emergencyContacts"] });
+
       Alert.alert("สำเร็จ", "เพิ่มเบอร์ติดต่อฉุกเฉินเรียบร้อยแล้ว", [
         {
           text: "ตกลง",
           onPress: () => router.back(),
         },
       ]);
-    } catch (error: any) {
+
+    } catch (error: unknown) {
       Logger.error("Error adding contact:", error);
-      Alert.alert("ข้อผิดพลาด", error.message || "ไม่สามารถเพิ่มข้อมูลได้");
+      showErrorMessage("ข้อผิดพลาด", error);
     } finally {
       setLoading(false);
     }
@@ -79,6 +80,30 @@ export default function AddEmergencyContact() {
   // 🖼️ LAYER: View (Main Render)
   // Purpose: Render the form UI
   // ==========================================
+
+  // [NEW] Loading State
+  if (isElderLoading) {
+      return <LoadingScreen useScreenWrapper />;
+  }
+  
+  // [NEW] View Only State Block (Optional - or just hide button)
+  if (isReadOnly) {
+       // We can redirect back or show a blocked screen. 
+       // For better UX, let's show an empty state or redirect back immediately?
+       // Usually "Add" button is hidden in index.tsx if read-only. 
+       // But if they deep link here:
+       return (
+           <ScreenWrapper useScrollView={false}>
+               <ScreenHeader title="เพิ่มเบอร์โทร" onBack={() => router.back()} />
+               <View className="flex-1 items-center justify-center p-6">
+                   <MaterialIcons name="lock" size={60} color="#CA8A04" />
+                   <Text className="font-kanit text-lg text-gray-800 mt-4 text-center">ไม่มีสิทธิ์เข้าถึง</Text>
+                   <Text className="font-kanit text-gray-500 mt-2 text-center">เฉพาะผู้ดูแลหลักและผู้ช่วยแก้ไขได้เท่านั้น</Text>
+               </View>
+           </ScreenWrapper>
+       );
+  }
+
   return (
     <ScreenWrapper
       contentContainerStyle={{ paddingHorizontal: 24, flexGrow: 1 }}
@@ -156,3 +181,4 @@ export default function AddEmergencyContact() {
     </ScreenWrapper>
   );
 }
+

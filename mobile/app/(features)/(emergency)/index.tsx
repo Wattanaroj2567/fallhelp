@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -6,7 +6,6 @@ import {
   Alert,
   RefreshControl,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useFocusEffect } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
 import DraggableFlatList, {
@@ -29,6 +28,7 @@ import { ListItemSkeleton } from "@/components/skeletons";
 import { ScreenWrapper } from "@/components/ScreenWrapper";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { useCurrentElder } from "@/hooks/useCurrentElder";
+import { LoadingScreen } from "@/components/LoadingScreen";
 
 // ==========================================
 // 📱 LAYER: View (Component)
@@ -41,10 +41,13 @@ export default function EmergencyContacts() {
 
   // ==========================================
   // ⚙️ LAYER: Logic (Data Fetching)
-  // Purpose: Check Access Level
+  // Purpose: Check Access Level from ONE Source of Truth
   // ==========================================
   const { data: currentElder, isLoading: isElderLoading } = useCurrentElder();
-  const isReadOnly = !currentElder || (currentElder.accessLevel !== 'OWNER' && currentElder.accessLevel !== 'EDITOR');
+  const isReadOnly =
+    !currentElder ||
+    (currentElder.accessLevel !== "OWNER" &&
+      currentElder.accessLevel !== "EDITOR");
 
   // ==========================================
   // ⚙️ LAYER: Logic (Data Fetching)
@@ -58,45 +61,10 @@ export default function EmergencyContacts() {
     queryKey: ["emergencyContacts", currentElder?.id],
     enabled: !!currentElder?.id,
     queryFn: async () => {
-      let elderId = currentElder?.id;
-      // If currentElder is not ready, we wait or return empty to rely on hook.
-      // But we want to fetch fast.
-      // If we fetch manually here, we don't update currentElder state/accessLevel!
-      // This useQuery ONLY returns contacts.
-      // The component relies on `currentElder` (from hook) for accessLevel.
-
-      // If hook is slow but this query is fast (fetching elders again), this query works (shows contacts).
-      // But `currentElder` variable (from hook) might still be undefined or stale?
-      // No, they share the same query key ['userElders'] ideally?
-
-      // `useCurrentElder` uses `getUserElders` with key `['userElders']`.
-      // `useQuery` here calls `listContacts`. It does NOT call `getUserElders` unless `!elderId`.
-      // If `!elderId`, it calls `getUserElders`. THIS DOES NOT update the `useCurrentElder` hook's data cache automatically unless queryClient matches.
-      // `useCurrentElder` uses `useQuery`.
-      // Here we call `getUserElders` directly (function). This does NOT update React Query cache for 'userElders'.
-
-      // So: Contacts load (because we fetched elder ID manually).
-      // But `currentElder` (from hook) is still loading or empty?
-      // If `currentElder` is loading, `isElderLoading` is true. Banner hidden.
-
-      // If `currentElder` loaded, why is accessLevel wrong?
-
-      if (!elderId) {
-        // Fallback
-        const elders = await getUserElders();
-        if (elders?.length > 0) {
-          elderId = elders[0].id;
-          // We have the elder here! But we don't pass it to the component state.
-        }
-      }
-
-      // ... fetch contacts ...
-
-      if (elderId) {
-        const contactList = await listContacts(elderId);
-        if (Array.isArray(contactList)) {
-          return contactList.sort((a, b) => a.priority - b.priority);
-        }
+      if (!currentElder?.id) return [];
+      const contactList = await listContacts(currentElder.id);
+      if (Array.isArray(contactList)) {
+        return contactList.sort((a, b) => a.priority - b.priority);
       }
       return [];
     },
@@ -113,9 +81,7 @@ export default function EmergencyContacts() {
   useFocusEffect(
     React.useCallback(() => {
       refetch();
-      // Also refetch elder permissions to be safe
-      queryClient.invalidateQueries({ queryKey: ['userElders'] });
-    }, [refetch, queryClient])
+    }, [refetch])
   );
 
   // ==========================================
@@ -128,7 +94,7 @@ export default function EmergencyContacts() {
       queryClient.invalidateQueries({ queryKey: ["emergencyContacts"] });
       Alert.alert("สำเร็จ", "ลบผู้ติดต่อเรียบร้อยแล้ว");
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       showErrorMessage("ผิดพลาด", error);
     },
   });
@@ -144,7 +110,7 @@ export default function EmergencyContacts() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["emergencyContacts"] });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       Logger.error("Reorder failed", error);
       showErrorMessage("ผิดพลาด", error);
       refetch(); // Revert on error
@@ -155,21 +121,24 @@ export default function EmergencyContacts() {
   // 🎮 LAYER: Logic (Event Handlers)
   // Purpose: Handle actions
   // ==========================================
-  const handleDelete = (id: string, name: string) => {
-    if (isReadOnly) return;
-    Alert.alert(
-      "ยืนยันการลบ",
-      `คุณต้องการลบ ${name} ออกจากรายชื่อผู้ติดต่อฉุกเฉินใช่หรือไม่?`,
-      [
-        { text: "ยกเลิก", style: "cancel" },
-        {
-          text: "ลบ",
-          style: "destructive",
-          onPress: () => deleteMutation.mutate(id),
-        },
-      ]
-    );
-  };
+  const handleDelete = useCallback(
+    (id: string, name: string) => {
+      if (isReadOnly) return;
+      Alert.alert(
+        "ยืนยันการลบ",
+        `คุณต้องการลบ ${name} ออกจากรายชื่อผู้ติดต่อฉุกเฉินใช่หรือไม่?`,
+        [
+          { text: "ยกเลิก", style: "cancel" },
+          {
+            text: "ลบ",
+            style: "destructive",
+            onPress: () => deleteMutation.mutate(id),
+          },
+        ]
+      );
+    },
+    [isReadOnly, deleteMutation]
+  );
 
   const handleDragEnd = async ({ data }: { data: EmergencyContact[] }) => {
     if (isReadOnly) return;
@@ -178,7 +147,8 @@ export default function EmergencyContacts() {
     // Extract IDs in new order
     const contactIds = data.map((c) => c.id);
 
-    if (data.length > 1) { // Prevent reordering if only 1 item
+    if (data.length > 1) {
+      // Prevent reordering if only 1 item
       const elderId = data[0].elderId;
       reorderMutation.mutate({ elderId, contactIds });
     }
@@ -188,87 +158,99 @@ export default function EmergencyContacts() {
   // 🖼️ LAYER: View (Sub-Component)
   // Purpose: Render individual contact item
   // ==========================================
-  const renderItem = ({
-    item,
-    drag,
-    isActive,
-    getIndex,
-  }: RenderItemParams<EmergencyContact>) => {
-    const index = getIndex();
-    return (
-      <ScaleDecorator>
-        <TouchableOpacity
-          onLongPress={isReadOnly ? undefined : drag}
-          disabled={isActive || isReadOnly}
-          activeOpacity={1}
-          className={`bg-white rounded-2xl p-4 mb-3 shadow-sm border border-gray-100 flex-row items-center ${isActive ? "opacity-90 shadow-lg scale-105" : ""
+  const renderItem = useCallback(
+    ({
+      item,
+      drag,
+      isActive,
+      getIndex,
+    }: RenderItemParams<EmergencyContact>) => {
+      const index = getIndex();
+      return (
+        <ScaleDecorator>
+          <TouchableOpacity
+            onLongPress={isReadOnly ? undefined : drag}
+            disabled={isActive || isReadOnly}
+            activeOpacity={1}
+            className={`bg-white rounded-2xl p-4 mb-3 shadow-sm border border-gray-100 flex-row items-center ${
+              isActive ? "opacity-90 shadow-lg scale-105" : ""
             }`}
-        >
-          {/* Drag Handle - Hide if ReadOnly or Single Item */}
-          {!isReadOnly && localContacts.length > 1 && (
-            <TouchableOpacity onPressIn={drag} className="mr-4 p-2">
-              <MaterialIcons name="drag-handle" size={24} color="#9CA3AF" />
-            </TouchableOpacity>
-          )}
-
-          {/* Priority Badge */}
-          <View className="w-10 h-10 rounded-full bg-blue-50 items-center justify-center mr-4">
-            <Text
-              style={{ fontSize: 16, fontWeight: "700" }}
-              className="font-kanit text-blue-600"
-            >
-              {(index || 0) + 1}
-            </Text>
-          </View>
-
-          {/* Info */}
-          <View className="flex-1">
-            <Text
-              style={{ fontSize: 16, fontWeight: "600" }}
-              className="font-kanit text-gray-900"
-            >
-              {item.name} {item.relationship ? `(${item.relationship})` : ""}
-            </Text>
-            <Text
-              style={{ fontSize: 14 }}
-              className="font-kanit text-gray-500 mt-0.5"
-            >
-              {item.phone}
-            </Text>
-          </View>
-
-          {/* Actions - Hide if ReadOnly */}
-          {!isReadOnly && (
-            <View className="flex-row items-center">
-              <TouchableOpacity
-                onPress={() =>
-                  router.push({
-                    pathname: "/(features)/(emergency)/edit",
-                    params: { id: item.id },
-                  })
-                }
-                className="p-2 bg-blue-50 rounded-lg mr-2"
-              >
-                <MaterialIcons name="edit" size={20} color="#3B82F6" />
+          >
+            {/* Drag Handle - Hide if ReadOnly or Single Item */}
+            {!isReadOnly && localContacts.length > 1 && (
+              <TouchableOpacity onPressIn={drag} className="mr-4 p-2">
+                <MaterialIcons name="drag-handle" size={24} color="#9CA3AF" />
               </TouchableOpacity>
+            )}
 
-              <TouchableOpacity
-                onPress={() => handleDelete(item.id, item.name)}
-                className="p-2 bg-red-50 rounded-lg"
+            {/* Priority Badge */}
+            <View className="w-10 h-10 rounded-full bg-blue-50 items-center justify-center mr-4">
+              <Text
+                style={{ fontSize: 16, fontWeight: "700" }}
+                className="font-kanit text-blue-600"
               >
-                <MaterialIcons name="delete" size={20} color="#EF4444" />
-              </TouchableOpacity>
+                {(index || 0) + 1}
+              </Text>
             </View>
-          )}
-        </TouchableOpacity>
-      </ScaleDecorator>
-    );
-  };
+
+            {/* Info */}
+            <View className="flex-1">
+              <Text
+                style={{ fontSize: 16, fontWeight: "600" }}
+                className="font-kanit text-gray-900"
+              >
+                {item.name} {item.relationship ? `(${item.relationship})` : ""}
+              </Text>
+              <Text
+                style={{ fontSize: 14 }}
+                className="font-kanit text-gray-500 mt-0.5"
+              >
+                {item.phone}
+              </Text>
+            </View>
+
+            {/* Actions - Hide if ReadOnly */}
+            {!isReadOnly && (
+              <View className="flex-row items-center">
+                <TouchableOpacity
+                  onPress={() =>
+                    router.push({
+                      pathname: "/(features)/(emergency)/edit",
+                      params: { id: item.id },
+                    })
+                  }
+                  className="p-2 bg-blue-50 rounded-lg mr-2"
+                >
+                  <MaterialIcons name="edit" size={20} color="#3B82F6" />
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => handleDelete(item.id, item.name)}
+                  className="p-2 bg-red-50 rounded-lg"
+                >
+                  <MaterialIcons name="delete" size={20} color="#EF4444" />
+                </TouchableOpacity>
+              </View>
+            )}
+          </TouchableOpacity>
+        </ScaleDecorator>
+      );
+    },
+    [isReadOnly, localContacts.length, handleDelete, router]
+  ); // Dependencies for useCallback
 
   // ==========================================
   // 🖼️ LAYER: View (Main Render)
   // Purpose: Render the main UI
   // ==========================================
+
+  // Combine loading states?
+  // We don't want to block UI if just refreshing contacts, but initial load yes.
+  // isElderLoading is critical.
+  if (isElderLoading) {
+    return <LoadingScreen useScreenWrapper />;
+  }
+
   return (
     <ScreenWrapper edges={["top", "left", "right"]} useScrollView={false}>
       <GestureHandlerRootView style={{ flex: 1 }}>
@@ -279,10 +261,15 @@ export default function EmergencyContacts() {
         />
 
         {/* View Only Warning */}
-        {!isElderLoading && isReadOnly && currentElder && (
+        {isReadOnly && currentElder && (
           <View className="mx-6 mb-2 mt-2">
             <View className="bg-yellow-50 rounded-xl p-3 border border-yellow-100 flex-row items-center">
-              <MaterialIcons name="lock" size={16} color="#CA8A04" style={{ marginRight: 6 }} />
+              <MaterialIcons
+                name="lock"
+                size={16}
+                color="#CA8A04"
+                style={{ marginRight: 6 }}
+              />
               <Text className="font-kanit text-yellow-700 text-xs flex-1">
                 โหมดดูได้อย่างเดียว (Assistant Caregiver)
               </Text>
@@ -395,3 +382,4 @@ export default function EmergencyContacts() {
     </ScreenWrapper>
   );
 }
+

@@ -2,20 +2,16 @@ import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
-  ScrollView,
-  TouchableOpacity,
-  RefreshControl,
   Alert,
   Image,
-  ActivityIndicator,
 } from "react-native";
 // import { Image } from 'expo-image';
 import { MaterialIcons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { ScreenWrapper } from "@/components/ScreenWrapper";
 import { NotificationModal } from "@/components/NotificationModal";
-import { ConnectionToast } from "@/components/ConnectionToast";
 import { Bounceable } from "@/components/Bounceable";
 import { router, useFocusEffect } from "expo-router";
+import { LoadingScreen } from "@/components/LoadingScreen";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, {
   useSharedValue,
@@ -63,8 +59,6 @@ export default function Home() {
   const { isSignedIn } = useAuth();
   const [imageError, setImageError] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [showConnectionToast, setShowConnectionToast] = useState(false);
-  const [connectionToastState, setConnectionToastState] = useState<'connected' | 'disconnected' | 'reconnecting'>('connected');
   const { top } = useSafeAreaInsets();
 
   // ==========================================
@@ -162,21 +156,6 @@ export default function Home() {
     setActiveFallEventId,
     setIsConnected,
   } = useSocket(elderInfo?.id, elderInfo?.device?.id);
-
-  // Handle Connection Toast visibility
-  useEffect(() => {
-    if (!wasEverConnected) return; // Don't show on first connect
-    
-    if (!socketConnected) {
-      setConnectionToastState('disconnected');
-      setShowConnectionToast(true);
-    } else {
-      setConnectionToastState('connected');
-      setShowConnectionToast(true);
-    }
-  }, [socketConnected, wasEverConnected]);
-
-
 
   // Sync Initial Event Data
   useEffect(() => {
@@ -290,18 +269,7 @@ export default function Home() {
 
   // Show loading spinner while checking elder data
   if (isLoading) {
-    return (
-      <ScreenWrapper
-        edges={["top"]}
-        useScrollView={false}
-        style={{ backgroundColor: "#FDFDFD" }}
-      >
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#16AD78" />
-          <Text className="mt-4 text-gray-500 font-kanit">กำลังโหลด...</Text>
-        </View>
-      </ScreenWrapper>
-    );
+    return <LoadingScreen useScreenWrapper={true} message="กำลังโหลดข้อมูล..." />;
   }
 
   // If no elder data, don't render (useProtectedRoute will redirect)
@@ -311,12 +279,6 @@ export default function Home() {
 
   return (
     <View className="flex-1 bg-white">
-      {/* Connection Toast */}
-      <ConnectionToast
-        state={connectionToastState}
-        visible={showConnectionToast}
-        onHide={() => setShowConnectionToast(false)}
-      />
       
       <ScreenWrapper
         edges={["left", "right"]}
@@ -377,12 +339,7 @@ export default function Home() {
 
         <View className="flex-1 px-5 pt-6 pb-4 justify-between">
           {isLoading ? (
-            <View className="flex-1 items-center justify-center">
-              <ActivityIndicator size="large" color="#16AD78" />
-              <Text className="font-kanit text-gray-500 mt-4">
-                กำลังโหลดข้อมูล...
-              </Text>
-            </View>
+            <LoadingScreen useScreenWrapper={false} message="กำลังโหลดข้อมูล..." />
           ) : elderInfo ? (
             // Main Dashboard UI
             <>

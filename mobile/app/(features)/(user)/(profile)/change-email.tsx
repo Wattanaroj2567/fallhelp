@@ -9,6 +9,7 @@ import { FloatingLabelInput } from '@/components/FloatingLabelInput';
 import { ScreenWrapper } from '@/components/ScreenWrapper';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { PrimaryButton } from '@/components/PrimaryButton';
+import { LoadingScreen } from '@/components/LoadingScreen';
 
 export default function ChangeEmail() {
   const router = useRouter();
@@ -81,15 +82,10 @@ export default function ChangeEmail() {
     }
   };
 
+// ...
+
   if (loading) {
-    return (
-      <SafeAreaView className="flex-1 bg-white" edges={['top', 'left', 'right']}>
-        <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#16AD78" />
-          <Text className="font-kanit text-gray-500 mt-4">กำลังโหลดข้อมูล...</Text>
-        </View>
-      </SafeAreaView>
-    );
+     return <LoadingScreen useScreenWrapper message="กำลังโหลดข้อมูล..." />;
   }
 
   return (

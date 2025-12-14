@@ -5,7 +5,6 @@ import {
     View,
     TouchableWithoutFeedback,
     Keyboard,
-    Platform,
     Pressable,
 } from 'react-native';
 import { SafeAreaView, Edge } from 'react-native-safe-area-context';

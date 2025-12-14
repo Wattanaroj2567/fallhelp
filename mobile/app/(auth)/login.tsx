@@ -69,7 +69,7 @@ export default function LoginScreen() {
 
       Alert.alert("เข้าสู่ระบบสำเร็จ", "ยินดีต้อนรับกลับ");
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       showErrorMessage("เข้าสู่ระบบล้มเหลว", error);
     },
   });

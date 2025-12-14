@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { View, Text } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { ScreenWrapper } from "@/components/ScreenWrapper";
 import { MaterialIcons } from "@expo/vector-icons";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { useAuth } from "@/context/AuthContext";
@@ -67,50 +67,55 @@ export default function AuthSuccessScreen() {
 
   // Resize icon for better proportion
   return (
-    <SafeAreaView className="flex-1 bg-white px-8 justify-between pb-10">
-      <View className="flex-1 items-center justify-center">
-        {/* Success Icon */}
-        <View className="mb-8 items-center justify-center">
-          <View
-            testID="success-icon"
-            style={{
-              width: 100,
-              height: 100,
-              borderRadius: 50,
-              backgroundColor: iconColor,
-              alignItems: "center",
-              justifyContent: "center",
-              elevation: 5,
-              shadowColor: iconColor,
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.3,
-              shadowRadius: 8,
-            }}
-          >
-            <MaterialIcons name="check" size={64} color="white" />
+    <ScreenWrapper
+      useScrollView={false}
+      style={{ backgroundColor: 'white' }}
+    >
+      <View className="flex-1 px-8 justify-between pb-10">
+        <View className="flex-1 items-center justify-center">
+          {/* Success Icon */}
+          <View className="mb-8 items-center justify-center">
+            <View
+              testID="success-icon"
+              style={{
+                width: 100,
+                height: 100,
+                borderRadius: 50,
+                backgroundColor: iconColor,
+                alignItems: "center",
+                justifyContent: "center",
+                elevation: 5,
+                shadowColor: iconColor,
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+              }}
+            >
+              <MaterialIcons name="check" size={64} color="white" />
+            </View>
           </View>
+
+          {/* Text Content */}
+          <Text
+            className="font-kanit text-2xl font-bold text-center mb-4"
+            style={{ color: titleColor }}
+          >
+            {title}
+          </Text>
+
+          <Text className="font-kanit text-base text-gray-500 text-center leading-6 px-4">
+            {description}
+          </Text>
         </View>
 
-        {/* Text Content */}
-        <Text
-          className="font-kanit text-2xl font-bold text-center mb-4"
-          style={{ color: titleColor }}
-        >
-          {title}
-        </Text>
-
-        <Text className="font-kanit text-base text-gray-500 text-center leading-6 px-4">
-          {description}
-        </Text>
+        {/* Manual Action Button */}
+        <View className="w-full">
+          <PrimaryButton
+            title={isReset ? "เข้าสู่ระบบ" : "เริ่มต้นใช้งาน"}
+            onPress={handleContinue}
+          />
+        </View>
       </View>
-
-      {/* Manual Action Button */}
-      <View className="w-full">
-        <PrimaryButton
-          title={isReset ? "เข้าสู่ระบบ" : "เริ่มต้นใช้งาน"}
-          onPress={handleContinue}
-        />
-      </View>
-    </SafeAreaView>
+    </ScreenWrapper>
   );
 }

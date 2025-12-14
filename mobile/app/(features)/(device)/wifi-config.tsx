@@ -6,8 +6,6 @@ import {
   ActivityIndicator,
   Modal,
   TouchableOpacity,
-  Linking,
-  Platform,
 } from "react-native";
 
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
@@ -66,7 +64,7 @@ export default function WifiConfig() {
         },
       ]);
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       Logger.error("Error configuring WiFi:", error);
       showErrorMessage("ข้อผิดพลาด", error);
     },

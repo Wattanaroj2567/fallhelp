@@ -5,7 +5,6 @@ import {
   FlatList,
   TouchableOpacity,
   TouchableHighlight,
-  ActivityIndicator,
   RefreshControl,
 } from "react-native";
 import { useRouter } from "expo-router";
@@ -17,6 +16,7 @@ import { Event } from "@/services/types";
 import { ScreenWrapper } from "@/components/ScreenWrapper";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { Bounceable } from "@/components/Bounceable";
+import { LoadingScreen } from "@/components/LoadingScreen";
 
 // ==========================================
 // 🧩 LAYER: Logic (Helper Functions)
@@ -330,12 +330,7 @@ export default function HistoryScreen() {
 
         {/* List */}
         {isLoading ? (
-          <View className="flex-1 items-center justify-center">
-            <ActivityIndicator size="large" color="#16AD78" />
-            <Text className="font-kanit text-gray-500 mt-4">
-              กำลังโหลดข้อมูล...
-            </Text>
-          </View>
+          <LoadingScreen />
         ) : (
           <FlatList
             data={limitedEvents}

@@ -3,14 +3,14 @@ import {
   View,
   Text,
   FlatList,
-  ActivityIndicator,
   Alert,
+  Image,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getProfile } from "@/services/userService";
-import { Image } from "react-native";
+// Removed duplicate Image import
 import { listMembers } from "@/services/elderService";
 import { useCurrentElder } from "@/hooks/useCurrentElder";
 import Logger from "@/utils/logger";
@@ -18,6 +18,7 @@ import { ScreenWrapper } from "@/components/ScreenWrapper";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { Bounceable } from "@/components/Bounceable";
+import { LoadingScreen } from "@/components/LoadingScreen";
 
 interface MemberDisplay {
   id: string;
@@ -193,7 +194,7 @@ export default function Members() {
             : "VIEWER") as "OWNER" | "EDITOR" | "VIEWER",
         name: m.user ? `${m.user.firstName} ${m.user.lastName}` : "ไม่ระบุ",
         profileImage: m.user?.profileImage,
-      })) as MemberDisplay[];
+      }));
     },
     enabled: !!currentElder?.id,
   });
@@ -263,10 +264,7 @@ export default function Members() {
       />
 
       {isLoading ? (
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#16AD78" />
-          <Text className="font-kanit text-gray-500 mt-4">กำลังโหลด...</Text>
-        </View>
+        <LoadingScreen />
       ) : (
         <View className="flex-1">
           {/* Info Box */}

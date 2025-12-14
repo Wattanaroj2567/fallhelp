@@ -4,7 +4,6 @@ import {
   Text,
   TouchableOpacity,
   Alert,
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -21,11 +20,14 @@ import { FloatingLabelInput } from "@/components/FloatingLabelInput";
 import { WizardLayout } from "@/components/WizardLayout";
 import { getErrorMessage } from "@/utils/errorHelper";
 import Logger from "@/utils/logger";
+import { PrimaryButton } from "@/components/PrimaryButton";
 
 // ==========================================
 // 📱 LAYER: View (Component)
 // Purpose: Step 2 of Setup - Device Pairing
 // ==========================================
+
+
 export default function Step2() {
   const router = useRouter();
   const [permission, requestPermission] = useCameraPermissions();
@@ -80,7 +82,7 @@ export default function Step2() {
         },
       ]);
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       Logger.error("Error pairing device:", error);
       const message = getErrorMessage(error);
       Alert.alert(
@@ -278,23 +280,13 @@ export default function Step2() {
             />
           </View>
 
-          <TouchableOpacity
+          <PrimaryButton
+            title="ยืนยัน"
             onPress={handleManualPairing}
+            loading={pairMutation.isPending}
             disabled={pairMutation.isPending}
-            className="bg-[#16AD78] rounded-2xl py-4 items-center mb-4 shadow-sm"
-            style={{ opacity: pairMutation.isPending ? 0.6 : 1 }}
-          >
-            {pairMutation.isPending ? (
-              <ActivityIndicator size="small" color="#FFFFFF" />
-            ) : (
-              <Text
-                style={{ fontSize: 16, fontWeight: "600" }}
-                className="font-kanit text-white"
-              >
-                ยืนยัน
-              </Text>
-            )}
-          </TouchableOpacity>
+            style={{ marginBottom: 16 }}
+          />
         </View>
       </WizardLayout>
     );

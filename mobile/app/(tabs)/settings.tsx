@@ -7,6 +7,7 @@ import { useAuth } from "@/context/AuthContext";
 import { ScreenWrapper } from "@/components/ScreenWrapper";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { Bounceable } from "@/components/Bounceable";
+import { showErrorMessage } from "@/utils/errorHelper";
 
 // Contact information
 const SUPPORT_PHONE = "0659655508";
@@ -34,8 +35,8 @@ export default function SettingsScreen() {
     mutationFn: async () => {
       await signOut();
     },
-    onError: () => {
-      Alert.alert("ผิดพลาด", "ไม่สามารถออกจากระบบได้");
+    onError: (error: unknown) => {
+      showErrorMessage("ผิดพลาด", error);
     },
   });
 

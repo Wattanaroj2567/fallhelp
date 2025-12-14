@@ -11,6 +11,7 @@ import { FloatingLabelInput } from '@/components/FloatingLabelInput';
 import { ScreenWrapper } from '@/components/ScreenWrapper';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { PrimaryButton } from '@/components/PrimaryButton';
+import { LoadingScreen } from '@/components/LoadingScreen';
 
 import { GenderSelect } from '@/components/GenderSelect';
 import { Gender } from '@/services/types';
@@ -76,9 +77,9 @@ export default function EditUserInfo() {
         ]
       );
     },
-    onError: (error: any) => {
-      Logger.error('Error updating profile:', error);
-      showErrorMessage('ข้อผิดพลาด', error);
+    onError: (error: unknown) => {
+      Logger.error("Error updating profile:", error);
+      showErrorMessage("ข้อผิดพลาด", error);
     },
   });
 
@@ -99,15 +100,12 @@ export default function EditUserInfo() {
     });
   };
 
+// ... (imports)
+
+// ...
+
   if (isLoading) {
-    return (
-      <ScreenWrapper edges={['top', 'left', 'right']}>
-        <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#16AD78" />
-          <Text className="font-kanit text-gray-500 mt-4">กำลังโหลดข้อมูล...</Text>
-        </View>
-      </ScreenWrapper>
-    );
+    return <LoadingScreen useScreenWrapper message="กำลังโหลดข้อมูล..." />;
   }
 
   // ==========================================

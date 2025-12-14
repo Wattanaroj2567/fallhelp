@@ -11,6 +11,7 @@ import { useRouter, useNavigation } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { getUserElders } from "@/services/userService";
+import { LoadingScreen } from "@/components/LoadingScreen";
 import { ScreenWrapper } from "@/components/ScreenWrapper";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { PrimaryButton } from "@/components/PrimaryButton";
@@ -104,17 +105,9 @@ export default function ElderInfo() {
     },
   });
 
+
   if (isLoading) {
-    return (
-      <ScreenWrapper edges={["top", "left", "right"]} useScrollView={false}>
-        <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#16AD78" />
-          <Text className="font-kanit text-gray-500 mt-4">
-            กำลังโหลดข้อมูล...
-          </Text>
-        </View>
-      </ScreenWrapper>
-    );
+    return <LoadingScreen useScreenWrapper={true} message="กำลังโหลดข้อมูล..." />;
   }
 
   if (isError) {

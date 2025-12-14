@@ -58,8 +58,9 @@ export default function ForgotPasswordScreen() {
         },
       ]);
     },
-    onError: (error: any) => {
-      showErrorMessage("ส่งรหัสไม่สำเร็จ", error);
+    onError: (error: unknown) => {
+      Logger.error("Forgot password error:", error);
+      showErrorMessage("เกิดข้อผิดพลาด", error);
     },
   });
 

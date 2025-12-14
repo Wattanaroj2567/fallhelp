@@ -13,7 +13,6 @@ import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { pairDevice } from "@/services/deviceService";
-import { apiClient } from "@/services/api";
 import { getUserElders } from "@/services/userService";
 import { useCurrentElder } from "@/hooks/useCurrentElder";
 import { CameraView, useCameraPermissions } from "expo-camera";
@@ -21,6 +20,7 @@ import { FloatingLabelInput } from "@/components/FloatingLabelInput";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { getErrorMessage } from "@/utils/errorHelper";
 import Logger from "@/utils/logger";
+import { LoadingScreen } from "@/components/LoadingScreen";
 
 // ==========================================
 // 📱 LAYER: View (Component)
@@ -100,7 +100,7 @@ export default function DevicePairing() {
         },
       ]);
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       Logger.error("Error pairing device:", error);
       const displayMessage = getErrorMessage(error);
 
@@ -156,12 +156,9 @@ export default function DevicePairing() {
   };
 
   if (isReadOnly) {
-    return (
-      <View className="flex-1 bg-white items-center justify-center">
-        <ActivityIndicator size="large" color="#16AD78" />
-      </View>
-    );
+    return <LoadingScreen />;
   }
+
 
   // ==========================================
   // 🖼️ LAYER: View (Manual Entry Mode)

@@ -29,6 +29,7 @@ import {
   ThaiAddressAutocomplete,
   AddressData,
 } from "@/components/ThaiAddressAutocomplete";
+import { LoadingScreen } from "@/components/LoadingScreen";
 
 // ==========================================
 // 📱 LAYER: View (Component)
@@ -38,7 +39,7 @@ export default function EditElderInfo() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const theme = useTheme();
-  const scrollViewRef = useRef<any>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
   // Keyboard listener removed to allow always-scroll
 
   // ==========================================
@@ -245,18 +246,17 @@ export default function EditElderInfo() {
     return `${day} ${month} ${year}`;
   };
 
-  if (isFetching) {
-    return (
-      <View className="flex-1 justify-center items-center bg-white">
-        <ActivityIndicator size="large" color="#16AD78" />
-      </View>
-    );
-  }
+
 
   // ==========================================
   // 🖼️ LAYER: View (Main Render)
   // Purpose: Render the form UI
   // ==========================================
+
+  if (isFetching) {
+    return <LoadingScreen useScreenWrapper={false} />;
+  }
+
   return (
     <ScreenWrapper
       contentContainerStyle={{ paddingHorizontal: 24, flexGrow: 1 }}

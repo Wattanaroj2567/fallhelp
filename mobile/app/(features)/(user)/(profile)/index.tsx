@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, ActivityIndicator, RefreshControl, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useNavigation } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '@/services/api';
 import { getProfile, updateProfile, deleteAccount, getUserElders } from '@/services/userService';
 import Logger from '@/utils/logger';
 import { showErrorMessage } from "@/utils/errorHelper";
@@ -14,7 +12,6 @@ import { Image } from 'expo-image';
 import * as SecureStore from 'expo-secure-store';
 import { ScreenWrapper } from '@/components/ScreenWrapper';
 import { ScreenHeader } from '@/components/ScreenHeader';
-import { PrimaryButton } from '@/components/PrimaryButton';
 import { Bounceable } from '@/components/Bounceable';
 
 // ==========================================
@@ -121,15 +118,15 @@ export default function Profile() {
 
   if (isLoading) {
     return (
-      <SafeAreaView className="flex-1 bg-white" edges={['top', 'left', 'right']}>
+      <ScreenWrapper className="flex-1 bg-white" edges={['top', 'left', 'right']}>
         <ProfileSkeleton />
-      </SafeAreaView>
+      </ScreenWrapper>
     );
   }
 
   if (isError || !profile) {
     return (
-      <SafeAreaView className="flex-1 bg-white" edges={['top', 'left', 'right']}>
+      <ScreenWrapper className="flex-1 bg-white" edges={['top', 'left', 'right']}>
         <View className="flex-1 justify-center items-center px-6">
           <MaterialIcons name="account-circle" size={64} color="#D1D5DB" />
           <Text style={{ fontSize: 18 }} className="font-kanit text-gray-700 mt-4 text-center">
@@ -144,7 +141,7 @@ export default function Profile() {
             <Text className="font-kanit">ลองใหม่</Text>
           </Bounceable>
         </View>
-      </SafeAreaView>
+      </ScreenWrapper>
     );
   }
 
@@ -159,13 +156,7 @@ export default function Profile() {
       {/* Header */}
       <ScreenHeader 
         title="ข้อมูลส่วนตัว" 
-        onBack={() => {
-          if (router.canGoBack()) {
-            router.back();
-          } else {
-            router.replace("/(tabs)");
-          }
-        }} 
+        onBack={() => router.back()} 
       />
 
       <ScrollView
@@ -364,8 +355,8 @@ export default function Profile() {
                                 queryClient.clear();
                                 router.replace('/(auth)/login');
                                 Alert.alert('สำเร็จ', 'ลบบัญชีเรียบร้อยแล้ว');
-                              } catch (error: any) {
-                                Alert.alert('ผิดพลาด', error.message || 'ไม่สามารถลบบัญชีได้');
+                              } catch (error: unknown) {
+                                showErrorMessage('ผิดพลาด', error);
                               }
                             },
                           },

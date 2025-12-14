@@ -15,11 +15,12 @@ import { useEffect } from "react";
 import { PaperProvider, MD3LightTheme } from "react-native-paper";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { View, ActivityIndicator } from "react-native";
+import { View } from "react-native";
 import Logger from "@/utils/logger";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { useProtectedRoute } from "@/hooks/useProtectedRoute";
 import { AppTheme } from "@/constants/theme";
+import { LoadingScreen } from "@/components/LoadingScreen";
 
 const queryClient = new QueryClient();
 
@@ -35,11 +36,7 @@ function RootLayoutNav() {
   const { isLoading } = useProtectedRoute();
 
   if (isLoading) {
-    return (
-      <View className="flex-1 justify-center items-center bg-white">
-        <ActivityIndicator size="large" color="#16AD78" />
-      </View>
-    );
+    return <LoadingScreen />;
   }
 
   return (

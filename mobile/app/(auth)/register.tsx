@@ -5,7 +5,6 @@ import {
   View,
   Text,
   Alert,
-  Keyboard,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useMutation } from "@tanstack/react-query";
@@ -45,8 +44,12 @@ export default function RegisterScreen() {
   // ⚙️ LAYER: Logic (Mutation)
   // Purpose: Handle registration API call
   // ==========================================
+  /* import { RegisterPayload } from "@/services/authService"; // Ensure import exists if not already */
+
   const registerMutation = useMutation({
     mutationFn: async (data: any) => {
+      // NOTE: data is typed as any here because form state is loose, 
+      // but service expects RegisterPayload.
       return await register(data);
     },
     onSuccess: async (data) => {
@@ -62,7 +65,7 @@ export default function RegisterScreen() {
         },
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       showErrorMessage("ลงทะเบียนล้มเหลว", error);
     },
   });

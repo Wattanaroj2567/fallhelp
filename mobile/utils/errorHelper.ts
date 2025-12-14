@@ -12,31 +12,34 @@ import Logger from './logger';
  * Extract error message from API response
  * All Thai messages now come from Backend ApiError.ts
  */
-export const getErrorMessage = (error: any): string => {
+export const getErrorMessage = (error: unknown): string => {
+  // Safe cast to access properties
+  const err = error as any;
+
   // 1. New API format: { error: { code, message } } - Thai message from Backend
-  const apiError = error.response?.data?.error;
+  const apiError = err.response?.data?.error;
   if (apiError && typeof apiError === 'object' && apiError.message) {
     return apiError.message; // Thai message from Backend ApiError.ts
   }
 
   // 2. toApiError format (from api.ts interceptor): { message }
-  if (error.message && typeof error.message === 'string') {
+  if (err.message && typeof err.message === 'string') {
     // Check if it's already a Thai message (from Backend)
-    if (/[\u0E00-\u0E7F]/.test(error.message)) {
-      return error.message;
+    if (/[\u0E00-\u0E7F]/.test(err.message)) {
+      return err.message;
     }
     
     // Network/timeout errors - provide Thai fallback
-    if (error.message.includes('Network Error') || error.code === 'ERR_NETWORK') {
+    if (err.message.includes('Network Error') || err.code === 'ERR_NETWORK') {
       return 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ กรุณาตรวจสอบอินเทอร์เน็ต';
     }
-    if (error.message.includes('timeout') || error.code === 'ECONNABORTED') {
+    if (err.message.includes('timeout') || err.code === 'ECONNABORTED') {
       return 'การเชื่อมต่อหมดเวลา กรุณาลองใหม่อีกครั้ง';
     }
     
     // Generic axios error pattern
-    if (error.message.includes('Request failed with status code')) {
-      const status = error.response?.status;
+    if (err.message.includes('Request failed with status code')) {
+      const status = err.response?.status;
       switch (status) {
         case 500:
           return 'เกิดข้อผิดพลาดจากเซิร์ฟเวอร์ กรุณาลองใหม่อีกครั้ง';
@@ -55,7 +58,7 @@ export const getErrorMessage = (error: any): string => {
   }
 
   // 3. Legacy format: { error: "string" }
-  const legacyError = error.response?.data?.error;
+  const legacyError = err.response?.data?.error;
   if (typeof legacyError === 'string') {
     // Check if it contains Thai already
     if (/[\u0E00-\u0E7F]/.test(legacyError)) {
@@ -70,7 +73,7 @@ export const getErrorMessage = (error: any): string => {
 /**
  * Helper to show standard alert for errors
  */
-export const showErrorMessage = (title: string, error: any) => {
+export const showErrorMessage = (title: string, error: unknown) => {
   const message = getErrorMessage(error);
   Logger.error(`${title}:`, error);
   Alert.alert(title, message);

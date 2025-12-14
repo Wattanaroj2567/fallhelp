@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { View, Text, TouchableOpacity, TouchableHighlight, Alert, ActivityIndicator, Image } from "react-native";
+import { View, Text, TouchableOpacity, Alert, ActivityIndicator } from "react-native";
 import { useRouter, useFocusEffect } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
 import { ScreenWrapper } from "@/components/ScreenWrapper";
@@ -8,6 +8,7 @@ import { getUserElders } from "@/services/userService";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { showErrorMessage } from "@/utils/errorHelper";
 import { unpairDevice } from "@/services/deviceService";
+import { LoadingScreen } from "@/components/LoadingScreen";
 import { Bounceable } from "@/components/Bounceable";
 
 // Helper function to format last seen time as relative
@@ -58,6 +59,7 @@ export default function DeviceDetails() {
         }, [queryClient])
     );
 
+
     // Unpair Mutation
     const unpairMutation = useMutation({
         mutationFn: async (deviceId: string) => {
@@ -68,7 +70,7 @@ export default function DeviceDetails() {
             queryClient.invalidateQueries({ queryKey: ["userElders"] });
             router.replace("/(tabs)");
         },
-        onError: (error: any) => {
+        onError: (error: unknown) => {
             showErrorMessage("เกิดข้อผิดพลาด", error);
         },
     });
@@ -99,13 +101,7 @@ export default function DeviceDetails() {
     };
 
     if (isLoading) {
-        return (
-            <ScreenWrapper edges={["top"]} style={{ backgroundColor: "#FDFDFD" }}>
-                <View className="flex-1 items-center justify-center">
-                    <ActivityIndicator size="large" color="#16AD78" />
-                </View>
-            </ScreenWrapper>
-        );
+        return <LoadingScreen useScreenWrapper={true} />;
     }
 
     // Determine device state for 3-color scheme

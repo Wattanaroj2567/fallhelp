@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
+import { LoadingScreen } from "@/components/LoadingScreen";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   updateContact,
@@ -94,15 +95,14 @@ export default function EditEmergencyContact() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["emergencyContacts"] });
-      queryClient.invalidateQueries({ queryKey: ["emergencyContact", id] });
-      Alert.alert("สำเร็จ", "อัปเดตข้อมูลเรียบร้อยแล้ว", [
+      Alert.alert("สำเร็จ", "แก้ไขเบอร์ติดต่อฉุกเฉินเรียบร้อยแล้ว", [
         {
           text: "ตกลง",
           onPress: () => router.back(),
         },
       ]);
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       Logger.error("Error updating contact:", error);
       showErrorMessage("ข้อผิดพลาด", error);
     },
@@ -136,16 +136,7 @@ export default function EditEmergencyContact() {
   };
 
   if (isLoading) {
-    return (
-      <ScreenWrapper edges={["top", "left", "right"]}>
-        <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#16AD78" />
-          <Text className="font-kanit text-gray-500 mt-4">
-            กำลังโหลดข้อมูล...
-          </Text>
-        </View>
-      </ScreenWrapper>
-    );
+    return <LoadingScreen useScreenWrapper={true} message="กำลังโหลดข้อมูล..." />;
   }
 
   // ==========================================

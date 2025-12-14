@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { Text, View, TouchableOpacity, Animated, Easing } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { ScreenWrapper } from "@/components/ScreenWrapper";
 import * as SecureStore from "expo-secure-store";
 import Logger from "@/utils/logger";
 
@@ -78,7 +78,11 @@ export default function SetupSuccess() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#059669' }}>
+    <ScreenWrapper
+      style={{ backgroundColor: '#059669' }}
+      edges={['top', 'left', 'right', 'bottom']}
+      useScrollView={false}
+    >
       <View className="flex-1 items-center justify-center px-6">
         {/* Success Icon with Animation */}
         <Animated.View
@@ -174,6 +178,6 @@ export default function SetupSuccess() {
           </View>
         </Animated.View>
       </View>
-    </SafeAreaView>
+    </ScreenWrapper>
   );
 }

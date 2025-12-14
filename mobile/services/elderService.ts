@@ -72,8 +72,8 @@ export async function updateElder(elderId: string, payload: UpdateElderPayload):
 
 export async function deactivateElder(elderId: string): Promise<Elder> {
   try {
-    const { data } = await apiClient.patch<Elder>(`/api/elders/${elderId}/deactivate`);
-    return data;
+    const response = await apiClient.patch<{ data: Elder; success: boolean }>(`/api/elders/${elderId}/deactivate`);
+    return response.data.data;
   } catch (error) {
     throw toApiError(error);
   }
@@ -98,8 +98,8 @@ export async function listMembers(elderId: string): Promise<Member[]> {
 
 export async function inviteMember(elderId: string, payload: InviteMemberPayload): Promise<Member> {
   try {
-    const { data } = await apiClient.post<Member>(`/api/elders/${elderId}/members`, payload);
-    return data;
+    const response = await apiClient.post<{ data: Member; success: boolean }>(`/api/elders/${elderId}/members`, payload);
+    return response.data.data;
   } catch (error) {
     throw toApiError(error);
   }

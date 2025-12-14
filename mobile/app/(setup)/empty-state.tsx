@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, Image, Dimensions, Alert, ActivityIndicator } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { ScreenWrapper } from "@/components/ScreenWrapper";
 import { useRouter } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
 import Animated, {
@@ -115,7 +115,10 @@ export default function SetupWelcome() {
   // Purpose: Render welcome screen
   // ==========================================
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <ScreenWrapper
+      useScrollView={false}
+      style={{ backgroundColor: 'white' }}
+    >
       <View className="flex-1 px-8 pt-10 pb-6 justify-between">
         {/* Top Content */}
         <View>
@@ -223,6 +226,6 @@ export default function SetupWelcome() {
           </Text>
         </Animated.View>
       </View>
-    </SafeAreaView>
+    </ScreenWrapper>
   );
 }

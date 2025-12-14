@@ -6,6 +6,7 @@ import {
   ViewStyle,
   TextStyle,
   Animated,
+  TextInput as NativeTextInput,
 } from "react-native";
 import { TextInput, useTheme } from "react-native-paper";
 
@@ -88,7 +89,7 @@ export const FloatingLabelInput: React.FC<FloatingLabelInputProps> = ({
   const displayLabel =
     typeof label === "string" ? label : "";
 
-  const inputRef = React.useRef<any>(null);
+  const inputRef = React.useRef<NativeTextInput>(null);
 
   return (
     <View style={[{ marginBottom: 16, marginTop: 4 }, containerStyle]}>

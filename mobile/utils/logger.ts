@@ -45,10 +45,14 @@ class Logger {
     }
   }
 
-  static error(message: string, error?: unknown) {
+  static error(message: string, error?: unknown, meta?: unknown) {
     const { prefix } = this.formatMessage('error', message, error);
     if (error) {
-      console.error(prefix, message, error);
+      if (meta) {
+        console.error(prefix, message, error, meta);
+      } else {
+        console.error(prefix, message, error);
+      }
     } else {
       console.error(prefix, message);
     }
