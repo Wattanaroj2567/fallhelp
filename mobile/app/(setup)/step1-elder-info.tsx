@@ -429,8 +429,8 @@ export default function Step1() {
       }
     >
       <View className="flex-1 mt-4">
-        {/* Form Card */}
-        <View className="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100 mb-6">
+        {/* Form Fields */}
+        <View className="mb-6">
           {/* Elder Name & Lastname */}
           <View className="flex-row gap-3">
             {/* First Name */}
@@ -534,8 +534,6 @@ export default function Step1() {
           style={{ marginBottom: 32 }}
         />
       </View>
-
-      }
-    </WizardLayout >
+    </WizardLayout>
   );
 }

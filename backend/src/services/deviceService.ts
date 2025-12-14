@@ -224,12 +224,18 @@ export const forceUnpairDevice = async (deviceId: string) => {
  */
 export const configureWiFi = async (
   userId: string,
-  deviceId: string,
+  deviceIdOrCode: string,
   ssid: string,
   password: string
 ) => {
-  const device = await prisma.device.findUnique({
-    where: { id: deviceId },
+  // Support both UUID (device.id) and deviceCode (8 chars)
+  // Check if it looks like a UUID (contains hyphens) or deviceCode (8 chars alphanumeric)
+  const isUuid = deviceIdOrCode.includes('-');
+  
+  const device = await prisma.device.findFirst({
+    where: isUuid 
+      ? { id: deviceIdOrCode }
+      : { deviceCode: deviceIdOrCode },
     include: { config: true },
   });
 
@@ -253,9 +259,9 @@ export const configureWiFi = async (
 
   // Update WiFi config
   const config = await prisma.deviceConfig.upsert({
-    where: { deviceId },
+    where: { deviceId: device.id },
     create: {
-      deviceId,
+      deviceId: device.id,
       ssid,
       wifiPassword: encrypt(password),
       wifiStatus: 'CONFIGURING',

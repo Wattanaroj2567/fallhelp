@@ -211,8 +211,8 @@ export default function Profile() {
         </View>
 
         {/* Profile Fields - Box with Border */}
-        <View className="bg-white rounded-[24px] shadow-lg shadow-black/15 android:elevation-10 mb-4">
-          <View className="rounded-[24px] overflow-hidden border border-gray-100">
+        <View className="bg-white rounded-[24px] shadow-sm border border-gray-100 mb-4">
+          <View className="rounded-[24px] overflow-hidden">
             {/* Name & Gender Group */}
             <Bounceable
               onPress={() => router.push('/(features)/(user)/(profile)/edit-info')}

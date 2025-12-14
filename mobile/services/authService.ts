@@ -1,4 +1,4 @@
-/**
+ /**
  * @fileoverview Authentication Service
  * @description Handles user authentication, registration, and password management
  */
@@ -70,17 +70,36 @@ export async function register(payload: RegisterPayload): Promise<AuthResponse> 
   }
 }
 
-export async function requestOtp(payload: RequestOtpPayload) {
+export type OtpResponse = {
+  message: string;
+  referenceCode: string;
+  expiresInMinutes: number;
+};
+
+export async function requestOtp(payload: RequestOtpPayload): Promise<OtpResponse> {
   try {
-    await apiClient.post('/api/auth/request-otp', payload);
+    const { data } = await apiClient.post<{ success: boolean; data: OtpResponse }>('/api/auth/request-otp', payload);
+    return data.data;
   } catch (error) {
     throw toApiError(error);
   }
 }
 
-export async function verifyOtp(payload: VerifyOtpPayload) {
+export type VerifyOtpResponse = {
+  valid: boolean;
+  message: string;
+};
+
+export async function verifyOtp(payload: VerifyOtpPayload): Promise<VerifyOtpResponse> {
   try {
-    await apiClient.post('/api/auth/verify-otp', payload);
+    const { data } = await apiClient.post<{ success: boolean; data: VerifyOtpResponse }>('/api/auth/verify-otp', payload);
+    
+    // Check if OTP is valid - throw error if not
+    if (!data.data.valid) {
+      throw new Error(data.data.message || 'รหัส OTP ไม่ถูกต้อง');
+    }
+    
+    return data.data;
   } catch (error) {
     throw toApiError(error);
   }

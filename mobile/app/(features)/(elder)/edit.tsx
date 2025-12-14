@@ -261,39 +261,40 @@ export default function EditElderInfo() {
       contentContainerStyle={{ paddingHorizontal: 24, flexGrow: 1 }}
       keyboardAvoiding
       scrollViewProps={{
-        bounces: false, // Match register.tsx: No elastic bounce
-        overScrollMode: "never", // Match register.tsx: No glow effect
+        bounces: false, // No elastic bounce
+        overScrollMode: "never", // No glow effect
+        scrollEnabled: true, // Allow scroll when needed
+        showsVerticalScrollIndicator: false, // Hide scroll bar for cleaner look
       }}
       scrollViewRef={scrollViewRef}
-      header={
-        <View>
-          <ScreenHeader
-            title={isReadOnly ? "ข้อมูลผู้สูงอายุ" : "แก้ไขข้อมูลผู้สูงอายุ"}
-            onBack={() => router.back()}
-          />
-          <View className="px-6 pb-2 bg-white">
-            {isReadOnly ? (
-              <View className="bg-yellow-50 rounded-2xl p-4 border border-yellow-100 flex-row items-center">
-                <MaterialIcons name="lock" size={20} color="#CA8A04" style={{ marginRight: 8 }} />
-                <Text className="font-kanit text-yellow-700 flex-1" style={{ fontSize: 14 }}>
-                  คุณอยู่ในสถานะ "ดูได้อย่างเดียว" ไม่สามารถแก้ไขข้อมูลได้ กรุณาติดต่อญาติผู้ดูแลหลักหากต้องการเปลี่ยนแปลง
-                </Text>
-              </View>
-            ) : (
-              <View className="bg-blue-50 rounded-2xl p-4">
-                <Text className="font-kanit text-blue-700" style={{ fontSize: 14 }}>
-                  ปรับข้อมูลผู้สูงอายุให้เป็นปัจจุบัน
-                  เพื่อช่วยให้การติดตามและแจ้งเตือนแม่นยำ
-                </Text>
-              </View>
-            )}
-          </View>
-        </View>
-      }
+      header={<ScreenHeader title="" onBack={() => router.back()} />}
     >
-      <View className="flex-1 pt-6">
+      <View className="flex-1">
+        {/* Header Text */}
+        <Text
+          className="font-kanit font-bold text-gray-900"
+          style={{ fontSize: 28, marginBottom: 8 }}
+        >
+          {isReadOnly ? "ข้อมูลผู้สูงอายุ" : "แก้ไขข้อมูลผู้สูงอายุ"}
+        </Text>
+        <Text
+          className="font-kanit text-gray-500"
+          style={{ fontSize: 15, marginBottom: 16 }}
+        >
+          {isReadOnly ? "ดูรายละเอียดข้อมูลผู้สูงอายุ" : "กรุณากรอกข้อมูลผู้สูงอายุที่ต้องการแก้ไข"}
+        </Text>
 
-        <View className="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100 mb-6" style={{ opacity: isReadOnly ? 0.8 : 1 }} pointerEvents={isReadOnly ? 'none' : 'auto'}>
+        {/* Read-only Warning */}
+        {isReadOnly && (
+          <View className="bg-yellow-50 rounded-2xl p-4 border border-yellow-100 flex-row items-center mb-4">
+            <MaterialIcons name="lock" size={20} color="#CA8A04" style={{ marginRight: 8 }} />
+            <Text className="font-kanit text-yellow-700 flex-1" style={{ fontSize: 14 }}>
+              คุณอยู่ในสถานะ "ดูได้อย่างเดียว" ไม่สามารถแก้ไขข้อมูลได้ กรุณาติดต่อญาติผู้ดูแลหลักหากต้องการเปลี่ยนแปลง
+            </Text>
+          </View>
+        )}
+
+        <View className="mb-6" style={{ opacity: isReadOnly ? 0.8 : 1 }} pointerEvents={isReadOnly ? 'none' : 'auto'}>
           {/* Elder Name & Lastname - FloatingLabelInput Match Register */}
           <View className="flex-row gap-3">
             {/* First Name */}

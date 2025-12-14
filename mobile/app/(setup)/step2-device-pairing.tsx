@@ -229,7 +229,7 @@ export default function Step2() {
             </View>
           )}
 
-          <View className="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100 mb-6">
+          <View className="mb-6">
             <View className="bg-blue-50 rounded-2xl p-4 mb-6">
               <Text
                 style={{ fontSize: 13 }}

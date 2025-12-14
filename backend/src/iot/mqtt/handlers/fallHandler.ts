@@ -18,8 +18,9 @@ export async function fallHandler(
     log('🚨 Fall detected for device %s: %O', deviceId, payload);
 
     // 1. Find device and paired elder
-    const device = await prisma.device.findUnique({
-      where: { deviceCode: deviceId },
+    // ESP32 sends serialNumber (e.g., ESP32-6C689BDAF380) not deviceCode (e.g., 8E5D02FB)
+    const device = await prisma.device.findFirst({
+      where: { serialNumber: deviceId },
       include: {
         elder: {
           select: {

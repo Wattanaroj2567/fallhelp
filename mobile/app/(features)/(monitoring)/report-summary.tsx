@@ -311,8 +311,8 @@ export default function ReportSummary() {
           ) : displaySummary ? (
             <>
               {/* Peak Time Card */}
-              <View className="bg-white rounded-[24px] shadow-lg shadow-black/15 android:elevation-10 mb-4">
-                <View className="rounded-[24px] overflow-hidden border border-gray-100 p-5 flex-row items-center">
+              <View className="bg-white rounded-[24px] border border-gray-100 mb-4">
+                <View className="rounded-[24px] overflow-hidden p-5 flex-row items-center">
                   <View className="w-14 h-14 rounded-2xl bg-teal-100 items-center justify-center mr-4">
                     <MaterialIcons name="schedule" size={28} color="#16AD78" />
                   </View>
@@ -328,8 +328,8 @@ export default function ReportSummary() {
               </View>
 
               {/* Fall Events Card */}
-              <View className="bg-white rounded-[24px] shadow-lg shadow-black/15 android:elevation-10 mb-4">
-                <View className="rounded-[24px] overflow-hidden border border-gray-100 p-5 flex-row items-center">
+              <View className="bg-white rounded-[24px] border border-gray-100 mb-4">
+                <View className="rounded-[24px] overflow-hidden p-5 flex-row items-center">
                   <View className="w-14 h-14 rounded-2xl bg-orange-100 items-center justify-center mr-4">
                     <MaterialIcons name="warning" size={28} color="#F97316" />
                   </View>
@@ -350,8 +350,8 @@ export default function ReportSummary() {
               </View>
 
               {/* Heart Rate Card */}
-              <View className="bg-white rounded-[24px] shadow-lg shadow-black/15 android:elevation-10 mb-4">
-                <View className="rounded-[24px] overflow-hidden border border-gray-100 p-5">
+              <View className="bg-white rounded-[24px] border border-gray-100 mb-4">
+                <View className="rounded-[24px] overflow-hidden p-5">
                   <View className="flex-row items-center mb-4">
                     <View className="w-14 h-14 rounded-2xl bg-rose-100 items-center justify-center mr-4">
                       <MaterialIcons name="favorite" size={28} color="#E11D48" />

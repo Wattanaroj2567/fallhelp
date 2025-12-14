@@ -105,25 +105,28 @@ export default function EditPhone() {
   return (
     <ScreenWrapper
       contentContainerStyle={{ paddingHorizontal: 24, flexGrow: 1 }}
-      useScrollView={false}
-      header={
-        <View style={{ backgroundColor: "#FFFFFF" }}>
-          <ScreenHeader title="แก้ไขเบอร์โทรศัพท์" onBack={() => router.back()} />
-          <View className="items-center pb-6 px-6 border-b border-gray-50">
-            <View className="w-16 h-16 bg-green-50 rounded-full items-center justify-center mb-3 border border-green-100">
-              <MaterialIcons name="phone-iphone" size={32} color="#16AD78" />
-            </View>
-            <Text
-              style={{ fontSize: 13, lineHeight: 20 }}
-              className="font-kanit text-gray-500 text-center px-4"
-            >
-              กรุณากรอกเบอร์โทรศัพท์ของคุณ (10 หลัก)
-            </Text>
-          </View>
-        </View>
-      }
+      keyboardAvoiding
+      scrollViewProps={{
+        bounces: false,
+        overScrollMode: "never",
+      }}
+      header={<ScreenHeader title="" onBack={() => router.back()} />}
     >
-      <View className="flex-1 pt-6 px-4">
+      <View className="flex-1">
+        {/* Header Text */}
+        <Text
+          className="font-kanit font-bold text-gray-900"
+          style={{ fontSize: 28, marginBottom: 8 }}
+        >
+          แก้ไขเบอร์โทรศัพท์
+        </Text>
+        <Text
+          className="font-kanit text-gray-500"
+          style={{ fontSize: 15, marginBottom: 24 }}
+        >
+          กรุณากรอกเบอร์โทรศัพท์ของคุณ (10 หลัก)
+        </Text>
+
         {/* Phone Input */}
         <View>
           <FloatingLabelInput

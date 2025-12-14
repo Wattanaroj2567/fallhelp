@@ -17,6 +17,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.8.0] - 2025-12-14
+
+### Added
+
+- **ESP32 Captive Portal WiFi Setup**
+
+  - Open AP (ไม่ต้องใส่รหัสผ่าน) สำหรับ Captive Portal
+  - Mobile-style Web UI (Kanit font, FallHelp สีเขียว)
+  - Connection Testing - ทดสอบเชื่อมต่อ WiFi จริงก่อนบันทึก (~10 วินาที)
+  - Success/Error HTML pages แทน JSON response
+  - Loading indicator พร้อมข้อความแจ้งล่วงหน้า
+
+- **Device Status Sync**
+  - MQTT Last Will Testament สำหรับ offline detection อัตโนมัติ
+  - "ออนไลน์ล่าสุด" display บนหน้า Device Details
+  - `formatLastSeen` helper function (แสดงเวลาแบบ relative)
+
+### Changed
+
+- **Mobile App**
+
+  - `useFocusEffect` ใน `index.tsx` ใช้ `invalidateQueries` แทน `refetch`
+  - `details.tsx` เพิ่ม `refetchInterval: 30s` สำหรับ real-time status
+  - ปรับข้อความ UI: "ตั้งค่า WiFi" และ "เปลี่ยน WiFi หรือตั้งค่าใหม่"
+
+- **Backend**
+
+  - Notification message ใหม่: "อาจเกิดจาก: WiFi หลุด, แบตหมด หรือปิดเครื่อง"
+
+- **Documentation**
+  - อัปเดต `docs/guides/DEVICE_PAIRING_FLOW.md` (Captive Portal flow)
+  - อัปเดต `arduino/README.md` (Open AP, Last Will)
+
+### Fixed
+
+- API Timeout error ใช้ `Logger.warn` แทน `Logger.error` (ไม่แสดง popup)
+
+---
+
 ## [1.7.0] - 2025-12-14
 
 ### Added

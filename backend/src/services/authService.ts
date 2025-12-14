@@ -10,7 +10,20 @@ import prisma from '../prisma.js';
 
 const log = createDebug('fallhelp:auth');
 
-const OTP_EXPIRY_MINUTES = 10;
+const OTP_EXPIRY_MINUTES = 5; // 5 minutes as shown in UI
+
+/**
+ * Generate 4-character reference code for OTP (e.g., "XPQL")
+ * Used for user to verify OTP is from our system
+ */
+const generateReferenceCode = (): string => {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  let result = '';
+  for (let i = 0; i < 4; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+};
 
 // ==========================================
 // ⚙️ LAYER: Business Logic (Service)
@@ -140,7 +153,7 @@ export const requestOtp = async (
   email: string,
   purpose: 'PASSWORD_RESET' | 'EMAIL_VERIFICATION' | 'PHONE_VERIFICATION',
   allowedRole: 'CAREGIVER' | 'ADMIN' | 'ALL' = 'CAREGIVER' // Default: only CAREGIVER for mobile app
-): Promise<{ message: string }> => {
+): Promise<{ message: string; referenceCode: string; expiresInMinutes: number }> => {
   // Check if user exists
   const user = await prisma.user.findUnique({
     where: { email },
@@ -155,8 +168,9 @@ export const requestOtp = async (
     throw new Error(`ไม่สามารถใช้ฟังก์ชันนี้กับบัญชีประเภท ${user.role === 'ADMIN' ? 'ผู้ดูแลระบบ' : 'ผู้ดูแล'} ได้`);
   }
 
-  // Generate OTP
+  // Generate OTP and reference code
   const code = generateOtp();
+  const referenceCode = generateReferenceCode();
   const expiresAt = addMinutes(OTP_EXPIRY_MINUTES);
 
   // Delete existing unused OTPs for this user and purpose
@@ -180,8 +194,8 @@ export const requestOtp = async (
 
   // Send OTP via email
   try {
-    await sendOtpEmail(email, code, purpose);
-    log('OTP sent to %s for %s', email, purpose);
+    await sendOtpEmail(email, code, purpose, referenceCode);
+    log('OTP sent to %s for %s (ref: %s)', email, purpose, referenceCode);
   } catch (error) {
     log('Failed to send OTP email: %O', error);
     // Still log to console for development if email fails
@@ -190,6 +204,8 @@ export const requestOtp = async (
 
   return {
     message: `OTP sent to ${email}`,
+    referenceCode,
+    expiresInMinutes: OTP_EXPIRY_MINUTES,
   };
 };
 

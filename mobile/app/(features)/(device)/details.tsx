@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { View, Text, TouchableOpacity, TouchableHighlight, Alert, ActivityIndicator, Image } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
 import { ScreenWrapper } from "@/components/ScreenWrapper";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -9,21 +9,53 @@ import { ScreenHeader } from "@/components/ScreenHeader";
 import { unpairDevice } from "@/services/deviceService";
 import { Bounceable } from "@/components/Bounceable";
 
+// Helper function to format last seen time as relative
+const formatLastSeen = (dateString: string | Date): string => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffMins < 1) return "เมื่อสักครู่";
+    if (diffMins < 60) return `${diffMins} นาทีที่แล้ว`;
+    if (diffHours < 24) return `${diffHours} ชั่วโมงที่แล้ว`;
+    if (diffDays < 7) return `${diffDays} วันที่แล้ว`;
+    
+    // Format as date for older entries
+    return date.toLocaleDateString('th-TH', { 
+        day: 'numeric', 
+        month: 'short',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+};
+
 export default function DeviceDetails() {
     const router = useRouter();
     const queryClient = useQueryClient();
 
-    // Fetch Elder & Device Data
-    const { data: elderInfo, isLoading } = useQuery({
+    // Fetch Elder & Device Data with auto-refresh every 30 seconds
+    const { data: elderInfo, isLoading, refetch } = useQuery({
         queryKey: ["userElders"],
         queryFn: async () => {
             const elders = await getUserElders();
             return elders && elders.length > 0 ? elders[0] : null;
         },
+        refetchInterval: 30000, // Refetch every 30 seconds for device status updates
+        staleTime: 10000, // Consider data stale after 10 seconds
     });
 
     const device = elderInfo?.device;
     const isReadOnly = elderInfo?.accessLevel === 'VIEWER';
+
+    // Refetch when screen is focused (e.g., when navigating back)
+    useFocusEffect(
+        useCallback(() => {
+            queryClient.invalidateQueries({ queryKey: ["userElders"] });
+        }, [queryClient])
+    );
 
     // Unpair Mutation
     const unpairMutation = useMutation({
@@ -131,9 +163,9 @@ export default function DeviceDetails() {
                     </View>
                 )}
 
-                {/* Device Info Card (Featured) - Unified for all states */}
-                <View className="bg-white rounded-[32px] shadow-lg shadow-black/15 android:elevation-10 mb-8">
-                    <View className="rounded-[32px] overflow-hidden border border-gray-100 p-8 items-center relative">
+                {/* Device Info Card (Featured) */}
+                <View className="bg-white rounded-[24px] shadow-sm border border-gray-100 mb-8">
+                    <View className="rounded-[24px] overflow-hidden p-8 items-center relative">
                         <View className={`absolute top-0 left-0 w-full h-2 bg-linear-to-r from-blue-400 to-teal-400 ${colors.gradientOpacity}`} />
 
                         {hasDevice ? (
@@ -145,11 +177,19 @@ export default function DeviceDetails() {
                                     {device.deviceCode}
                                 </Text>
 
-                                <View className={`px-4 py-1.5 rounded-full mb-8 ${colors.badgeBg}`}>
+                                <View className={`px-4 py-1.5 rounded-full mb-2 ${colors.badgeBg}`}>
                                     <Text className={`text-sm font-kanit font-bold ${colors.badgeText}`}>
                                         {isOnline ? '● ออนไลน์' : '● ออฟไลน์'}
                                     </Text>
                                 </View>
+                                
+                                {/* Last Seen - Show for offline devices */}
+                                {!isOnline && device?.lastOnline && (
+                                    <Text className="text-xs font-kanit text-gray-400 mb-6">
+                                        ออนไลน์ล่าสุด: {formatLastSeen(device.lastOnline)}
+                                    </Text>
+                                )}
+                                {isOnline && <View className="mb-6" />}
 
                                 <View className="w-full h-[1px] bg-gray-100 mb-6" />
 
@@ -206,9 +246,9 @@ export default function DeviceDetails() {
                             การจัดการ
                         </Text>
 
-                        {/* Card Container - Like settings.tsx */}
-                        <View className="bg-white rounded-[24px] shadow-lg shadow-black/15 android:elevation-10">
-                            <View className="rounded-[24px] overflow-hidden border border-gray-100">
+                        {/* Card Container */}
+                        <View className="bg-white rounded-[24px] shadow-sm border border-gray-100">
+                            <View className="rounded-[24px] overflow-hidden">
                                 {/* Repair */}
                                 <Bounceable
                                     onPress={() => router.push("/(features)/(device)/repair")}
@@ -248,10 +288,10 @@ export default function DeviceDetails() {
                                             </View>
                                             <View className="flex-1">
                                                 <Text style={{ fontSize: 16, fontWeight: "500" }} className="font-kanit text-gray-900">
-                                                    ตั้งค่า Wi-Fi
+                                                    ตั้งค่า WiFi
                                                 </Text>
                                                 <Text style={{ fontSize: 12 }} className="font-kanit text-gray-400">
-                                                    แก้ไขการเชื่อมต่อเครือข่าย
+                                                    เปลี่ยน WiFi หรือตั้งค่าใหม่
                                                 </Text>
                                             </View>
                                         </View>

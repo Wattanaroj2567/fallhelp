@@ -32,7 +32,7 @@
 
 ### Prerequisites
 
-- Node.js 18+
+- Node.js v24.11.1
 - PostgreSQL with TimescaleDB
 - MQTT Broker (Mosquitto - optional)
 - Expo CLI

@@ -174,68 +174,64 @@ export default function DevicePairing() {
   if (showManualEntry) {
     return (
       <ScreenWrapper
-        contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 100, flexGrow: 1 }}
-        scrollViewProps={{ bounces: false }}
-        header={<ScreenHeader title="เชื่อมต่ออุปกรณ์" onBack={handleBack} />}
+        contentContainerStyle={{ paddingHorizontal: 24, flexGrow: 1 }}
+        keyboardAvoiding
+        useScrollView={false}
+        header={<ScreenHeader title="" onBack={handleBack} />}
       >
-        <View className="flex-1 pt-6">
-          <View className="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100 mb-6">
-            {/* Info Block inside Card */}
-            <View className="bg-blue-50 rounded-2xl p-4 mb-6">
-              <Text
-                style={{ fontSize: 13 }}
-                className="font-kanit text-blue-700 mb-1"
-              >
-                กรุณากรอกรหัสอุปกรณ์ 8 หลัก
-              </Text>
-              <Text
-                style={{ fontSize: 13 }}
-                className="font-kanit text-blue-700"
-              >
-                ที่ติดบนสติ๊กเกอร์ของอุปกรณ์
-              </Text>
-              <Text
-                style={{ fontSize: 13, fontWeight: "600" }}
-                className="font-kanit text-blue-900 mt-2"
-              >
-                ตัวอย่าง: 832CE051
-              </Text>
-            </View>
+        <View className="flex-1">
+          {/* Header Text */}
+          <Text
+            className="font-kanit font-bold text-gray-900"
+            style={{ fontSize: 28, marginBottom: 8 }}
+          >
+            กรอกรหัสอุปกรณ์
+          </Text>
+          <Text
+            className="font-kanit text-gray-500"
+            style={{ fontSize: 15, marginBottom: 24 }}
+          >
+            กรุณากรอกรหัสอุปกรณ์ 8 หลักที่ติดบนสติ๊กเกอร์ของอุปกรณ์
+          </Text>
 
-            {/* Icon */}
-            <View className="items-center mb-6">
-              <View className="w-24 h-24 rounded-full bg-gray-50 items-center justify-center border border-gray-100">
-                <Ionicons
-                  name="hardware-chip-outline"
-                  size={48}
-                  color="#16AD78"
-                />
-              </View>
-            </View>
+          {/* Example */}
+          <View className="bg-gray-50 rounded-2xl p-4 mb-6 border border-gray-100">
+            <Text
+              style={{ fontSize: 13 }}
+              className="font-kanit text-gray-500"
+            >
+              ตัวอย่างรหัสอุปกรณ์:
+            </Text>
+            <Text
+              style={{ fontSize: 18, fontWeight: "600", letterSpacing: 2 }}
+              className="font-kanit text-gray-800 mt-1"
+            >
+              832CE051
+            </Text>
+          </View>
 
-            {/* Input */}
-            <View className="mb-2">
-              <FloatingLabelInput
-                label="รหัสอุปกรณ์ (Device Code)"
-                value={macAddress}
-                onChangeText={(text) =>
-                  setMacAddress(
-                    text
-                      .toUpperCase()
-                      .replace(/[^A-Z0-9]/g, "")
-                      .slice(0, 8)
-                  )
-                }
-                autoCapitalize="characters"
-                maxLength={8}
-              />
-            </View>
+          {/* Input */}
+          <View className="mb-6">
+            <FloatingLabelInput
+              label="รหัสอุปกรณ์ (Device Code)"
+              value={macAddress}
+              onChangeText={(text) =>
+                setMacAddress(
+                  text
+                    .toUpperCase()
+                    .replace(/[^A-Z0-9]/g, "")
+                    .slice(0, 8)
+                )
+              }
+              autoCapitalize="characters"
+              maxLength={8}
+            />
           </View>
 
           <TouchableOpacity
             onPress={handleManualPairing}
             disabled={pairMutation.isPending}
-            className="bg-[#16AD78] rounded-2xl py-4 items-center mb-4 shadow-sm"
+            className="bg-[#16AD78] rounded-2xl py-4 items-center shadow-sm"
             style={{ opacity: pairMutation.isPending ? 0.6 : 1 }}
           >
             {pairMutation.isPending ? (

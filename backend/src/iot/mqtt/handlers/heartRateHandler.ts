@@ -18,8 +18,9 @@ export async function heartRateHandler(
     log('💓 Heart rate reading for device %s: %d BPM', deviceId, payload.heartRate);
 
     // 1. Find device and paired elder
-    const device = await prisma.device.findUnique({
-      where: { deviceCode: deviceId },
+    // ESP32 sends serialNumber (e.g., ESP32-6C689BDAF380) not deviceCode (e.g., 8E5D02FB)
+    const device = await prisma.device.findFirst({
+      where: { serialNumber: deviceId },
       include: {
         elder: {
           select: { id: true, firstName: true, lastName: true },

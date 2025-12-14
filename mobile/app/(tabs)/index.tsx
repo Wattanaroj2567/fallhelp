@@ -98,14 +98,12 @@ export default function Home() {
   // Refetch data when screen is focused
   useFocusEffect(
     React.useCallback(() => {
-      // Force refetch active queries to ensure UI is in sync
-      refetch();
-      refetchUserProfile();
-
-      // Also invalidate others just in case
+      // Invalidate ALL queries to force fresh data (especially device status)
+      queryClient.invalidateQueries({ queryKey: ["userElders"] });
+      queryClient.invalidateQueries({ queryKey: ["userProfile"] });
       queryClient.invalidateQueries({ queryKey: ["initialEvents"] });
       queryClient.invalidateQueries({ queryKey: ["unreadCount"] });
-    }, [refetch, refetchUserProfile, queryClient])
+    }, [queryClient])
   );
 
   // 2. Fetch Initial Events (for initial state before socket updates)
@@ -637,24 +635,27 @@ export default function Home() {
                   />
                 </Bounceable>
               </View>
-
-              {/* Emergency Call Button - Docked to Bottom */}
-
-              <Bounceable
-                onPress={() => router.push("/(features)/(emergency)/call")}
-                className="bg-[#FF4B4B] rounded-[24px] p-5 flex-row justify-center items-center shadow-lg shadow-red-200 mt-10"
-                scale={0.97}
-              >
-                <View className="bg-white/20 p-2 rounded-full mr-3">
-                  <MaterialIcons name="phone-in-talk" size={24} color="white" />
-                </View>
-                <Text className="text-white font-kanit font-bold text-xl">
-                  โทรฉุกเฉิน
-                </Text>
-              </Bounceable>
             </>
           ) : null}
         </View>
+
+        {/* Emergency Call Button - Fixed at Bottom */}
+        {elderInfo && (
+          <View className="px-5 pb-0">
+            <Bounceable
+              onPress={() => router.push("/(features)/(emergency)/call")}
+              className="bg-[#FF4B4B] rounded-t-[35px] rounded-b-none p-5 flex-row justify-center items-center shadow-lg shadow-red-200"
+              scale={0.97}
+            >
+              <View className="bg-white/20 p-2 rounded-full mr-3">
+                <MaterialIcons name="phone-in-talk" size={24} color="white" />
+              </View>
+              <Text className="text-white font-kanit font-bold text-xl">
+                โทรฉุกเฉิน
+              </Text>
+            </Bounceable>
+          </View>
+        )}
       </ScreenWrapper>
       <NotificationModal
         visible={showNotifications}

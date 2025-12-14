@@ -6,7 +6,7 @@
 arduino/
 ├── README.md
 └── fallhelp_esp32/
-    └── fallhelp_esp32.ino  ← Firmware หลัก (AP Mode + WiFi Config)
+    └── fallhelp_esp32.ino  ← Firmware หลัก (Captive Portal + WiFi Config)
 ```
 
 ## 🔄 Flow การใช้งาน
@@ -17,17 +17,17 @@ arduino/
 │   1. Upload fallhelp_esp32.ino ไปยัง ESP32                            │
 │   2. เปิด Serial Monitor (115200)                                     │
 │   3. ดู Serial Number เช่น "ESP32-XXXXXXXXXXXX"                       │
-│   4. ESP32 จะเปิด AP Mode: "FallHelp-XXXXXX"                          │
+│   4. ESP32 จะเปิด AP Mode: "FallHelp-XXXXXX" (ไม่มีรหัสผ่าน)          │
 ├────────────────────────────────────────────────────────────────────────┤
 │ Step 2: Admin สร้างอุปกรณ์                                             │
 │   Admin Panel → Devices → Create → ใส่ Serial Number ของ ESP32        │
 ├────────────────────────────────────────────────────────────────────────┤
-│ Step 3: ตั้งค่า WiFi ผ่าน Mobile App                                   │
-│   1. Mobile เชื่อม WiFi ของ ESP32 (pass: fallhelp123)                 │
-│   2. Mobile ส่ง HTTP POST ไป http://192.168.4.1/wifi-config           │
-│      Body: { "ssid": "WiFi", "password": "xxx", "mqtt": "192.168.1.x" }│
-│   3. ESP32 restart → เชื่อม WiFi บ้าน → MQTT                          │
-│      → ส่งสถานะ ONLINE → Backend ส่ง Push Notification "Device Online" │
+│ Step 3: ตั้งค่า WiFi ผ่าน Captive Portal                              │
+│   1. เชื่อม WiFi "FallHelp-XXXXXX" (ไม่มีรหัสผ่าน)                    │
+│   2. Captive Portal จะเปิดอัตโนมัติ (หรือไป 192.168.4.1)               │
+│   3. กรอกชื่อ WiFi + รหัสผ่าน → กดบันทึก                              │
+│   4. ESP32 ทดสอบเชื่อมต่อ (~10วินาที) → แสดงผลสำเร็จ/ล้มเหลว          │
+│   5. ESP32 restart → เชื่อม WiFi → MQTT → Online!                    │
 ├────────────────────────────────────────────────────────────────────────┤
 │ Step 4: ทดสอบ Sensor Events (จำลอง)                                    │
 │   พิมพ์ใน Serial Monitor: fall, hr low/normal/high, status            │
@@ -49,45 +49,47 @@ arduino/
 1. **PubSubClient** by Nick O'Leary
 2. **ArduinoJson** by Benoit Blanchon
 
-> Built-in: WiFi, WebServer, Preferences, Wire
+> Built-in: WiFi, WebServer, DNSServer, Preferences
 
 ## ⚙️ Configuration
 
-**ไม่มี hardcode config!** ทุกอย่างรับจาก Mobile App ตอนตั้งค่า:
+**Pre-configured:**
 
-- Serial Number → สร้างอัตโนมัติจาก ESP32 Chip ID
-- WiFi SSID/Password → รับจาก Mobile App
-- MQTT Server IP → รับจาก Mobile App
+| Setting     | Value           |
+| ----------- | --------------- |
+| MQTT Server | 192.168.1.102   |
+| MQTT Port   | 1883            |
+| AP SSID     | FallHelp-XXXXXX |
+| AP Password | ไม่มี (Open)    |
+
+**รับจากผู้ใช้ผ่าน Captive Portal:**
+
+- WiFi SSID
+- WiFi Password
 
 ## 🎮 Serial Commands
 
-| Command     | Description       |
-| ----------- | ----------------- |
-| `fall`      | จำลองการล้ม       |
-| `hr low`    | จำลอง HR ต่ำ      |
-| `hr normal` | จำลอง HR ปกติ     |
-| `hr high`   | จำลอง HR สูง      |
-| `status`    | ส่งสถานะอุปกรณ์   |
-| `reset`     | ล้าง config       |
-| `info`      | แสดงข้อมูลอุปกรณ์ |
+| Command | Description       |
+| ------- | ----------------- |
+| `reset` | ล้าง WiFi config  |
+| `info`  | แสดงข้อมูลอุปกรณ์ |
 
-## 📡 AP Mode WiFi Config API
+## 📡 Captive Portal Endpoints
 
-| Endpoint       | Method | Body                                             |
-| -------------- | ------ | ------------------------------------------------ |
-| `/wifi-config` | POST   | `{"ssid":"...", "password":"...", "mqtt":"..."}` |
-| `/status`      | GET    | -                                                |
-| `/reset`       | POST   | -                                                |
+| Endpoint       | Method | Description                    |
+| -------------- | ------ | ------------------------------ |
+| `/`            | GET    | หน้าตั้งค่า WiFi (Mobile UI)   |
+| `/wifi-config` | POST   | รับ ssid, password (Form POST) |
+| `/status`      | GET    | สถานะการเชื่อมต่อ              |
+| `/reset`       | POST   | ล้าง config + restart          |
 
-**POST /wifi-config Body:**
+## ✨ Features
 
-```json
-{
-  "ssid": "Home_WiFi",
-  "password": "wifi_password",
-  "mqtt": "192.168.1.100"
-}
-```
+- **Open AP** - ไม่ต้องใช้รหัสผ่าน เชื่อมต่อง่าย
+- **Captive Portal** - เปิดหน้าตั้งค่าอัตโนมัติ
+- **Connection Testing** - ทดสอบ WiFi ก่อนบันทึก
+- **Mobile-style UI** - หน้าเว็บสวยงาม (Kanit font, สี FallHelp)
+- **MQTT Last Will** - แจ้ง Offline อัตโนมัติเมื่อ disconnect
 
 ## 🚀 Quick Start
 
@@ -98,10 +100,9 @@ arduino/
 5. Upload (→)
 6. เปิด Serial Monitor (115200) → ดู Serial Number
 7. Admin สร้างอุปกรณ์ด้วย Serial Number
-8. Mobile App ตั้งค่า WiFi + MQTT Server
-9. พิมพ์ `fall` หรือ `hr normal` เพื่อทดสอบ (จะมีการแจ้งเตือนไปที่ Mobile App)
+8. เชื่อม WiFi "FallHelp-XXXXXX" → ตั้งค่าผ่าน Captive Portal
 
 ---
 
-**Last Updated:** December 5, 2025
-**Status:** Firmware Stable & Production Ready
+**Last Updated:** December 14, 2025
+**Status:** Firmware v5.0 - Captive Portal Ready

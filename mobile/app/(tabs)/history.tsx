@@ -248,10 +248,10 @@ export default function HistoryScreen() {
         />
       }
     >
-      <View className="flex-1 px-4 pt-4">
-        {/* Navigation & Filter Card - Matches Settings Section */}
-        <View className="bg-white rounded-[24px] shadow-lg shadow-black/15 android:elevation-10 mb-4">
-          <View className="rounded-[24px] overflow-hidden border border-gray-100">
+      <View className="flex-1 px-6 pt-4">
+        {/* Navigation & Filter Card */}
+        <View className="bg-white rounded-[24px] shadow-sm border border-gray-100 mb-4">
+          <View className="rounded-[24px] overflow-hidden">
             {/* Report Summary Link */}
             <Bounceable
               className="p-5 border-b border-gray-100 active:bg-gray-50"
@@ -272,7 +272,7 @@ export default function HistoryScreen() {
                       ดูรายงานสรุปประจำเดือน
                     </Text>
                     <Text style={{ fontSize: 12 }} className="font-kanit text-gray-400">
-                      สรุปสถิติเหตุการณ์แต่ละเดือน
+                      สรุปเหตุการณ์แต่ละเดือน
                     </Text>
                   </View>
                 </View>

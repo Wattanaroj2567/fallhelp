@@ -77,9 +77,12 @@ export const unpairDevice = asyncHandler(async (req: Request, res: Response) => 
 export const configureWiFi = asyncHandler(async (req: Request, res: Response) => {
   const userId = req.user!.userId;
   const { id } = req.params;
-  const { ssid, password } = req.body;
+  const { ssid, password, wifiPassword } = req.body;
+  
+  // Support both 'password' and 'wifiPassword' field names
+  const finalPassword = password || wifiPassword;
 
-  const result = await deviceService.configureWiFi(userId, id, ssid, password);
+  const result = await deviceService.configureWiFi(userId, id, ssid, finalPassword);
 
   res.json({
     success: true,

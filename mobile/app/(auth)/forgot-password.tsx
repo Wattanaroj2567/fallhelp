@@ -40,15 +40,19 @@ export default function ForgotPasswordScreen() {
     mutationFn: async () => {
       return await requestOtp({ email, purpose: "PASSWORD_RESET" });
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       Alert.alert("ส่งรหัสสำเร็จ", `รหัส OTP ถูกส่งไปยัง ${email} แล้ว`, [
         {
           text: "ตกลง",
           onPress: () => {
-            // ส่ง email ไปยังหน้าถัดไปเพื่อใช้ verify
+            // ส่ง email และ referenceCode ไปยังหน้าถัดไปเพื่อใช้ verify
             router.push({
               pathname: "/(auth)/verify-otp",
-              params: { email },
+              params: {
+                email,
+                referenceCode: data.referenceCode,
+                expiresInMinutes: String(data.expiresInMinutes),
+              },
             });
           },
         },
@@ -95,50 +99,53 @@ export default function ForgotPasswordScreen() {
         flexGrow: 1,
       }}
       scrollViewProps={{ bounces: false }}
-      header={<ScreenHeader title="ลืมรหัสผ่าน" onBack={router.back} />}
+      header={<ScreenHeader title="" onBack={router.back} />}
     >
-      <View>
-        {/* Description Section */}
+      <View className="flex-1">
+        {/* Header Text */}
         <Text
-          className="font-kanit"
-          style={{ fontSize: 14, color: "#6B7280", marginBottom: 32 }}
+          className="font-kanit font-bold text-gray-900"
+          style={{ fontSize: 28, marginBottom: 8 }}
+        >
+          ลืมรหัสผ่าน
+        </Text>
+        <Text
+          className="font-kanit text-gray-500"
+          style={{ fontSize: 15, marginBottom: 24 }}
         >
           กรุณากรอกอีเมลที่คุณใช้ลงทะเบียน{"\n"}
           ระบบจะส่งรหัส OTP 6 หลักไปยังอีเมลคุณ
         </Text>
 
-        {/* Form Section */}
-        <View className="w-full max-w-md mx-auto">
-          {/* Card for Inputs */}
-          <View className="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100 mb-6">
-            <FloatingLabelInput
-              testID="email-input"
-              label="อีเมล"
-              value={email}
-              onChangeText={(text) => {
-                setEmail(text);
-                if (/[ก-๙]/.test(text)) {
-                  setEmailError("กรุณากรอกอีเมลเป็นภาษาอังกฤษ");
-                } else {
-                  setEmailError("");
-                }
-              }}
-              error={emailError}
-              autoCapitalize="none"
-              keyboardType="email-address"
-              accentColor={BUTTON_COLOR}
-            />
-          </View>
-
-          {/* Submit Button */}
-          <PrimaryButton
-            testID="send-otp-button"
-            title="ส่งรหัส OTP"
-            onPress={handleSendOtp}
-            loading={requestOtpMutation.isPending}
-            style={{ backgroundColor: BUTTON_COLOR }}
+        {/* Form Fields */}
+        <View className="mb-6">
+          <FloatingLabelInput
+            testID="email-input"
+            label="อีเมล"
+            value={email}
+            onChangeText={(text) => {
+              setEmail(text);
+              if (/[ก-๙]/.test(text)) {
+                setEmailError("กรุณากรอกอีเมลเป็นภาษาอังกฤษ");
+              } else {
+                setEmailError("");
+              }
+            }}
+            error={emailError}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            accentColor={BUTTON_COLOR}
           />
         </View>
+
+        {/* Submit Button */}
+        <PrimaryButton
+          testID="send-otp-button"
+          title="ส่งรหัส OTP"
+          onPress={handleSendOtp}
+          loading={requestOtpMutation.isPending}
+          style={{ backgroundColor: BUTTON_COLOR }}
+        />
       </View>
     </ScreenWrapper>
   );

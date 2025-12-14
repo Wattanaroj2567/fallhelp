@@ -112,39 +112,28 @@ export default function InviteMember() {
   // ==========================================
   return (
     <ScreenWrapper
-      contentContainerStyle={{ paddingBottom: 40, flexGrow: 1 }}
-      scrollViewProps={{ bounces: false }}
-      header={
-        <View style={{ backgroundColor: "#FFFFFF" }}>
-          <ScreenHeader title="เชิญสมาชิก" onBack={() => router.back()} />
-          <View className="px-6 pb-4 border-b border-gray-50">
-            {/* Icon */}
-            <View className="items-center mb-4">
-              <View className="w-16 h-16 rounded-full bg-green-100 items-center justify-center">
-                <MaterialIcons name="person-add" size={32} color="#16AD78" />
-              </View>
-            </View>
-
-            {/* Info Text */}
-            <View className="bg-blue-50 rounded-2xl p-4">
-              <Text
-                style={{ fontSize: 15, fontWeight: "500" }}
-                className="font-kanit text-blue-700 mb-1"
-              >
-                กรุณากรอกอีเมลผู้ใช้ที่คุณต้องการเชิญ
-              </Text>
-              <Text style={{ fontSize: 13 }} className="font-kanit text-blue-600">
-                สมาชิกใหม่จะได้รับสิทธิ์ "ดูได้อย่างเดียว" เป็นค่าเริ่มต้น คุณสามารถปรับเปลี่ยนสิทธิ์ให้ช่วยแก้ไขข้อมูลได้ในภายหลัง
-              </Text>
-            </View>
-          </View>
-        </View>
-      }
+      contentContainerStyle={{ paddingHorizontal: 24, flexGrow: 1 }}
+      keyboardAvoiding
+      useScrollView={false}
+      header={<ScreenHeader title="" onBack={() => router.back()} />}
     >
-      <View className="flex-1 pt-6">
+      <View className="flex-1">
+        {/* Header Text */}
+        <Text
+          className="font-kanit font-bold text-gray-900"
+          style={{ fontSize: 28, marginBottom: 8 }}
+        >
+          เชิญสมาชิก
+        </Text>
+        <Text
+          className="font-kanit text-gray-500"
+          style={{ fontSize: 15, marginBottom: 24 }}
+        >
+          กรุณากรอกอีเมลผู้ใช้ที่คุณต้องการเชิญ
+        </Text>
 
-        {/* Email Input Card */}
-        <View className="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100 mb-6">
+        {/* Email Input */}
+        <View className="mb-6">
           <View>
             <FloatingLabelInput
               label="อีเมล"

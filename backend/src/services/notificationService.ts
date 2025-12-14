@@ -283,8 +283,8 @@ export const notifyDeviceOffline = async (elderId: string, eventId: string, even
       eventId,
       eventTimestamp,
       type: 'DEVICE_OFFLINE',
-      title: '📱 อุปกรณ์ขาดการเชื่อมต่อ',
-      message: `อุปกรณ์ของ ${elderName} ออฟไลน์`,
+      title: '📱 อุปกรณ์หลุดการเชื่อมต่อ',
+      message: `อุปกรณ์ของ ${elderName} ออฟไลน์ อาจเกิดจาก: WiFi หลุด, แบตหมด หรือปิดเครื่อง`,
       pushToken: caregiver.user.pushToken || undefined,
     })
   );

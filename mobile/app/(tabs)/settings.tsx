@@ -165,10 +165,10 @@ export default function SettingsScreen() {
       style={{ backgroundColor: "#FFFFFF" }}
       header={<ScreenHeader title="ตั้งค่า" />}
     >
-      <View className="flex-1 px-4 pt-4">
-        {/* Settings Section - 3D Card Fix: Stronger Shadow */}
-        <View className="bg-white rounded-[24px] shadow-lg shadow-black/15 android:elevation-10">
-          <View className="rounded-[24px] overflow-hidden border border-gray-100">
+      <View className="flex-1 pt-4">
+        {/* Settings Section */}
+        <View className="bg-white rounded-[24px] shadow-sm border border-gray-100">
+          <View className="rounded-[24px] overflow-hidden">
             <MenuItem
               icon="people"
               title="จัดการสมาชิก"
@@ -199,8 +199,8 @@ export default function SettingsScreen() {
           <Text style={{ fontSize: 14, fontWeight: "600" }} className="font-kanit text-gray-700 mb-2 ml-2">
             ติดต่อเรา
           </Text>
-          <View className="bg-white rounded-[24px] shadow-lg shadow-black/15 android:elevation-10">
-            <View className="rounded-[24px] overflow-hidden border border-gray-100">
+          <View className="bg-white rounded-[24px] shadow-sm border border-gray-100">
+            <View className="rounded-[24px] overflow-hidden">
               <ContactItem
                 icon="phone"
                 title="โทรศัพท์"

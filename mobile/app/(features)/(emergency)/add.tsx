@@ -81,27 +81,31 @@ export default function AddEmergencyContact() {
   // ==========================================
   return (
     <ScreenWrapper
-      contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 120, flexGrow: 1 }}
-      header={
-        <View style={{ backgroundColor: "#FFFFFF" }}>
-          <ScreenHeader
-            title="เพิ่มเบอร์ติดต่อฉุกเฉิน"
-            onBack={() => router.back()}
-          />
-          {/* Fixed Info Note */}
-          <View className="px-6 pb-4 border-b border-gray-50">
-            <View className="bg-blue-50 rounded-2xl p-4">
-              <Text className="font-kanit text-blue-700" style={{ fontSize: 13, lineHeight: 20 }}>
-                กรุณากรอกข้อมูลให้ถูกต้องเพื่อให้ระบบติดต่อญาติได้ทันทีเมื่อเกิดเหตุฉุกเฉิน
-              </Text>
-            </View>
-          </View>
-        </View>
-      }
+      contentContainerStyle={{ paddingHorizontal: 24, flexGrow: 1 }}
+      keyboardAvoiding
+      scrollViewProps={{
+        bounces: false,
+        overScrollMode: "never",
+      }}
+      header={<ScreenHeader title="" onBack={() => router.back()} />}
     >
-      <View className="flex-1 pt-6">
-        {/* Form Container */}
-        <View className="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100 mb-6">
+      <View className="flex-1">
+        {/* Header Text */}
+        <Text
+          className="font-kanit font-bold text-gray-900"
+          style={{ fontSize: 28, marginBottom: 8 }}
+        >
+          เพิ่มเบอร์ติดต่อฉุกเฉิน
+        </Text>
+        <Text
+          className="font-kanit text-gray-500"
+          style={{ fontSize: 15, marginBottom: 24 }}
+        >
+          กรุณากรอกข้อมูลให้ถูกต้องเพื่อให้ระบบติดต่อญาติได้ทันทีเมื่อเกิดเหตุฉุกเฉิน
+        </Text>
+
+        {/* Form Fields */}
+        <View className="mb-6">
           {/* Name Field */}
           <View className="mb-5">
             <FloatingLabelInput

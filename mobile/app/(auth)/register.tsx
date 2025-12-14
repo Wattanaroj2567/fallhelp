@@ -121,27 +121,25 @@ export default function RegisterScreen() {
         overScrollMode: "never", // Android: ห้ามเด้งแสง
       }}
       scrollViewRef={scrollViewRef} // Pass ref correctly
-      header={
-        <View>
-          <ScreenHeader title="ลงทะเบียน" onBack={router.back} />
-          {/* Description - Sticky with header */}
-          <View className="px-6 pb-4">
-            <Text
-              className="font-kanit text-gray-500"
-              style={{
-                fontSize: 14,
-                textAlign: "left",
-              }}
-            >
-              กรุณากรอกรายละเอียดของคุณเพื่อเข้าใช้งาน
-            </Text>
-          </View>
-        </View>
-      }
+      header={<ScreenHeader title="" onBack={router.back} />}
     >
-      <View className="mt-4">
-        {/* Card Container */}
-        <View className="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100 mb-6">
+      <View className="flex-1">
+        {/* Header Text */}
+        <Text
+          className="font-kanit font-bold text-gray-900"
+          style={{ fontSize: 28, marginBottom: 8 }}
+        >
+          ลงทะเบียน
+        </Text>
+        <Text
+          className="font-kanit text-gray-500"
+          style={{ fontSize: 15, marginBottom: 24 }}
+        >
+          กรุณากรอกรายละเอียดของคุณเพื่อเข้าใช้งาน
+        </Text>
+
+        {/* Form Fields */}
+        <View className="mb-6">
           {/* Row 1: Name & Lastname */}
           <View className="flex-row gap-3">
             {/* First Name */}
@@ -229,43 +227,147 @@ export default function RegisterScreen() {
             />
           </View>
 
-          {/* Requirements */}
-          <View className="bg-blue-50 rounded-2xl p-4">
-            <Text
-              style={{ fontSize: 12, fontWeight: "600" }}
-              className="font-kanit text-blue-700 mb-2"
-            >
-              ข้อกำหนดรหัสผ่าน:
-            </Text>
-            <View className="flex-row items-start mb-1">
-              <Text
-                style={{ fontSize: 12 }}
-                className="font-kanit text-blue-700 mr-2"
-              >
-                •
-              </Text>
-              <Text
-                style={{ fontSize: 12 }}
-                className="font-kanit text-blue-700 flex-1"
-              >
-                อย่างน้อย 8 ตัวอักษร
-              </Text>
-            </View>
-            <View className="flex-row items-start">
-              <Text
-                style={{ fontSize: 12 }}
-                className="font-kanit text-blue-700 mr-2"
-              >
-                •
-              </Text>
-              <Text
-                style={{ fontSize: 12 }}
-                className="font-kanit text-blue-700 flex-1"
-              >
-                มีตัวอักษรพิมพ์ใหญ่-เล็กและตัวเลข
-              </Text>
-            </View>
-          </View>
+          {/* Password Strength Bar - Show when typing */}
+          {password.length > 0 && (() => {
+            // Calculate strength (0-4)
+            let strength = 0;
+            if (password.length >= 8) strength++;
+            if (/[A-Z]/.test(password)) strength++;
+            if (/[a-z]/.test(password)) strength++;
+            if (/[0-9]/.test(password)) strength++;
+
+            // Get strength config
+            const strengthConfig = {
+              0: { label: "กรอกรหัสผ่าน", color: "#E5E7EB", textColor: "#9CA3AF" },
+              1: { label: "อ่อนมาก", color: "#EF4444", textColor: "#EF4444" },
+              2: { label: "อ่อน", color: "#F97316", textColor: "#F97316" },
+              3: { label: "ปานกลาง", color: "#EAB308", textColor: "#EAB308" },
+              4: { label: "แข็งแรง", color: "#16AD78", textColor: "#16AD78" },
+            }[strength] || { label: "", color: "#E5E7EB", textColor: "#9CA3AF" };
+
+            return (
+              <View>
+                {/* Strength Label */}
+                <View className="flex-row justify-between items-center mb-2">
+                  <Text
+                    className="font-kanit"
+                    style={{ fontSize: 12, color: "#6B7280" }}
+                  >
+                    ความแข็งแรงของรหัสผ่าน
+                  </Text>
+                  <Text
+                    className="font-kanit font-semibold"
+                    style={{ fontSize: 12, color: strengthConfig.textColor }}
+                  >
+                    {strengthConfig.label}
+                  </Text>
+                </View>
+
+                {/* Strength Bar */}
+                <View
+                  style={{
+                    height: 6,
+                    backgroundColor: "#E5E7EB",
+                    borderRadius: 3,
+                    overflow: "hidden",
+                  }}
+                >
+                  <View
+                    style={{
+                      height: "100%",
+                      width: `${(strength / 4) * 100}%`,
+                      backgroundColor: strengthConfig.color,
+                      borderRadius: 3,
+                    }}
+                  />
+                </View>
+
+                {/* Requirements Dots */}
+                <View className="flex-row justify-between mt-3">
+                  <View className="flex-row items-center">
+                    <View
+                      style={{
+                        width: 10,
+                        height: 10,
+                        borderRadius: 5,
+                        backgroundColor: password.length >= 8 ? "#16AD78" : "#D1D5DB",
+                        marginRight: 6,
+                      }}
+                    />
+                    <Text
+                      className="font-kanit"
+                      style={{
+                        fontSize: 13,
+                        color: password.length >= 8 ? "#16AD78" : "#9CA3AF",
+                      }}
+                    >
+                      8+ ตัว
+                    </Text>
+                  </View>
+                  <View className="flex-row items-center">
+                    <View
+                      style={{
+                        width: 10,
+                        height: 10,
+                        borderRadius: 5,
+                        backgroundColor: /[A-Z]/.test(password) ? "#16AD78" : "#D1D5DB",
+                        marginRight: 6,
+                      }}
+                    />
+                    <Text
+                      className="font-kanit"
+                      style={{
+                        fontSize: 13,
+                        color: /[A-Z]/.test(password) ? "#16AD78" : "#9CA3AF",
+                      }}
+                    >
+                      A-Z
+                    </Text>
+                  </View>
+                  <View className="flex-row items-center">
+                    <View
+                      style={{
+                        width: 10,
+                        height: 10,
+                        borderRadius: 5,
+                        backgroundColor: /[a-z]/.test(password) ? "#16AD78" : "#D1D5DB",
+                        marginRight: 6,
+                      }}
+                    />
+                    <Text
+                      className="font-kanit"
+                      style={{
+                        fontSize: 13,
+                        color: /[a-z]/.test(password) ? "#16AD78" : "#9CA3AF",
+                      }}
+                    >
+                      a-z
+                    </Text>
+                  </View>
+                  <View className="flex-row items-center">
+                    <View
+                      style={{
+                        width: 10,
+                        height: 10,
+                        borderRadius: 5,
+                        backgroundColor: /[0-9]/.test(password) ? "#16AD78" : "#D1D5DB",
+                        marginRight: 6,
+                      }}
+                    />
+                    <Text
+                      className="font-kanit"
+                      style={{
+                        fontSize: 13,
+                        color: /[0-9]/.test(password) ? "#16AD78" : "#9CA3AF",
+                      }}
+                    >
+                      0-9
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            );
+          })()}
         </View>
 
         {/* Register Button */}

@@ -5,11 +5,15 @@ import {
   Alert,
   ActivityIndicator,
   Modal,
+  TouchableOpacity,
+  Linking,
+  Platform,
 } from "react-native";
 
-import { MaterialIcons } from "@expo/vector-icons";
+import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useMutation } from "@tanstack/react-query";
+import * as WebBrowser from "expo-web-browser";
 import { configureWifi } from "@/services/deviceService";
 import { FloatingLabelInput } from "@/components/FloatingLabelInput";
 import { ScreenWrapper } from "@/components/ScreenWrapper";
@@ -73,8 +77,17 @@ export default function WifiConfig() {
       return;
     }
 
+    // Validate password: empty (open network) or 8+ chars (WPA2)
+    if (manualPassword.length > 0 && manualPassword.length < 8) {
+      Alert.alert(
+        "รหัสผ่านไม่ถูกต้อง",
+        "รหัสผ่าน WiFi ต้องมีอย่างน้อย 8 ตัวอักษร\n(หรือเว้นว่างถ้าไม่มีรหัส)"
+      );
+      return;
+    }
+
     configureWifiMutation.mutate({
-      ssid: manualSsid,
+      ssid: manualSsid.trim(),
       wifiPassword: manualPassword,
     });
   };
@@ -106,31 +119,24 @@ export default function WifiConfig() {
       contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 24 }}
       edges={["top", "left", "right"]}
       useScrollView={false}
-      header={
-        <View style={{ backgroundColor: "#FFFFFF" }}>
-          <ScreenHeader title="ตั้งค่า WiFi" onBack={handleBack} />
-          <View className="items-center pb-6 px-6 border-b border-gray-50">
-            <View className="w-16 h-16 bg-green-50 rounded-full items-center justify-center mb-3 border border-green-100">
-              <MaterialIcons name="wifi" size={32} color="#16AD78" />
-            </View>
-            <Text
-              style={{ fontSize: 20, fontWeight: "600" }}
-              className="font-kanit text-gray-900 text-center mb-1"
-            >
-              เชื่อมต่อ WiFi
-            </Text>
-            <Text
-              style={{ fontSize: 13, lineHeight: 20 }}
-              className="font-kanit text-gray-500 text-center px-4"
-            >
-              กรุณากรอกชื่อ WiFi (SSID) และรหัสผ่าน
-              {deviceCode ? ` สำหรับอุปกรณ์ ${deviceCode}` : ""}
-            </Text>
-          </View>
-        </View>
-      }
+      header={<ScreenHeader title="" onBack={handleBack} />}
     >
-      <View className="flex-1 pt-6 px-4">
+      <View className="flex-1">
+        {/* Header Text */}
+        <Text
+          className="font-kanit font-bold text-gray-900"
+          style={{ fontSize: 28, marginBottom: 8 }}
+        >
+          ตั้งค่า WiFi
+        </Text>
+        <Text
+          className="font-kanit text-gray-500"
+          style={{ fontSize: 15, marginBottom: 24 }}
+        >
+          เปลี่ยน WiFi หรือตั้งค่าใหม่
+          {deviceCode ? ` (${deviceCode})` : ""}
+        </Text>
+
         {/* Form Inputs */}
         <View>
           <FloatingLabelInput
@@ -162,6 +168,52 @@ export default function WifiConfig() {
             loading={configureWifiMutation.isPending}
             icon={<MaterialIcons name="arrow-forward" size={20} color="white" />}
           />
+        </View>
+
+        {/* Info: How it works */}
+        <View className="mt-4 bg-blue-50 rounded-2xl p-4 border border-blue-200">
+          <Text className="font-kanit text-blue-800 font-semibold mb-2">
+            วิธีการทำงาน
+          </Text>
+          <Text className="font-kanit text-blue-700 text-sm leading-5">
+            • อุปกรณ์ต้องเชื่อมต่อ WiFi และอินเทอร์เน็ตอยู่{"\n"}
+            • เมื่อกด "เชื่อมต่อ" ข้อมูลจะส่งผ่าน Server{"\n"}
+            • อุปกรณ์จะรีสตาร์ทและเชื่อมต่อ WiFi ใหม่
+          </Text>
+        </View>
+
+        {/* Offline Device Section */}
+        <View className="mt-4 bg-amber-50 rounded-2xl p-4 border border-amber-200">
+          <View className="flex-row items-center mb-2">
+            <Ionicons name="help-circle" size={18} color="#B45309" />
+            <Text className="font-kanit text-amber-800 font-semibold ml-2">
+              อุปกรณ์ไม่ได้เชื่อมต่อ?
+            </Text>
+          </View>
+          <Text className="font-kanit text-amber-700 text-sm mb-3 leading-5">
+            หากอุปกรณ์ offline หรือย้ายไปสถานที่ใหม่{"\n"}
+            อุปกรณ์จะเปิด WiFi "FallHelp-DAF380" ให้ตั้งค่าใหม่
+          </Text>
+          <TouchableOpacity
+            className="bg-amber-500 rounded-xl py-3 flex-row items-center justify-center"
+            onPress={() => {
+              Alert.alert(
+                "วิธีตั้งค่า WiFi ใหม่",
+                "1. ปัดจอลงมาจากมุมขวาบน\n\n" +
+                "2. กดค้างที่ไอคอน WiFi\n\n" +
+                "3. เลือก \"FallHelp-DAF380\"\n\n" +
+                "4. หน้าตั้งค่าจะเปิดอัตโนมัติ\n\n" +
+                "5. กรอกข้อมูล WiFi ใหม่",
+                [{ text: "เข้าใจแล้ว" }]
+              );
+            }}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="help-circle" size={20} color="white" />
+            <Text className="font-kanit font-semibold text-white ml-2">
+              ดูวิธีตั้งค่าใหม่
+            </Text>
+          </TouchableOpacity>
         </View>
       </View>
 

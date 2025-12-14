@@ -421,10 +421,33 @@ export default function Devices() {
                 </p>
               </div>
 
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-6 print:hidden">
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-4 print:hidden">
                 <p className="text-xs text-blue-700 font-medium">
                   Serial: {selectedDevice.serialNumber}
                 </p>
+              </div>
+
+              {/* First Time Setup Notice */}
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 print:hidden text-left">
+                <p className="text-sm font-semibold text-amber-800 mb-3">
+                  ⚠️ การตั้งค่าครั้งแรก (First Time Setup)
+                </p>
+                <table className="text-xs text-amber-700 w-full">
+                  <tbody>
+                    <tr>
+                      <td className="py-1 pr-2 align-top font-medium whitespace-nowrap">1. เชื่อม WiFi:</td>
+                      <td className="py-1"><code className="bg-amber-100 px-1.5 py-0.5 rounded font-mono">FallHelp-XXXXXX</code> <span className="text-green-600 font-medium">(ไม่มีรหัสผ่าน)</span></td>
+                    </tr>
+                    <tr>
+                      <td className="py-1 pr-2 align-top font-medium whitespace-nowrap">2. หน้าตั้งค่า:</td>
+                      <td className="py-1"><span className="text-green-600 font-medium">เปิดอัตโนมัติ!</span> (Captive Portal)</td>
+                    </tr>
+                    <tr>
+                      <td className="py-1 pr-2 align-top font-medium whitespace-nowrap">3. กรอก:</td>
+                      <td className="py-1">WiFi SSID และ Password เท่านั้น</td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
 

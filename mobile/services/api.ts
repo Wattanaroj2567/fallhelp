@@ -65,6 +65,14 @@ apiClient.interceptors.response.use(
     else if (error.response?.status === 409) {
       Logger.debug(`API 409 (Conflict): ${error.config?.method?.toUpperCase()} ${error.config?.url} - ${apiError.message}`);
     }
+    // Handle timeout errors - just warn, don't show error
+    else if (error.code === 'ECONNABORTED' || apiError.message?.includes('timeout')) {
+      Logger.warn(`API Timeout: ${error.config?.method?.toUpperCase()} ${error.config?.url}`);
+    }
+    // Handle network errors - just warn
+    else if (error.code === 'ERR_NETWORK' || !error.response) {
+      Logger.warn(`Network Error: ${error.config?.method?.toUpperCase()} ${error.config?.url}`);
+    }
     // Log other errors
     else {
       Logger.error(`API Error: ${error.config?.method?.toUpperCase()} ${error.config?.url}`, apiError);

@@ -193,8 +193,8 @@ export default function ElderInfo() {
       >
         <View className="mt-4">
           {/* Info Fields - Box with Border */}
-          <View className="bg-white rounded-[32px] shadow-lg shadow-black/15 android:elevation-10 mb-6">
-            <View className="rounded-[32px] overflow-hidden border border-gray-100">
+          <View className="bg-white rounded-[24px] shadow-sm border border-gray-100 mb-6">
+            <View className="rounded-[24px] overflow-hidden">
               {/* Name */}
               <View className="p-4 border-b border-gray-100">
                 <Text
