@@ -1,15 +1,15 @@
 import { Request, Response } from 'express';
 import prisma from '../prisma';
-
+import { asyncHandler } from '../middlewares/errorHandler.js';
+import { createError } from '../utils/ApiError.js';
 
 // ==========================================
 // 📋 List Notifications
 // ==========================================
-export const listNotifications = async (req: Request, res: Response) => {
-  try {
+export const listNotifications = asyncHandler(async (req: Request, res: Response) => {
     const userId = req.user?.userId;
     if (!userId) {
-      return res.status(401).json({ success: false, message: 'Unauthorized' });
+      throw createError.accessDenied();
     }
 
     const page = parseInt(req.query.page as string) || 1;
@@ -51,20 +51,15 @@ export const listNotifications = async (req: Request, res: Response) => {
       pageSize,
       totalPages: Math.ceil(total / pageSize),
     });
-  } catch (error) {
-    console.error('Error listing notifications:', error);
-    res.status(500).json({ success: false, message: 'Internal server error' });
-  }
-};
+});
 
 // ==========================================
 // 🔢 Get Unread Count
 // ==========================================
-export const getUnreadCount = async (req: Request, res: Response) => {
-  try {
+export const getUnreadCount = asyncHandler(async (req: Request, res: Response) => {
     const userId = req.user?.userId;
     if (!userId) {
-      return res.status(401).json({ success: false, message: 'Unauthorized' });
+      throw createError.accessDenied();
     }
 
     const count = await prisma.notification.count({
@@ -75,22 +70,17 @@ export const getUnreadCount = async (req: Request, res: Response) => {
     });
 
     res.json({ success: true, data: { count } });
-  } catch (error) {
-    console.error('Error getting unread count:', error);
-    res.status(500).json({ success: false, message: 'Internal server error' });
-  }
-};
+});
 
 // ==========================================
 // ✅ Mark as Read
 // ==========================================
-export const markAsRead = async (req: Request, res: Response) => {
-  try {
+export const markAsRead = asyncHandler(async (req: Request, res: Response) => {
     const userId = req.user?.userId;
     const { id } = req.params;
 
     if (!userId) {
-      return res.status(401).json({ success: false, message: 'Unauthorized' });
+      throw createError.accessDenied();
     }
 
     await prisma.notification.updateMany({
@@ -105,20 +95,15 @@ export const markAsRead = async (req: Request, res: Response) => {
     });
 
     res.json({ success: true, message: 'Notification marked as read' });
-  } catch (error) {
-    console.error('Error marking notification as read:', error);
-    res.status(500).json({ success: false, message: 'Internal server error' });
-  }
-};
+});
 
 // ==========================================
 // ✅✅ Mark All as Read
 // ==========================================
-export const markAllAsRead = async (req: Request, res: Response) => {
-  try {
+export const markAllAsRead = asyncHandler(async (req: Request, res: Response) => {
     const userId = req.user?.userId;
     if (!userId) {
-      return res.status(401).json({ success: false, message: 'Unauthorized' });
+      throw createError.accessDenied();
     }
 
     await prisma.notification.updateMany({
@@ -133,23 +118,24 @@ export const markAllAsRead = async (req: Request, res: Response) => {
     });
 
     res.json({ success: true, message: 'All notifications marked as read' });
-  } catch (error) {
-    console.error('Error marking all as read:', error);
-    res.status(500).json({ success: false, message: 'Internal server error' });
-  }
-};
+});
 
 // ==========================================
 // 🗑️ Delete Notification
 // ==========================================
-export const deleteNotification = async (req: Request, res: Response) => {
-  try {
+export const deleteNotification = asyncHandler(async (req: Request, res: Response) => {
     const userId = req.user?.userId;
     const { id } = req.params;
 
     if (!userId) {
-      return res.status(401).json({ success: false, message: 'Unauthorized' });
+      throw createError.accessDenied();
     }
+
+    // Check if exists first? Or just deleteMany is fine?
+    // Original code used deleteMany directly which is safe (returns count).
+    // But if we want 404 if not found?
+    // Original code didn't check. I'll stick to original logic but refactored style.
+    // Wait, original code used updateMany/deleteMany.
 
     await prisma.notification.deleteMany({
       where: {
@@ -159,20 +145,15 @@ export const deleteNotification = async (req: Request, res: Response) => {
     });
 
     res.json({ success: true, message: 'Notification deleted' });
-  } catch (error) {
-    console.error('Error deleting notification:', error);
-    res.status(500).json({ success: false, message: 'Internal server error' });
-  }
-};
+});
 
 // ==========================================
 // 🗑️🗑️ Clear All Notifications
 // ==========================================
-export const clearAllNotifications = async (req: Request, res: Response) => {
-  try {
+export const clearAllNotifications = asyncHandler(async (req: Request, res: Response) => {
     const userId = req.user?.userId;
     if (!userId) {
-      return res.status(401).json({ success: false, message: 'Unauthorized' });
+      throw createError.accessDenied();
     }
 
     await prisma.notification.deleteMany({
@@ -182,8 +163,4 @@ export const clearAllNotifications = async (req: Request, res: Response) => {
     });
 
     res.json({ success: true, message: 'All notifications cleared' });
-  } catch (error) {
-    console.error('Error clearing notifications:', error);
-    res.status(500).json({ success: false, message: 'Internal server error' });
-  }
-};
+});

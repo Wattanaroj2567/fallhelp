@@ -13,6 +13,7 @@ import { PrimaryButton } from "@/components/PrimaryButton";
 import { UserInput } from "@/components/UserInput";
 import { TabSelector } from "@/components/TabSelector";
 import Logger from "@/utils/logger";
+import { showErrorMessage } from "@/utils/errorHelper";
 
 // ==========================================
 // 📱 LAYER: View (Component)
@@ -85,10 +86,7 @@ export default function RepairScreen() {
         },
         onError: (error: any) => {
             Logger.error("Error submitting repair request:", error);
-            Alert.alert(
-                "ข้อผิดพลาด",
-                "ไม่สามารถส่งข้อมูลได้ กรุณาลองใหม่ภายหลัง"
-            );
+            showErrorMessage("ข้อผิดพลาด", error);
         },
     });
 
@@ -100,7 +98,7 @@ export default function RepairScreen() {
         },
         onError: (error: any) => {
             Logger.error("Error deleting repair request:", error);
-            Alert.alert("ข้อผิดพลาด", "ไม่สามารถลบรายการได้");
+            showErrorMessage("ข้อผิดพลาด", error);
         },
     });
 

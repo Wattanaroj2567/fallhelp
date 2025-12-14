@@ -22,7 +22,7 @@ This directory contains the single source of truth for all project documentation
 
 | เอกสาร                                         | คำอธิบาย                                   |
 | :--------------------------------------------- | :----------------------------------------- |
-| [UI Features & Flow](features/UI_FEATURES.md)  | UI/UX ทั้งหมดของ Mobile App (1,971 บรรทัด) |
+| [UI Features & Flow](features/UI_FEATURES.md)  | UI/UX ทั้งหมดของ Mobile App (1,294 บรรทัด) |
 | [Admin Panel](features/ADMIN_PANEL.md)         | ฟีเจอร์และ Endpoints ของ Admin Panel       |
 | [Feedback System](features/FEEDBACK_SYSTEM.md) | ระบบรับความคิดเห็นจากผู้ใช้                |
 

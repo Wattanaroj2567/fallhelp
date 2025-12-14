@@ -8,17 +8,12 @@ import emergencyContactRoutes from './emergencyContactRoutes';
 import adminRoutes from './adminRoutes';
 import feedbackRoutes from './feedbackRoutes';
 import notificationRoutes from './notificationRoutes';
+import healthRoutes from './healthRoutes';
 
 const router = Router();
 
-// Health check endpoint
-router.get('/health', (_req, res) => {
-  res.json({
-    success: true,
-    message: 'FallHelp API is running',
-    timestamp: new Date().toISOString(),
-  });
-});
+// Health check endpoint (public, no auth)
+router.use('/health', healthRoutes);
 
 router.use('/auth', authRoutes);
 router.use('/users', userRoutes);

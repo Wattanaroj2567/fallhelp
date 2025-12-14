@@ -5,11 +5,13 @@ import { CONFIG } from '@/constants/Config';
 import Logger from '@/utils/logger';
 
 // Constants
-const STALE_HEARTBEAT_THRESHOLD_MS = 30_000; // 30 seconds
+const STALE_HEARTBEAT_THRESHOLD_MS = 20_000; // 20 seconds (safety margin above ESP32's 15s interval)
 const WATCHDOG_CHECK_INTERVAL_MS = 5_000; // 5 seconds
 
 export const useSocket = (elderId: string | undefined, deviceId: string | undefined) => {
     const [isConnected, setIsConnected] = useState(false);
+    const [socketConnected, setSocketConnected] = useState(false); // Server connection state
+    const [wasEverConnected, setWasEverConnected] = useState(false); // Track if ever connected (for reconnect Toast)
     const [fallStatus, setFallStatus] = useState<'NORMAL' | 'FALL' | null>(null);
     const [lastFallUpdate, setLastFallUpdate] = useState<Date | null>(null);
     const [heartRate, setHeartRate] = useState<number | null>(null);
@@ -75,12 +77,18 @@ export const useSocket = (elderId: string | undefined, deviceId: string | undefi
         socket.on('connect', () => {
             Logger.info('Socket Connected ID:', socket.id);
             socket.emit('authenticate', { elderId });
+            setSocketConnected(true);
+            if (wasEverConnected) {
+                Logger.info('Socket reconnected!');
+            }
+            setWasEverConnected(true);
             // Do NOT set isConnected(true) here. It implies Device Connection, not just Server Connection.
         });
 
         const handleOffline = (reason: string) => {
             Logger.warn(`Socket Offline (${reason})`);
             setIsConnected(false);
+            setSocketConnected(false);
         };
 
         socket.on('disconnect', (reason) => handleOffline(reason));
@@ -168,6 +176,8 @@ export const useSocket = (elderId: string | undefined, deviceId: string | undefi
 
     return {
         isConnected,
+        socketConnected,
+        wasEverConnected,
         fallStatus,
         lastFallUpdate,
         heartRate,

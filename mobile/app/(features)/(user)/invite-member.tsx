@@ -18,6 +18,7 @@ import { inviteMember } from "@/services/elderService";
 import { FloatingLabelInput } from "@/components/FloatingLabelInput";
 import { useCurrentElder } from "@/hooks/useCurrentElder";
 import Logger from "@/utils/logger";
+import { showErrorMessage } from "@/utils/errorHelper";
 import { ScreenWrapper } from "@/components/ScreenWrapper";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { PrimaryButton } from "@/components/PrimaryButton";
@@ -62,7 +63,7 @@ export default function InviteMember() {
     },
     onError: (error: any) => {
       Logger.error("Error inviting member:", error);
-      Alert.alert("ข้อผิดพลาด", error.message || "ไม่สามารถเชิญสมาชิกได้");
+      showErrorMessage("ข้อผิดพลาด", error);
     },
   });
 

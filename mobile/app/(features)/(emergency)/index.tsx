@@ -23,6 +23,7 @@ import {
   reorderContacts,
 } from "@/services/emergencyContactService";
 import Logger from "@/utils/logger";
+import { showErrorMessage } from "@/utils/errorHelper";
 import { EmergencyContact } from "@/services/types";
 import { ListItemSkeleton } from "@/components/skeletons";
 import { ScreenWrapper } from "@/components/ScreenWrapper";
@@ -128,17 +129,9 @@ export default function EmergencyContacts() {
       Alert.alert("สำเร็จ", "ลบผู้ติดต่อเรียบร้อยแล้ว");
     },
     onError: (error: any) => {
-      Alert.alert("ผิดพลาด", error.message || "ไม่สามารถลบข้อมูลได้");
+      showErrorMessage("ผิดพลาด", error);
     },
   });
-
-  // Debug: Log Access Level
-  useEffect(() => {
-    if (currentElder) {
-      console.log('Debug: Current Elder:', JSON.stringify(currentElder, null, 2));
-      console.log('Debug: Access Level:', currentElder.accessLevel);
-    }
-  }, [currentElder]);
 
   const reorderMutation = useMutation({
     mutationFn: ({
@@ -152,8 +145,8 @@ export default function EmergencyContacts() {
       queryClient.invalidateQueries({ queryKey: ["emergencyContacts"] });
     },
     onError: (error: any) => {
-      console.error("Reorder failed", error); // Changed from Logger to console for now
-      Alert.alert("ผิดพลาด", "ไม่สามารถบันทึกลำดับได้");
+      Logger.error("Reorder failed", error);
+      showErrorMessage("ผิดพลาด", error);
       refetch(); // Revert on error
     },
   });

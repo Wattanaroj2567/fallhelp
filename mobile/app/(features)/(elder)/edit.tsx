@@ -18,6 +18,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getUserElders } from "@/services/userService";
 import { updateElder } from "@/services/elderService";
 import Logger from "@/utils/logger";
+import { showErrorMessage } from "@/utils/errorHelper";
 import { FloatingLabelInput } from "@/components/FloatingLabelInput";
 import { ScreenWrapper } from "@/components/ScreenWrapper";
 import { ScreenHeader } from "@/components/ScreenHeader";
@@ -125,7 +126,7 @@ export default function EditElderInfo() {
     },
     onError: (error) => {
       Logger.error("Update failed:", error);
-      Alert.alert("ข้อผิดพลาด", "ไม่สามารถบันทึกข้อมูลได้");
+      showErrorMessage("ข้อผิดพลาด", error);
     },
   });
 

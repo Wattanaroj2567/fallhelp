@@ -4,6 +4,7 @@ import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as SecureStore from "expo-secure-store";
+import Logger from "@/utils/logger";
 
 // ==========================================
 // 📱 LAYER: View (Component)
@@ -24,7 +25,7 @@ export default function SetupSuccess() {
       try {
         await SecureStore.deleteItemAsync("setup_step");
       } catch (error) {
-        console.warn("Failed to clear setup step", error);
+        Logger.warn("Failed to clear setup step", error);
       }
     };
     clearSetupState();

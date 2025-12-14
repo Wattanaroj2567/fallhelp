@@ -1,6 +1,7 @@
 import { NotificationType } from '../generated/prisma/client.js';
 import { sendNotification, sendFallAlert, sendHeartRateAlert, sendDeviceOfflineAlert } from '../utils/pushNotification.js';
 import prisma from '../prisma.js';
+import { createError } from '../utils/ApiError.js';
 
 /**
  * Create notification
@@ -106,7 +107,7 @@ export const markAsRead = async (userId: string, notificationId: string) => {
   });
 
   if (!notification || notification.userId !== userId) {
-    throw new Error('Notification not found');
+    throw createError.notificationNotFound();
   }
 
   return prisma.notification.update({

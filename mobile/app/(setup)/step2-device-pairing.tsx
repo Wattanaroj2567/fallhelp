@@ -20,6 +20,7 @@ import { CameraView, useCameraPermissions } from "expo-camera";
 import { FloatingLabelInput } from "@/components/FloatingLabelInput";
 import { WizardLayout } from "@/components/WizardLayout";
 import { getErrorMessage } from "@/utils/errorHelper";
+import Logger from "@/utils/logger";
 
 // ==========================================
 // 📱 LAYER: View (Component)
@@ -80,7 +81,7 @@ export default function Step2() {
       ]);
     },
     onError: (error: any) => {
-      console.error("Error pairing device:", error);
+      Logger.error("Error pairing device:", error);
       const message = getErrorMessage(error);
       Alert.alert(
         "ข้อผิดพลาด",

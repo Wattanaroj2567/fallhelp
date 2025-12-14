@@ -6,6 +6,7 @@ import { ScreenWrapper } from "@/components/ScreenWrapper";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getUserElders } from "@/services/userService";
 import { ScreenHeader } from "@/components/ScreenHeader";
+import { showErrorMessage } from "@/utils/errorHelper";
 import { unpairDevice } from "@/services/deviceService";
 import { Bounceable } from "@/components/Bounceable";
 
@@ -68,10 +69,7 @@ export default function DeviceDetails() {
             router.replace("/(tabs)");
         },
         onError: (error: any) => {
-            Alert.alert(
-                "เกิดข้อผิดพลาด",
-                error.message || "ไม่สามารถยกเลิกการเชื่อมต่อได้"
-            );
+            showErrorMessage("เกิดข้อผิดพลาด", error);
         },
     });
 

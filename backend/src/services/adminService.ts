@@ -1,5 +1,6 @@
 import prisma from '../prisma.js';
 import * as deviceService from './deviceService.js';
+import { createError, ApiError } from '../utils/ApiError.js';
 
 // ==========================================
 // ⚙️ LAYER: Business Logic (Service)
@@ -212,11 +213,11 @@ export const deleteDevice = async (id: string) => {
   });
 
   if (!device) {
-    throw new Error('Device not found');
+    throw createError.deviceNotFound();
   }
 
   if (device.status === 'PAIRED' || device.elderId) {
-    throw new Error('Cannot delete device that is currently paired with an elder. Please unpair it first.');
+    throw new ApiError('device_already_paired', 'ไม่สามารถลบอุปกรณ์ที่ถูกจับคู่อยู่ กรุณายกเลิกการจับคู่ก่อน');
   }
 
   return prisma.device.delete({

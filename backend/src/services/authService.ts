@@ -58,7 +58,7 @@ export const register = async (data: {
     });
 
     if (existingPhone) {
-      throw new AppError('Phone number already in use', 400);
+      throw createError.phoneExists();
     }
   }
 
@@ -115,18 +115,18 @@ export const login = async (
   });
 
   if (!user) {
-    throw new AppError('Invalid email/phone or password', 401);
+    throw createError.invalidCredentials();
   }
 
   // Check if user is active
   if (!user.isActive) {
-    throw new AppError('Account is deactivated', 403);
+    throw createError.accountDeactivated();
   }
 
   // Verify password
   const isPasswordValid = await comparePassword(password, user.password);
   if (!isPasswordValid) {
-    throw new AppError('Invalid email or password', 401);
+    throw createError.invalidCredentials();
   }
 
   // Generate JWT token
@@ -160,12 +160,12 @@ export const requestOtp = async (
   });
 
   if (!user) {
-    throw new Error('User not found');
+    throw createError.userNotFound();
   }
 
   // Check if user has the correct role
   if (allowedRole !== 'ALL' && user.role !== allowedRole) {
-    throw new Error(`ไม่สามารถใช้ฟังก์ชันนี้กับบัญชีประเภท ${user.role === 'ADMIN' ? 'ผู้ดูแลระบบ' : 'ผู้ดูแล'} ได้`);
+    throw createError.roleNotAllowed(user.role === 'ADMIN' ? 'ผู้ดูแลระบบ' : 'ผู้ดูแล');
   }
 
   // Generate OTP and reference code
@@ -223,7 +223,7 @@ export const verifyOtp = async (
   });
 
   if (!user) {
-    throw new Error('User not found');
+    throw createError.userNotFound();
   }
 
   // Find OTP
@@ -282,7 +282,7 @@ export const resetPassword = async (
   const otpResult = await verifyOtp(email, code, 'PASSWORD_RESET');
 
   if (!otpResult.valid) {
-    throw new Error(otpResult.message);
+    throw createError.otpInvalid();
   }
 
   // Find user
@@ -291,7 +291,7 @@ export const resetPassword = async (
   });
 
   if (!user) {
-    throw new Error('User not found');
+    throw createError.userNotFound();
   }
 
   // Hash new password
@@ -317,7 +317,7 @@ export const getProfile = async (userId: string): Promise<Omit<User, 'password'>
   });
 
   if (!user) {
-    throw new Error('User not found');
+    throw createError.userNotFound();
   }
 
   const { password, ...userWithoutPassword } = user;

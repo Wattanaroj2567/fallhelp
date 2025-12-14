@@ -1,4 +1,5 @@
 import QRCode from 'qrcode';
+import { createError } from './ApiError';
 
 /**
  * Generate QR Code as Data URL (base64)
@@ -12,7 +13,7 @@ export const generateQRCode = async (data: string): Promise<string> => {
       margin: 2,
     });
   } catch (error) {
-    throw new Error('Failed to generate QR code');
+    throw createError.qrcodeGenerationFailed();
   }
 };
 

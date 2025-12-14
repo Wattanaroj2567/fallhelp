@@ -13,6 +13,7 @@ import {
 import { MaterialIcons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { ScreenWrapper } from "@/components/ScreenWrapper";
 import { NotificationModal } from "@/components/NotificationModal";
+import { ConnectionToast } from "@/components/ConnectionToast";
 import { Bounceable } from "@/components/Bounceable";
 import { router, useFocusEffect } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -62,6 +63,8 @@ export default function Home() {
   const { isSignedIn } = useAuth();
   const [imageError, setImageError] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showConnectionToast, setShowConnectionToast] = useState(false);
+  const [connectionToastState, setConnectionToastState] = useState<'connected' | 'disconnected' | 'reconnecting'>('connected');
   const { top } = useSafeAreaInsets();
 
   // ==========================================
@@ -129,7 +132,7 @@ export default function Home() {
         const count = await getUnreadCount();
         return count ?? 0; // Ensure we return 0 instead of undefined
       } catch (error) {
-        console.warn("Failed to fetch unread count:", error);
+        Logger.warn("Failed to fetch unread count:", error);
         return 0;
       }
     },
@@ -145,6 +148,8 @@ export default function Home() {
   // ==========================================
   const {
     isConnected,
+    socketConnected,
+    wasEverConnected,
     fallStatus,
     lastFallUpdate,
     heartRate,
@@ -157,6 +162,19 @@ export default function Home() {
     setActiveFallEventId,
     setIsConnected,
   } = useSocket(elderInfo?.id, elderInfo?.device?.id);
+
+  // Handle Connection Toast visibility
+  useEffect(() => {
+    if (!wasEverConnected) return; // Don't show on first connect
+    
+    if (!socketConnected) {
+      setConnectionToastState('disconnected');
+      setShowConnectionToast(true);
+    } else {
+      setConnectionToastState('connected');
+      setShowConnectionToast(true);
+    }
+  }, [socketConnected, wasEverConnected]);
 
 
 
@@ -293,6 +311,13 @@ export default function Home() {
 
   return (
     <View className="flex-1 bg-white">
+      {/* Connection Toast */}
+      <ConnectionToast
+        state={connectionToastState}
+        visible={showConnectionToast}
+        onHide={() => setShowConnectionToast(false)}
+      />
+      
       <ScreenWrapper
         edges={["left", "right"]}
         useScrollView={false}

@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import * as authService from '../services/authService';
 import { asyncHandler } from '../middlewares/errorHandler';
+import { createError } from '../utils/ApiError.js';
 
 // ==========================================
 // 🎮 LAYER: Interface (Controller)
@@ -40,11 +41,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   const loginIdentifier = identifier || email;
 
   if (!loginIdentifier) {
-    res.status(400).json({
-      success: false,
-      error: 'Email or Phone number is required',
-    });
-    return;
+    throw createError.missingField('Email or Phone number');
   }
 
   const result = await authService.login(loginIdentifier, password);

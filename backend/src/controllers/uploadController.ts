@@ -8,6 +8,8 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
+import { asyncHandler } from '../middlewares/errorHandler.js';
+import { createError } from '../utils/ApiError.js';
 
 // Create uploads directory if it doesn't exist
 const uploadsDir = path.join(__dirname, '../../uploads/profiles');
@@ -50,13 +52,9 @@ export const upload = multer({
  * Upload profile image
  * POST /api/upload/profile
  */
-export const uploadProfileImage = async (req: Request, res: Response) => {
-  try {
+export const uploadProfileImage = asyncHandler(async (req: Request, res: Response) => {
     if (!req.file) {
-      return res.status(400).json({
-        success: false,
-        error: 'No file uploaded',
-      });
+      throw createError.validationError('กรุณาอัปโหลดรูปภาพ');
     }
 
     // Generate URL for the uploaded file
@@ -73,21 +71,13 @@ export const uploadProfileImage = async (req: Request, res: Response) => {
         filename: req.file.filename,
       },
     });
-  } catch (error) {
-    console.error('Upload error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to upload file',
-    });
-  }
-};
+});
 
 /**
  * Delete profile image
  * DELETE /api/upload/profile/:filename
  */
-export const deleteProfileImage = async (req: Request, res: Response) => {
-  try {
+export const deleteProfileImage = asyncHandler(async (req: Request, res: Response) => {
     const { filename } = req.params;
     const filePath = path.join(uploadsDir, filename);
 
@@ -99,11 +89,4 @@ export const deleteProfileImage = async (req: Request, res: Response) => {
       success: true,
       message: 'File deleted',
     });
-  } catch (error) {
-    console.error('Delete error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to delete file',
-    });
-  }
-};
+});

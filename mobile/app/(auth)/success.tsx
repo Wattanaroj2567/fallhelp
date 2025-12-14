@@ -5,6 +5,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { useAuth } from "@/context/AuthContext";
+import Logger from "@/utils/logger";
 
 // ==========================================
 // 📱 LAYER: View (Component)
@@ -55,7 +56,7 @@ export default function AuthSuccessScreen() {
         // We can just rely on that. But manually redirecting is safer UX feedback.
         router.replace("/(setup)/empty-state");
       } catch (error) {
-        console.warn("Failed to clear setup data", error);
+        Logger.warn("Failed to clear setup data", error);
         router.replace("/(setup)/empty-state");
       }
     } else {

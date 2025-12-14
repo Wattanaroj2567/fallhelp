@@ -20,6 +20,7 @@ import { CameraView, useCameraPermissions } from "expo-camera";
 import { FloatingLabelInput } from "@/components/FloatingLabelInput";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { getErrorMessage } from "@/utils/errorHelper";
+import Logger from "@/utils/logger";
 
 // ==========================================
 // 📱 LAYER: View (Component)
@@ -100,14 +101,8 @@ export default function DevicePairing() {
       ]);
     },
     onError: (error: any) => {
-      const message = getErrorMessage(error);
-      let displayMessage = message;
-
-      if (message === 'DEVICE_ALREADY_PAIRED') {
-        displayMessage = "อุปกรณ์นี้ถูกเชื่อมต่อกับบัญชีอื่นอยู่แล้ว กรุณายกเลิกการเชื่อมต่อจากบัญชีเดิมก่อน";
-      } else {
-        console.error("Error pairing device:", error);
-      }
+      Logger.error("Error pairing device:", error);
+      const displayMessage = getErrorMessage(error);
 
       Alert.alert(
         "เชื่อมต่อไม่สำเร็จ",

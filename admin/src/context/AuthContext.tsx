@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import api from '../services/api';
+import Logger from '../utils/logger';
 
 interface User {
     id: string;
@@ -34,7 +35,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     setUser(response.data.data);
                     setToken(storedToken);
                 } catch (error) {
-                    console.error('Failed to fetch user:', error);
+                    Logger.error('Failed to fetch user:', error);
                     localStorage.removeItem('token');
                     setToken(null);
                     setUser(null);
@@ -65,6 +66,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
     const context = useContext(AuthContext);
     if (context === undefined) {

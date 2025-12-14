@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { asyncHandler } from '../middlewares/errorHandler';
 import * as feedbackService from '../services/feedbackService';
 import { FeedbackType } from '../generated/prisma/client.js';
+import { createError } from '../utils/ApiError.js';
 
 // ==========================================
 // 🎮 LAYER: Controller
@@ -13,8 +14,7 @@ export const submitFeedback = asyncHandler(async (req: Request, res: Response) =
     const userId = (req as any).user?.userId || null;
 
     if (!message) {
-        res.status(400);
-        throw new Error('Message is required');
+        throw createError.missingField('ข้อความ');
     }
 
     // Validate type if provided
@@ -53,13 +53,7 @@ export const getRepairRequests = asyncHandler(async (req: Request, res: Response
     const userId = (req as any).user?.userId;
 
     if (!userId) {
-        return res.status(401).json({
-            success: false,
-            error: {
-                code: 'unauthorized',
-                message: 'Authentication required'
-            }
-        });
+        throw createError.accessDenied();
     }
 
     const repairRequests = await feedbackService.getUserRepairRequests(userId);
@@ -75,25 +69,13 @@ export const deleteRepairRequest = asyncHandler(async (req: Request, res: Respon
     const { id } = req.params;
 
     if (!userId) {
-        return res.status(401).json({
-            success: false,
-            error: {
-                code: 'unauthorized',
-                message: 'Authentication required'
-            }
-        });
+        throw createError.accessDenied();
     }
 
     const deleted = await feedbackService.deleteUserFeedback(id, userId);
 
     if (!deleted) {
-        return res.status(404).json({
-            success: false,
-            error: {
-                code: 'not_found',
-                message: 'Feedback not found or not owned by you'
-            }
-        });
+        throw createError.resourceNotFound();
     }
 
     res.json({

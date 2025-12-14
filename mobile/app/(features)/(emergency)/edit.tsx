@@ -16,12 +16,13 @@ import {
   updateContact,
   listContacts,
 } from "@/services/emergencyContactService";
-import { getUserElders } from "@/services/userService";
 import Logger from "@/utils/logger";
+import { showErrorMessage } from "@/utils/errorHelper";
 import { EmergencyContact } from "@/services/types";
 import { FloatingLabelInput } from "@/components/FloatingLabelInput";
 import { ScreenWrapper } from "@/components/ScreenWrapper";
 import { ScreenHeader } from "@/components/ScreenHeader";
+import { getUserElders } from "@/services/userService";
 import { PrimaryButton } from "@/components/PrimaryButton";
 
 // ==========================================
@@ -103,7 +104,7 @@ export default function EditEmergencyContact() {
     },
     onError: (error: any) => {
       Logger.error("Error updating contact:", error);
-      Alert.alert("ข้อผิดพลาด", error.message || "ไม่สามารถบันทึกข้อมูลได้");
+      showErrorMessage("ข้อผิดพลาด", error);
     },
   });
 

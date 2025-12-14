@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import { createError } from './ApiError';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallhelp-secret-key-change-in-production';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '15d';
@@ -23,7 +24,7 @@ export const verifyToken = (token: string): JwtPayload => {
   try {
     return jwt.verify(token, JWT_SECRET) as JwtPayload;
   } catch (error) {
-    throw new Error('Invalid or expired token');
+    throw createError.invalidToken();
   }
 };
 

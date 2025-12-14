@@ -24,7 +24,7 @@
 #define MQTT_SERVER "192.168.1.102"  // Pre-configured MQTT Server
 #define MQTT_PORT 1883
 #define WIFI_CHECK_INTERVAL 5000
-#define STATUS_INTERVAL 30000
+#define STATUS_INTERVAL 15000
 #define DNS_PORT 53
 
 // ==================== Pin Definitions ====================

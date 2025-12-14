@@ -1,7 +1,7 @@
 import { User, Gender } from '../generated/prisma/client.js';
 import { hashPassword, comparePassword } from '../utils/password.js';
 import prisma from '../prisma.js';
-import { ApiError } from '../utils/ApiError.js';
+import { ApiError, createError } from '../utils/ApiError.js';
 
 // ==========================================
 // ⚙️ LAYER: Business Logic (Service)
@@ -17,7 +17,7 @@ export const getUserProfile = async (userId: string): Promise<Omit<User, 'passwo
   });
 
   if (!user) {
-    throw new Error('User not found');
+    throw createError.userNotFound();
   }
 
   const { password, ...userWithoutPassword } = user;
@@ -63,13 +63,13 @@ export const changePassword = async (
   });
 
   if (!user) {
-    throw new Error('User not found');
+    throw createError.userNotFound();
   }
 
   // Verify current password
   const isPasswordValid = await comparePassword(currentPassword, user.password);
   if (!isPasswordValid) {
-    throw new Error('Current password is incorrect');
+    throw createError.currentPasswordIncorrect();
   }
 
   // Hash new password
@@ -135,7 +135,7 @@ export const updatePushToken = async (
 ): Promise<{ message: string }> => {
   // Validate Expo Push Token format
   if (!pushToken || !pushToken.startsWith('ExponentPushToken[')) {
-    throw new Error('Invalid Expo Push Token format');
+    throw createError.invalidPushToken();
   }
 
   await prisma.user.update({

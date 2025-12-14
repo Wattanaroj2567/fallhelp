@@ -7,6 +7,7 @@ import { ScreenWrapper } from "@/components/ScreenWrapper";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { useCurrentElder } from "@/hooks/useCurrentElder";
 import Logger from "@/utils/logger";
+import { showErrorMessage } from "@/utils/errorHelper";
 import { removeMember, updateMemberAccess } from "@/services/elderService";
 
 export default function MemberDetailScreen() {
@@ -42,8 +43,8 @@ export default function MemberDetailScreen() {
             Alert.alert("สำเร็จ", "บันทึกสิทธิ์เรียบร้อยแล้ว");
         },
         onError: (error: any) => {
-            Logger.error("Update access failed", error);
-            Alert.alert("ผิดพลาด", "ไม่สามารถแก้ไขสิทธิ์ได้");
+            Logger.error("Update role error:", error);
+            showErrorMessage("ผิดพลาด", error);
             // Revert local state if needed, but we set it on success
         }
     });
@@ -61,7 +62,8 @@ export default function MemberDetailScreen() {
             ]);
         },
         onError: (error: any) => {
-            Alert.alert("ผิดพลาด", error.message || "ไม่สามารถลบสมาชิกได้");
+            Logger.error("Remove member error:", error);
+            showErrorMessage("ผิดพลาด", error);
         }
     });
 

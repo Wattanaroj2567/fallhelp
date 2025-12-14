@@ -1,7 +1,7 @@
 import { Elder, AccessLevel } from '../generated/prisma/client.js';
 import prisma from '../prisma.js';
 import { sendInvitationEmail } from '../utils/email.js';
-import { ApiError } from '../utils/ApiError.js';
+import { ApiError, createError } from '../utils/ApiError.js';
 
 // ==========================================
 // ⚙️ LAYER: Business Logic (Service)
@@ -173,7 +173,7 @@ export const getElderById = async (userId: string, elderId: string) => {
   });
 
   if (!elder) {
-    throw new Error('Elder not found or access denied');
+    throw createError.elderNotFound();
   }
 
   // Get user's access level
@@ -223,7 +223,7 @@ export const updateElder = async (
   });
 
   if (!access || (access.accessLevel !== 'OWNER' && access.accessLevel !== 'EDITOR')) {
-    throw new Error('Only owner or editor can update elder information');
+    throw createError.editorRequired();
   }
 
   // Convert dateOfBirth string to Date if needed
@@ -262,7 +262,7 @@ export const deactivateElder = async (userId: string, elderId: string) => {
   });
 
   if (!access || access.accessLevel !== 'OWNER') {
-    throw new Error('Only owner can deactivate elder');
+    throw createError.ownerOnly();
   }
 
   const elder = await prisma.elder.update({
@@ -291,7 +291,7 @@ export const deleteElder = async (userId: string, elderId: string) => {
   });
 
   if (!access || access.accessLevel !== 'OWNER') {
-    throw new Error('Only owner can delete elder');
+    throw createError.ownerOnly();
   }
 
   // Delete elder (Cascade delete will handle related records if configured in schema, otherwise might need manual cleanup)
@@ -334,7 +334,7 @@ export const inviteMember = async (
   });
 
   if (!access || access.accessLevel !== 'OWNER') {
-    throw new Error('Only owner can invite members');
+    throw createError.ownerOnly();
   }
 
   // Find invitee user
@@ -343,7 +343,7 @@ export const inviteMember = async (
   });
 
   if (!inviteeUser) {
-    throw new Error('User not found');
+    throw new ApiError('user_not_found', 'ไม่พบผู้ใช้งานที่มีอีเมลนี้ กรุณาตรวจสอบอีเมลอีกครั้ง หรือผู้ใช้ยังไม่ได้ลงทะเบียน');
   }
 
   // Check if already has access
@@ -424,12 +424,12 @@ export const updateMemberAccess = async (
   });
 
   if (!access || access.accessLevel !== 'OWNER') {
-    throw new Error('Only owner can update member access');
+    throw createError.ownerOnly();
   }
 
   // Cannot update self
   if (targetUserId === userId) {
-    throw new Error('Cannot update your own access level');
+    throw createError.cannotUpdateSelf();
   }
 
   // Check target user access
@@ -443,17 +443,17 @@ export const updateMemberAccess = async (
   });
 
   if (!targetAccess) {
-    throw new Error('Member not found');
+    throw createError.memberNotFound();
   }
 
   // Cannot change another Owner's role
   if (targetAccess.accessLevel === 'OWNER') {
-    throw new Error('Cannot change access level of an owner');
+    throw createError.cannotModifyOwner();
   }
 
   // Only allow switching between EDITOR and VIEWER
   if (newAccessLevel !== 'EDITOR' && newAccessLevel !== 'VIEWER') {
-    throw new Error('Invalid access level');
+    throw createError.invalidAccessLevel();
   }
 
   const updatedAccess = await prisma.userElderAccess.update({
@@ -501,12 +501,12 @@ export const removeMember = async (
   });
 
   if (!access || access.accessLevel !== 'OWNER') {
-    throw new Error('Only owner can remove members');
+    throw createError.ownerOnly();
   }
 
   // Cannot remove self
   if (memberUserId === userId) {
-    throw new Error('Cannot remove yourself');
+    throw createError.cannotRemoveSelf();
   }
 
   // Check if member is also OWNER (cannot remove other owners)
@@ -520,7 +520,7 @@ export const removeMember = async (
   });
 
   if (memberAccess?.accessLevel === 'OWNER') {
-    throw new Error('Cannot remove owner');
+    throw createError.cannotModifyOwner();
   }
 
   await prisma.userElderAccess.delete({
@@ -552,7 +552,7 @@ export const getElderMembers = async (userId: string, elderId: string) => {
   });
 
   if (!hasAccess) {
-    throw new Error('Access denied');
+    throw createError.accessDenied();
   }
 
   const members = await prisma.userElderAccess.findMany({

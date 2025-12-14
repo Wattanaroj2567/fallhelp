@@ -1,5 +1,6 @@
 import { Resend } from 'resend';
 import createDebug from 'debug';
+import { createError } from './ApiError';
 
 const log = createDebug('fallhelp:email');
 
@@ -59,13 +60,13 @@ export const sendEmail = async (options: {
 
     if (error) {
       log('❌ Resend API error: %O', error);
-      throw new Error(error.message || 'Failed to send email');
+      throw createError.emailFailed();
     }
 
     log('✅ Email sent successfully! ID: %s', data?.id);
   } catch (error: any) {
     log('❌ Email send error: %O', error);
-    throw new Error(error.message || 'Failed to send email');
+    throw createError.emailFailed();
   }
 };
 

@@ -1,3 +1,4 @@
+
 # AGENT.md - Senior Architect & Guardian Guidelines
 
 ## 🎯 CORE IDENTITY

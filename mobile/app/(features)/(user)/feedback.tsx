@@ -9,6 +9,7 @@ import { ScreenWrapper } from "@/components/ScreenWrapper";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import Logger from "@/utils/logger";
+import { showErrorMessage } from "@/utils/errorHelper";
 
 // ==========================================
 // 📱 LAYER: View (Component)
@@ -50,10 +51,7 @@ export default function FeedbackScreen() {
     },
     onError: (error: any) => {
       Logger.error("Error submitting feedback:", error);
-      Alert.alert(
-        "ข้อผิดพลาด",
-        "ไม่สามารถส่งความคิดเห็นได้ กรุณาลองใหม่ภายหลัง"
-      );
+      showErrorMessage("ข้อผิดพลาด", error);
     },
   });
 

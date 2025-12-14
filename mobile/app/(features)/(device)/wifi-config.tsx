@@ -18,8 +18,9 @@ import { configureWifi } from "@/services/deviceService";
 import { FloatingLabelInput } from "@/components/FloatingLabelInput";
 import { ScreenWrapper } from "@/components/ScreenWrapper";
 import { ScreenHeader } from "@/components/ScreenHeader";
-import { PrimaryButton } from "@/components/PrimaryButton";
 import Logger from "@/utils/logger";
+import { showErrorMessage } from "@/utils/errorHelper";
+import { PrimaryButton } from "@/components/PrimaryButton";
 
 // ==========================================
 // 📱 LAYER: View (Screen)
@@ -67,7 +68,7 @@ export default function WifiConfig() {
     },
     onError: (error: any) => {
       Logger.error("Error configuring WiFi:", error);
-      Alert.alert("ข้อผิดพลาด", error.message || "ไม่สามารถเชื่อมต่อ WiFi ได้");
+      showErrorMessage("ข้อผิดพลาด", error);
     },
   });
 

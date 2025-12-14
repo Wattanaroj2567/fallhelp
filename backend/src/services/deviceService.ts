@@ -3,7 +3,7 @@ import { generateDevicePairingQR, generateWiFiQR } from '../utils/qrcode.js';
 import crypto from 'crypto';
 import prisma from '../prisma.js';
 import createDebug from 'debug';
-import { AppError } from '../utils/AppError.js';
+import { createError } from '../utils/ApiError.js';
 import { encrypt, decrypt } from '../utils/encryption.js';
 import { mqttClient } from '../iot/mqtt/mqttClient.js';
 import { MQTT_TOPICS } from '../iot/mqtt/topics.js';
@@ -68,7 +68,7 @@ export const getDeviceByCode = async (deviceCode: string) => {
   });
 
   if (!device) {
-    throw new Error('Device not found');
+    throw createError.deviceNotFound();
   }
 
   const qrCode = await generateDevicePairingQR(device.deviceCode, device.serialNumber);
@@ -100,7 +100,7 @@ export const pairDevice = async (
   log(`[PairDevice] Access record found:`, access);
 
   if (!access || access.accessLevel !== 'OWNER') {
-    throw new AppError('Only owner can pair devices', 403);
+    throw createError.ownerOnly();
   }
 
   // Find device
@@ -109,12 +109,12 @@ export const pairDevice = async (
   });
 
   if (!device) {
-    throw new AppError('Device not found', 404);
+    throw createError.deviceNotFound();
   }
 
   // Check if device is already paired
   if (device.elderId) {
-    throw new AppError('Device is already paired with another elder', 409);
+    throw createError.deviceAlreadyPaired();
   }
 
   // Check if elder already has a device
@@ -123,7 +123,7 @@ export const pairDevice = async (
   });
 
   if (elderDevice) {
-    throw new AppError('Elder already has a paired device', 409);
+    throw createError.deviceAlreadyPaired();
   }
 
   // Pair device
@@ -166,7 +166,7 @@ export const unpairDevice = async (userId: string, deviceId: string) => {
   });
 
   if (!device || !device.elderId) {
-    throw new Error('Device not found or not paired');
+    throw createError.deviceNotPaired();
   }
 
   // Check if user is OWNER
@@ -180,7 +180,7 @@ export const unpairDevice = async (userId: string, deviceId: string) => {
   });
 
   if (!access || access.accessLevel !== 'OWNER') {
-    throw new Error('Only owner can unpair devices');
+    throw createError.ownerOnly();
   }
 
   // Unpair device
@@ -204,7 +204,7 @@ export const forceUnpairDevice = async (deviceId: string) => {
   });
 
   if (!device) {
-    throw new Error('Device not found');
+    throw createError.deviceNotFound();
   }
 
   // Unpair device regardless of current status
@@ -240,7 +240,7 @@ export const configureWiFi = async (
   });
 
   if (!device || !device.elderId) {
-    throw new Error('Device not found or not paired');
+    throw createError.deviceNotPaired();
   }
 
   // Check if user has access
@@ -254,7 +254,7 @@ export const configureWiFi = async (
   });
 
   if (!access || (access.accessLevel !== 'OWNER' && access.accessLevel !== 'EDITOR')) {
-    throw new Error('Only owner or editor can configure WiFi');
+    throw createError.editorRequired();
   }
 
   // Update WiFi config
@@ -303,7 +303,7 @@ export const getDeviceConfig = async (userId: string, deviceId: string) => {
   });
 
   if (!device || !device.elderId) {
-    throw new Error('Device not found or not paired');
+    throw createError.deviceNotPaired();
   }
 
   // Check if user has access
@@ -317,7 +317,7 @@ export const getDeviceConfig = async (userId: string, deviceId: string) => {
   });
 
   if (!access) {
-    throw new Error('Access denied');
+    throw createError.accessDenied();
   }
 
   const config = device.config;

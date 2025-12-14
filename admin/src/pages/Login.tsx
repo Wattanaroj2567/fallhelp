@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import { Lock, Mail, Eye, EyeOff } from 'lucide-react';
@@ -96,11 +96,7 @@ export default function Login() {
                         {loading ? 'Signing in...' : 'Sign In'}
                     </button>
 
-                    <div className="text-center mt-4">
-                        <Link to="/forgot-password" className="text-sm text-gray-500 hover:text-primary">
-                            ลืมรหัสผ่าน?
-                        </Link>
-                    </div>
+
                 </form>
             </div>
         </div>

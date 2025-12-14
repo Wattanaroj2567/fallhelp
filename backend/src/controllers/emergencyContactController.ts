@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import prisma from '../prisma.js';
 import { asyncHandler } from '../middlewares/errorHandler.js';
+import { createError, ApiError } from '../utils/ApiError.js';
 
 // ==========================================
 // 🎮 LAYER: Interface (Controller)
@@ -26,7 +27,7 @@ export const createEmergencyContact = asyncHandler(async (req: Request, res: Res
   });
 
   if (!access || (access.accessLevel !== 'OWNER' && access.accessLevel !== 'EDITOR')) {
-    throw new Error('Only owner or editor can manage emergency contacts');
+    throw createError.editorRequired();
   }
 
   // Calculate next priority
@@ -76,7 +77,7 @@ export const getEmergencyContacts = asyncHandler(async (req: Request, res: Respo
   });
 
   if (!access) {
-    throw new Error('Access denied');
+    throw createError.accessDenied();
   }
 
   const contacts = await prisma.emergencyContact.findMany({
@@ -108,7 +109,7 @@ export const updateEmergencyContact = asyncHandler(async (req: Request, res: Res
   });
 
   if (!contact) {
-    throw new Error('Emergency contact not found');
+    throw new ApiError('resource_not_found', 'ไม่พบข้อมูลผู้ติดต่อฉุกเฉิน');
   }
 
   // Check if user is OWNER
@@ -122,7 +123,7 @@ export const updateEmergencyContact = asyncHandler(async (req: Request, res: Res
   });
 
   if (!access || (access.accessLevel !== 'OWNER' && access.accessLevel !== 'EDITOR')) {
-    throw new Error('Only owner or editor can update emergency contacts');
+    throw createError.editorRequired();
   }
 
   const updated = await prisma.emergencyContact.update({
@@ -155,7 +156,7 @@ export const deleteEmergencyContact = asyncHandler(async (req: Request, res: Res
   });
 
   if (!contact) {
-    throw new Error('Emergency contact not found');
+    throw new ApiError('resource_not_found', 'ไม่พบข้อมูลผู้ติดต่อฉุกเฉิน');
   }
 
   // Check if user is OWNER
@@ -169,7 +170,7 @@ export const deleteEmergencyContact = asyncHandler(async (req: Request, res: Res
   });
 
   if (!access || (access.accessLevel !== 'OWNER' && access.accessLevel !== 'EDITOR')) {
-    throw new Error('Only owner or editor can delete emergency contacts');
+    throw createError.editorRequired();
   }
 
   // Hard delete
@@ -192,7 +193,7 @@ export const reorderEmergencyContacts = asyncHandler(async (req: Request, res: R
   const { contactIds } = req.body; // Array of IDs in new order
 
   if (!Array.isArray(contactIds) || contactIds.length === 0) {
-    throw new Error('Invalid contact IDs');
+    throw createError.validationError('รหัสผู้ติดต่อไม่ถูกต้อง');
   }
 
   // Check access
@@ -206,7 +207,7 @@ export const reorderEmergencyContacts = asyncHandler(async (req: Request, res: R
   });
 
   if (!access || (access.accessLevel !== 'OWNER' && access.accessLevel !== 'EDITOR')) {
-    throw new Error('Only owner or editor can reorder contacts');
+    throw createError.editorRequired();
   }
 
   // Use transaction to update priorities safely

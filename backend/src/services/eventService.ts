@@ -1,6 +1,7 @@
 import { EventType, EventSeverity } from '../generated/prisma/client.js';
 import { getDateRange } from '../utils/time.js';
 import prisma from '../prisma.js';
+import { createError } from '../utils/ApiError.js';
 
 // ==========================================
 // ⚙️ LAYER: Business Logic (Service)
@@ -87,7 +88,7 @@ export const getEventsByElder = async (
   });
 
   if (!access) {
-    throw new Error('Access denied');
+    throw createError.accessDenied();
   }
 
   const page = options.page || 1;
@@ -172,7 +173,7 @@ export const getEventById = async (userId: string, eventId: string, timestamp: D
   });
 
   if (!event) {
-    throw new Error('Event not found');
+    throw createError.eventNotFound();
   }
 
   // Check if user has access to this elder
@@ -186,7 +187,7 @@ export const getEventById = async (userId: string, eventId: string, timestamp: D
   });
 
   if (!access) {
-    throw new Error('Access denied');
+    throw createError.accessDenied();
   }
 
   return event;
@@ -206,7 +207,7 @@ export const cancelFallEvent = async (userId: string, eventId: string, timestamp
   });
 
   if (!event) {
-    throw new Error('Event not found');
+    throw createError.eventNotFound();
   }
 
   // Check if user has access
@@ -220,17 +221,17 @@ export const cancelFallEvent = async (userId: string, eventId: string, timestamp
   });
 
   if (!access) {
-    throw new Error('Access denied');
+    throw createError.accessDenied();
   }
 
   // Check if event is a fall event
   if (event.type !== 'FALL') {
-    throw new Error('Only fall events can be cancelled');
+    throw createError.invalidEventType();
   }
 
   // Check if already cancelled
   if (event.isCancelled) {
-    throw new Error('Event already cancelled');
+    throw createError.eventAlreadyCancelled();
   }
 
   // Check if within cancel time window (30 seconds)
@@ -239,7 +240,7 @@ export const cancelFallEvent = async (userId: string, eventId: string, timestamp
   const diffSeconds = (now.getTime() - eventTime.getTime()) / 1000;
 
   if (diffSeconds > 30) {
-    throw new Error('Cancel time window expired (30 seconds)');
+    throw createError.cancelTimeExpired();
   }
 
   // Cancel event
@@ -274,7 +275,7 @@ export const getDailySummary = async (userId: string, elderId: string, days: num
   });
 
   if (!access) {
-    throw new Error('Access denied');
+    throw createError.accessDenied();
   }
 
   const { start, end } = getDateRange(days);
@@ -349,7 +350,7 @@ export const getMonthlySummary = async (userId: string, elderId: string, year: n
   });
 
   if (!access) {
-    throw new Error('Access denied');
+    throw createError.accessDenied();
   }
 
   const startDate = new Date(year, month - 1, 1);

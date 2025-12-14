@@ -55,9 +55,9 @@ docs/
 | Architecture | 4         | โครงสร้าง, Requirements, Design |
 | Features     | 3         | UI, Admin, Feedback             |
 | Guides       | 5         | คู่มือการใช้งาน                 |
-| Testing      | 3         | รายงานการทดสอบ                  |
+| Testing      | 1         | รายงานการทดสอบ                  |
 | Progress     | 5         | ความคืบหน้า                     |
-| **รวม**      | **20**    |                                 |
+| **รวม**      | **18**    |                                 |
 
 ---
 

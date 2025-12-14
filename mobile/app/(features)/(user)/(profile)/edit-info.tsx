@@ -6,6 +6,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getProfile, updateProfile } from '@/services/userService';
 import Logger from '@/utils/logger';
+import { showErrorMessage } from "@/utils/errorHelper";
 import { FloatingLabelInput } from '@/components/FloatingLabelInput';
 import { ScreenWrapper } from '@/components/ScreenWrapper';
 import { ScreenHeader } from '@/components/ScreenHeader';
@@ -77,7 +78,7 @@ export default function EditUserInfo() {
     },
     onError: (error: any) => {
       Logger.error('Error updating profile:', error);
-      Alert.alert('ข้อผิดพลาด', error.message || 'ไม่สามารถบันทึกข้อมูลได้');
+      showErrorMessage('ข้อผิดพลาด', error);
     },
   });
 

@@ -7,6 +7,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/services/api';
 import { getProfile, updateProfile, deleteAccount, getUserElders } from '@/services/userService';
 import Logger from '@/utils/logger';
+import { showErrorMessage } from "@/utils/errorHelper";
 import * as ImagePicker from 'expo-image-picker';
 import { ProfileSkeleton } from '@/components/skeletons';
 import { Image } from 'expo-image';
@@ -61,7 +62,7 @@ export default function Profile() {
     },
     onError: (error) => {
       Logger.error('Error updating profile image:', error);
-      // Alert.alert('ผิดพลาด', 'ไม่สามารถอัปเดตรูปโปรไฟล์ได้');
+      showErrorMessage('ผิดพลาด', error);
     },
   });
 
@@ -159,7 +160,7 @@ export default function Profile() {
       <ScreenHeader 
         title="ข้อมูลส่วนตัว" 
         onBack={() => {
-          if (navigation.canGoBack()) {
+          if (router.canGoBack()) {
             router.back();
           } else {
             router.replace("/(tabs)");

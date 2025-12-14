@@ -22,6 +22,7 @@ import {
 import * as SecureStore from "expo-secure-store";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Logger from "@/utils/logger";
+import { showErrorMessage } from "@/utils/errorHelper";
 import { GenderSelect } from "@/components/GenderSelect";
 import { useTheme } from "react-native-paper";
 import { FloatingLabelInput } from "@/components/FloatingLabelInput";
@@ -215,8 +216,8 @@ export default function Step1() {
       router.push("/(setup)/step2-device-pairing");
     },
     onError: (error: any) => {
-      Logger.error("Error saving elder:", error);
-      Alert.alert("ข้อผิดพลาด", error.message || "ไม่สามารถบันทึกข้อมูลได้");
+      Logger.error("Save elder error:", error);
+      showErrorMessage("ข้อผิดพลาด", error);
     },
   });
 

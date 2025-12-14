@@ -8,7 +8,7 @@ import { FloatingLabelInput } from "@/components/FloatingLabelInput";
 import { ScreenWrapper } from "@/components/ScreenWrapper";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { useAuth } from "@/context/AuthContext"; // Import hook
-import { getErrorMessage } from "@/utils/errorHelper";
+import { getErrorMessage, showErrorMessage } from "@/utils/errorHelper";
 
 // ==========================================
 // 📱 LAYER: View (Component)
@@ -70,9 +70,7 @@ export default function LoginScreen() {
       Alert.alert("เข้าสู่ระบบสำเร็จ", "ยินดีต้อนรับกลับ");
     },
     onError: (error: any) => {
-      const message = getErrorMessage(error);
-      Logger.error("Login error:", error);
-      Alert.alert("เข้าสู่ระบบล้มเหลว", message);
+      showErrorMessage("เข้าสู่ระบบล้มเหลว", error);
     },
   });
 
