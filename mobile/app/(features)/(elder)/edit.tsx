@@ -55,8 +55,11 @@ export default function EditElderInfo() {
       const elders = await getUserElders();
       return elders && elders.length > 0 ? elders[0] : null;
     },
+    staleTime: 1000 * 60 * 5, // Cache for 5 mins to prevent flicker
   });
 
+  // Calculate ReadOnly status
+  // Fix flicker: If elder exists but accessLevel is missing (rare), treat as Loading or Default to ReadOnly safely
   const isReadOnly = !elder || (elder.accessLevel !== 'OWNER' && elder.accessLevel !== 'EDITOR');
 
   // ==========================================

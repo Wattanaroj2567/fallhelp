@@ -21,7 +21,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getUserElders as getElders, getProfile } from '@/services/userService';
 import { listEvents, cancelEvent } from '@/services/eventService';
 import { getUnreadCount } from '@/services/notificationService';
-import { useSocket } from '@/hooks/useSocket';
+import { useSocketContext } from '@/context/SocketContext';
 import { useAuth } from '@/context/AuthContext';
 import Logger from '@/utils/logger';
 
@@ -52,6 +52,28 @@ export default function Home() {
   const [imageError, setImageError] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const { top } = useSafeAreaInsets();
+
+  // ==========================================
+  // 🔌 LAYER: Logic (Real-time / Side Effects)
+  // Purpose: Handle Socket.IO connection and updates (via Global Context)
+  // ==========================================
+  const {
+    isConnected,
+    socketConnected: _socketConnected,
+    wasEverConnected: _wasEverConnected,
+    fallStatus,
+    lastFallUpdate,
+    heartRate,
+    lastHeartUpdate: _lastHeartUpdate,
+    activeFallEventId,
+    setFallStatus,
+    setLastFallUpdate,
+    setHeartRate,
+    setLastHeartUpdate,
+    setActiveFallEventId,
+    setIsConnected: _setIsConnected,
+    setElderConfig,
+  } = useSocketContext();
 
   // ==========================================
   // ⚙️ LAYER: Logic (Data Fetching)
@@ -87,12 +109,16 @@ export default function Home() {
   // Refetch data when screen is focused
   useFocusEffect(
     React.useCallback(() => {
-      // Invalidate ALL queries to force fresh data (especially device status)
-      queryClient.invalidateQueries({ queryKey: ['userElders'] });
-      queryClient.invalidateQueries({ queryKey: ['userProfile'] });
-      queryClient.invalidateQueries({ queryKey: ['initialEvents'] });
-      queryClient.invalidateQueries({ queryKey: ['unreadCount'] });
-    }, [queryClient]),
+      // Refetch data in background without invalidating cache (prevents loading flicker)
+      queryClient.refetchQueries({ queryKey: ['userElders'] });
+      queryClient.refetchQueries({ queryKey: ['userProfile'] });
+      // Only refetch events if we are not connected to socket
+      // If connected, we trust the live stream and don't want stale API data to override
+      if (!isConnected) {
+        queryClient.refetchQueries({ queryKey: ['initialEvents'] });
+      }
+      queryClient.refetchQueries({ queryKey: ['unreadCount'] });
+    }, [queryClient, isConnected]),
   );
 
   // 2. Fetch Initial Events (for initial state before socket updates)
@@ -128,59 +154,129 @@ export default function Home() {
     staleTime: 10000,
   });
 
-  // ==========================================
-  // 🔌 LAYER: Logic (Real-time / Side Effects)
-  // Purpose: Handle Socket.IO connection and updates
-  // ==========================================
-  const {
-    isConnected,
-    socketConnected: _socketConnected,
-    wasEverConnected: _wasEverConnected,
-    fallStatus,
-    lastFallUpdate,
-    heartRate,
-    lastHeartUpdate: _lastHeartUpdate,
-    activeFallEventId,
-    setFallStatus,
-    setLastFallUpdate,
-    setHeartRate,
-    setLastHeartUpdate,
-    setActiveFallEventId,
-    setIsConnected: _setIsConnected,
-  } = useSocket(elderInfo?.id, elderInfo?.device?.id);
+  // Configure socket with elder/device IDs when available
+  useEffect(() => {
+    if (elderInfo?.id && elderInfo?.device?.id) {
+      setElderConfig(elderInfo.id, elderInfo.device.id);
+    }
+  }, [elderInfo?.id, elderInfo?.device?.id, setElderConfig]);
 
   // Sync Initial Event Data
+  // Use initialEvents?.length to force re-trigger when data changes
   useEffect(() => {
+    // OLD LOGIC REMOVED: if (isConnected) return;
+    // We now ALWAYS compare timestamps to ensure we show the freshest data,
+    // whether it comes from the socket or a fresh API fetch on focus.
+
     if (initialEvents && initialEvents.length > 0) {
+      // 1. Sync Heart Rate
       const latestHR = initialEvents.find((e) =>
         ['HEART_RATE_NORMAL', 'HEART_RATE_HIGH', 'HEART_RATE_LOW'].includes(e.type),
       );
+
       if (latestHR && latestHR.value) {
-        setHeartRate(latestHR.value);
-        setLastHeartUpdate(new Date(latestHR.timestamp));
+        const eventTime = new Date(latestHR.timestamp).getTime();
+        const contextTime = _lastHeartUpdate ? _lastHeartUpdate.getTime() : 0;
+
+        // If API data is newer than Context data, update Context
+        if (eventTime > contextTime) {
+          Logger.debug('[Dashboard] Syncing newer HR from API', {
+            api: eventTime,
+            ctx: contextTime,
+          });
+          setHeartRate(latestHR.value);
+          setLastHeartUpdate(new Date(latestHR.timestamp));
+          // If data is recent (< 60s), consider connected
+          if (Date.now() - eventTime < 60000) {
+            _setIsConnected(true);
+          }
+        }
       }
 
+      // 2. Sync Fall Status
       const latestFall = initialEvents.find((e) => e.type === 'FALL');
+
       if (latestFall) {
-        setLastFallUpdate(new Date(latestFall.timestamp));
-        setFallStatus(latestFall.isCancelled ? 'NORMAL' : 'FALL');
-        if (!latestFall.isCancelled) {
-          setActiveFallEventId(latestFall.id);
+        const eventTime = new Date(latestFall.timestamp).getTime();
+        const contextTime = lastFallUpdate ? lastFallUpdate.getTime() : 0;
+
+        if (eventTime > contextTime) {
+          Logger.debug('[Dashboard] Syncing newer Fall from API', {
+            api: eventTime,
+            ctx: contextTime,
+          });
+          setLastFallUpdate(new Date(latestFall.timestamp));
+          setFallStatus(latestFall.isCancelled ? 'NORMAL' : 'FALL');
+          if (!latestFall.isCancelled) {
+            setActiveFallEventId(latestFall.id);
+          }
         }
       } else {
-        setFallStatus('NORMAL');
+        // Only set to NORMAL if we aren't currently locally tracking a FALL (active socket event)
+        // AND if we haven't received a newer fall update via socket
+        if (fallStatus !== 'FALL') {
+          // Safe to assume normal if API says no fall and we don't have a local fall
+          // But actually, "latestFall" being undefined just means no FALL event in the page 1 list.
+          // It doesn't mean "Resolved". So we should be careful resetting to NORMAL based on absence.
+          // Better to leave existing status alone if no fall event found in API list.
+        }
+      }
+
+      // 3. Use DEVICE_ONLINE event to determine connection status if no heart rate data
+      // Only check this if we aren't currently connected via socket
+      if (!isConnected) {
+        if (!latestHR || !latestHR.value) {
+          const latestDeviceOnline = initialEvents.find((e) => e.type === 'DEVICE_ONLINE');
+          if (latestDeviceOnline) {
+            const eventTime = new Date(latestDeviceOnline.timestamp).getTime();
+            const now = Date.now();
+            const timeDiff = now - eventTime;
+            const THIRTY_SECONDS = 30 * 1000;
+            const isValidTimestamp = eventTime > 946684800000;
+
+            if (isValidTimestamp && timeDiff < THIRTY_SECONDS) {
+              _setIsConnected(true);
+            } else if (!isValidTimestamp) {
+              if (elderInfo?.device?.lastOnline) {
+                const lastOnlineTime = new Date(elderInfo.device.lastOnline).getTime();
+                const lastOnlineDiff = now - lastOnlineTime;
+                if (lastOnlineDiff < THIRTY_SECONDS) {
+                  _setIsConnected(true);
+                } else {
+                  _setIsConnected(false);
+                }
+              }
+            } else {
+              _setIsConnected(false);
+            }
+          } else {
+            if (elderInfo?.device?.lastOnline) {
+              const lastOnlineTime = new Date(elderInfo.device.lastOnline).getTime();
+              const lastOnlineDiff = Date.now() - lastOnlineTime;
+              const THIRTY_SECONDS = 30 * 1000;
+              if (lastOnlineDiff < THIRTY_SECONDS) {
+                _setIsConnected(true);
+              } else {
+                _setIsConnected(false);
+              }
+            }
+          }
+        }
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    initialEvents,
+    isConnected,
+    initialEvents?.length, // Use length to force re-trigger when data changes
+    initialEvents, // Keep initialEvents for accessing data
+    elderInfo?.device?.lastOnline, // Include device lastOnline to check connection
     setHeartRate,
     setLastHeartUpdate,
     setFallStatus,
     setLastFallUpdate,
     setActiveFallEventId,
-  ]);
-
-  // ==========================================
+    _setIsConnected,
+  ]); // ==========================================
   // 🎮 LAYER: Logic (Event Handlers)
   // Purpose: Handle user interactions
   // ==========================================
@@ -255,18 +351,13 @@ export default function Home() {
   // ==========================================
   // 🖼️ LAYER: View (Render)
   // Purpose: Render the UI JSX
-  // ==========================================
-
-  // Show loading spinner while checking elder data
+  // ==========================================  // Show loading spinner while checking elder data
   if (isLoading) {
     return <LoadingScreen useScreenWrapper={true} message="กำลังโหลดข้อมูล..." />;
-  }
-
-  // If no elder data, don't render (useProtectedRoute will redirect)
+  } // If no elder data, don't render (useProtectedRoute will redirect)
   if (!elderInfo) {
     return null;
   }
-
   return (
     <View className="flex-1 bg-white">
       <ScreenWrapper
@@ -285,7 +376,6 @@ export default function Home() {
               {userProfile?.firstName}
             </Text>
           </View>
-
           <View className="flex-row items-center gap-5">
             <Bounceable
               onPress={() => setShowNotifications(true)}
@@ -297,7 +387,6 @@ export default function Home() {
                 <View className="absolute top-1 right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white" />
               )}
             </Bounceable>
-
             <Bounceable
               onPress={() => router.push('/(features)/(user)/(profile)')}
               className="rounded-full overflow-hidden"
