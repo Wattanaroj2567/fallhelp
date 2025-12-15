@@ -34,7 +34,7 @@
 **สิ่งที่เหลือ (Phase 4):**
 
 - **Sensor Integration:** ทดสอบข้อมูล HR/Fall จาก Hardware จริง ผ่าน MQTT → แสดงผลบน Dashboard
-- **False Alarm:** ทดสอบปุ่มยกเลิกการแจ้งเตือนบนอุปกรณ์ ภายใน 30 วินาที
+- **False Alarm:** ทดสอบปุ่มยกเลิกการแจ้งเตือนบนอุปกรณ์ (False Alarm Cancel Button) ภายใน 30 วินาที
 - **Demo:** สาธิตการทำงานให้อาจารย์/คณะกรรมการ
 
 #### Phase 1: ฟังก์ชันหลัก (Core Functions)
@@ -124,13 +124,13 @@
 
 **Phase 3 (0%):**
 
-- Fall Detection Algorithm: ใช้ **SisFall Dataset** + จำลองล้มจริง 2-3 คน
+- Fall Detection Algorithm: ใช้ **Threshold Values จากงานวิจัยที่วิเคราะห์ SiSFall dataset** + จำลองล้มจริง 2-3 คน
 - ส่ง JSON ผ่าน MQTT เมื่อเกิดเหตุการณ์
 - **ประกอบ Prototype เสร็จ:** PCB/กล่อง + สายคล้องคอ
 
 **Phase 4 (0%):**
 
-- **ทดสอบความแม่นยำ:** เทียบผล SisFall + อาสาสมัครจริง
+- **ทดสอบความแม่นยำ:** เทียบผลจาก Baseline (SiSFall research) + อาสาสมัครจริง
 - ทดสอบ HR Accuracy เทียบกับอุปกรณ์มาตรฐาน
 - ทดสอบ Battery Life: ใช้งานได้กี่ชั่วโมง/การชาร์จ
 
@@ -225,7 +225,7 @@
 
 **Actor: ผู้สูงอายุ (Elder):**
 
-- [ ] พัฒนาฟังก์ชันการยกเลิกการแจ้งเตือน (False Alarm) ผ่านปุ่มบนอุปกรณ์
+- [ ] พัฒนาฟังก์ชันการยกเลิกการแจ้งเตือน (False Alarm) ผ่านปุ่มบนอุปกรณ์ (False Alarm Cancel Button)
 
 **Actor: ญาติผู้ดูแล (Caregiver):**
 
@@ -324,7 +324,7 @@
   - การหกล้ม (Fall Detection)
   - ค่าชีพจรสูงกว่าเกณฑ์ (HR High > 120 BPM)
   - ค่าชีพจรต่ำกว่าเกณฑ์ (HR Low < 50 BPM)
-- [ ] รองรับการยกเลิกการแจ้งเตือน (False Alarm) ผ่านปุ่มกดภายใน 30 วินาที
+- [ ] รองรับการยกเลิกการแจ้งเตือน (False Alarm) ผ่านปุ่มกดภายใน 30 วินาที (False Alarm Cancel Button)
 
 **การออกแบบ (Physical Design):**
 

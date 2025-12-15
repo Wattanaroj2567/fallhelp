@@ -6,12 +6,12 @@
 
 ## Project Status (สถานะโปรเจค)
 
-| Component    | Status   | Date              |
-| ------------ | -------- | ----------------- |
-| Backend API  | Complete | November 26, 2025 |
-| Mobile App   | Complete | December 1, 2025  |
-| Admin Panel  | Complete | December 1, 2025  |
-| IoT Hardware | Complete | December 5, 2025  |
+| Component    | Status   | Start Date        | Complete Date     | Note                          |
+| ------------ | -------- | ----------------- | ----------------- | ----------------------------- |
+| Backend API  | Complete | November 24, 2025 | November 26, 2025 | มีการปรับปรุงต่อเนื่อง        |
+| Mobile App   | Complete | November 26, 2025 | December 1, 2025  | มีการปรับปรุงต่อเนื่อง        |
+| Admin Panel  | Complete | Unknown           | December 1, 2025  | -                             |
+| IoT Hardware | Complete | Unknown           | December 5, 2025  | Phase 1: WiFi + MQTT only     |
 
 ---
 
@@ -103,6 +103,8 @@ fallhelp/
 │   ├── guides/           # Setup & troubleshooting
 │   ├── progress/         # Development history
 │   └── testing/          # Test reports
+│
+├── bug-fix-errorProblems.txt  # Bug & Error Log (Manual - สำหรับเก็บ Log ที่เจอ)
 │
 └── README.md             # This file
 ```
@@ -217,12 +219,24 @@ fallhelp/
 
 All documentation is consolidated in `docs/` folder:
 
-| Document                                                            | Description               |
-| ------------------------------------------------------------------- | ------------------------- |
-| [Documentation Index](./docs/README.md)                             | Central documentation hub |
-| [Project Structure](./docs/architecture/PROJECT_STRUCTURE.md)       | Full project layout       |
-| [System Design](./docs/architecture/SYSTEM_DESIGN.md)               | Architecture details      |
-| [Implementation Summary](./docs/progress/IMPLEMENTATION_SUMMARY.md) | Backend API reference     |
+| Document                                                      | Description               |
+| ------------------------------------------------------------- | ------------------------- |
+| [Documentation Index](./docs/README.md)                       | Central documentation hub |
+| [Project Structure](./docs/architecture/PROJECT_STRUCTURE.md) | Full project layout       |
+| [System Design](./docs/architecture/SYSTEM_DESIGN.md)         | Architecture details      |
+
+## Bug & Error Tracking (การติดตาม Bug และ Error)
+
+**ไฟล์สำคัญ:** `bug-fix-errorProblems.txt`
+
+ไฟล์นี้ใช้เก็บ Log ของ Bug และ Error ที่พบระหว่างการพัฒนา โดยผู้พัฒนาจะเป็นคนบันทึกเอง เพื่อให้สามารถ Fix และ Debug ได้สะดวก
+
+**วิธีใช้งาน:**
+
+- บันทึก Error messages, Stack traces, หรือปัญหาที่เจอ
+- ระบุ Component/Layer ที่เกิดปัญหา (Backend/Mobile/Admin/Arduino)
+- บันทึกวิธีแก้ไข (ถ้าแก้แล้ว)
+- ใช้เป็น Reference สำหรับปัญหาที่เจอซ้ำ
 
 ---
 
@@ -285,13 +299,14 @@ npm run dev
 
 ## Development Timeline (ไทม์ไลน์การพัฒนา)
 
-| Phase                  | Date                 | Status   |
-| ---------------------- | -------------------- | -------- |
-| Backend Development    | Nov 24-26, 2025      | Complete |
-| Mobile App Development | Nov 26 - Dec 1, 2025 | Complete |
-| IoT Device Development | Dec 1-5, 2025        | Complete |
-| Integration Testing    | Dec 5, 2025          | Complete |
-| Documentation Refactor | Dec 13, 2025         | Complete |
+| Phase                   | Start Date        | Complete Date     | Status   | Note                    |
+| ----------------------- | ----------------- | ----------------- | -------- | ----------------------- |
+| Backend Development     | November 24, 2025 | November 26, 2025 | Complete | มีการปรับปรุงต่อเนื่อง  |
+| Mobile App Development  | November 26, 2025 | December 1, 2025  | Complete | มีการปรับปรุงต่อเนื่อง  |
+| Admin Panel Development | Unknown           | December 1, 2025  | Complete | -                       |
+| IoT Device Development  | Unknown           | December 5, 2025  | Complete | Phase 1: WiFi + MQTT    |
+| Integration Testing     | -                 | December 5, 2025  | Complete | -                       |
+| Documentation Refactor  | -                 | December 13, 2025 | Complete | -                       |
 
 ---
 
@@ -330,4 +345,4 @@ MIT License
 
 ---
 
-**Last Updated:** December 13, 2025
+**Last Updated:** December 15, 2025

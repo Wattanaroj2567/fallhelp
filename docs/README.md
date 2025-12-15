@@ -53,7 +53,7 @@ This directory contains the single source of truth for all project documentation
 | เอกสาร                                           | คำอธิบาย                           |
 | :----------------------------------------------- | :--------------------------------- |
 | [API Documentation](API_DOCUMENTATION.md)        | เอกสาร API ครบทุก Endpoints        |
-| [SisFall Dataset](references/SISFALL_DATASET.md) | Dataset สำหรับพัฒนา Fall Detection |
+| [SiSFall Dataset Reference](references/SISFALL_DATASET.md) | ข้อมูลอ้างอิงและแนวทาง Fall Detection (ใช้ Threshold จากงานวิจัย) |
 
 ---
 
@@ -68,4 +68,31 @@ This directory contains the single source of truth for all project documentation
 
 ---
 
-**Last Updated:** December 13, 2025
+---
+
+## Arduino/Hardware Documentation
+
+| เอกสาร | คำอธิบาย |
+| :----- | :------- |
+| [`arduino/README.md`](../arduino/README.md) | ESP32 Firmware overview และ Captive Portal setup |
+| [`arduino/docs/README.md`](../arduino/docs/README.md) | Arduino Documentation Index |
+| [`arduino/docs/SENSORS_README.md`](../arduino/docs/SENSORS_README.md) | Sensor modules documentation (MPU6050, Pulse, False Alarm Cancel, Power, Alert) |
+| [`arduino/docs/FALL_DETECTION_TUNING.md`](../arduino/docs/FALL_DETECTION_TUNING.md) | Fall detection testing & tuning guide (รวมแนวทางที่ใช้) |
+
+---
+
+## Bug & Error Tracking
+
+**ไฟล์สำคัญ:** [`bug-fix-errorProblems.txt`](../bug-fix-errorProblems.txt)
+
+ไฟล์นี้ใช้เก็บ Log ของ Bug และ Error ที่พบระหว่างการพัฒนา โดยผู้พัฒนาจะเป็นคนบันทึกเอง เพื่อให้สามารถ Fix และ Debug ได้สะดวก
+
+**วิธีใช้งาน:**
+- บันทึก Error messages, Stack traces, หรือปัญหาที่เจอ
+- ระบุ Component/Layer ที่เกิดปัญหา (Backend/Mobile/Admin/Arduino)
+- บันทึกวิธีแก้ไข (ถ้าแก้แล้ว)
+- ใช้เป็น Reference สำหรับปัญหาที่เจอซ้ำ
+
+---
+
+**Last Updated:** December 15, 2025

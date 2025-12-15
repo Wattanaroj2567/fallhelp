@@ -9,11 +9,67 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Development Timeline
+
+**Project Start Dates:**
+- Backend API: November 24, 2025
+- Mobile App: November 26, 2025
+- Admin Panel: Unknown
+- IoT Hardware (Arduino): Unknown
+
+**Project Completion Dates:**
+- Backend API: November 26, 2025 (3 days)
+- Mobile App: December 1, 2025 (6 days)
+- Admin Panel: December 1, 2025
+- IoT Hardware: December 5, 2025
+
 ### Added
+
+- **Arduino Sensor Modules (December 15, 2025)**
+  - `MPU6050_Sensor.ino` - Fall Detection Sensor with SiSFall-based thresholds
+  - `PulseSensor.ino` - Heart Rate Monitoring (XD-58C)
+  - `SOSButton.ino` - Emergency Button Handler (GPIO4)
+  - `PowerManagement.ino` - Battery & Power Management (LiPo 3.7V, TP4056, Step-Up)
+  - `AlertSystem.ino` - Speaker & Alert System (Grove Speaker, LED indicator)
+  - `SensorManager.ino` - Unified Sensor Interface
+  - `FallDetectionConfig.ino` - SiSFall-based threshold configuration
+  - `SENSORS_README.md` - Complete sensor documentation
+  - `FALL_DETECTION_TUNING.md` - Testing & tuning guide (รวมแนวทางที่ใช้)
+
+- **Fall Detection Configuration**
+  - Research-based thresholds from SiSFall analysis papers (2.3g @ 150ms default)
+  - 3 sensitivity levels (Low/Medium/High)
+  - Custom threshold fine-tuning support
+  - Automatic initialization in SensorManager
+
+- **Hardware Support**
+  - MPU6050 (I2C) - SDA=GPIO21, SCL=GPIO22
+  - Pulse Sensor XD-58C (Analog) - GPIO34
+  - Large Push Button Module - GPIO4
+  - Battery monitoring - GPIO35
+  - Charging status detection - GPIO32
+  - Power switch handling - GPIO33
+  - Grove Speaker - GPIO25 (PWM)
+  - LED indicator - GPIO2
 
 ### Changed
 
+- **Documentation Updates (December 15, 2025)**
+  - Updated `docs/references/SISFALL_DATASET.md` - Clarified approach: using research-based thresholds, not raw dataset
+  - Updated `docs/architecture/DEVELOPMENT_PLAN.md` - Corrected SiSFall dataset usage description
+  - Updated `docs/README.md` - Updated SiSFall reference description
+  - All documentation now clearly states: "Using Threshold Values from Research Papers, Not Raw Dataset"
+
+- **Arduino Code Structure**
+  - Modular sensor architecture (separate files for each sensor)
+  - Centralized sensor management through SensorManager
+  - Research-based fall detection thresholds as baseline
+
 ### Fixed
+
+- **SOS Button Pin Configuration**
+  - Changed from GPIO0 (BOOT button) to GPIO4 (Large Push Button Module)
+  - Updated pin definitions and documentation
 
 ---
 

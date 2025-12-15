@@ -1,13 +1,24 @@
 /**
  * @file fallhelp_esp32.ino
- * @brief FallHelp ESP32 IoT Device - Captive Portal WiFi Setup
- *
+ * @brief FallHelp ESP32 IoT Device - Main Firmware (WiFi + MQTT)
+ * 
+ * ใช้กับ: Main Entry Point - จัดการ WiFi, Captive Portal, และ MQTT Connection
+ * 
+ * Development Phase: Phase 1 - Core Functions (WiFi + MQTT only)
+ * - ESP32 เชื่อมต่อ Wi-Fi และส่งข้อมูลพื้นฐานไปยัง MQTT Broker
+ * - รองรับ AP Mode สำหรับตั้งค่า Wi-Fi ผ่าน Captive Portal
+ * 
  * Features:
  * - Open AP (No Password) for easy connection
  * - Captive Portal (Auto-open Web Page)
  * - Pre-configured MQTT Server
  * - Mobile-style Web UI
  * - Connect WiFi & MQTT
+ * - MQTT Last Will Testament (offline detection)
+ * 
+ * Future Integration (Phase 2-3):
+ * - SensorManager.ino สำหรับจัดการ sensors (Phase 2-3)
+ * - FallDetectionConfig.ino สำหรับ threshold configuration (Phase 3)
  */
 
 #include <WiFi.h>
@@ -16,7 +27,8 @@
 #include <Preferences.h>
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
-#include <Wire.h>
+// Phase 1: No I2C sensors yet - Wire.h will be added in Phase 2-3
+// #include <Wire.h>  // Phase 2: For MPU6050 (I2C)
 
 // ==================== Configuration ====================
 #define AP_SSID_PREFIX "FallHelp-"
@@ -28,7 +40,8 @@
 #define DNS_PORT 53
 
 // ==================== Pin Definitions ====================
-#define SOS_BTN_PIN 0
+// Phase 1: No sensors yet - Pin definitions will be added in Phase 2-3
+// #define FALSE_ALARM_BTN_PIN 4  // Phase 3: False Alarm Cancel Button (Large Push Button Module)
 
 // ==================== Global Objects ====================
 WebServer server(80);
@@ -269,8 +282,8 @@ void setup() {
   delay(1000);
 
   Serial.println("\n╔══════════════════════════════════════════════════╗");
-  Serial.println("║       FallHelp ESP32 v5.0 (Captive Portal)        ║");
-  Serial.println("║       Open AP | Auto Web Popup | No BLE           ║");
+  Serial.println("║   FallHelp ESP32 v1.0 - Phase 1 (WiFi + MQTT)    ║");
+  Serial.println("║       Open AP | Captive Portal | MQTT            ║");
   Serial.println("╚══════════════════════════════════════════════════╝");
 
   // Generate Device Serial
@@ -280,7 +293,8 @@ void setup() {
   deviceSerial = String(serialBuf);
   Serial.printf("Device Serial: %s\n", deviceSerial.c_str());
 
-  pinMode(SOS_BTN_PIN, INPUT_PULLUP);
+  // Phase 1: No sensors yet - Pin setup will be added in Phase 2-3
+  // pinMode(FALSE_ALARM_BTN_PIN, INPUT_PULLUP);  // Phase 3: False Alarm Cancel Button
 
   preferences.begin("fallhelp", false);
   loadWiFiConfig();

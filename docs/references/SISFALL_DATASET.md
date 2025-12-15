@@ -1,6 +1,8 @@
-# SisFall Dataset Reference
+# SiSFall Dataset Reference - Fall Detection Approach
 
-ข้อมูลอ้างอิง Dataset สำหรับพัฒนา Fall Detection Algorithm
+**⚠️ สำคัญ:** เราใช้ **Threshold Values จากงานวิจัย** ที่วิเคราะห์ SiSFall dataset แล้ว ไม่ใช่ข้อมูลดิบจาก dataset
+
+ข้อมูลอ้างอิงสำหรับพัฒนา Fall Detection Algorithm โดยใช้เทคนิคและค่า threshold ที่มีคนวิเคราะห์ SiSFall dataset แล้ว
 
 ---
 
@@ -12,6 +14,23 @@
 | **ปีที่เผยแพร่** | 2017                                      |
 | **วัตถุประสงค์** | วิจัยการตรวจจับการหกล้มและกิจกรรมประจำวัน |
 
+## แนวทางที่เราใช้ (Our Approach)
+
+**เราไม่ใช้ข้อมูลดิบจาก SiSFall dataset** แต่ใช้ **Threshold Values จากงานวิจัย** ที่วิเคราะห์ SiSFall dataset แล้ว
+
+**สรุปสั้นๆ:**
+- ใช้ Threshold จากงานวิจัย (baseline: 2.3g @ 150ms)
+- ทดสอบจริงกับ 2-3 คน
+- ปรับจูนตามผลการทดสอบ
+
+**ดูรายละเอียดแนวทาง:** [`arduino/docs/FALL_DETECTION_TUNING.md`](../../arduino/docs/FALL_DETECTION_TUNING.md)
+
+---
+
+## ข้อมูลอ้างอิง Dataset (Reference Only)
+
+**หมายเหตุ:** ข้อมูลด้านล่างเป็นข้อมูลอ้างอิงเท่านั้น เราไม่ได้ใช้ข้อมูลดิบจาก dataset
+
 **แหล่งดาวน์โหลด:**
 
 | เวอร์ชัน     | ลิงก์                                                                                              | คำอธิบาย                                                        |
@@ -19,7 +38,7 @@
 | **Original** | [SisFall Original Dataset](https://www.kaggle.com/datasets/nvnikhil0001/sis-fall-original-dataset) | ข้อมูลดิบจากงานวิจัยต้นฉบับ - ไฟล์แยกตาม Subject และ Activity   |
 | **Enhanced** | [SisFall Enhanced](https://www.kaggle.com/datasets/nvnikhil0001/sisfall-enhanced)                  | **มี Label 3 Class:** Fall, Non-Fall, Pre-Fall - พร้อมใช้กับ ML |
 
-**แนะนำ:** ใช้ **Enhanced** สำหรับ Threshold Analysis เพราะมี Label แบ่งกลุ่มมาให้แล้ว
+**สำหรับผู้ที่ต้องการวิเคราะห์เอง:** ใช้ **Enhanced** สำหรับ Threshold Analysis เพราะมี Label แบ่งกลุ่มมาให้แล้ว
 
 ---
 
@@ -96,12 +115,13 @@
 | 200 Hz                    | ปรับได้ (แนะนำ 50-100 Hz)  |
 | เอว                       | คอ (อาจต้องปรับ Threshold) |
 
-### วิธีใช้งาน
+### วิธีใช้งาน (สำหรับโปรเจกต์ FallHelp)
 
-1. **ดาวน์โหลด Dataset** จาก Kaggle
-2. **วิเคราะห์ค่า Threshold** จากข้อมูล Fall vs ADL
-3. **ปรับ Threshold** ให้เหมาะกับตำแหน่งติดคอ
-4. **ทดสอบกับอาสาสมัคร 2-3 คน** เพื่อ Fine-tune
+**เราใช้ Threshold จากงานวิจัย ไม่ใช่ข้อมูลดิบ**
+
+**ดูเอกสารเพิ่มเติม:**
+- [Fall Detection Tuning](../../arduino/docs/FALL_DETECTION_TUNING.md) - คู่มือการทดสอบและปรับจูน (รวมแนวทางที่ใช้)
+- `arduino/fallhelp_esp32/FallDetectionConfig.ino` - Configuration file
 
 ---
 
@@ -114,4 +134,5 @@
 
 ---
 
-**Last Updated:** December 13, 2025
+**Last Updated:** December 15, 2025  
+**Status:** Using Research-Based Thresholds (Not Raw Dataset)
