@@ -1,9 +1,9 @@
-import React, { Component, ReactNode } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { MaterialIcons } from "@expo/vector-icons";
-import { router } from "expo-router";
-import Logger from "@/utils/logger";
+import React, { Component, ReactNode } from 'react';
+import { View, Text, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { MaterialIcons } from '@expo/vector-icons';
+import { router } from 'expo-router';
+import Logger from '@/utils/logger';
 
 interface Props {
   children: ReactNode;
@@ -29,11 +29,8 @@ export class SectionErrorBoundary extends Component<Props, State> {
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    Logger.debug(
-      `[SectionErrorBoundary:${this.props.sectionName}] Error:`,
-      error.message
-    );
+  componentDidCatch(error: Error, _errorInfo: React.ErrorInfo) {
+    Logger.debug(`[SectionErrorBoundary:${this.props.sectionName}] Error:`, error.message);
   }
 
   handleGoBack = async () => {
@@ -45,14 +42,14 @@ export class SectionErrorBoundary extends Component<Props, State> {
           router.back();
           return;
         }
-      } catch (e) {
-        Logger.debug("router.back() not available, using replace()");
+      } catch (_e) {
+        Logger.debug('router.back() not available, using replace()');
       }
 
       // Fallback: Go to home tab
-      router.replace("/(tabs)");
+      router.replace('/(tabs)');
     } catch (e) {
-      Logger.error("Failed to navigate back:", e);
+      Logger.error('Failed to navigate back:', e);
       // Last resort: Reset error state
       this.setState({ hasError: false, error: null });
     }
@@ -65,15 +62,12 @@ export class SectionErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <SafeAreaView
-          className="flex-1 bg-white"
-          edges={["top", "left", "right"]}
-        >
+        <SafeAreaView className="flex-1 bg-white" edges={['top', 'left', 'right']}>
           <View className="flex-1 justify-center items-center px-8">
             <MaterialIcons name="warning" size={64} color="#F59E0B" />
 
             <Text className="font-kanit text-xl font-bold text-gray-900 mt-6 text-center">
-              {this.props.sectionName || "ส่วนนี้"}เกิดข้อผิดพลาด
+              {this.props.sectionName || 'ส่วนนี้'}เกิดข้อผิดพลาด
             </Text>
 
             <Text className="font-kanit text-base text-gray-600 mt-2 text-center">
@@ -86,9 +80,7 @@ export class SectionErrorBoundary extends Component<Props, State> {
                 className="bg-[#16AD78] rounded-2xl py-4 items-center"
                 activeOpacity={0.8}
               >
-                <Text className="font-kanit text-white text-lg font-semibold">
-                  ลองอีกครั้ง
-                </Text>
+                <Text className="font-kanit text-white text-lg font-semibold">ลองอีกครั้ง</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -96,9 +88,7 @@ export class SectionErrorBoundary extends Component<Props, State> {
                 className="bg-gray-200 rounded-2xl py-4 items-center"
                 activeOpacity={0.8}
               >
-                <Text className="font-kanit text-gray-700 text-lg font-semibold">
-                  กลับหน้าหลัก
-                </Text>
+                <Text className="font-kanit text-gray-700 text-lg font-semibold">กลับหน้าหลัก</Text>
               </TouchableOpacity>
             </View>
           </View>

@@ -1,5 +1,5 @@
 // utils/thailandAddress.ts
-import thailandData from "@/assets/thailand-address.json";
+import thailandData from '@/assets/thailand-address.json';
 
 export interface ThailandAddress {
   district: string; // ตำบล/แขวง
@@ -24,9 +24,7 @@ export function getProvinces(): string[] {
  */
 export function getAmphoes(province: string): string[] {
   const amphoes = new Set<string>();
-  data
-    .filter((item) => item.province === province)
-    .forEach((item) => amphoes.add(item.amphoe));
+  data.filter((item) => item.province === province).forEach((item) => amphoes.add(item.amphoe));
   return Array.from(amphoes).sort();
 }
 
@@ -44,16 +42,9 @@ export function getDistricts(province: string, amphoe: string): string[] {
 /**
  * Get zipcode for a district
  */
-export function getZipcode(
-  province: string,
-  amphoe: string,
-  district: string
-): number | null {
+export function getZipcode(province: string, amphoe: string, district: string): number | null {
   const found = data.find(
-    (item) =>
-      item.province === province &&
-      item.amphoe === amphoe &&
-      item.district === district
+    (item) => item.province === province && item.amphoe === amphoe && item.district === district,
   );
   return found ? found.zipcode : null;
 }

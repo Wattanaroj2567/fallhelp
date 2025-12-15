@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator, Alert, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { MaterialIcons } from '@expo/vector-icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getProfile, updateProfile } from '@/services/userService';
 import Logger from '@/utils/logger';
-import { showErrorMessage } from "@/utils/errorHelper";
+import { showErrorMessage } from '@/utils/errorHelper';
 import { FloatingLabelInput } from '@/components/FloatingLabelInput';
 import { ScreenWrapper } from '@/components/ScreenWrapper';
 import { ScreenHeader } from '@/components/ScreenHeader';
@@ -33,7 +31,6 @@ export default function EditUserInfo() {
   const [gender, setGender] = useState<Gender | null>(null);
 
   // Animation Hooks
-
 
   // ==========================================
   // ⚙️ LAYER: Logic (Data Fetching)
@@ -66,20 +63,16 @@ export default function EditUserInfo() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['userProfile'] });
-      Alert.alert(
-        'สำเร็จ',
-        'บันทึกข้อมูลเรียบร้อยแล้ว',
-        [
-          {
-            text: 'ตกลง',
-            onPress: () => router.back(),
-          },
-        ]
-      );
+      Alert.alert('สำเร็จ', 'บันทึกข้อมูลเรียบร้อยแล้ว', [
+        {
+          text: 'ตกลง',
+          onPress: () => router.back(),
+        },
+      ]);
     },
     onError: (error: unknown) => {
-      Logger.error("Error updating profile:", error);
-      showErrorMessage("ข้อผิดพลาด", error);
+      Logger.error('Error updating profile:', error);
+      showErrorMessage('ข้อผิดพลาด', error);
     },
   });
 
@@ -100,9 +93,9 @@ export default function EditUserInfo() {
     });
   };
 
-// ... (imports)
+  // ... (imports)
 
-// ...
+  // ...
 
   if (isLoading) {
     return <LoadingScreen useScreenWrapper message="กำลังโหลดข้อมูล..." />;
@@ -118,7 +111,7 @@ export default function EditUserInfo() {
       keyboardAvoiding
       scrollViewProps={{
         bounces: false,
-        overScrollMode: "never",
+        overScrollMode: 'never',
       }}
       header={<ScreenHeader title="" onBack={() => router.back()} />}
     >
@@ -130,35 +123,24 @@ export default function EditUserInfo() {
         >
           แก้ไขชื่อ-นามสกุล
         </Text>
-        <Text
-          className="font-kanit text-gray-500"
-          style={{ fontSize: 15, marginBottom: 24 }}
-        >
+        <Text className="font-kanit text-gray-500" style={{ fontSize: 15, marginBottom: 24 }}>
           กรุณากรอกชื่อและนามสกุลของคุณ
         </Text>
 
         {/* First Name & Last Name */}
         <View className="flex-row gap-4">
           <View className="flex-1">
-            <FloatingLabelInput
-              label="ชื่อ"
-              value={firstName}
-              onChangeText={setFirstName}
-            />
+            <FloatingLabelInput label="ชื่อ" value={firstName} onChangeText={setFirstName} />
           </View>
           <View className="flex-1">
-            <FloatingLabelInput
-              label="นามสกุล"
-              value={lastName}
-              onChangeText={setLastName}
-            />
+            <FloatingLabelInput label="นามสกุล" value={lastName} onChangeText={setLastName} />
           </View>
         </View>
 
         {/* Gender Selection */}
         <View>
           <GenderSelect
-            value={(gender as string) || ""}
+            value={(gender as string) || ''}
             onChange={(val) => setGender((val as Gender) || null)}
             isRequired={false}
           />

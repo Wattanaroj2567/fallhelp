@@ -5,7 +5,9 @@ interface PasswordStrengthIndicatorProps {
   password: string;
 }
 
-export const PasswordStrengthIndicator: React.FC<PasswordStrengthIndicatorProps> = ({ password }) => {
+export const PasswordStrengthIndicator: React.FC<PasswordStrengthIndicatorProps> = ({
+  password,
+}) => {
   if (password.length === 0) return null;
 
   // Calculate strength (0-4)
@@ -28,10 +30,7 @@ export const PasswordStrengthIndicator: React.FC<PasswordStrengthIndicatorProps>
     <View className="mb-4">
       {/* Strength Label */}
       <View className="flex-row justify-between items-center mb-2">
-        <Text
-          className="font-kanit"
-          style={{ fontSize: 12, color: '#6B7280' }}
-        >
+        <Text className="font-kanit" style={{ fontSize: 12, color: '#6B7280' }}>
           ความแข็งแรงของรหัสผ่าน
         </Text>
         <Text

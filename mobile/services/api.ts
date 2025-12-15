@@ -46,15 +46,16 @@ apiClient.interceptors.response.use(
 
     // Handle 401 Unauthorized
     if (error.response?.status === 401) {
-      Logger.debug(`API 401 (Session Expired): ${error.config?.method?.toUpperCase()} ${error.config?.url}`);
+      Logger.debug(
+        `API 401 (Session Expired): ${error.config?.method?.toUpperCase()} ${error.config?.url}`,
+      );
     }
     // Handle 500 "User not found" (Old) OR 404 "user_not_found" (New)
     else if (
       (error.response?.status === 500 && error.response?.data?.error === 'User not found') ||
-      (error.response?.status === 404 && (
-        error.response?.data?.error?.code === 'user_not_found' ||
-        error.response?.data?.error === 'user_not_found'
-      ))
+      (error.response?.status === 404 &&
+        (error.response?.data?.error?.code === 'user_not_found' ||
+          error.response?.data?.error === 'user_not_found'))
     ) {
       Logger.warn('User not found in database - clearing invalid token');
       // Clear token to force re-login
@@ -63,7 +64,9 @@ apiClient.interceptors.response.use(
     }
     // Handle 409 Conflict (e.g. Device already paired) - Handled in UI
     else if (error.response?.status === 409) {
-      Logger.debug(`API 409 (Conflict): ${error.config?.method?.toUpperCase()} ${error.config?.url} - ${apiError.message}`);
+      Logger.debug(
+        `API 409 (Conflict): ${error.config?.method?.toUpperCase()} ${error.config?.url} - ${apiError.message}`,
+      );
     }
     // Handle timeout errors - just warn, don't show error
     else if (error.code === 'ECONNABORTED' || apiError.message?.includes('timeout')) {
@@ -75,11 +78,14 @@ apiClient.interceptors.response.use(
     }
     // Log other errors
     else {
-      Logger.error(`API Error: ${error.config?.method?.toUpperCase()} ${error.config?.url}`, apiError);
+      Logger.error(
+        `API Error: ${error.config?.method?.toUpperCase()} ${error.config?.url}`,
+        apiError,
+      );
     }
 
     return Promise.reject(apiError);
-  }
+  },
 );
 
 /**
@@ -106,7 +112,11 @@ export function toApiError(error: unknown): ApiError {
     const responseData = error.response?.data;
 
     // New format: { error: { code, message } }
-    if (responseData?.error && typeof responseData.error === 'object' && responseData.error.message) {
+    if (
+      responseData?.error &&
+      typeof responseData.error === 'object' &&
+      responseData.error.message
+    ) {
       message = responseData.error.message;
     }
     // Legacy format: { error: "string" }

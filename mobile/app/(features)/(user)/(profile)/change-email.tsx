@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { getProfile, updateProfile } from '@/services/userService';
@@ -64,28 +63,25 @@ export default function ChangeEmail() {
     try {
       await updateProfile({ email: newEmail.trim() });
 
-      Alert.alert(
-        'สำเร็จ',
-        'เปลี่ยนอีเมลเรียบร้อยแล้ว',
-        [
-          {
-            text: 'ตกลง',
-            onPress: () => router.back(),
-          },
-        ]
-      );
-    } catch (error: any) {
+      Alert.alert('สำเร็จ', 'เปลี่ยนอีเมลเรียบร้อยแล้ว', [
+        {
+          text: 'ตกลง',
+          onPress: () => router.back(),
+        },
+      ]);
+    } catch (error: unknown) {
       Logger.error('Error updating email:', error);
-      Alert.alert('ข้อผิดพลาด', error.message || 'ไม่สามารถเปลี่ยนอีเมลได้');
+      const message = error instanceof Error ? error.message : 'ไม่สามารถเปลี่ยนอีเมลได้';
+      Alert.alert('ข้อผิดพลาด', message);
     } finally {
       setSaving(false);
     }
   };
 
-// ...
+  // ...
 
   if (loading) {
-     return <LoadingScreen useScreenWrapper message="กำลังโหลดข้อมูล..." />;
+    return <LoadingScreen useScreenWrapper message="กำลังโหลดข้อมูล..." />;
   }
 
   return (
@@ -103,10 +99,7 @@ export default function ChangeEmail() {
         >
           แก้ไขอีเมล
         </Text>
-        <Text
-          className="font-kanit text-gray-500"
-          style={{ fontSize: 15, marginBottom: 24 }}
-        >
+        <Text className="font-kanit text-gray-500" style={{ fontSize: 15, marginBottom: 24 }}>
           กรุณากรอกอีเมลใหม่ของคุณ
         </Text>
 
@@ -137,9 +130,9 @@ export default function ChangeEmail() {
             onChangeText={(text) => {
               setNewEmail(text);
               if (/[ก-๙]/.test(text)) {
-                setEmailError("กรุณากรอกอีเมลเป็นภาษาอังกฤษ");
+                setEmailError('กรุณากรอกอีเมลเป็นภาษาอังกฤษ');
               } else {
-                setEmailError("");
+                setEmailError('');
               }
             }}
             error={emailError}
@@ -150,12 +143,7 @@ export default function ChangeEmail() {
 
         {/* Info Box */}
         <View className="bg-blue-50 rounded-2xl p-4 flex-row mb-8">
-          <MaterialIcons
-            name="info"
-            size={20}
-            color="#3B82F6"
-            style={{ marginTop: 2 }}
-          />
+          <MaterialIcons name="info" size={20} color="#3B82F6" style={{ marginTop: 2 }} />
           <Text
             style={{ fontSize: 13, lineHeight: 20 }}
             className="font-kanit text-blue-700 flex-1 ml-2"
@@ -166,11 +154,7 @@ export default function ChangeEmail() {
 
         {/* Save Button */}
         <View>
-          <PrimaryButton
-            title="บันทึกข้อมูล"
-            onPress={handleSave}
-            loading={saving}
-          />
+          <PrimaryButton title="บันทึกข้อมูล" onPress={handleSave} loading={saving} />
         </View>
       </View>
     </ScreenWrapper>

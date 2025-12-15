@@ -3,7 +3,7 @@ import Logger from './logger';
 
 /**
  * @fileoverview Error Helper Utility (Simplified)
- * 
+ *
  * ข้อความ Error ภาษาไทยทั้งหมดมาจาก Backend (ApiError.ts)
  * ไฟล์นี้เพียงแค่ดึง message จาก API response และจัดการ fallback สำหรับ network errors
  */
@@ -13,8 +13,9 @@ import Logger from './logger';
  * All Thai messages now come from Backend ApiError.ts
  */
 export const getErrorMessage = (error: unknown): string => {
-  // Safe cast to access properties
-  const err = error as any;
+  // Safe cast to access properties - use Record with explicit any for error objects from various sources
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const err = error as Record<string, any>;
 
   // 1. New API format: { error: { code, message } } - Thai message from Backend
   const apiError = err.response?.data?.error;
@@ -28,7 +29,7 @@ export const getErrorMessage = (error: unknown): string => {
     if (/[\u0E00-\u0E7F]/.test(err.message)) {
       return err.message;
     }
-    
+
     // Network/timeout errors - provide Thai fallback
     if (err.message.includes('Network Error') || err.code === 'ERR_NETWORK') {
       return 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ กรุณาตรวจสอบอินเทอร์เน็ต';
@@ -36,7 +37,7 @@ export const getErrorMessage = (error: unknown): string => {
     if (err.message.includes('timeout') || err.code === 'ECONNABORTED') {
       return 'การเชื่อมต่อหมดเวลา กรุณาลองใหม่อีกครั้ง';
     }
-    
+
     // Generic axios error pattern
     if (err.message.includes('Request failed with status code')) {
       const status = err.response?.status;

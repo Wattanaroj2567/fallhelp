@@ -1,9 +1,9 @@
-import React from "react";
-import { View, Text, TouchableOpacity } from "react-native";
-import { Tabs } from "expo-router";
-import { MaterialIcons } from "@expo/vector-icons";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Bounceable } from "@/components/Bounceable";
+import React from 'react';
+import { View, Text } from 'react-native';
+import { Tabs } from 'expo-router';
+import { MaterialIcons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Bounceable } from '@/components/Bounceable';
 
 export default function TabLayout() {
   return (
@@ -33,7 +33,7 @@ export default function TabLayout() {
 
                   const onPress = () => {
                     const event = navigation.emit({
-                      type: "tabPress",
+                      type: 'tabPress',
                       target: route.key,
                       canPreventDefault: true,
                     });
@@ -45,7 +45,7 @@ export default function TabLayout() {
 
                   const onLongPress = () => {
                     navigation.emit({
-                      type: "tabLongPress",
+                      type: 'tabLongPress',
                       target: route.key,
                     });
                   };
@@ -67,20 +67,22 @@ export default function TabLayout() {
                           - ปรับความกว้าง: w-16 -> w-14 (56px) ให้ดูกระชับขึ้นเล็กน้อย
                       */}
                       <View
-                        className={`h-9 w-14 items-center justify-center rounded-full mb-1 ${isFocused ? "bg-[#E3F9F1]" : "bg-transparent"
-                          }`}
+                        className={`h-9 w-14 items-center justify-center rounded-full mb-1 ${
+                          isFocused ? 'bg-[#E3F9F1]' : 'bg-transparent'
+                        }`}
                       >
                         {options.tabBarIcon &&
                           options.tabBarIcon({
                             focused: isFocused,
-                            color: isFocused ? "#16AD78" : "#9CA3AF",
+                            color: isFocused ? '#16AD78' : '#9CA3AF',
                             size: 28, // ✅ ปรับขนาดไอคอนให้ใหญ่ขึ้น: 24 -> 28
                           })}
                       </View>
 
                       <Text
-                        className={`text-[10px] font-kanit font-medium pb-1 ${isFocused ? "text-[#16AD78] font-bold" : "text-[#9CA3AF]"
-                          }`}
+                        className={`text-[10px] font-kanit font-medium pb-1 ${
+                          isFocused ? 'text-[#16AD78] font-bold' : 'text-[#9CA3AF]'
+                        }`}
                       >
                         {label as string}
                       </Text>
@@ -96,18 +98,16 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "หน้าหลัก",
-          tabBarLabel: "หน้าหลัก",
-          tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="home" size={size} color={color} />
-          ),
+          title: 'หน้าหลัก',
+          tabBarLabel: 'หน้าหลัก',
+          tabBarIcon: ({ color, size }) => <MaterialIcons name="home" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
         name="history"
         options={{
-          title: "ประวัติ",
-          tabBarLabel: "ประวัติ",
+          title: 'ประวัติ',
+          tabBarLabel: 'ประวัติ',
           tabBarIcon: ({ color, size }) => (
             <MaterialIcons name="history" size={size} color={color} />
           ),
@@ -116,8 +116,8 @@ export default function TabLayout() {
       <Tabs.Screen
         name="settings"
         options={{
-          title: "ตั้งค่า",
-          tabBarLabel: "ตั้งค่า",
+          title: 'ตั้งค่า',
+          tabBarLabel: 'ตั้งค่า',
           tabBarIcon: ({ color, size }) => (
             <MaterialIcons name="settings" size={size} color={color} />
           ),

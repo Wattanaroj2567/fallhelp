@@ -1,40 +1,22 @@
-import React, { useState, useRef, useEffect } from "react";
-import {
-  View,
-  Text,
-  Alert,
-  Modal,
-  Pressable,
-  TouchableOpacity,
-  Platform,
-  Keyboard,
-} from "react-native";
-import { useRouter } from "expo-router";
-import { MaterialIcons } from "@expo/vector-icons";
-import { useMutation } from "@tanstack/react-query";
-import {
-  createElder,
-  updateElder,
-  deleteElder,
-  CreateElderPayload,
-} from "@/services/elderService";
-import * as SecureStore from "expo-secure-store";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import Logger from "@/utils/logger";
-import { showErrorMessage } from "@/utils/errorHelper";
-import { GenderSelect } from "@/components/GenderSelect";
-import { useTheme } from "react-native-paper";
-import { FloatingLabelInput } from "@/components/FloatingLabelInput";
-import { WizardLayout } from "@/components/WizardLayout";
-import { PrimaryButton } from "@/components/PrimaryButton";
-import { FloatingLabelDatePicker } from "@/components/FloatingLabelDatePicker";
-import {
-  ThaiAddressAutocomplete,
-  AddressData,
-} from "@/components/ThaiAddressAutocomplete";
-import { LoadingScreen } from "@/components/LoadingScreen";
+import React, { useState, useRef, useEffect } from 'react';
+import { View, Text, Alert, Platform, Keyboard, ScrollView } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useMutation } from '@tanstack/react-query';
+import { createElder, updateElder, CreateElderPayload, getElder } from '@/services/elderService';
+import * as SecureStore from 'expo-secure-store';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import Logger from '@/utils/logger';
+import { showErrorMessage } from '@/utils/errorHelper';
+import { GenderSelect } from '@/components/GenderSelect';
+import { useTheme } from 'react-native-paper';
+import { FloatingLabelInput } from '@/components/FloatingLabelInput';
+import { WizardLayout } from '@/components/WizardLayout';
+import { PrimaryButton } from '@/components/PrimaryButton';
+import { FloatingLabelDatePicker } from '@/components/FloatingLabelDatePicker';
+import { ThaiAddressAutocomplete, AddressData } from '@/components/ThaiAddressAutocomplete';
+import { LoadingScreen } from '@/components/LoadingScreen';
 
-const FORM_STORAGE_KEY = "setup_step1_form_data";
+const FORM_STORAGE_KEY = 'setup_step1_form_data';
 
 // ==========================================
 // 📱 LAYER: View (Component)
@@ -42,27 +24,47 @@ const FORM_STORAGE_KEY = "setup_step1_form_data";
 // ==========================================
 export default function Step1() {
   const router = useRouter();
-  const theme = useTheme();
-  const scrollViewRef = useRef<any>(null);
+  const _theme = useTheme();
+  const scrollViewRef = useRef<ScrollView>(null);
 
   // ==========================================
   // 🧩 LAYER: Logic (Local State)
   // Purpose: Manage form inputs
   // ==========================================
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [gender, setGender] = useState("");
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [gender, setGender] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState<Date | null>(null);
-  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [_showDatePicker, setShowDatePicker] = useState(false);
 
-  const [height, setHeight] = useState("");
-  const [weight, setWeight] = useState("");
-  const [medicalCondition, setMedicalCondition] = useState("");
-  const [houseNumber, setHouseNumber] = useState("");
-  const [village, setVillage] = useState("");
+  const [height, setHeight] = useState('');
+  const [weight, setWeight] = useState('');
+  const [medicalCondition, setMedicalCondition] = useState('');
+  const [houseNumber, setHouseNumber] = useState('');
+  const [village, setVillage] = useState('');
   const [address, setAddress] = useState<AddressData | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
-  const [initialData, setInitialData] = useState<any>(null);
+
+  interface ElderInitialData {
+    firstName?: string;
+    lastName?: string;
+    name?: string;
+    gender?: string;
+    dateOfBirth?: string;
+    height?: number | string;
+    weight?: number | string;
+    medicalCondition?: string;
+    houseNumber?: string;
+    village?: string;
+    address?: {
+      district?: string;
+      amphoe?: string;
+      province?: string;
+      zipcode?: string;
+    };
+  }
+
+  const [initialData, setInitialData] = useState<ElderInitialData | null>(null);
 
   // ==========================================
   // 💾 LAYER: Logic (Persistence)
@@ -72,53 +74,44 @@ export default function Step1() {
     const loadFormData = async () => {
       try {
         // Check if we already have an elderId saved (means we're returning from step2)
-        let existingElderId = await SecureStore.getItemAsync("setup_elderId");
-        if (existingElderId === "undefined" || existingElderId === "null") {
+        let existingElderId = await SecureStore.getItemAsync('setup_elderId');
+        if (existingElderId === 'undefined' || existingElderId === 'null') {
           existingElderId = null;
         }
 
         // Validate if elder actually exists on server (fix for Dev Mode/DB Wipes)
         if (existingElderId) {
           try {
-            const { getElder } = require("@/services/elderService");
             await getElder(existingElderId);
-            Logger.debug("Step 1 check: Elder ID exists on server", existingElderId);
+            Logger.debug('Step 1 check: Elder ID exists on server', existingElderId);
           } catch (serverError) {
-            Logger.warn("Step 1 check: Elder ID invalid or not found on server (clearing)", serverError);
+            Logger.warn(
+              'Step 1 check: Elder ID invalid or not found on server (clearing)',
+              serverError,
+            );
             existingElderId = null; // Treat as new
-            await SecureStore.deleteItemAsync("setup_elderId");
+            await SecureStore.deleteItemAsync('setup_elderId');
           }
         }
 
-        Logger.debug("Step 1 loadFormData: existingElderId =", existingElderId);
+        Logger.debug('Step 1 loadFormData: existingElderId =', existingElderId);
 
         const savedData = await AsyncStorage.getItem(FORM_STORAGE_KEY);
         if (savedData) {
           const parsed = JSON.parse(savedData);
-          setFirstName(
-            parsed.firstName || (parsed.name ? parsed.name.split(" ")[0] : "")
-          );
+          setFirstName(parsed.firstName || (parsed.name ? parsed.name.split(' ')[0] : ''));
           setLastName(
-            parsed.lastName ||
-            (parsed.name ? parsed.name.split(" ").slice(1).join(" ") : "")
+            parsed.lastName || (parsed.name ? parsed.name.split(' ').slice(1).join(' ') : ''),
           );
-          setGender(parsed.gender || "");
-          setDateOfBirth(
-            parsed.dateOfBirth ? new Date(parsed.dateOfBirth) : null
-          );
-          setHeight(parsed.height || "");
-          setWeight(parsed.weight || "");
-          setMedicalCondition(parsed.medicalCondition || "");
+          setGender(parsed.gender || '');
+          setDateOfBirth(parsed.dateOfBirth ? new Date(parsed.dateOfBirth) : null);
+          setHeight(parsed.height || '');
+          setWeight(parsed.weight || '');
+          setMedicalCondition(parsed.medicalCondition || '');
 
           // Validate address format before setting
           const addr = parsed.address;
-          if (
-            addr &&
-            addr.district &&
-            addr.amphoe &&
-            addr.province &&
-            addr.zipcode
-          ) {
+          if (addr && addr.district && addr.amphoe && addr.province && addr.zipcode) {
             setAddress(addr);
           } else {
             setAddress(null); // Invalid or old format - clear it
@@ -126,13 +119,13 @@ export default function Step1() {
 
           if (existingElderId) {
             setInitialData(parsed);
-            Logger.debug("Step 1: Set initialData for existing elder");
+            Logger.debug('Step 1: Set initialData for existing elder');
           } else {
-            Logger.debug("Step 1: No elderId, will create new elder");
+            Logger.debug('Step 1: No elderId, will create new elder');
           }
         }
       } catch (error) {
-        Logger.error("Failed to load form data:", error);
+        Logger.error('Failed to load form data:', error);
       } finally {
         setIsLoaded(true);
       }
@@ -156,12 +149,9 @@ export default function Step1() {
           village,
           address,
         };
-        await AsyncStorage.setItem(
-          FORM_STORAGE_KEY,
-          JSON.stringify(dataToSave)
-        );
+        await AsyncStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(dataToSave));
       } catch (error) {
-        Logger.error("Failed to save form data:", error);
+        Logger.error('Failed to save form data:', error);
       }
     };
     const timeoutId = setTimeout(saveFormData, 500);
@@ -186,38 +176,38 @@ export default function Step1() {
   // ==========================================
   const saveElderMutation = useMutation({
     mutationFn: async (data: CreateElderPayload) => {
-      let existingElderId = await SecureStore.getItemAsync("setup_elderId");
+      let existingElderId = await SecureStore.getItemAsync('setup_elderId');
 
       // Check for invalid values stored as strings
-      if (existingElderId === "undefined" || existingElderId === "null") {
+      if (existingElderId === 'undefined' || existingElderId === 'null') {
         existingElderId = null;
         // Clean up invalid data
-        await SecureStore.deleteItemAsync("setup_elderId");
+        await SecureStore.deleteItemAsync('setup_elderId');
       }
 
       if (existingElderId) {
         // Update existing elder
-        Logger.info("Updating existing elder:", existingElderId);
+        Logger.info('Updating existing elder:', existingElderId);
         return await updateElder(existingElderId, data);
       } else {
         // Create new elder
-        Logger.info("Creating new elder");
+        Logger.info('Creating new elder');
         return await createElder(data);
       }
     },
     onSuccess: async (elder) => {
       // 1. Save Elder ID (if not already saved)
-      await SecureStore.setItemAsync("setup_elderId", String(elder.id));
+      await SecureStore.setItemAsync('setup_elderId', String(elder.id));
 
       // 2. Set Setup Step to 2
-      await SecureStore.setItemAsync("setup_step", "2");
+      await SecureStore.setItemAsync('setup_step', '2');
 
       // Navigate to Step 2
-      router.push("/(setup)/step2-device-pairing");
+      router.push('/(setup)/step2-device-pairing');
     },
     onError: (error: unknown) => {
-      Logger.error("Save elder error:", error);
-      showErrorMessage("ข้อผิดพลาด", error);
+      Logger.error('Save elder error:', error);
+      showErrorMessage('ข้อผิดพลาด', error);
     },
   });
 
@@ -228,19 +218,19 @@ export default function Step1() {
   const handleNext = async () => {
     // Validation
     if (!firstName.trim()) {
-      Alert.alert("กรุณากรอกข้อมูล", "กรุณากรอกชื่อผู้สูงอายุ");
+      Alert.alert('กรุณากรอกข้อมูล', 'กรุณากรอกชื่อผู้สูงอายุ');
       return;
     }
     if (!lastName.trim()) {
-      Alert.alert("กรุณากรอกข้อมูล", "กรุณากรอกนามสกุลผู้สูงอายุ");
+      Alert.alert('กรุณากรอกข้อมูล', 'กรุณากรอกนามสกุลผู้สูงอายุ');
       return;
     }
     if (!gender) {
-      Alert.alert("กรุณาเลือกข้อมูล", "กรุณาเลือกเพศ");
+      Alert.alert('กรุณาเลือกข้อมูล', 'กรุณาเลือกเพศ');
       return;
     }
     if (!dateOfBirth) {
-      Alert.alert("กรุณาเลือกข้อมูล", "กรุณาระบุวันเกิด");
+      Alert.alert('กรุณาเลือกข้อมูล', 'กรุณาระบุวันเกิด');
       return;
     }
 
@@ -254,55 +244,52 @@ export default function Step1() {
     }
 
     if (age < 55) {
-      Alert.alert(
-        "อายุไม่ถึงเกณฑ์",
-        "ผู้สูงอายุต้องมีอายุ 55 ปีขึ้นไป กรุณาตรวจสอบปีเกิดอีกครั้ง"
-      );
+      Alert.alert('อายุไม่ถึงเกณฑ์', 'ผู้สูงอายุต้องมีอายุ 55 ปีขึ้นไป กรุณาตรวจสอบปีเกิดอีกครั้ง');
       return;
     }
 
     // Validate Height (Required)
     if (!height || isNaN(Number(height)) || Number(height) <= 0) {
-      Alert.alert("กรุณากรอกข้อมูล", "กรุณากรอกส่วนสูงให้ถูกต้อง");
+      Alert.alert('กรุณากรอกข้อมูล', 'กรุณากรอกส่วนสูงให้ถูกต้อง');
       return;
     }
 
     // Validate Weight (Required)
     if (!weight || isNaN(Number(weight)) || Number(weight) <= 0) {
-      Alert.alert("กรุณากรอกข้อมูล", "กรุณากรอกน้ำหนักให้ถูกต้อง");
+      Alert.alert('กรุณากรอกข้อมูล', 'กรุณากรอกน้ำหนักให้ถูกต้อง');
       return;
     }
 
     // Validate House Number (Required)
     if (!houseNumber.trim()) {
-      Alert.alert("กรุณากรอกข้อมูล", "กรุณากรอกบ้านเลขที่");
+      Alert.alert('กรุณากรอกข้อมูล', 'กรุณากรอกบ้านเลขที่');
       return;
     }
 
     // Validate Village (Required)
     if (!village.trim()) {
-      Alert.alert("กรุณากรอกข้อมูล", "กรุณากรอกหมู่ที่/หมู่บ้าน");
+      Alert.alert('กรุณากรอกข้อมูล', 'กรุณากรอกหมู่ที่/หมู่บ้าน');
       return;
     }
 
     // Validate Address (Required)
     if (!address || !address.district || !address.province) {
-      Alert.alert("กรุณากรอกข้อมูล", "กรุณาเลือกที่อยู่");
+      Alert.alert('กรุณากรอกข้อมูล', 'กรุณาเลือกที่อยู่');
       return;
     }
 
     const currentData = {
       firstName: firstName.trim(),
       lastName: lastName.trim(),
-      gender: gender as "MALE" | "FEMALE" | "OTHER",
+      gender: gender as 'MALE' | 'FEMALE' | 'OTHER',
       dateOfBirth: dateOfBirth.toISOString(),
       height: Number(height),
       weight: Number(weight),
       diseases: medicalCondition
         ? medicalCondition
-          .split(",")
-          .map((d) => d.trim())
-          .filter((d) => d)
+            .split(',')
+            .map((d) => d.trim())
+            .filter((d) => d)
         : [],
       houseNumber: houseNumber.trim(),
       village: village.trim(),
@@ -313,24 +300,17 @@ export default function Step1() {
     };
 
     // Check if data is unchanged and we have an existing elderId
-    const existingElderId = await SecureStore.getItemAsync("setup_elderId");
-    if (
-      existingElderId &&
-      existingElderId !== "undefined" &&
-      existingElderId !== "null"
-    ) {
+    const existingElderId = await SecureStore.getItemAsync('setup_elderId');
+    if (existingElderId && existingElderId !== 'undefined' && existingElderId !== 'null') {
       // Elder already exists - check if data changed
       if (initialData) {
         // Reconstruct initial data
         const initialDataFormatted = {
           firstName:
-            initialData.firstName ||
-            (initialData.name ? initialData.name.split(" ")[0] : ""),
+            initialData.firstName || (initialData.name ? initialData.name.split(' ')[0] : ''),
           lastName:
             initialData.lastName ||
-            (initialData.name
-              ? initialData.name.split(" ").slice(1).join(" ")
-              : ""),
+            (initialData.name ? initialData.name.split(' ').slice(1).join(' ') : ''),
           gender: initialData.gender,
           dateOfBirth: initialData.dateOfBirth
             ? new Date(initialData.dateOfBirth).toISOString()
@@ -339,34 +319,32 @@ export default function Step1() {
           weight: Number(initialData.weight),
           diseases: initialData.medicalCondition
             ? initialData.medicalCondition
-              .split(",")
-              .map((d: string) => d.trim())
-              .filter((d: string) => d)
+                .split(',')
+                .map((d: string) => d.trim())
+                .filter((d: string) => d)
             : [],
-          houseNumber: initialData.houseNumber || "",
-          village: initialData.village || "",
-          subdistrict: initialData.address?.district || "",
-          district: initialData.address?.amphoe || "",
-          province: initialData.address?.province || "",
-          zipcode: initialData.address?.zipcode || "",
+          houseNumber: initialData.houseNumber || '',
+          village: initialData.village || '',
+          subdistrict: initialData.address?.district || '',
+          district: initialData.address?.amphoe || '',
+          province: initialData.address?.province || '',
+          zipcode: initialData.address?.zipcode || '',
         };
 
-        if (
-          JSON.stringify(currentData) === JSON.stringify(initialDataFormatted)
-        ) {
+        if (JSON.stringify(currentData) === JSON.stringify(initialDataFormatted)) {
           // Data unchanged, skip mutation and go directly to Step 2
-          Logger.info("Data unchanged, skipping update and going to Step 2");
-          await SecureStore.setItemAsync("setup_step", "2");
-          router.push("/(setup)/step2-device-pairing");
+          Logger.info('Data unchanged, skipping update and going to Step 2');
+          await SecureStore.setItemAsync('setup_step', '2');
+          router.push('/(setup)/step2-device-pairing');
           return;
         }
       } else {
         // No initialData loaded yet, but have elderId
         // This means user came back from Step 2 without loading
         // Safe to proceed to Step 2 without updating
-        Logger.info("Elder exists but no initialData, proceeding to Step 2");
-        await SecureStore.setItemAsync("setup_step", "2");
-        router.push("/(setup)/step2-device-pairing");
+        Logger.info('Elder exists but no initialData, proceeding to Step 2');
+        await SecureStore.setItemAsync('setup_step', '2');
+        router.push('/(setup)/step2-device-pairing');
         return;
       }
     }
@@ -379,21 +357,21 @@ export default function Step1() {
     // Simply go back to the welcome screen
     // We do NOT delete the elder here anymore, to avoid complex state issues and errors.
     // The previous logic caused crashes when navigating back.
-    router.replace("/(setup)/empty-state");
+    router.replace('/(setup)/empty-state');
   };
 
-  const onDateChange = (event: any, selectedDate?: Date) => {
+  const _onDateChange = (event: unknown, selectedDate?: Date) => {
     const currentDate = selectedDate || dateOfBirth || new Date();
-    if (Platform.OS === "android") {
+    if (Platform.OS === 'android') {
       setShowDatePicker(false);
     }
     setDateOfBirth(currentDate);
   };
 
-  const formatDate = (date: Date | null) => {
-    if (!date) return "วัน/เดือน/ปีเกิด";
+  const _formatDate = (date: Date | null) => {
+    if (!date) return 'วัน/เดือน/ปีเกิด';
     const day = date.getDate();
-    const month = date.toLocaleDateString("th-TH", { month: "long" });
+    const month = date.toLocaleDateString('th-TH', { month: 'long' });
     const year = date.getFullYear() + 543;
     return `${day} ${month} ${year}`;
   };
@@ -414,7 +392,7 @@ export default function Step1() {
       contentContainerStyle={{ paddingHorizontal: 24, flexGrow: 1 }}
       scrollViewProps={{
         bounces: false,
-        overScrollMode: "never",
+        overScrollMode: 'never',
       }}
       scrollViewRef={scrollViewRef}
       headerExtra={
@@ -516,11 +494,7 @@ export default function Step1() {
           </View>
 
           {/* Address - Autocomplete Search */}
-          <ThaiAddressAutocomplete
-            value={address}
-            onChange={setAddress}
-            isRequired
-          />
+          <ThaiAddressAutocomplete value={address} onChange={setAddress} isRequired />
         </View>
 
         {/* Next Button */}

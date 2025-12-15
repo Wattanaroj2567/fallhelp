@@ -1,7 +1,7 @@
-import React, { Component, ReactNode } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
-import { MaterialIcons } from "@expo/vector-icons";
-import Logger from "@/utils/logger";
+import React, { Component, ReactNode } from 'react';
+import { View, Text, TouchableOpacity } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
+import Logger from '@/utils/logger';
 
 interface Props {
   children: ReactNode;
@@ -28,9 +28,9 @@ export class QueryErrorBoundary extends Component<Props, State> {
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+  componentDidCatch(error: Error, _errorInfo: React.ErrorInfo) {
     // Error already logged by parent ErrorBoundary
-    Logger.debug("[QueryErrorBoundary] Caught error:", error.message);
+    Logger.debug('[QueryErrorBoundary] Caught error:', error.message);
   }
 
   handleRetry = () => {
@@ -63,9 +63,7 @@ export class QueryErrorBoundary extends Component<Props, State> {
             className="mt-4 bg-[#16AD78] rounded-xl px-6 py-3"
             activeOpacity={0.8}
           >
-            <Text className="font-kanit text-white font-semibold">
-              ลองอีกครั้ง
-            </Text>
+            <Text className="font-kanit text-white font-semibold">ลองอีกครั้ง</Text>
           </TouchableOpacity>
         </View>
       );

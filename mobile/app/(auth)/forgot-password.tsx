@@ -1,17 +1,17 @@
-import React, { useState } from "react";
-import { View, Text, Alert } from "react-native";
-import { useRouter } from "expo-router";
-import { useMutation } from "@tanstack/react-query";
-import { requestOtp } from "@/services/authService";
-import Logger from "@/utils/logger";
-import { FloatingLabelInput } from "@/components/FloatingLabelInput";
-import { ScreenWrapper } from "@/components/ScreenWrapper";
-import { ScreenHeader } from "@/components/ScreenHeader";
-import { PrimaryButton } from "@/components/PrimaryButton";
-import { showErrorMessage } from "@/utils/errorHelper";
+import React, { useState } from 'react';
+import { View, Text, Alert } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useMutation } from '@tanstack/react-query';
+import { requestOtp } from '@/services/authService';
+import Logger from '@/utils/logger';
+import { FloatingLabelInput } from '@/components/FloatingLabelInput';
+import { ScreenWrapper } from '@/components/ScreenWrapper';
+import { ScreenHeader } from '@/components/ScreenHeader';
+import { PrimaryButton } from '@/components/PrimaryButton';
+import { showErrorMessage } from '@/utils/errorHelper';
 
 // สีปุ่มตามรูปภาพอ้างอิง (สีแดงอมชมพู/ส้ม)
-const BUTTON_COLOR = "#EB6A6A";
+const BUTTON_COLOR = '#EB6A6A';
 
 // ==========================================
 // 📱 LAYER: View (Component)
@@ -22,8 +22,8 @@ export default function ForgotPasswordScreen() {
   // 🧩 LAYER: Logic (Local State)
   // Purpose: Manage form inputs
   // ==========================================
-  const [email, setEmail] = useState("");
-  const [emailError, setEmailError] = useState("");
+  const [email, setEmail] = useState('');
+  const [emailError, setEmailError] = useState('');
 
   const router = useRouter();
 
@@ -38,16 +38,16 @@ export default function ForgotPasswordScreen() {
   // ==========================================
   const requestOtpMutation = useMutation({
     mutationFn: async () => {
-      return await requestOtp({ email, purpose: "PASSWORD_RESET" });
+      return await requestOtp({ email, purpose: 'PASSWORD_RESET' });
     },
     onSuccess: (data) => {
-      Alert.alert("ส่งรหัสสำเร็จ", `รหัส OTP ถูกส่งไปยัง ${email} แล้ว`, [
+      Alert.alert('ส่งรหัสสำเร็จ', `รหัส OTP ถูกส่งไปยัง ${email} แล้ว`, [
         {
-          text: "ตกลง",
+          text: 'ตกลง',
           onPress: () => {
             // ส่ง email และ referenceCode ไปยังหน้าถัดไปเพื่อใช้ verify
             router.push({
-              pathname: "/(auth)/verify-otp",
+              pathname: '/(auth)/verify-otp',
               params: {
                 email,
                 referenceCode: data.referenceCode,
@@ -59,8 +59,8 @@ export default function ForgotPasswordScreen() {
       ]);
     },
     onError: (error: unknown) => {
-      Logger.error("Forgot password error:", error);
-      showErrorMessage("เกิดข้อผิดพลาด", error);
+      Logger.error('Forgot password error:', error);
+      showErrorMessage('เกิดข้อผิดพลาด', error);
     },
   });
 
@@ -70,18 +70,18 @@ export default function ForgotPasswordScreen() {
   // ==========================================
   const handleSendOtp = async () => {
     if (!email) {
-      Alert.alert("กรุณากรอกข้อมูล", "โปรดกรอกอีเมลของคุณ");
+      Alert.alert('กรุณากรอกข้อมูล', 'โปรดกรอกอีเมลของคุณ');
       return;
     }
     if (emailError) {
-      Alert.alert("อีเมลไม่ถูกต้อง", "กรุณากรอกอีเมลเป็นภาษาอังกฤษ");
+      Alert.alert('อีเมลไม่ถูกต้อง', 'กรุณากรอกอีเมลเป็นภาษาอังกฤษ');
       return;
     }
 
     // Simple email validation regex
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      Alert.alert("รูปแบบไม่ถูกต้อง", "กรุณากรอกอีเมลให้ถูกต้อง");
+      Alert.alert('รูปแบบไม่ถูกต้อง', 'กรุณากรอกอีเมลให้ถูกต้อง');
       return;
     }
 
@@ -110,11 +110,8 @@ export default function ForgotPasswordScreen() {
         >
           ลืมรหัสผ่าน
         </Text>
-        <Text
-          className="font-kanit text-gray-500"
-          style={{ fontSize: 15, marginBottom: 24 }}
-        >
-          กรุณากรอกอีเมลที่คุณใช้ลงทะเบียน{"\n"}
+        <Text className="font-kanit text-gray-500" style={{ fontSize: 15, marginBottom: 24 }}>
+          กรุณากรอกอีเมลที่คุณใช้ลงทะเบียน{'\n'}
           ระบบจะส่งรหัส OTP 6 หลักไปยังอีเมลคุณ
         </Text>
 
@@ -127,9 +124,9 @@ export default function ForgotPasswordScreen() {
             onChangeText={(text) => {
               setEmail(text);
               if (/[ก-๙]/.test(text)) {
-                setEmailError("กรุณากรอกอีเมลเป็นภาษาอังกฤษ");
+                setEmailError('กรุณากรอกอีเมลเป็นภาษาอังกฤษ');
               } else {
-                setEmailError("");
+                setEmailError('');
               }
             }}
             error={emailError}

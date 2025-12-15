@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -7,15 +7,14 @@ import {
   ScrollView,
   ActivityIndicator,
   Modal,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
-import { MaterialIcons } from "@expo/vector-icons";
-import { useQuery } from "@tanstack/react-query";
-import { getUserElders } from "@/services/userService";
-import { listEvents } from "@/services/eventService";
-import { ScreenWrapper } from "@/components/ScreenWrapper";
-import { ScreenHeader } from "@/components/ScreenHeader";
+} from 'react-native';
+import { useRouter } from 'expo-router';
+import { MaterialIcons } from '@expo/vector-icons';
+import { useQuery } from '@tanstack/react-query';
+import { getUserElders } from '@/services/userService';
+import { listEvents } from '@/services/eventService';
+import { ScreenWrapper } from '@/components/ScreenWrapper';
+import { ScreenHeader } from '@/components/ScreenHeader';
 
 // ==========================================
 // 🧩 LAYER: Logic (Types)
@@ -33,21 +32,19 @@ interface MonthlySummary {
 }
 
 const THAI_MONTHS = [
-  "มกราคม",
-  "กุมภาพันธ์",
-  "มีนาคม",
-  "เมษายน",
-  "พฤษภาคม",
-  "มิถุนายน",
-  "กรกฎาคม",
-  "สิงหาคม",
-  "กันยายน",
-  "ตุลาคม",
-  "พฤศจิกายน",
-  "ธันวาคม",
+  'มกราคม',
+  'กุมภาพันธ์',
+  'มีนาคม',
+  'เมษายน',
+  'พฤษภาคม',
+  'มิถุนายน',
+  'กรกฎาคม',
+  'สิงหาคม',
+  'กันยายน',
+  'ตุลาคม',
+  'พฤศจิกายน',
+  'ธันวาคม',
 ];
-
-
 
 // ==========================================
 // 📱 LAYER: View (Component)
@@ -56,16 +53,12 @@ const THAI_MONTHS = [
 export default function ReportSummary() {
   const router = useRouter();
 
-
-
   // ==========================================
   // 🧩 LAYER: Logic (Local State)
   // Purpose: Manage selected month/year
   // ==========================================
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
-  const [currentYear, setCurrentYear] = useState(
-    new Date().getFullYear() + 543
-  ); // พ.ศ.
+  const [currentYear, setCurrentYear] = useState(new Date().getFullYear() + 543); // พ.ศ.
   const [showMonthPicker, setShowMonthPicker] = useState(false);
 
   // ==========================================
@@ -73,7 +66,7 @@ export default function ReportSummary() {
   // Purpose: Fetch current elder
   // ==========================================
   const { data: currentElder } = useQuery({
-    queryKey: ["userElders"],
+    queryKey: ['userElders'],
     queryFn: async () => {
       const elders = await getUserElders();
       return elders && elders.length > 0 ? elders[0] : null;
@@ -90,7 +83,7 @@ export default function ReportSummary() {
     isError,
     refetch,
   } = useQuery({
-    queryKey: ["monthlySummary", currentElder?.id, currentMonth, currentYear],
+    queryKey: ['monthlySummary', currentElder?.id, currentMonth, currentYear],
     queryFn: async () => {
       if (!currentElder?.id) return null;
 
@@ -112,13 +105,9 @@ export default function ReportSummary() {
       });
 
       // Count events
-      const fallEvents = monthEvents.filter((e) => e.type === "FALL").length;
-      const hrHigh = monthEvents.filter(
-        (e) => e.type === "HEART_RATE_HIGH"
-      ).length;
-      const hrLow = monthEvents.filter(
-        (e) => e.type === "HEART_RATE_LOW"
-      ).length;
+      const fallEvents = monthEvents.filter((e) => e.type === 'FALL').length;
+      const hrHigh = monthEvents.filter((e) => e.type === 'HEART_RATE_HIGH').length;
+      const hrLow = monthEvents.filter((e) => e.type === 'HEART_RATE_LOW').length;
 
       // Calculate peak time
       const hourCounts: { [key: number]: number } = {};
@@ -138,13 +127,10 @@ export default function ReportSummary() {
 
       const peakTimeRange =
         maxCount > 0
-          ? `${peakHour.toString().padStart(2, "0")}:00 - ${(
-            (peakHour + 1) %
-            24
-          )
-            .toString()
-            .padStart(2, "0")}:00 น.`
-          : "ไม่มีข้อมูล";
+          ? `${peakHour.toString().padStart(2, '0')}:00 - ${((peakHour + 1) % 24)
+              .toString()
+              .padStart(2, '0')}:00 น.`
+          : 'ไม่มีข้อมูล';
 
       return {
         month: THAI_MONTHS[currentMonth],
@@ -195,38 +181,27 @@ export default function ReportSummary() {
 
   const isCurrentMonth = () => {
     const today = new Date();
-    return (
-      currentMonth === today.getMonth() &&
-      currentYear === today.getFullYear() + 543
-    );
+    return currentMonth === today.getMonth() && currentYear === today.getFullYear() + 543;
   };
 
   if (isError) {
     return (
       <ScreenWrapper
-        edges={["top"]}
+        edges={['top']}
         useScrollView={false}
-        style={{ backgroundColor: "#FFFFFF" }}
-        header={
-          <ScreenHeader
-            title="รายงานสรุปประจำเดือน"
-            onBack={() => router.back()}
-          />
-        }
+        style={{ backgroundColor: '#FFFFFF' }}
+        header={<ScreenHeader title="รายงานสรุปประจำเดือน" onBack={() => router.back()} />}
       >
         <View className="flex-1 justify-center items-center px-6">
           <MaterialIcons name="error-outline" size={64} color="#D1D5DB" />
-          <Text
-            style={{ fontSize: 18 }}
-            className="font-kanit text-gray-700 mt-4 text-center"
-          >
+          <Text style={{ fontSize: 18 }} className="font-kanit text-gray-700 mt-4 text-center">
             เกิดข้อผิดพลาดในการโหลดข้อมูล
           </Text>
           <TouchableHighlight
             onPress={() => refetch()}
             className="mt-4 px-6 py-3 rounded-xl"
             underlayColor="#E5E7EB"
-            style={{ backgroundColor: "#E5E7EB" }}
+            style={{ backgroundColor: '#E5E7EB' }}
           >
             <Text className="font-kanit text-gray-700">ลองใหม่</Text>
           </TouchableHighlight>
@@ -241,15 +216,10 @@ export default function ReportSummary() {
   // ==========================================
   return (
     <ScreenWrapper
-      edges={["top"]}
+      edges={['top']}
       useScrollView={false}
-      style={{ backgroundColor: "#FFFFFF" }}
-      header={
-        <ScreenHeader
-          title="รายงานสรุปประจำเดือน"
-          onBack={() => router.back()}
-        />
-      }
+      style={{ backgroundColor: '#FFFFFF' }}
+      header={<ScreenHeader title="รายงานสรุปประจำเดือน" onBack={() => router.back()} />}
     >
       <View className="flex-1">
         <View className="p-6">
@@ -275,7 +245,7 @@ export default function ReportSummary() {
               <View className="items-center">
                 <View className="flex-row items-center bg-gray-50 px-5 py-2.5 rounded-2xl border border-gray-200 w-full justify-center">
                   <Text
-                    style={{ fontSize: 20, fontWeight: "600" }}
+                    style={{ fontSize: 20, fontWeight: '600' }}
                     className="font-kanit text-gray-900"
                   >
                     {THAI_MONTHS[currentMonth]} {currentYear}
@@ -301,10 +271,7 @@ export default function ReportSummary() {
           {isLoading ? (
             <View className="items-center justify-center py-12">
               <ActivityIndicator size="large" color="#16AD78" />
-              <Text
-                style={{ fontSize: 14 }}
-                className="font-kanit text-gray-600 mt-4"
-              >
+              <Text style={{ fontSize: 14 }} className="font-kanit text-gray-600 mt-4">
                 กำลังโหลดข้อมูล...
               </Text>
             </View>
@@ -320,7 +287,10 @@ export default function ReportSummary() {
                     <Text style={{ fontSize: 13 }} className="font-kanit text-gray-500 mb-1">
                       ช่วงเวลาเกิดเหตุบ่อยที่สุด
                     </Text>
-                    <Text style={{ fontSize: 20, fontWeight: "600" }} className="font-kanit text-teal-600">
+                    <Text
+                      style={{ fontSize: 20, fontWeight: '600' }}
+                      className="font-kanit text-teal-600"
+                    >
                       {displaySummary.peakTimeRange}
                     </Text>
                   </View>
@@ -338,7 +308,10 @@ export default function ReportSummary() {
                       เหตุการณ์หกล้ม
                     </Text>
                     <View className="flex-row items-baseline">
-                      <Text style={{ fontSize: 36, fontWeight: "700" }} className="font-kanit text-orange-500">
+                      <Text
+                        style={{ fontSize: 36, fontWeight: '700' }}
+                        className="font-kanit text-orange-500"
+                      >
                         {displaySummary.totalFallEvents}
                       </Text>
                       <Text style={{ fontSize: 16 }} className="font-kanit text-gray-500 ml-2">
@@ -356,7 +329,10 @@ export default function ReportSummary() {
                     <View className="w-14 h-14 rounded-2xl bg-rose-100 items-center justify-center mr-4">
                       <MaterialIcons name="favorite" size={28} color="#E11D48" />
                     </View>
-                    <Text style={{ fontSize: 16, fontWeight: "600" }} className="font-kanit text-gray-900">
+                    <Text
+                      style={{ fontSize: 16, fontWeight: '600' }}
+                      className="font-kanit text-gray-900"
+                    >
                       ชีพจรผิดปกติ
                     </Text>
                   </View>
@@ -369,9 +345,15 @@ export default function ReportSummary() {
                           สูงผิดปกติ
                         </Text>
                       </View>
-                      <Text style={{ fontSize: 28, fontWeight: "700" }} className="font-kanit text-red-500">
+                      <Text
+                        style={{ fontSize: 28, fontWeight: '700' }}
+                        className="font-kanit text-red-500"
+                      >
                         {displaySummary.heartRateAnomalies.high}
-                        <Text style={{ fontSize: 14 }} className="font-kanit text-red-400"> ครั้ง</Text>
+                        <Text style={{ fontSize: 14 }} className="font-kanit text-red-400">
+                          {' '}
+                          ครั้ง
+                        </Text>
                       </Text>
                     </View>
                     {/* Low HR */}
@@ -382,9 +364,15 @@ export default function ReportSummary() {
                           ต่ำผิดปกติ
                         </Text>
                       </View>
-                      <Text style={{ fontSize: 28, fontWeight: "700" }} className="font-kanit text-blue-500">
+                      <Text
+                        style={{ fontSize: 28, fontWeight: '700' }}
+                        className="font-kanit text-blue-500"
+                      >
                         {displaySummary.heartRateAnomalies.low}
-                        <Text style={{ fontSize: 14 }} className="font-kanit text-blue-400"> ครั้ง</Text>
+                        <Text style={{ fontSize: 14 }} className="font-kanit text-blue-400">
+                          {' '}
+                          ครั้ง
+                        </Text>
                       </Text>
                     </View>
                   </View>
@@ -403,7 +391,7 @@ export default function ReportSummary() {
             <View className="items-center justify-center py-12">
               <MaterialIcons name="description" size={80} color="#D1D5DB" />
               <Text
-                style={{ fontSize: 18, fontWeight: "600" }}
+                style={{ fontSize: 18, fontWeight: '600' }}
                 className="font-kanit text-gray-900 mt-4"
               >
                 ไม่มีข้อมูลในเดือนนี้
@@ -412,8 +400,7 @@ export default function ReportSummary() {
                 style={{ fontSize: 14 }}
                 className="font-kanit text-gray-500 mt-2 text-center px-6"
               >
-                ยังไม่มีเหตุการณ์ที่บันทึกไว้ในเดือน{THAI_MONTHS[currentMonth]}{" "}
-                {currentYear}
+                ยังไม่มีเหตุการณ์ที่บันทึกไว้ในเดือน{THAI_MONTHS[currentMonth]} {currentYear}
               </Text>
             </View>
           )}
@@ -438,7 +425,7 @@ export default function ReportSummary() {
             onPress={(e) => e.stopPropagation()}
           >
             <Text
-              style={{ fontSize: 18, fontWeight: "700" }}
+              style={{ fontSize: 18, fontWeight: '700' }}
               className="font-kanit text-gray-900 mb-4 text-center"
             >
               เลือกเดือน/ปี
@@ -448,15 +435,10 @@ export default function ReportSummary() {
               {/* Generate last 24 months (2 years) */}
               {Array.from({ length: 24 }).map((_, index) => {
                 const today = new Date();
-                const targetDate = new Date(
-                  today.getFullYear(),
-                  today.getMonth() - index,
-                  1
-                );
+                const targetDate = new Date(today.getFullYear(), today.getMonth() - index, 1);
                 const month = targetDate.getMonth();
                 const year = targetDate.getFullYear() + 543;
-                const isSelected =
-                  month === currentMonth && year === currentYear;
+                const isSelected = month === currentMonth && year === currentYear;
 
                 return (
                   <TouchableOpacity
@@ -466,19 +448,19 @@ export default function ReportSummary() {
                       setCurrentYear(year);
                       setShowMonthPicker(false);
                     }}
-                    className={`py-3 px-4 rounded-xl mb-2 ${isSelected
-                      ? "bg-green-50 border-2 border-green-500"
-                      : "bg-gray-50"
-                      }`}
+                    className={`py-3 px-4 rounded-xl mb-2 ${
+                      isSelected ? 'bg-green-50 border-2 border-green-500' : 'bg-gray-50'
+                    }`}
                     activeOpacity={0.6}
                   >
                     <Text
                       style={{
                         fontSize: 16,
-                        fontWeight: isSelected ? "600" : "400",
+                        fontWeight: isSelected ? '600' : '400',
                       }}
-                      className={`font-kanit text-center ${isSelected ? "text-green-600" : "text-gray-700"
-                        }`}
+                      className={`font-kanit text-center ${
+                        isSelected ? 'text-green-600' : 'text-gray-700'
+                      }`}
                     >
                       {THAI_MONTHS[month]} {year}
                     </Text>
@@ -493,7 +475,7 @@ export default function ReportSummary() {
               activeOpacity={0.6}
             >
               <Text
-                style={{ fontSize: 16, fontWeight: "600" }}
+                style={{ fontSize: 16, fontWeight: '600' }}
                 className="font-kanit text-gray-700 text-center"
               >
                 ยกเลิก

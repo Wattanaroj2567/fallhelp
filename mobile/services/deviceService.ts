@@ -29,7 +29,12 @@ export type WifiConfigPayload = {
 export type UpdateDeviceConfigPayload = Partial<
   Pick<
     DeviceConfig,
-    'fallThreshold' | 'hrLowThreshold' | 'hrHighThreshold' | 'fallCancelTime' | 'ssid' | 'wifiPassword'
+    | 'fallThreshold'
+    | 'hrLowThreshold'
+    | 'hrHighThreshold'
+    | 'fallCancelTime'
+    | 'ssid'
+    | 'wifiPassword'
   >
 >;
 
@@ -69,7 +74,9 @@ export async function pairDevice(payload: PairDevicePayload): Promise<Device> {
 
 export async function unpairDevice(payload: UnpairDevicePayload): Promise<Device> {
   try {
-    const { data } = await apiClient.delete<ApiResponse<Device>>(`/api/devices/${payload.deviceId}/unpair`);
+    const { data } = await apiClient.delete<ApiResponse<Device>>(
+      `/api/devices/${payload.deviceId}/unpair`,
+    );
     return data.data;
   } catch (error) {
     throw toApiError(error);
@@ -78,7 +85,9 @@ export async function unpairDevice(payload: UnpairDevicePayload): Promise<Device
 
 export async function getDeviceConfig(deviceId: string): Promise<DeviceConfig> {
   try {
-    const { data } = await apiClient.get<ApiResponse<DeviceConfig>>(`/api/devices/${deviceId}/config`);
+    const { data } = await apiClient.get<ApiResponse<DeviceConfig>>(
+      `/api/devices/${deviceId}/config`,
+    );
     return data.data;
   } catch (error) {
     throw toApiError(error);
@@ -87,10 +96,13 @@ export async function getDeviceConfig(deviceId: string): Promise<DeviceConfig> {
 
 export async function updateDeviceConfig(
   deviceId: string,
-  payload: UpdateDeviceConfigPayload
+  payload: UpdateDeviceConfigPayload,
 ): Promise<DeviceConfig> {
   try {
-    const { data } = await apiClient.put<ApiResponse<DeviceConfig>>(`/api/devices/${deviceId}/config`, payload);
+    const { data } = await apiClient.put<ApiResponse<DeviceConfig>>(
+      `/api/devices/${deviceId}/config`,
+      payload,
+    );
     return data.data;
   } catch (error) {
     throw toApiError(error);
@@ -99,7 +111,10 @@ export async function updateDeviceConfig(
 
 export async function configureWifi(deviceId: string, payload: WifiConfigPayload) {
   try {
-    const { data } = await apiClient.put<ApiResponse<{ success: boolean }>>(`/api/devices/${deviceId}/wifi`, payload);
+    const { data } = await apiClient.put<ApiResponse<{ success: boolean }>>(
+      `/api/devices/${deviceId}/wifi`,
+      payload,
+    );
     return data.data;
   } catch (error) {
     throw toApiError(error);

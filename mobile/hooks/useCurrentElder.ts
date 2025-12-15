@@ -4,7 +4,7 @@ import { getUserElders } from '@/services/userService';
 /**
  * Custom hook to fetch the current elder
  * Centralizes elder fetching logic and improves caching
- * 
+ *
  * @returns React Query result with current elder data
  */
 export const useCurrentElder = () => {

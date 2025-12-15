@@ -1,16 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import Logger from '@/utils/logger';
-import { MaterialIcons } from '@expo/vector-icons';
 import { apiClient } from '@/services/api';
 import { FloatingLabelInput } from '@/components/FloatingLabelInput';
 import { ScreenWrapper } from '@/components/ScreenWrapper';
-import { ScreenHeader } from "@/components/ScreenHeader";
-import { PrimaryButton } from "@/components/PrimaryButton";
-import { PasswordStrengthIndicator } from "@/components/PasswordStrengthIndicator";
-import { getErrorMessage } from '@/utils/errorHelper';
+import { ScreenHeader } from '@/components/ScreenHeader';
+import { PrimaryButton } from '@/components/PrimaryButton';
+import { PasswordStrengthIndicator } from '@/components/PasswordStrengthIndicator';
+import { showErrorMessage } from '@/utils/errorHelper';
 
 export default function ChangePassword() {
   const router = useRouter();
@@ -20,7 +17,6 @@ export default function ChangePassword() {
   const [confirmPassword, setConfirmPassword] = useState('');
 
   // Animation Hooks
-
 
   const validatePassword = (password: string): { valid: boolean; message?: string } => {
     if (password.length < 8) {
@@ -59,20 +55,14 @@ export default function ChangePassword() {
         newPassword,
       });
 
-      Alert.alert(
-        'สำเร็จ',
-        'เปลี่ยนรหัสผ่านเรียบร้อยแล้ว',
-        [
-          {
-            text: 'ตกลง',
-            onPress: () => router.back(),
-          },
-        ]
-      );
-    } catch (error: any) {
-      Logger.error('Error changing password:', error);
-      const message = getErrorMessage(error);
-      Alert.alert('ข้อผิดพลาด', message);
+      Alert.alert('สำเร็จ', 'เปลี่ยนรหัสผ่านเรียบร้อยแล้ว', [
+        {
+          text: 'ตกลง',
+          onPress: () => router.back(),
+        },
+      ]);
+    } catch (error: unknown) {
+      showErrorMessage('ข้อผิดพลาด', error);
     } finally {
       setSaving(false);
     }
@@ -93,10 +83,7 @@ export default function ChangePassword() {
         >
           เปลี่ยนรหัสผ่าน
         </Text>
-        <Text
-          className="font-kanit text-gray-500"
-          style={{ fontSize: 15, marginBottom: 24 }}
-        >
+        <Text className="font-kanit text-gray-500" style={{ fontSize: 15, marginBottom: 24 }}>
           กรุณากรอกรหัสผ่านปัจจุบันและใหม่
         </Text>
 
@@ -142,11 +129,7 @@ export default function ChangePassword() {
         </View>
 
         {/* Save Button */}
-        <PrimaryButton
-          title="บันทึกข้อมูล"
-          onPress={handleSave}
-          loading={saving}
-        />
+        <PrimaryButton title="บันทึกข้อมูล" onPress={handleSave} loading={saving} />
       </View>
     </ScreenWrapper>
   );

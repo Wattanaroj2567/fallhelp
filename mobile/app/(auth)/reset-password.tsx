@@ -1,17 +1,16 @@
-import React, { useState } from "react";
-import { TouchableOpacity, View, Text, Alert } from "react-native";
-import { useRouter, useLocalSearchParams } from "expo-router";
-import { useMutation } from "@tanstack/react-query";
-import { resetPassword } from "@/services/authService";
-import { FloatingLabelInput } from "@/components/FloatingLabelInput";
-import { ScreenWrapper } from "@/components/ScreenWrapper";
-import { ScreenHeader } from "@/components/ScreenHeader";
-import { PrimaryButton } from "@/components/PrimaryButton";
-import { showErrorMessage } from "@/utils/errorHelper";
-import Logger from "@/utils/logger";
-import { PasswordStrengthIndicator } from "@/components/PasswordStrengthIndicator";
+import React, { useState } from 'react';
+import { TouchableOpacity, View, Text, Alert } from 'react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useMutation } from '@tanstack/react-query';
+import { resetPassword } from '@/services/authService';
+import { FloatingLabelInput } from '@/components/FloatingLabelInput';
+import { ScreenWrapper } from '@/components/ScreenWrapper';
+import { ScreenHeader } from '@/components/ScreenHeader';
+import { PrimaryButton } from '@/components/PrimaryButton';
+import { showErrorMessage } from '@/utils/errorHelper';
+import { PasswordStrengthIndicator } from '@/components/PasswordStrengthIndicator';
 
-const THEME_COLOR = "#EB6A6A"; // สีปุ่มตามรูป
+const THEME_COLOR = '#EB6A6A'; // สีปุ่มตามรูป
 
 // ==========================================
 // 📱 LAYER: View (Component)
@@ -26,8 +25,8 @@ export default function ResetPasswordScreen() {
   // 🧩 LAYER: Logic (Local State)
   // Purpose: Manage password inputs
   // ==========================================
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   // ==========================================
   // 🎨 LAYER: View (Animation)
@@ -48,12 +47,12 @@ export default function ResetPasswordScreen() {
     },
     onSuccess: () => {
       router.replace({
-        pathname: "/(auth)/success",
-        params: { type: "reset_password" },
+        pathname: '/(auth)/success',
+        params: { type: 'reset_password' },
       });
     },
-    onError: (error: any) => {
-      showErrorMessage("ผิดพลาด", error);
+    onError: (error: unknown) => {
+      showErrorMessage('ผิดพลาด', error);
     },
   });
 
@@ -63,18 +62,15 @@ export default function ResetPasswordScreen() {
   // ==========================================
   const handleResetPassword = async () => {
     if (!newPassword || !confirmPassword) {
-      Alert.alert("ข้อมูลไม่ครบ", "กรุณากรอกรหัสผ่านใหม่ให้ครบถ้วน");
+      Alert.alert('ข้อมูลไม่ครบ', 'กรุณากรอกรหัสผ่านใหม่ให้ครบถ้วน');
       return;
     }
     if (newPassword !== confirmPassword) {
-      Alert.alert("รหัสผ่านไม่ตรงกัน", "กรุณากรอกรหัสผ่านยืนยันให้ตรงกัน");
+      Alert.alert('รหัสผ่านไม่ตรงกัน', 'กรุณากรอกรหัสผ่านยืนยันให้ตรงกัน');
       return;
     }
     if (newPassword.length < 8) {
-      Alert.alert(
-        "รหัสผ่านสั้นเกินไป",
-        "รหัสผ่านต้องมีความยาวอย่างน้อย 8 ตัวอักษร"
-      );
+      Alert.alert('รหัสผ่านสั้นเกินไป', 'รหัสผ่านต้องมีความยาวอย่างน้อย 8 ตัวอักษร');
       return;
     }
 
@@ -91,7 +87,7 @@ export default function ResetPasswordScreen() {
       keyboardAvoiding
       scrollViewProps={{
         bounces: false, // iOS: ห้ามเด้งดึ๋ง
-        overScrollMode: "never", // Android: ห้ามเด้งแสง
+        overScrollMode: 'never', // Android: ห้ามเด้งแสง
       }}
       header={<ScreenHeader title="" />}
     >
@@ -103,10 +99,7 @@ export default function ResetPasswordScreen() {
         >
           ตั้งรหัสผ่านใหม่
         </Text>
-        <Text
-          className="font-kanit text-gray-500"
-          style={{ fontSize: 15, marginBottom: 24 }}
-        >
+        <Text className="font-kanit text-gray-500" style={{ fontSize: 15, marginBottom: 24 }}>
           สร้างรหัสผ่านใหม่ของคุณ เพื่อเข้าสู่ระบบในครั้งถัดไป
         </Text>
 
@@ -156,14 +149,8 @@ export default function ResetPasswordScreen() {
 
         {/* Cancel Link */}
         <View className="flex-row justify-center items-center mt-6">
-          <TouchableOpacity
-            onPress={() => router.replace("/(auth)/login")}
-            activeOpacity={0.7}
-          >
-            <Text
-              className="font-kanit"
-              style={{ fontSize: 15, color: "#6B7280" }}
-            >
+          <TouchableOpacity onPress={() => router.replace('/(auth)/login')} activeOpacity={0.7}>
+            <Text className="font-kanit" style={{ fontSize: 15, color: '#6B7280' }}>
               ยกเลิก
             </Text>
           </TouchableOpacity>

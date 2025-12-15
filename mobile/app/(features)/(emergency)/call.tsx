@@ -1,21 +1,14 @@
-import React, { useCallback } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  Linking,
-  Alert,
-  ActivityIndicator,
-} from "react-native";
-import { useRouter, useFocusEffect } from "expo-router";
-import { MaterialIcons } from "@expo/vector-icons";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { listContacts } from "@/services/emergencyContactService";
-import { useCurrentElder } from "@/hooks/useCurrentElder";
-import { ScreenWrapper } from "@/components/ScreenWrapper";
-import { ScreenHeader } from "@/components/ScreenHeader";
-import Logger from "@/utils/logger";
-import { Bounceable } from "@/components/Bounceable";
+import React, { useCallback } from 'react';
+import { View, Text, Linking, Alert, ActivityIndicator } from 'react-native';
+import { useRouter, useFocusEffect } from 'expo-router';
+import { MaterialIcons } from '@expo/vector-icons';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { listContacts } from '@/services/emergencyContactService';
+import { useCurrentElder } from '@/hooks/useCurrentElder';
+import { ScreenWrapper } from '@/components/ScreenWrapper';
+import { ScreenHeader } from '@/components/ScreenHeader';
+import Logger from '@/utils/logger';
+import { Bounceable } from '@/components/Bounceable';
 
 export default function EmergencyCallScreen() {
   const router = useRouter();
@@ -28,8 +21,12 @@ export default function EmergencyCallScreen() {
   const isOwner = currentElder?.accessLevel === 'OWNER' || currentElder?.accessLevel === 'EDITOR';
 
   // Fetch Contacts
-  const { data: contacts, isLoading: isContactsLoading, refetch: refetchContacts } = useQuery({
-    queryKey: ["emergencyContacts", currentElderId],
+  const {
+    data: contacts,
+    isLoading: isContactsLoading,
+    refetch: refetchContacts,
+  } = useQuery({
+    queryKey: ['emergencyContacts', currentElderId],
     queryFn: () => listContacts(currentElderId!),
     enabled: !!currentElderId,
   });
@@ -40,8 +37,8 @@ export default function EmergencyCallScreen() {
         refetchContacts();
       }
       // Also ensure permissions are up to date
-      queryClient.invalidateQueries({ queryKey: ["userElders"] });
-    }, [currentElderId, refetchContacts, queryClient])
+      queryClient.invalidateQueries({ queryKey: ['userElders'] });
+    }, [currentElderId, refetchContacts, queryClient]),
   );
 
   const isLoading = isEldersLoading || (!!currentElderId && isContactsLoading);
@@ -55,11 +52,11 @@ export default function EmergencyCallScreen() {
       if (supported) {
         await Linking.openURL(url);
       } else {
-        Alert.alert("ไม่สามารถโทรออกได้", "อุปกรณ์นี้ไม่รองรับการโทรออก");
+        Alert.alert('ไม่สามารถโทรออกได้', 'อุปกรณ์นี้ไม่รองรับการโทรออก');
       }
     } catch (error) {
-      Logger.error("Call error:", error);
-      Alert.alert("ข้อผิดพลาด", "เกิดข้อผิดพลาดในการโทรออก");
+      Logger.error('Call error:', error);
+      Alert.alert('ข้อผิดพลาด', 'เกิดข้อผิดพลาดในการโทรออก');
     }
   };
 
@@ -73,7 +70,7 @@ export default function EmergencyCallScreen() {
             <Bounceable
               className="p-2"
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-              onPress={() => router.push("/(features)/(emergency)")}
+              onPress={() => router.push('/(features)/(emergency)')}
             >
               <MaterialIcons name="settings" size={24} color="#374151" />
             </Bounceable>
@@ -147,12 +144,10 @@ export default function EmergencyCallScreen() {
               {/* Add Contact Button - Hide if Read Only */}
               {isOwner && (
                 <Bounceable
-                  onPress={() => router.push("/(features)/(emergency)")}
+                  onPress={() => router.push('/(features)/(emergency)')}
                   className="mt-4 bg-blue-500 px-6 py-3 rounded-full"
                 >
-                  <Text className="text-white font-kanit text-base">
-                    เพิ่มผู้ติดต่อ
-                  </Text>
+                  <Text className="text-white font-kanit text-base">เพิ่มผู้ติดต่อ</Text>
                 </Bounceable>
               )}
             </View>
@@ -166,7 +161,7 @@ export default function EmergencyCallScreen() {
           เบอร์โทรฉุกเฉินสาธารณะ
         </Text>
         <Bounceable
-          onPress={() => handleCall("1669")}
+          onPress={() => handleCall('1669')}
           className="bg-red-500 p-4 rounded-2xl shadow-md flex-row items-center justify-between active:bg-red-600"
         >
           <View className="flex-row items-center gap-4">
@@ -174,12 +169,8 @@ export default function EmergencyCallScreen() {
               <MaterialIcons name="local-hospital" size={24} color="white" />
             </View>
             <View>
-              <Text className="text-lg font-bold text-white font-kanit">
-                1669
-              </Text>
-              <Text className="text-white/80 font-kanit text-xs">
-                เจ็บป่วยฉุกเฉิน
-              </Text>
+              <Text className="text-lg font-bold text-white font-kanit">1669</Text>
+              <Text className="text-white/80 font-kanit text-xs">เจ็บป่วยฉุกเฉิน</Text>
             </View>
           </View>
           <MaterialIcons name="phone-in-talk" size={24} color="white" />

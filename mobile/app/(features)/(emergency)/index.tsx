@@ -1,34 +1,23 @@
-import React, { useState, useEffect, useCallback } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  Alert,
-  RefreshControl,
-} from "react-native";
-import { useRouter, useFocusEffect } from "expo-router";
-import { MaterialIcons } from "@expo/vector-icons";
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, TouchableOpacity, Alert, RefreshControl } from 'react-native';
+import { useRouter, useFocusEffect } from 'expo-router';
+import { MaterialIcons } from '@expo/vector-icons';
 import DraggableFlatList, {
   ScaleDecorator,
   RenderItemParams,
-} from "react-native-draggable-flatlist";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
+} from 'react-native-draggable-flatlist';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
-import { getUserElders } from "@/services/userService";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  listContacts,
-  deleteContact,
-  reorderContacts,
-} from "@/services/emergencyContactService";
-import Logger from "@/utils/logger";
-import { showErrorMessage } from "@/utils/errorHelper";
-import { EmergencyContact } from "@/services/types";
-import { ListItemSkeleton } from "@/components/skeletons";
-import { ScreenWrapper } from "@/components/ScreenWrapper";
-import { ScreenHeader } from "@/components/ScreenHeader";
-import { useCurrentElder } from "@/hooks/useCurrentElder";
-import { LoadingScreen } from "@/components/LoadingScreen";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { listContacts, deleteContact, reorderContacts } from '@/services/emergencyContactService';
+import Logger from '@/utils/logger';
+import { showErrorMessage } from '@/utils/errorHelper';
+import { EmergencyContact } from '@/services/types';
+import { ListItemSkeleton } from '@/components/skeletons';
+import { ScreenWrapper } from '@/components/ScreenWrapper';
+import { ScreenHeader } from '@/components/ScreenHeader';
+import { useCurrentElder } from '@/hooks/useCurrentElder';
+import { LoadingScreen } from '@/components/LoadingScreen';
 
 // ==========================================
 // 📱 LAYER: View (Component)
@@ -46,8 +35,7 @@ export default function EmergencyContacts() {
   const { data: currentElder, isLoading: isElderLoading } = useCurrentElder();
   const isReadOnly =
     !currentElder ||
-    (currentElder.accessLevel !== "OWNER" &&
-      currentElder.accessLevel !== "EDITOR");
+    (currentElder.accessLevel !== 'OWNER' && currentElder.accessLevel !== 'EDITOR');
 
   // ==========================================
   // ⚙️ LAYER: Logic (Data Fetching)
@@ -58,7 +46,7 @@ export default function EmergencyContacts() {
     isLoading,
     refetch,
   } = useQuery<EmergencyContact[]>({
-    queryKey: ["emergencyContacts", currentElder?.id],
+    queryKey: ['emergencyContacts', currentElder?.id],
     enabled: !!currentElder?.id,
     queryFn: async () => {
       if (!currentElder?.id) return [];
@@ -81,7 +69,7 @@ export default function EmergencyContacts() {
   useFocusEffect(
     React.useCallback(() => {
       refetch();
-    }, [refetch])
+    }, [refetch]),
   );
 
   // ==========================================
@@ -91,28 +79,23 @@ export default function EmergencyContacts() {
   const deleteMutation = useMutation({
     mutationFn: deleteContact,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["emergencyContacts"] });
-      Alert.alert("สำเร็จ", "ลบผู้ติดต่อเรียบร้อยแล้ว");
+      queryClient.invalidateQueries({ queryKey: ['emergencyContacts'] });
+      Alert.alert('สำเร็จ', 'ลบผู้ติดต่อเรียบร้อยแล้ว');
     },
     onError: (error: unknown) => {
-      showErrorMessage("ผิดพลาด", error);
+      showErrorMessage('ผิดพลาด', error);
     },
   });
 
   const reorderMutation = useMutation({
-    mutationFn: ({
-      elderId,
-      contactIds,
-    }: {
-      elderId: string;
-      contactIds: string[];
-    }) => reorderContacts(elderId, contactIds),
+    mutationFn: ({ elderId, contactIds }: { elderId: string; contactIds: string[] }) =>
+      reorderContacts(elderId, contactIds),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["emergencyContacts"] });
+      queryClient.invalidateQueries({ queryKey: ['emergencyContacts'] });
     },
     onError: (error: unknown) => {
-      Logger.error("Reorder failed", error);
-      showErrorMessage("ผิดพลาด", error);
+      Logger.error('Reorder failed', error);
+      showErrorMessage('ผิดพลาด', error);
       refetch(); // Revert on error
     },
   });
@@ -124,20 +107,16 @@ export default function EmergencyContacts() {
   const handleDelete = useCallback(
     (id: string, name: string) => {
       if (isReadOnly) return;
-      Alert.alert(
-        "ยืนยันการลบ",
-        `คุณต้องการลบ ${name} ออกจากรายชื่อผู้ติดต่อฉุกเฉินใช่หรือไม่?`,
-        [
-          { text: "ยกเลิก", style: "cancel" },
-          {
-            text: "ลบ",
-            style: "destructive",
-            onPress: () => deleteMutation.mutate(id),
-          },
-        ]
-      );
+      Alert.alert('ยืนยันการลบ', `คุณต้องการลบ ${name} ออกจากรายชื่อผู้ติดต่อฉุกเฉินใช่หรือไม่?`, [
+        { text: 'ยกเลิก', style: 'cancel' },
+        {
+          text: 'ลบ',
+          style: 'destructive',
+          onPress: () => deleteMutation.mutate(id),
+        },
+      ]);
     },
-    [isReadOnly, deleteMutation]
+    [isReadOnly, deleteMutation],
   );
 
   const handleDragEnd = async ({ data }: { data: EmergencyContact[] }) => {
@@ -159,12 +138,7 @@ export default function EmergencyContacts() {
   // Purpose: Render individual contact item
   // ==========================================
   const renderItem = useCallback(
-    ({
-      item,
-      drag,
-      isActive,
-      getIndex,
-    }: RenderItemParams<EmergencyContact>) => {
+    ({ item, drag, isActive, getIndex }: RenderItemParams<EmergencyContact>) => {
       const index = getIndex();
       return (
         <ScaleDecorator>
@@ -173,7 +147,7 @@ export default function EmergencyContacts() {
             disabled={isActive || isReadOnly}
             activeOpacity={1}
             className={`bg-white rounded-2xl p-4 mb-3 shadow-sm border border-gray-100 flex-row items-center ${
-              isActive ? "opacity-90 shadow-lg scale-105" : ""
+              isActive ? 'opacity-90 shadow-lg scale-105' : ''
             }`}
           >
             {/* Drag Handle - Hide if ReadOnly or Single Item */}
@@ -186,7 +160,7 @@ export default function EmergencyContacts() {
             {/* Priority Badge */}
             <View className="w-10 h-10 rounded-full bg-blue-50 items-center justify-center mr-4">
               <Text
-                style={{ fontSize: 16, fontWeight: "700" }}
+                style={{ fontSize: 16, fontWeight: '700' }}
                 className="font-kanit text-blue-600"
               >
                 {(index || 0) + 1}
@@ -196,15 +170,12 @@ export default function EmergencyContacts() {
             {/* Info */}
             <View className="flex-1">
               <Text
-                style={{ fontSize: 16, fontWeight: "600" }}
+                style={{ fontSize: 16, fontWeight: '600' }}
                 className="font-kanit text-gray-900"
               >
-                {item.name} {item.relationship ? `(${item.relationship})` : ""}
+                {item.name} {item.relationship ? `(${item.relationship})` : ''}
               </Text>
-              <Text
-                style={{ fontSize: 14 }}
-                className="font-kanit text-gray-500 mt-0.5"
-              >
+              <Text style={{ fontSize: 14 }} className="font-kanit text-gray-500 mt-0.5">
                 {item.phone}
               </Text>
             </View>
@@ -215,7 +186,7 @@ export default function EmergencyContacts() {
                 <TouchableOpacity
                   onPress={() =>
                     router.push({
-                      pathname: "/(features)/(emergency)/edit",
+                      pathname: '/(features)/(emergency)/edit',
                       params: { id: item.id },
                     })
                   }
@@ -236,7 +207,7 @@ export default function EmergencyContacts() {
         </ScaleDecorator>
       );
     },
-    [isReadOnly, localContacts.length, handleDelete, router]
+    [isReadOnly, localContacts.length, handleDelete, router],
   ); // Dependencies for useCallback
 
   // ==========================================
@@ -252,24 +223,16 @@ export default function EmergencyContacts() {
   }
 
   return (
-    <ScreenWrapper edges={["top", "left", "right"]} useScrollView={false}>
+    <ScreenWrapper edges={['top', 'left', 'right']} useScrollView={false}>
       <GestureHandlerRootView style={{ flex: 1 }}>
         {/* Header */}
-        <ScreenHeader
-          title="จัดการเบอร์ติดต่อฉุกเฉิน"
-          onBack={() => router.back()}
-        />
+        <ScreenHeader title="จัดการเบอร์ติดต่อฉุกเฉิน" onBack={() => router.back()} />
 
         {/* View Only Warning */}
         {isReadOnly && currentElder && (
           <View className="mx-6 mb-2 mt-2">
             <View className="bg-yellow-50 rounded-xl p-3 border border-yellow-100 flex-row items-center">
-              <MaterialIcons
-                name="lock"
-                size={16}
-                color="#CA8A04"
-                style={{ marginRight: 6 }}
-              />
+              <MaterialIcons name="lock" size={16} color="#CA8A04" style={{ marginRight: 6 }} />
               <Text className="font-kanit text-yellow-700 text-xs flex-1">
                 โหมดดูได้อย่างเดียว (Assistant Caregiver)
               </Text>
@@ -294,21 +257,12 @@ export default function EmergencyContacts() {
                 paddingBottom: 100,
               }}
               refreshControl={
-                <RefreshControl
-                  refreshing={isLoading}
-                  onRefresh={refetch}
-                  colors={["#16AD78"]}
-                />
+                <RefreshControl refreshing={isLoading} onRefresh={refetch} colors={['#16AD78']} />
               }
               ListHeaderComponent={
                 !isReadOnly ? (
                   <View className="bg-blue-50 rounded-2xl p-4 mb-6 flex-row items-start">
-                    <MaterialIcons
-                      name="info"
-                      size={20}
-                      color="#3B82F6"
-                      style={{ marginTop: 2 }}
-                    />
+                    <MaterialIcons name="info" size={20} color="#3B82F6" style={{ marginTop: 2 }} />
                     <View className="flex-1 ml-2">
                       <Text
                         style={{ fontSize: 14, lineHeight: 22 }}
@@ -320,8 +274,7 @@ export default function EmergencyContacts() {
                         style={{ fontSize: 13, lineHeight: 20 }}
                         className="font-kanit text-blue-600 mt-1"
                       >
-                        กดค้างที่ขีด 2 ขีด{" "}
-                        <MaterialIcons name="drag-handle" size={14} />{" "}
+                        กดค้างที่ขีด 2 ขีด <MaterialIcons name="drag-handle" size={14} />{' '}
                         เพื่อลากจัดลำดับความสำคัญ
                       </Text>
                     </View>
@@ -330,13 +283,9 @@ export default function EmergencyContacts() {
               }
               ListEmptyComponent={
                 <View className="flex-1 justify-center items-center py-20">
-                  <MaterialIcons
-                    name="contact-phone"
-                    size={80}
-                    color="#D1D5DB"
-                  />
+                  <MaterialIcons name="contact-phone" size={80} color="#D1D5DB" />
                   <Text
-                    style={{ fontSize: 20, fontWeight: "600" }}
+                    style={{ fontSize: 20, fontWeight: '600' }}
                     className="font-kanit text-gray-900 mt-6 text-center"
                   >
                     ยังไม่มีรายชื่อผู้ติดต่อ
@@ -346,8 +295,8 @@ export default function EmergencyContacts() {
                     className="font-kanit text-gray-500 mt-2 text-center"
                   >
                     {isReadOnly
-                      ? "ญาติผู้ดูแลหลักยังไม่ได้เพิ่มเบอร์ติดต่อ"
-                      : "เพิ่มเบอร์ติดต่อฉุกเฉินเพื่อให้คุณสามารถกดโทรออกได้ทันทีเมื่อเกิดเหตุ"}
+                      ? 'ญาติผู้ดูแลหลักยังไม่ได้เพิ่มเบอร์ติดต่อ'
+                      : 'เพิ่มเบอร์ติดต่อฉุกเฉินเพื่อให้คุณสามารถกดโทรออกได้ทันทีเมื่อเกิดเหตุ'}
                   </Text>
                 </View>
               }
@@ -357,18 +306,13 @@ export default function EmergencyContacts() {
             {!isReadOnly && (
               <View className="absolute bottom-8 left-6 right-6">
                 <TouchableOpacity
-                  onPress={() => router.push("/(features)/(emergency)/add")}
+                  onPress={() => router.push('/(features)/(emergency)/add')}
                   className="bg-[#16AD78] rounded-2xl py-4 flex-row justify-center items-center"
                   activeOpacity={0.8}
                 >
-                  <MaterialIcons
-                    name="add"
-                    size={24}
-                    color="#FFFFFF"
-                    style={{ marginRight: 8 }}
-                  />
+                  <MaterialIcons name="add" size={24} color="#FFFFFF" style={{ marginRight: 8 }} />
                   <Text
-                    style={{ fontSize: 18, fontWeight: "600" }}
+                    style={{ fontSize: 18, fontWeight: '600' }}
                     className="font-kanit text-white"
                   >
                     เพิ่มเบอร์ติดต่อฉุกเฉิน
@@ -382,4 +326,3 @@ export default function EmergencyContacts() {
     </ScreenWrapper>
   );
 }
-

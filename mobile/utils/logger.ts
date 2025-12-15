@@ -56,7 +56,7 @@ class Logger {
     } else {
       console.error(prefix, message);
     }
-    
+
     // TODO: Add external crash reporting here (e.g., Sentry.captureException(error))
   }
 }

@@ -1,14 +1,9 @@
 // components/AddressSelect.tsx
-import React, { useState, useEffect } from "react";
-import { View, StyleSheet } from "react-native";
-import {
-  getProvinces,
-  getAmphoes,
-  getDistricts,
-  getZipcode,
-} from "@/utils/thailandAddress";
-import { FloatingLabelInput } from "./FloatingLabelInput";
-import { AutocompleteInput } from "./AutocompleteInput";
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet } from 'react-native';
+import { getProvinces, getAmphoes, getDistricts, getZipcode } from '@/utils/thailandAddress';
+import { FloatingLabelInput } from './FloatingLabelInput';
+import { AutocompleteInput } from './AutocompleteInput';
 
 export interface AddressData {
   houseNumber: string;
@@ -32,11 +27,7 @@ interface AddressSelectProps {
   };
 }
 
-export default function AddressSelect({
-  value,
-  onChange,
-  errors,
-}: AddressSelectProps) {
+export default function AddressSelect({ value, onChange, errors }: AddressSelectProps) {
   const [provinces, setProvinces] = useState<string[]>([]);
   const [districts, setDistricts] = useState<string[]>([]);
   const [subdistricts, setSubdistricts] = useState<string[]>([]);
@@ -75,32 +66,32 @@ export default function AddressSelect({
   // When subdistrict changes, auto-fill zipcode
   useEffect(() => {
     if (subdistrictSearch && districtSearch && provinceSearch) {
-      const zipcode = getZipcode(
-        provinceSearch,
-        districtSearch,
-        subdistrictSearch
-      );
+      const zipcode = getZipcode(provinceSearch, districtSearch, subdistrictSearch);
       if (zipcode) {
-        onChange({
-          ...value,
-          subdistrict: subdistrictSearch,
-          zipcode: String(zipcode),
-        });
+        // Prevent infinite loop by checking if value actually changed
+        const newZipcode = String(zipcode);
+        if (value.zipcode !== newZipcode || value.subdistrict !== subdistrictSearch) {
+          onChange({
+            ...value,
+            subdistrict: subdistrictSearch,
+            zipcode: newZipcode,
+          });
+        }
       }
     }
-  }, [subdistrictSearch, districtSearch, provinceSearch]);
+  }, [subdistrictSearch, districtSearch, provinceSearch, value, onChange]);
 
   const handleProvinceChange = (text: string) => {
     setProvinceSearch(text);
     onChange({
       ...value,
       province: text,
-      district: "",
-      subdistrict: "",
-      zipcode: "",
+      district: '',
+      subdistrict: '',
+      zipcode: '',
     });
-    setDistrictSearch("");
-    setSubdistrictSearch("");
+    setDistrictSearch('');
+    setSubdistrictSearch('');
   };
 
   const handleDistrictChange = (text: string) => {
@@ -108,10 +99,10 @@ export default function AddressSelect({
     onChange({
       ...value,
       district: text,
-      subdistrict: "",
-      zipcode: "",
+      subdistrict: '',
+      zipcode: '',
     });
-    setSubdistrictSearch("");
+    setSubdistrictSearch('');
   };
 
   const handleSubdistrictChange = (text: string) => {
@@ -123,9 +114,7 @@ export default function AddressSelect({
       <FloatingLabelInput
         label="บ้านเลขที่"
         value={value.houseNumber}
-        onChangeText={(text: string) =>
-          onChange({ ...value, houseNumber: text })
-        }
+        onChangeText={(text: string) => onChange({ ...value, houseNumber: text })}
         isRequired
         error={errors?.houseNumber}
         placeholder="เช่น 123, 45/67"

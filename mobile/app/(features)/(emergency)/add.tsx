@@ -1,19 +1,17 @@
-import React, { useState } from "react";
-import { View, Text, Alert } from "react-native";
-import { useRouter } from "expo-router";
-import {
-  createContact,
-} from "@/services/emergencyContactService";
-import { useQueryClient } from "@tanstack/react-query";
-import { showErrorMessage } from "@/utils/errorHelper";
-import Logger from "@/utils/logger";
-import { FloatingLabelInput } from "@/components/FloatingLabelInput";
-import { ScreenWrapper } from "@/components/ScreenWrapper";
-import { ScreenHeader } from "@/components/ScreenHeader";
-import { PrimaryButton } from "@/components/PrimaryButton";
-import { useCurrentElder } from "@/hooks/useCurrentElder"; // [NEW] Use Hook
-import { LoadingScreen } from "@/components/LoadingScreen"; // [NEW] Standard Loading
-import { MaterialIcons } from "@expo/vector-icons";
+import React, { useState } from 'react';
+import { View, Text, Alert } from 'react-native';
+import { useRouter } from 'expo-router';
+import { createContact } from '@/services/emergencyContactService';
+import { useQueryClient } from '@tanstack/react-query';
+import { showErrorMessage } from '@/utils/errorHelper';
+import Logger from '@/utils/logger';
+import { FloatingLabelInput } from '@/components/FloatingLabelInput';
+import { ScreenWrapper } from '@/components/ScreenWrapper';
+import { ScreenHeader } from '@/components/ScreenHeader';
+import { PrimaryButton } from '@/components/PrimaryButton';
+import { useCurrentElder } from '@/hooks/useCurrentElder'; // [NEW] Use Hook
+import { LoadingScreen } from '@/components/LoadingScreen'; // [NEW] Standard Loading
+import { MaterialIcons } from '@expo/vector-icons';
 
 export default function AddEmergencyContact() {
   const router = useRouter();
@@ -25,27 +23,26 @@ export default function AddEmergencyContact() {
   const elderId = currentElder?.id;
   const isReadOnly =
     !currentElder ||
-    (currentElder.accessLevel !== "OWNER" &&
-      currentElder.accessLevel !== "EDITOR");
+    (currentElder.accessLevel !== 'OWNER' && currentElder.accessLevel !== 'EDITOR');
 
   // Form State
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [relationship, setRelationship] = useState("");
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [relationship, setRelationship] = useState('');
 
   const handleSave = async () => {
     if (isReadOnly) {
-        Alert.alert("ไม่มีสิทธิ์", "คุณไม่มีสิทธิ์ในการเพิ่มข้อมูล");
-        return;
+      Alert.alert('ไม่มีสิทธิ์', 'คุณไม่มีสิทธิ์ในการเพิ่มข้อมูล');
+      return;
     }
 
     if (!name.trim() || !phone.trim()) {
-      Alert.alert("กรุณากรอกข้อมูล", "กรุณากรอกชื่อและเบอร์โทรศัพท์");
+      Alert.alert('กรุณากรอกข้อมูล', 'กรุณากรอกชื่อและเบอร์โทรศัพท์');
       return;
     }
 
     if (!elderId) {
-      Alert.alert("ข้อผิดพลาด", "ไม่พบข้อมูลผู้สูงอายุ");
+      Alert.alert('ข้อผิดพลาด', 'ไม่พบข้อมูลผู้สูงอายุ');
       return;
     }
 
@@ -57,20 +54,19 @@ export default function AddEmergencyContact() {
         relationship: relationship.trim() || undefined,
       });
 
-      queryClient.invalidateQueries({ queryKey: ["emergencyContacts"] });
+      queryClient.invalidateQueries({ queryKey: ['emergencyContacts'] });
 
-      queryClient.invalidateQueries({ queryKey: ["emergencyContacts"] });
+      queryClient.invalidateQueries({ queryKey: ['emergencyContacts'] });
 
-      Alert.alert("สำเร็จ", "เพิ่มเบอร์ติดต่อฉุกเฉินเรียบร้อยแล้ว", [
+      Alert.alert('สำเร็จ', 'เพิ่มเบอร์ติดต่อฉุกเฉินเรียบร้อยแล้ว', [
         {
-          text: "ตกลง",
+          text: 'ตกลง',
           onPress: () => router.back(),
         },
       ]);
-
     } catch (error: unknown) {
-      Logger.error("Error adding contact:", error);
-      showErrorMessage("ข้อผิดพลาด", error);
+      Logger.error('Error adding contact:', error);
+      showErrorMessage('ข้อผิดพลาด', error);
     } finally {
       setLoading(false);
     }
@@ -83,25 +79,29 @@ export default function AddEmergencyContact() {
 
   // [NEW] Loading State
   if (isElderLoading) {
-      return <LoadingScreen useScreenWrapper />;
+    return <LoadingScreen useScreenWrapper />;
   }
-  
+
   // [NEW] View Only State Block (Optional - or just hide button)
   if (isReadOnly) {
-       // We can redirect back or show a blocked screen. 
-       // For better UX, let's show an empty state or redirect back immediately?
-       // Usually "Add" button is hidden in index.tsx if read-only. 
-       // But if they deep link here:
-       return (
-           <ScreenWrapper useScrollView={false}>
-               <ScreenHeader title="เพิ่มเบอร์โทร" onBack={() => router.back()} />
-               <View className="flex-1 items-center justify-center p-6">
-                   <MaterialIcons name="lock" size={60} color="#CA8A04" />
-                   <Text className="font-kanit text-lg text-gray-800 mt-4 text-center">ไม่มีสิทธิ์เข้าถึง</Text>
-                   <Text className="font-kanit text-gray-500 mt-2 text-center">เฉพาะผู้ดูแลหลักและผู้ช่วยแก้ไขได้เท่านั้น</Text>
-               </View>
-           </ScreenWrapper>
-       );
+    // We can redirect back or show a blocked screen.
+    // For better UX, let's show an empty state or redirect back immediately?
+    // Usually "Add" button is hidden in index.tsx if read-only.
+    // But if they deep link here:
+    return (
+      <ScreenWrapper useScrollView={false}>
+        <ScreenHeader title="เพิ่มเบอร์โทร" onBack={() => router.back()} />
+        <View className="flex-1 items-center justify-center p-6">
+          <MaterialIcons name="lock" size={60} color="#CA8A04" />
+          <Text className="font-kanit text-lg text-gray-800 mt-4 text-center">
+            ไม่มีสิทธิ์เข้าถึง
+          </Text>
+          <Text className="font-kanit text-gray-500 mt-2 text-center">
+            เฉพาะผู้ดูแลหลักและผู้ช่วยแก้ไขได้เท่านั้น
+          </Text>
+        </View>
+      </ScreenWrapper>
+    );
   }
 
   return (
@@ -110,7 +110,7 @@ export default function AddEmergencyContact() {
       keyboardAvoiding
       scrollViewProps={{
         bounces: false,
-        overScrollMode: "never",
+        overScrollMode: 'never',
       }}
       header={<ScreenHeader title="" onBack={() => router.back()} />}
     >
@@ -122,10 +122,7 @@ export default function AddEmergencyContact() {
         >
           เพิ่มเบอร์ติดต่อฉุกเฉิน
         </Text>
-        <Text
-          className="font-kanit text-gray-500"
-          style={{ fontSize: 15, marginBottom: 24 }}
-        >
+        <Text className="font-kanit text-gray-500" style={{ fontSize: 15, marginBottom: 24 }}>
           กรุณากรอกข้อมูลให้ถูกต้องเพื่อให้ระบบติดต่อญาติได้ทันทีเมื่อเกิดเหตุฉุกเฉิน
         </Text>
 
@@ -147,7 +144,7 @@ export default function AddEmergencyContact() {
               label="เบอร์ติดต่อ"
               value={phone}
               onChangeText={(text) => {
-                const cleaned = text.replace(/[^0-9]/g, "");
+                const cleaned = text.replace(/[^0-9]/g, '');
                 if (cleaned.length <= 10) {
                   setPhone(cleaned);
                 }
@@ -171,14 +168,9 @@ export default function AddEmergencyContact() {
 
         {/* Submit Button */}
         <View className="mt-2">
-          <PrimaryButton
-            title="บันทึกข้อมูล"
-            onPress={handleSave}
-            loading={loading}
-          />
+          <PrimaryButton title="บันทึกข้อมูล" onPress={handleSave} loading={loading} />
         </View>
       </View>
     </ScreenWrapper>
   );
 }
-

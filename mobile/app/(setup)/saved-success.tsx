@@ -1,10 +1,10 @@
-import React, { useEffect, useRef } from "react";
-import { Text, View, TouchableOpacity, Animated, Easing } from "react-native";
-import { useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
-import { ScreenWrapper } from "@/components/ScreenWrapper";
-import * as SecureStore from "expo-secure-store";
-import Logger from "@/utils/logger";
+import React, { useEffect, useRef } from 'react';
+import { Text, View, TouchableOpacity, Animated, Easing } from 'react-native';
+import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { ScreenWrapper } from '@/components/ScreenWrapper';
+import * as SecureStore from 'expo-secure-store';
+import Logger from '@/utils/logger';
 
 // ==========================================
 // 📱 LAYER: View (Component)
@@ -23,9 +23,9 @@ export default function SetupSuccess() {
     // Clear setup_step to mark setup as complete
     const clearSetupState = async () => {
       try {
-        await SecureStore.deleteItemAsync("setup_step");
+        await SecureStore.deleteItemAsync('setup_step');
       } catch (error) {
-        Logger.warn("Failed to clear setup step", error);
+        Logger.warn('Failed to clear setup step', error);
       }
     };
     clearSetupState();
@@ -68,13 +68,13 @@ export default function SetupSuccess() {
             easing: Easing.inOut(Easing.ease),
             useNativeDriver: true,
           }),
-        ])
+        ]),
       ).start();
     });
-  }, []);
+  }, [fadeAnim, pulseAnim, scaleAnim, slideAnim]);
 
   const handleGoToHome = () => {
-    router.replace("/(tabs)");
+    router.replace('/(tabs)');
   };
 
   return (
@@ -87,9 +87,7 @@ export default function SetupSuccess() {
         {/* Success Icon with Animation */}
         <Animated.View
           style={{
-            transform: [
-              { scale: Animated.multiply(scaleAnim, pulseAnim) }
-            ],
+            transform: [{ scale: Animated.multiply(scaleAnim, pulseAnim) }],
           }}
           className="mb-8"
         >
@@ -135,7 +133,7 @@ export default function SetupSuccess() {
             onPress={handleGoToHome}
             className="bg-white rounded-2xl py-4 px-8 mb-4 shadow-lg active:scale-95"
             style={{
-              shadowColor: "#000",
+              shadowColor: '#000',
               shadowOffset: { width: 0, height: 4 },
               shadowOpacity: 0.3,
               shadowRadius: 8,

@@ -1,14 +1,14 @@
-import React, { useState, useRef, useEffect } from "react";
-import { TextInput, TouchableOpacity, View, Text, Alert } from "react-native";
-import { useRouter, useLocalSearchParams } from "expo-router";
-import { useMutation } from "@tanstack/react-query";
-import { verifyOtp, requestOtp } from "@/services/authService";
-import { ScreenWrapper } from "@/components/ScreenWrapper";
-import { ScreenHeader } from "@/components/ScreenHeader";
-import { PrimaryButton } from "@/components/PrimaryButton";
-import { showErrorMessage } from "@/utils/errorHelper";
+import React, { useState, useRef, useEffect } from 'react';
+import { TextInput, TouchableOpacity, View, Text, Alert } from 'react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useMutation } from '@tanstack/react-query';
+import { verifyOtp, requestOtp } from '@/services/authService';
+import { ScreenWrapper } from '@/components/ScreenWrapper';
+import { ScreenHeader } from '@/components/ScreenHeader';
+import { PrimaryButton } from '@/components/PrimaryButton';
+import { showErrorMessage } from '@/utils/errorHelper';
 
-const THEME_COLOR = "#16AD78"; // สีเขียวตามภาพ
+const THEME_COLOR = '#16AD78'; // สีเขียวตามภาพ
 const OTP_LENGTH = 6;
 const RESEND_COOLDOWN_SECONDS = 60; // 1 นาที
 
@@ -27,10 +27,10 @@ export default function VerifyOtpScreen() {
   // 🧩 LAYER: Logic (Local State)
   // Purpose: Manage OTP input and timer
   // ==========================================
-  const [code, setCode] = useState("");
+  const [code, setCode] = useState('');
   const [resendTimer, setResendTimer] = useState(RESEND_COOLDOWN_SECONDS);
   const [expiryTimer, setExpiryTimer] = useState(initialExpiresInMinutes * 60); // วินาที
-  const [referenceCode, setReferenceCode] = useState(initialReferenceCode || "");
+  const [referenceCode, setReferenceCode] = useState(initialReferenceCode || '');
 
   const inputRef = useRef<TextInput>(null);
 
@@ -51,7 +51,7 @@ export default function VerifyOtpScreen() {
   // Purpose: Auto-submit when OTP is complete
   // ==========================================
   const handleCodeChange = (text: string) => {
-    const numericCode = text.replace(/[^0-9]/g, "");
+    const numericCode = text.replace(/[^0-9]/g, '');
     if (numericCode.length <= OTP_LENGTH) {
       setCode(numericCode);
 
@@ -64,27 +64,23 @@ export default function VerifyOtpScreen() {
 
   const handleAutoVerify = async (otpCode: string) => {
     try {
-      await verifyOtp({ email, code: otpCode, purpose: "PASSWORD_RESET" });
+      await verifyOtp({ email, code: otpCode, purpose: 'PASSWORD_RESET' });
       // Success - navigate to reset password
       router.push({
-        pathname: "/(auth)/reset-password",
+        pathname: '/(auth)/reset-password',
         params: { email, code: otpCode },
       });
-    } catch (error: any) {
+    } catch (_error: unknown) {
       // Error - show nice alert and clear input
-      Alert.alert(
-        "รหัสไม่ถูกต้อง",
-        "รหัส OTP ที่กรอกไม่ถูกต้อง กรุณาตรวจสอบและลองใหม่อีกครั้ง",
-        [
-          {
-            text: "ลองใหม่",
-            onPress: () => {
-              setCode("");
-              inputRef.current?.focus();
-            },
+      Alert.alert('รหัสไม่ถูกต้อง', 'รหัส OTP ที่กรอกไม่ถูกต้อง กรุณาตรวจสอบและลองใหม่อีกครั้ง', [
+        {
+          text: 'ลองใหม่',
+          onPress: () => {
+            setCode('');
+            inputRef.current?.focus();
           },
-        ]
-      );
+        },
+      ]);
     }
   };
 
@@ -95,16 +91,16 @@ export default function VerifyOtpScreen() {
 
   const resendOtpMutation = useMutation({
     mutationFn: async () => {
-      return await requestOtp({ email, purpose: "PASSWORD_RESET" });
+      return await requestOtp({ email, purpose: 'PASSWORD_RESET' });
     },
     onSuccess: (data) => {
       setResendTimer(RESEND_COOLDOWN_SECONDS);
       setExpiryTimer(data.expiresInMinutes * 60);
       setReferenceCode(data.referenceCode);
-      Alert.alert("ส่งรหัสใหม่แล้ว", "กรุณาตรวจสอบอีเมล");
+      Alert.alert('ส่งรหัสใหม่แล้ว', 'กรุณาตรวจสอบอีเมล');
     },
-    onError: (error: any) => {
-      showErrorMessage("ผิดพลาด", error);
+    onError: (error: unknown) => {
+      showErrorMessage('ผิดพลาด', error);
     },
   });
 
@@ -114,7 +110,7 @@ export default function VerifyOtpScreen() {
   // ==========================================
   const handleVerify = () => {
     if (code.length !== OTP_LENGTH) {
-      Alert.alert("ข้อมูลไม่ครบ", "กรุณากรอกรหัสให้ครบ 6 หลัก");
+      Alert.alert('ข้อมูลไม่ครบ', 'กรุณากรอกรหัสให้ครบ 6 หลัก');
       return;
     }
     handleAutoVerify(code);
@@ -129,7 +125,7 @@ export default function VerifyOtpScreen() {
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
   // ==========================================
@@ -159,10 +155,7 @@ export default function VerifyOtpScreen() {
         <Text className="font-kanit text-gray-600" style={{ fontSize: 15 }}>
           กรอกรหัสที่ระบบส่งไปที่ {email}
         </Text>
-        <Text
-          className="font-kanit text-gray-500"
-          style={{ fontSize: 14, marginBottom: 32 }}
-        >
+        <Text className="font-kanit text-gray-500" style={{ fontSize: 14, marginBottom: 32 }}>
           รหัสมีอายุ 5 นาที
         </Text>
 
@@ -198,17 +191,13 @@ export default function VerifyOtpScreen() {
                     className="font-kanit text-gray-900"
                     style={{ fontSize: 24, marginBottom: 4 }}
                   >
-                    {hasValue ? code[index] : ""}
+                    {hasValue ? code[index] : ''}
                   </Text>
                   <View
                     style={{
                       height: 3,
-                      width: "100%",
-                      backgroundColor: hasValue
-                        ? THEME_COLOR
-                        : isActive
-                          ? "#9CA3AF"
-                          : "#E5E7EB",
+                      width: '100%',
+                      backgroundColor: hasValue ? THEME_COLOR : isActive ? '#9CA3AF' : '#E5E7EB',
                       borderRadius: 2,
                     }}
                   />

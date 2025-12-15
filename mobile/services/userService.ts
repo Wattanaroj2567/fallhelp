@@ -21,7 +21,9 @@ export type UpdatePushTokenPayload = {
 
 export async function getProfile(): Promise<UserProfile> {
   try {
-    const response = await apiClient.get<{ data: UserProfile; success: boolean }>('/api/users/profile');
+    const response = await apiClient.get<{ data: UserProfile; success: boolean }>(
+      '/api/users/profile',
+    );
     return response.data.data;
   } catch (error) {
     throw toApiError(error);
@@ -30,7 +32,10 @@ export async function getProfile(): Promise<UserProfile> {
 
 export async function updateProfile(payload: UpdateProfilePayload): Promise<UserProfile> {
   try {
-    const response = await apiClient.put<{ data: UserProfile; success: boolean }>('/api/users/profile', payload);
+    const response = await apiClient.put<{ data: UserProfile; success: boolean }>(
+      '/api/users/profile',
+      payload,
+    );
     return response.data.data;
   } catch (error) {
     throw toApiError(error);

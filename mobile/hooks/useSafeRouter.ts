@@ -1,4 +1,5 @@
 import { router } from 'expo-router';
+import type { Href } from 'expo-router';
 import Logger from '@/utils/logger';
 
 /**
@@ -7,22 +8,24 @@ import Logger from '@/utils/logger';
  */
 export const useSafeRouter = () => {
   return {
-    push: (route: any) => {
+    push: (route: string | { pathname: string; params?: Record<string, string> }) => {
       try {
-        router.push(route);
+        // Use Href type from expo-router for type safety
+        router.push(route as Href);
       } catch (e) {
         Logger.warn('Navigation failed (push):', e);
       }
     },
-    
-    replace: (route: any) => {
+
+    replace: (route: string | { pathname: string; params?: Record<string, string> }) => {
       try {
-        router.replace(route);
+        // Use Href type from expo-router for type safety
+        router.replace(route as Href);
       } catch (e) {
         Logger.warn('Navigation failed (replace):', e);
       }
     },
-    
+
     back: () => {
       try {
         router.back();
@@ -30,15 +33,15 @@ export const useSafeRouter = () => {
         Logger.warn('Navigation failed (back):', e);
       }
     },
-    
+
     canGoBack: () => {
       try {
         return router.canGoBack();
-      } catch (e) {
+      } catch (_e) {
         return false;
       }
     },
-    
+
     dismiss: () => {
       try {
         router.dismiss();

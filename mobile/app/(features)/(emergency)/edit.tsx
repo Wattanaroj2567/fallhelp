@@ -1,30 +1,16 @@
-import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  ActivityIndicator,
-  Alert,
-  ScrollView,
-  Platform,
-} from "react-native";
-import { useRouter, useLocalSearchParams } from "expo-router";
-import { MaterialIcons } from "@expo/vector-icons";
-import { LoadingScreen } from "@/components/LoadingScreen";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  updateContact,
-  listContacts,
-} from "@/services/emergencyContactService";
-import Logger from "@/utils/logger";
-import { showErrorMessage } from "@/utils/errorHelper";
-import { EmergencyContact } from "@/services/types";
-import { FloatingLabelInput } from "@/components/FloatingLabelInput";
-import { ScreenWrapper } from "@/components/ScreenWrapper";
-import { ScreenHeader } from "@/components/ScreenHeader";
-import { getUserElders } from "@/services/userService";
-import { PrimaryButton } from "@/components/PrimaryButton";
+import React, { useState, useEffect } from 'react';
+import { View, Text, Alert } from 'react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { LoadingScreen } from '@/components/LoadingScreen';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { updateContact, listContacts } from '@/services/emergencyContactService';
+import Logger from '@/utils/logger';
+import { showErrorMessage } from '@/utils/errorHelper';
+import { FloatingLabelInput } from '@/components/FloatingLabelInput';
+import { ScreenWrapper } from '@/components/ScreenWrapper';
+import { ScreenHeader } from '@/components/ScreenHeader';
+import { getUserElders } from '@/services/userService';
+import { PrimaryButton } from '@/components/PrimaryButton';
 
 // ==========================================
 // 📱 LAYER: View (Component)
@@ -39,9 +25,9 @@ export default function EditEmergencyContact() {
   // 🧩 LAYER: Logic (Local State)
   // Purpose: Manage form inputs
   // ==========================================
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [relationship, setRelationship] = useState("");
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [relationship, setRelationship] = useState('');
 
   // ==========================================
   // ⚙️ LAYER: Logic (Data Fetching)
@@ -50,7 +36,7 @@ export default function EditEmergencyContact() {
 
   // 1. Fetch Elder ID
   const { data: currentElder } = useQuery({
-    queryKey: ["userElders"],
+    queryKey: ['userElders'],
     queryFn: async () => {
       const elders = await getUserElders();
       return elders && elders.length > 0 ? elders[0] : null;
@@ -59,7 +45,7 @@ export default function EditEmergencyContact() {
 
   // 2. Fetch Contact Details
   const { data: contact, isLoading } = useQuery({
-    queryKey: ["emergencyContact", id],
+    queryKey: ['emergencyContact', id],
     queryFn: async () => {
       if (!currentElder?.id || !id) return null;
       const contacts = await listContacts(currentElder.id);
@@ -76,7 +62,7 @@ export default function EditEmergencyContact() {
     if (contact) {
       setName(contact.name);
       setPhone(contact.phone);
-      setRelationship(contact.relationship || "");
+      setRelationship(contact.relationship || '');
     }
   }, [contact]);
 
@@ -85,26 +71,22 @@ export default function EditEmergencyContact() {
   // Purpose: Update contact
   // ==========================================
   const updateMutation = useMutation({
-    mutationFn: async (data: {
-      name: string;
-      phone: string;
-      relationship?: string;
-    }) => {
-      if (!contact?.id) throw new Error("ไม่พบข้อมูลผู้ติดต่อ");
+    mutationFn: async (data: { name: string; phone: string; relationship?: string }) => {
+      if (!contact?.id) throw new Error('ไม่พบข้อมูลผู้ติดต่อ');
       await updateContact(contact.id, data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["emergencyContacts"] });
-      Alert.alert("สำเร็จ", "แก้ไขเบอร์ติดต่อฉุกเฉินเรียบร้อยแล้ว", [
+      queryClient.invalidateQueries({ queryKey: ['emergencyContacts'] });
+      Alert.alert('สำเร็จ', 'แก้ไขเบอร์ติดต่อฉุกเฉินเรียบร้อยแล้ว', [
         {
-          text: "ตกลง",
+          text: 'ตกลง',
           onPress: () => router.back(),
         },
       ]);
     },
     onError: (error: unknown) => {
-      Logger.error("Error updating contact:", error);
-      showErrorMessage("ข้อผิดพลาด", error);
+      Logger.error('Error updating contact:', error);
+      showErrorMessage('ข้อผิดพลาด', error);
     },
   });
 
@@ -119,12 +101,12 @@ export default function EditEmergencyContact() {
   // ==========================================
   const handleSave = () => {
     if (!name.trim() || !phone.trim()) {
-      Alert.alert("กรุณากรอกข้อมูล", "กรุณากรอกชื่อและเบอร์โทรศัพท์");
+      Alert.alert('กรุณากรอกข้อมูล', 'กรุณากรอกชื่อและเบอร์โทรศัพท์');
       return;
     }
 
     if (!contact) {
-      Alert.alert("ข้อผิดพลาด", "ไม่พบข้อมูลผู้ติดต่อ");
+      Alert.alert('ข้อผิดพลาด', 'ไม่พบข้อมูลผู้ติดต่อ');
       return;
     }
 
@@ -153,7 +135,7 @@ export default function EditEmergencyContact() {
       keyboardAvoiding
       scrollViewProps={{
         bounces: false,
-        overScrollMode: "never",
+        overScrollMode: 'never',
       }}
       header={<ScreenHeader title="" onBack={() => router.back()} />}
     >
@@ -165,10 +147,7 @@ export default function EditEmergencyContact() {
         >
           แก้ไขเบอร์ติดต่อฉุกเฉิน
         </Text>
-        <Text
-          className="font-kanit text-gray-500"
-          style={{ fontSize: 15, marginBottom: 24 }}
-        >
+        <Text className="font-kanit text-gray-500" style={{ fontSize: 15, marginBottom: 24 }}>
           กรุณากรอกข้อมูลให้ถูกต้องเพื่อให้ระบบติดต่อญาติได้ทันทีเมื่อเกิดเหตุฉุกเฉิน
         </Text>
 
@@ -176,17 +155,11 @@ export default function EditEmergencyContact() {
         {contact && (
           <View className="items-center mb-6">
             <View className="w-16 h-16 rounded-full bg-[#4A90E2] items-center justify-center shadow-sm border-2 border-white ring-2 ring-blue-100">
-              <Text
-                style={{ fontSize: 24, fontWeight: "700" }}
-                className="font-kanit text-white"
-              >
+              <Text style={{ fontSize: 24, fontWeight: '700' }} className="font-kanit text-white">
                 {contact.priority}
               </Text>
             </View>
-            <Text
-              style={{ fontSize: 13 }}
-              className="font-kanit text-gray-500 mt-2"
-            >
+            <Text style={{ fontSize: 13 }} className="font-kanit text-gray-500 mt-2">
               ลำดับความสำคัญ
             </Text>
           </View>
@@ -210,7 +183,7 @@ export default function EditEmergencyContact() {
               label="เบอร์ติดต่อ"
               value={phone}
               onChangeText={(text) => {
-                const cleaned = text.replace(/[^0-9]/g, "");
+                const cleaned = text.replace(/[^0-9]/g, '');
                 if (cleaned.length <= 10) {
                   setPhone(cleaned);
                 }

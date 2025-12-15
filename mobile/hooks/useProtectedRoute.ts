@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useRouter, useSegments, useRootNavigationState } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
 import Logger from '@/utils/logger';
+import { getUserElders } from '@/services/userService';
 
 /**
  * Hook to handle automatic redirection based on auth state
@@ -25,15 +26,75 @@ export function useProtectedRoute() {
     if ((segments as string[]).length === 0) return;
 
     const inAuthGroup = segments[0] === '(auth)';
-    const inTabsGroup = segments[0] === '(tabs)';
+    // const inTabsGroup = segments[0] === '(tabs)'; // Unused
 
     Logger.info('Auth State Check:', {
       isSignedIn,
       currentSegment: segments[0],
       inAuthGroup,
-      inTabsGroup,
-      hasCheckedSetup: hasCheckedSetup.current
+      // inTabsGroup,
+      hasCheckedSetup: hasCheckedSetup.current,
     });
+
+    const checkElderAndRedirect = async () => {
+      // Prevent concurrent checks
+      if (checkingRef.current) return;
+      checkingRef.current = true;
+
+      try {
+        const elders = await getUserElders();
+
+        if (!elders || elders.length === 0) {
+          // No elder data → redirect to step 1 (via empty-state)
+          hasCheckedSetup.current = true;
+          router.replace('/(setup)/empty-state');
+          return;
+        }
+
+        // Has elder → setup is considered complete
+        // Mark as checked and allow staying in tabs
+        hasCheckedSetup.current = true;
+
+        // Logic: If we are here, setup is complete.
+        // We should ONLY redirect if the user is currently on a "forbidden" route for a fully set-up user.
+        // Forbidden routes: (auth) group, (setup) group.
+        // Allowed routes: (tabs), (features), or empty/loading state (let Router resolve).
+
+        const isForbidden = segments[0] === '(auth)' || segments[0] === '(setup)';
+
+        if (isForbidden) {
+          router.replace('/(tabs)');
+        } else {
+          // If on (tabs), (features), or valid deep link, STAY THERE.
+          // Do not force redirect to tabs.
+        }
+      } catch (error) {
+        Logger.error('Failed to check elder data:', error);
+        // Mark as checked to prevent infinite loops
+        hasCheckedSetup.current = true;
+
+        // On error, check if it's an auth error (401/403) - might need to sign out
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const apiError = error as Record<string, any>;
+        const status = apiError?.response?.status || apiError?.status;
+
+        // If auth error, redirect to login (token might be invalid)
+        if (status === 401 || status === 403) {
+          Logger.warn('Auth error detected, redirecting to login');
+          router.replace('/(auth)/login');
+          return;
+        }
+
+        // For other errors, use fallback logic
+        const isForbidden = segments[0] === '(auth)' || segments[0] === '(setup)';
+        if (isForbidden) {
+          router.replace('/(tabs)');
+        }
+        // If already on tabs/features, stay there (don't force redirect on error)
+      } finally {
+        checkingRef.current = false;
+      }
+    };
 
     if (!isSignedIn && !inAuthGroup) {
       // User is NOT signed in, but trying to access a protected route
@@ -55,56 +116,7 @@ export function useProtectedRoute() {
       // Check setup completion if not done yet
       checkElderAndRedirect();
     }
-  }, [isSignedIn, segments, isLoading]);
-
-  const checkElderAndRedirect = async () => {
-    // Prevent concurrent checks
-    if (checkingRef.current) return;
-    checkingRef.current = true;
-
-    try {
-      const { getUserElders } = require('../services/userService');
-      const elders = await getUserElders();
-
-      if (!elders || elders.length === 0) {
-        // No elder data → redirect to step 1 (via empty-state)
-        hasCheckedSetup.current = true;
-        router.replace('/(setup)/empty-state');
-        return;
-      }
-
-      // Has elder → setup is considered complete
-      // Mark as checked and allow staying in tabs
-      hasCheckedSetup.current = true;
-
-      // Logic: If we are here, setup is complete.
-      // We should ONLY redirect if the user is currently on a "forbidden" route for a fully set-up user.
-      // Forbidden routes: (auth) group, (setup) group.
-      // Allowed routes: (tabs), (features), or empty/loading state (let Router resolve).
-
-      const isForbidden = segments[0] === '(auth)' || segments[0] === '(setup)';
-
-      if (isForbidden) {
-        router.replace('/(tabs)');
-      } else {
-        // If on (tabs), (features), or valid deep link, STAY THERE.
-        // Do not force redirect to tabs.
-      }
-
-    } catch (error) {
-      Logger.error('Failed to check elder data:', error);
-      // Mark as checked to prevent loops
-      hasCheckedSetup.current = true;
-
-      // Same fallback logic on error
-      const isForbidden = segments[0] === '(auth)' || segments[0] === '(setup)';
-      if (isForbidden) {
-        router.replace('/(tabs)');
-      }
-    } finally {
-      checkingRef.current = false;
-    }
-  };
+  }, [isSignedIn, segments, isLoading, router, rootNavigationState?.key]);
 
   return { isLoading };
 }

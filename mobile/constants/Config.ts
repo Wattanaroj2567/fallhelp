@@ -8,17 +8,17 @@ const extra = Constants.expoConfig?.extra ?? {};
 
 const getHostIp = () => {
   const hostUri = Constants.expoConfig?.hostUri;
-  
+
   if (hostUri) {
     const ip = hostUri.split(':')[0];
     console.log('[Config] Detected Host URI (Expo Go):', ip);
     return ip;
   }
-  
+
   // [C] FALLBACK IP FOR STANDALONE BUILD
   // แก้ไข IP ตรงนี้ให้เป็น IP ของเครื่อง Server (คอมพิวเตอร์ของคุณ) ก่อนสั่ง Build
   // ตัวอย่าง: '192.168.1.100'
-  const FALLBACK_IP = '192.168.1.102'; 
+  const FALLBACK_IP = '192.168.1.102';
   console.log('[Config] Using Fallback IP (Standalone):', FALLBACK_IP);
   return FALLBACK_IP;
 };

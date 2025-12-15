@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getProfile, updateProfile } from '@/services/userService';
 import Logger from '@/utils/logger';
-import { showErrorMessage } from "@/utils/errorHelper";
+import { showErrorMessage } from '@/utils/errorHelper';
 import { FloatingLabelInput } from '@/components/FloatingLabelInput';
 import { ScreenWrapper } from '@/components/ScreenWrapper';
 import { ScreenHeader } from '@/components/ScreenHeader';
@@ -56,18 +55,14 @@ export default function EditPhone() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['userProfile'] });
-      Alert.alert(
-        'สำเร็จ',
-        'บันทึกเบอร์โทรศัพท์เรียบร้อยแล้ว',
-        [
-          {
-            text: 'ตกลง',
-            onPress: () => router.back(),
-          },
-        ]
-      );
+      Alert.alert('สำเร็จ', 'บันทึกเบอร์โทรศัพท์เรียบร้อยแล้ว', [
+        {
+          text: 'ตกลง',
+          onPress: () => router.back(),
+        },
+      ]);
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       Logger.error('Error updating phone:', error);
       showErrorMessage('ข้อผิดพลาด', error);
     },
@@ -89,7 +84,7 @@ export default function EditPhone() {
     });
   };
 
-// ...
+  // ...
 
   if (isLoading) {
     return <LoadingScreen useScreenWrapper message="กำลังโหลดข้อมูล..." />;
@@ -105,7 +100,7 @@ export default function EditPhone() {
       keyboardAvoiding
       scrollViewProps={{
         bounces: false,
-        overScrollMode: "never",
+        overScrollMode: 'never',
       }}
       header={<ScreenHeader title="" onBack={() => router.back()} />}
     >
@@ -117,10 +112,7 @@ export default function EditPhone() {
         >
           แก้ไขเบอร์โทรศัพท์
         </Text>
-        <Text
-          className="font-kanit text-gray-500"
-          style={{ fontSize: 15, marginBottom: 24 }}
-        >
+        <Text className="font-kanit text-gray-500" style={{ fontSize: 15, marginBottom: 24 }}>
           กรุณากรอกเบอร์โทรศัพท์ของคุณ (10 หลัก)
         </Text>
 
@@ -130,7 +122,7 @@ export default function EditPhone() {
             label="เบอร์โทรศัพท์"
             value={phone}
             onChangeText={(text) => {
-              const cleaned = text.replace(/[^0-9]/g, "");
+              const cleaned = text.replace(/[^0-9]/g, '');
               if (cleaned.length <= 10) {
                 setPhone(cleaned);
               }
@@ -142,12 +134,7 @@ export default function EditPhone() {
 
         {/* Info Box */}
         <View className="bg-blue-50 rounded-2xl p-4 flex-row mb-8">
-          <MaterialIcons
-            name="info"
-            size={20}
-            color="#3B82F6"
-            style={{ marginTop: 2 }}
-          />
+          <MaterialIcons name="info" size={20} color="#3B82F6" style={{ marginTop: 2 }} />
           <Text
             style={{ fontSize: 13, lineHeight: 20 }}
             className="font-kanit text-blue-700 flex-1 ml-2"

@@ -1,27 +1,16 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  ActivityIndicator,
-  Alert,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
-import { MaterialIcons } from "@expo/vector-icons";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { inviteMember } from "@/services/elderService";
-import { FloatingLabelInput } from "@/components/FloatingLabelInput";
-import { useCurrentElder } from "@/hooks/useCurrentElder";
-import Logger from "@/utils/logger";
-import { showErrorMessage } from "@/utils/errorHelper";
-import { ScreenWrapper } from "@/components/ScreenWrapper";
-import { ScreenHeader } from "@/components/ScreenHeader";
-import { PrimaryButton } from "@/components/PrimaryButton";
+import React, { useState } from 'react';
+import { View, Text, Alert } from 'react-native';
+import { useRouter } from 'expo-router';
+import { MaterialIcons } from '@expo/vector-icons';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { inviteMember } from '@/services/elderService';
+import { FloatingLabelInput } from '@/components/FloatingLabelInput';
+import { useCurrentElder } from '@/hooks/useCurrentElder';
+import Logger from '@/utils/logger';
+import { showErrorMessage } from '@/utils/errorHelper';
+import { ScreenWrapper } from '@/components/ScreenWrapper';
+import { ScreenHeader } from '@/components/ScreenHeader';
+import { PrimaryButton } from '@/components/PrimaryButton';
 
 // ==========================================
 // 📱 LAYER: View (Component)
@@ -35,8 +24,8 @@ export default function InviteMember() {
   // 🧩 LAYER: Logic (Local State)
   // Purpose: Manage email input
   // ==========================================
-  const [email, setEmail] = useState("");
-  const [emailError, setEmailError] = useState("");
+  const [email, setEmail] = useState('');
+  const [emailError, setEmailError] = useState('');
 
   // ==========================================
   // ⚙️ LAYER: Logic (Data Fetching)
@@ -53,17 +42,17 @@ export default function InviteMember() {
       await inviteMember(data.elderId, { email: data.email });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["members"] });
-      Alert.alert("สำเร็จ", "เชิญสมาชิกผู้ดูแลคนอื่นเรียบร้อยแล้ว", [
+      queryClient.invalidateQueries({ queryKey: ['members'] });
+      Alert.alert('สำเร็จ', 'เชิญสมาชิกผู้ดูแลคนอื่นเรียบร้อยแล้ว', [
         {
-          text: "ตกลง",
+          text: 'ตกลง',
           onPress: () => router.back(),
         },
       ]);
     },
-    onError: (error: any) => {
-      Logger.error("Error inviting member:", error);
-      showErrorMessage("ข้อผิดพลาด", error);
+    onError: (error: unknown) => {
+      Logger.error('Error inviting member:', error);
+      showErrorMessage('ข้อผิดพลาด', error);
     },
   });
 
@@ -82,22 +71,22 @@ export default function InviteMember() {
   // ==========================================
   const handleInvite = () => {
     if (!email.trim()) {
-      Alert.alert("กรุณากรอกข้อมูล", "กรุณากรอกอีเมลผู้ใช้ที่ต้องการเชิญ");
+      Alert.alert('กรุณากรอกข้อมูล', 'กรุณากรอกอีเมลผู้ใช้ที่ต้องการเชิญ');
       return;
     }
 
     if (emailError) {
-      Alert.alert("อีเมลไม่ถูกต้อง", "กรุณากรอกอีเมลเป็นภาษาอังกฤษ");
+      Alert.alert('อีเมลไม่ถูกต้อง', 'กรุณากรอกอีเมลเป็นภาษาอังกฤษ');
       return;
     }
 
     if (!validateEmail(email)) {
-      Alert.alert("รูปแบบอีเมลไม่ถูกต้อง", "กรุณากรอกอีเมลที่ถูกต้อง");
+      Alert.alert('รูปแบบอีเมลไม่ถูกต้อง', 'กรุณากรอกอีเมลที่ถูกต้อง');
       return;
     }
 
     if (!currentElder?.id) {
-      Alert.alert("ข้อผิดพลาด", "ไม่พบข้อมูลผู้สูงอายุ");
+      Alert.alert('ข้อผิดพลาด', 'ไม่พบข้อมูลผู้สูงอายุ');
       return;
     }
 
@@ -126,10 +115,7 @@ export default function InviteMember() {
         >
           เชิญสมาชิก
         </Text>
-        <Text
-          className="font-kanit text-gray-500"
-          style={{ fontSize: 15, marginBottom: 24 }}
-        >
+        <Text className="font-kanit text-gray-500" style={{ fontSize: 15, marginBottom: 24 }}>
           กรุณากรอกอีเมลผู้ใช้ที่คุณต้องการเชิญ
         </Text>
 
@@ -142,9 +128,9 @@ export default function InviteMember() {
               onChangeText={(text) => {
                 setEmail(text);
                 if (/[ก-๙]/.test(text)) {
-                  setEmailError("กรุณากรอกอีเมลเป็นภาษาอังกฤษ");
+                  setEmailError('กรุณากรอกอีเมลเป็นภาษาอังกฤษ');
                 } else {
-                  setEmailError("");
+                  setEmailError('');
                 }
               }}
               error={emailError}
@@ -159,44 +145,32 @@ export default function InviteMember() {
         {/* Features List (Already Card-like, just refine style) */}
         <View className="bg-white rounded-[24px] p-6 mb-6 border border-gray-100 shadow-sm">
           <Text
-            style={{ fontSize: 15, fontWeight: "600" }}
+            style={{ fontSize: 15, fontWeight: '600' }}
             className="font-kanit text-gray-900 mb-4"
           >
             สิทธิ์ของสมาชิกที่ถูกเชิญ:
           </Text>
           <View className="flex-row items-start mb-3">
             <MaterialIcons name="check-circle" size={20} color="#16AD78" />
-            <Text
-              style={{ fontSize: 14 }}
-              className="font-kanit text-gray-700 ml-2 flex-1"
-            >
+            <Text style={{ fontSize: 14 }} className="font-kanit text-gray-700 ml-2 flex-1">
               ดูข้อมูลผู้สูงอายุ
             </Text>
           </View>
           <View className="flex-row items-start mb-3">
             <MaterialIcons name="check-circle" size={20} color="#16AD78" />
-            <Text
-              style={{ fontSize: 14 }}
-              className="font-kanit text-gray-700 ml-2 flex-1"
-            >
+            <Text style={{ fontSize: 14 }} className="font-kanit text-gray-700 ml-2 flex-1">
               ดูแดชบอร์ดและสถานะ Real-time
             </Text>
           </View>
           <View className="flex-row items-start mb-3">
             <MaterialIcons name="check-circle" size={20} color="#16AD78" />
-            <Text
-              style={{ fontSize: 14 }}
-              className="font-kanit text-gray-700 ml-2 flex-1"
-            >
+            <Text style={{ fontSize: 14 }} className="font-kanit text-gray-700 ml-2 flex-1">
               ดูประวัติการหกล้ม
             </Text>
           </View>
           <View className="flex-row items-start">
             <MaterialIcons name="cancel" size={20} color="#EF4444" />
-            <Text
-              style={{ fontSize: 14 }}
-              className="font-kanit text-gray-700 ml-2 flex-1"
-            >
+            <Text style={{ fontSize: 14 }} className="font-kanit text-gray-700 ml-2 flex-1">
               ไม่สามารถแก้ไขหรือลบข้อมูลได้
             </Text>
           </View>

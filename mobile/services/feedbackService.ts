@@ -24,7 +24,11 @@ export interface FeedbackItem {
  * @returns The created feedback data
  * @throws ApiError if the request fails
  */
-export async function submitFeedback(data: { message: string; userName?: string; type?: FeedbackType }): Promise<unknown> {
+export async function submitFeedback(data: {
+  message: string;
+  userName?: string;
+  type?: FeedbackType;
+}): Promise<unknown> {
   try {
     const response = await apiClient.post('/api/feedback', data);
     return response.data.data;

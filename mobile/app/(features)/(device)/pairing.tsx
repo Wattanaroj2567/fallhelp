@@ -1,26 +1,17 @@
-import React, { useState, useRef } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  Alert,
-  ActivityIndicator,
-  StyleSheet,
-} from "react-native";
-import { ScreenWrapper } from "@/components/ScreenWrapper";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { pairDevice } from "@/services/deviceService";
-import { getUserElders } from "@/services/userService";
-import { useCurrentElder } from "@/hooks/useCurrentElder";
-import { CameraView, useCameraPermissions } from "expo-camera";
-import { FloatingLabelInput } from "@/components/FloatingLabelInput";
-import { ScreenHeader } from "@/components/ScreenHeader";
-import { getErrorMessage } from "@/utils/errorHelper";
-import Logger from "@/utils/logger";
-import { LoadingScreen } from "@/components/LoadingScreen";
+import React, { useState, useRef } from 'react';
+import { View, Text, TouchableOpacity, Alert, ActivityIndicator, StyleSheet } from 'react-native';
+import { ScreenWrapper } from '@/components/ScreenWrapper';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { pairDevice } from '@/services/deviceService';
+import { useCurrentElder } from '@/hooks/useCurrentElder';
+import { CameraView, useCameraPermissions } from 'expo-camera';
+import { FloatingLabelInput } from '@/components/FloatingLabelInput';
+import { ScreenHeader } from '@/components/ScreenHeader';
+import { showErrorMessage } from '@/utils/errorHelper';
+import { LoadingScreen } from '@/components/LoadingScreen';
 
 // ==========================================
 // 📱 LAYER: View (Component)
@@ -29,13 +20,13 @@ import { LoadingScreen } from "@/components/LoadingScreen";
 export default function DevicePairing() {
   const router = useRouter();
   const [permission, requestPermission] = useCameraPermissions();
-  const insets = useSafeAreaInsets();
+  const _insets = useSafeAreaInsets();
 
   // ==========================================
   // 🧩 LAYER: Logic (Local State)
   // ==========================================
   const [showManualEntry, setShowManualEntry] = useState(false);
-  const [macAddress, setMacAddress] = useState("");
+  const [macAddress, setMacAddress] = useState('');
   const isScanning = useRef(false);
 
   // Check Permissions
@@ -45,12 +36,12 @@ export default function DevicePairing() {
   React.useEffect(() => {
     if (isReadOnly) {
       Alert.alert(
-        "ไม่มีสิทธิ์เข้าถึง",
-        "คุณไม่มีสิทธิ์ในการจับคู่อุปกรณ์ กรุณาติดต่อญาติผู้ดูแลหลัก",
-        [{ text: "ตกลง", onPress: () => router.back() }]
+        'ไม่มีสิทธิ์เข้าถึง',
+        'คุณไม่มีสิทธิ์ในการจับคู่อุปกรณ์ กรุณาติดต่อญาติผู้ดูแลหลัก',
+        [{ text: 'ตกลง', onPress: () => router.back() }],
       );
     }
-  }, [isReadOnly]);
+  }, [isReadOnly, router]);
 
   // Request camera permission on mount
   React.useEffect(() => {
@@ -59,7 +50,7 @@ export default function DevicePairing() {
     } else if (!permission?.granted) {
       requestPermission();
     }
-  }, [permission]);
+  }, [permission, requestPermission]);
 
   // ==========================================
   // ⚙️ LAYER: Logic (Mutation)
@@ -67,14 +58,14 @@ export default function DevicePairing() {
   const queryClient = useQueryClient();
 
   const pairMutation = useMutation({
-    mutationKey: ["pairDevice"],
+    mutationKey: ['pairDevice'],
     mutationFn: async (deviceCode: string) => {
       // Fetch user's elders to get an ID using the service
       // Better to use currentElder if available
       const elderId = currentElder?.id;
 
       if (!elderId) {
-        throw new Error("ไม่พบข้อมูลผู้สูงอายุ กรุณาสร้างข้อมูลผู้สูงอายุก่อน");
+        throw new Error('ไม่พบข้อมูลผู้สูงอายุ กรุณาสร้างข้อมูลผู้สูงอายุก่อน');
       }
 
       // Check if already paired with this device
@@ -85,38 +76,25 @@ export default function DevicePairing() {
 
       return await pairDevice({ deviceCode, elderId });
     },
-    onSuccess: (device, variables) => {
+    onSuccess: (_device, variables) => {
       // Keep isScanning = true to prevent further scans while alert shows or navigating
-      queryClient.invalidateQueries({ queryKey: ["userElders"] });
+      queryClient.invalidateQueries({ queryKey: ['userElders'] });
 
-      Alert.alert("เชื่อมต่ออุปกรณ์สำเร็จ", "เชื่อมต่ออุปกรณ์เรียบร้อยแล้ว", [
+      Alert.alert('เชื่อมต่ออุปกรณ์สำเร็จ', 'เชื่อมต่ออุปกรณ์เรียบร้อยแล้ว', [
         {
-          text: "ไปตั้งค่า WiFi",
+          text: 'ไปตั้งค่า WiFi',
           onPress: () =>
             router.replace({
-              pathname: "/(features)/(device)/wifi-config",
+              pathname: '/(features)/(device)/wifi-config',
               params: { deviceCode: variables, from: 'pairing' },
             }),
         },
       ]);
     },
     onError: (error: unknown) => {
-      Logger.error("Error pairing device:", error);
-      const displayMessage = getErrorMessage(error);
-
-      Alert.alert(
-        "เชื่อมต่อไม่สำเร็จ",
-        displayMessage,
-        [
-          {
-            text: "ตกลง",
-            onPress: () => {
-              // Only reset scanning when user acknowledges the error
-              isScanning.current = false;
-            },
-          },
-        ]
-      );
+      // Only reset scanning when error occurs
+      isScanning.current = false;
+      showErrorMessage('เชื่อมต่อไม่สำเร็จ', error);
     },
   });
 
@@ -127,7 +105,7 @@ export default function DevicePairing() {
     if (isReadOnly) return;
 
     if (!macAddress || macAddress.length < 8) {
-      Alert.alert("ข้อมูลไม่ครบถ้วน", "กรุณากรอกรหัสอุปกรณ์ 8 หลัก");
+      Alert.alert('ข้อมูลไม่ครบถ้วน', 'กรุณากรอกรหัสอุปกรณ์ 8 หลัก');
       return;
     }
     pairMutation.mutate(macAddress);
@@ -150,7 +128,7 @@ export default function DevicePairing() {
       if (router.canGoBack()) {
         router.back();
       } else {
-        router.replace("/(tabs)/settings");
+        router.replace('/(tabs)/settings');
       }
     }
   };
@@ -158,7 +136,6 @@ export default function DevicePairing() {
   if (isReadOnly) {
     return <LoadingScreen />;
   }
-
 
   // ==========================================
   // 🖼️ LAYER: View (Manual Entry Mode)
@@ -179,23 +156,17 @@ export default function DevicePairing() {
           >
             กรอกรหัสอุปกรณ์
           </Text>
-          <Text
-            className="font-kanit text-gray-500"
-            style={{ fontSize: 15, marginBottom: 24 }}
-          >
+          <Text className="font-kanit text-gray-500" style={{ fontSize: 15, marginBottom: 24 }}>
             กรุณากรอกรหัสอุปกรณ์ 8 หลักที่ติดบนสติ๊กเกอร์ของอุปกรณ์
           </Text>
 
           {/* Example */}
           <View className="bg-gray-50 rounded-2xl p-4 mb-6 border border-gray-100">
-            <Text
-              style={{ fontSize: 13 }}
-              className="font-kanit text-gray-500"
-            >
+            <Text style={{ fontSize: 13 }} className="font-kanit text-gray-500">
               ตัวอย่างรหัสอุปกรณ์:
             </Text>
             <Text
-              style={{ fontSize: 18, fontWeight: "600", letterSpacing: 2 }}
+              style={{ fontSize: 18, fontWeight: '600', letterSpacing: 2 }}
               className="font-kanit text-gray-800 mt-1"
             >
               832CE051
@@ -211,8 +182,8 @@ export default function DevicePairing() {
                 setMacAddress(
                   text
                     .toUpperCase()
-                    .replace(/[^A-Z0-9]/g, "")
-                    .slice(0, 8)
+                    .replace(/[^A-Z0-9]/g, '')
+                    .slice(0, 8),
                 )
               }
               autoCapitalize="characters"
@@ -229,10 +200,7 @@ export default function DevicePairing() {
             {pairMutation.isPending ? (
               <ActivityIndicator size="small" color="#FFFFFF" />
             ) : (
-              <Text
-                style={{ fontSize: 16, fontWeight: "600" }}
-                className="font-kanit text-white"
-              >
+              <Text style={{ fontSize: 16, fontWeight: '600' }} className="font-kanit text-white">
                 ยืนยัน
               </Text>
             )}

@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from "react";
-import { Text, TouchableOpacity, View, Image, Alert, Keyboard, Platform } from "react-native";
-import { useRouter } from "expo-router";
-import { useMutation } from "@tanstack/react-query";
-import { login } from "@/services/authService";
-import Logger from "@/utils/logger";
-import { FloatingLabelInput } from "@/components/FloatingLabelInput";
-import { ScreenWrapper } from "@/components/ScreenWrapper";
-import { PrimaryButton } from "@/components/PrimaryButton";
-import { useAuth } from "@/context/AuthContext"; // Import hook
-import { getErrorMessage, showErrorMessage } from "@/utils/errorHelper";
+import React, { useState, useEffect } from 'react';
+import { Text, TouchableOpacity, View, Image, Alert, Keyboard, Platform } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useMutation } from '@tanstack/react-query';
+import { login } from '@/services/authService';
+import Logger from '@/utils/logger';
+import { FloatingLabelInput } from '@/components/FloatingLabelInput';
+import { ScreenWrapper } from '@/components/ScreenWrapper';
+import { PrimaryButton } from '@/components/PrimaryButton';
+import { useAuth } from '@/context/AuthContext'; // Import hook
+import { showErrorMessage } from '@/utils/errorHelper';
 
 // ==========================================
 // 📱 LAYER: View (Component)
@@ -21,21 +21,21 @@ export default function LoginScreen() {
   // 🧩 LAYER: Logic (Local State)
   // Purpose: Manage form inputs and focus state
   // ==========================================
-  const [identifier, setIdentifier] = useState("");
-  const [identifierError, setIdentifierError] = useState("");
-  const [password, setPassword] = useState("");
+  const [identifier, setIdentifier] = useState('');
+  const [identifierError, setIdentifierError] = useState('');
+  const [password, setPassword] = useState('');
   const [isKeyboardVisible, setKeyboardVisible] = useState(false); // Keyboard state
 
   const router = useRouter();
 
   useEffect(() => {
     const keyboardShowListener = Keyboard.addListener(
-      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
-      () => setKeyboardVisible(true)
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+      () => setKeyboardVisible(true),
     );
     const keyboardHideListener = Keyboard.addListener(
-      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide",
-      () => setKeyboardVisible(false)
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+      () => setKeyboardVisible(false),
     );
 
     return () => {
@@ -50,27 +50,27 @@ export default function LoginScreen() {
     },
     onSuccess: async (response) => {
       // ตรวจสอบ role - Admin ไม่ควรใช้ Mobile app
-      if (response.user?.role === "ADMIN") {
+      if (response.user?.role === 'ADMIN') {
         Alert.alert(
-          "ไม่สามารถเข้าสู่ระบบได้",
-          "บัญชีผู้ดูแลระบบ (Admin) ไม่สามารถใช้งานแอปพลิเคชันนี้ได้ กรุณาใช้ Admin Panel แทน",
-          [{ text: "ตกลง" }]
+          'ไม่สามารถเข้าสู่ระบบได้',
+          'บัญชีผู้ดูแลระบบ (Admin) ไม่สามารถใช้งานแอปพลิเคชันนี้ได้ กรุณาใช้ Admin Panel แทน',
+          [{ text: 'ตกลง' }],
         );
         // Force logout via context just in case
         await signOut();
         return;
       }
 
-      Logger.info("Login success, updating context");
+      Logger.info('Login success, updating context');
 
       // ✅ CRITICAL FIX: Update Context State FIRST!
       // This will trigger the RootLayout effect to redirect automatically.
       await signIn(response.token);
 
-      Alert.alert("เข้าสู่ระบบสำเร็จ", "ยินดีต้อนรับกลับ");
+      Alert.alert('เข้าสู่ระบบสำเร็จ', 'ยินดีต้อนรับกลับ');
     },
     onError: (error: unknown) => {
-      showErrorMessage("เข้าสู่ระบบล้มเหลว", error);
+      showErrorMessage('เข้าสู่ระบบล้มเหลว', error);
     },
   });
 
@@ -80,14 +80,11 @@ export default function LoginScreen() {
   // ==========================================
   const handleLogin = async () => {
     if (!identifier || !password) {
-      Alert.alert("กรุณากรอกข้อมูล", "โปรดกรอกอีเมล/เบอร์โทรศัพท์และรหัสผ่าน");
+      Alert.alert('กรุณากรอกข้อมูล', 'โปรดกรอกอีเมล/เบอร์โทรศัพท์และรหัสผ่าน');
       return;
     }
     if (identifierError) {
-      Alert.alert(
-        "ข้อมูลไม่ถูกต้อง",
-        "กรุณากรอกอีเมลหรือเบอร์โทรศัพท์ให้ถูกต้อง"
-      );
+      Alert.alert('ข้อมูลไม่ถูกต้อง', 'กรุณากรอกอีเมลหรือเบอร์โทรศัพท์ให้ถูกต้อง');
       return;
     }
 
@@ -105,7 +102,7 @@ export default function LoginScreen() {
         paddingHorizontal: 32,
         paddingBottom: 40,
         // Start centered (Middle), move to top (Flex-start) when typing
-        justifyContent: isKeyboardVisible ? "flex-start" : "center", 
+        justifyContent: isKeyboardVisible ? 'flex-start' : 'center',
         // Add top padding only when keyboard is visible to keep it from hitting status bar directly
         paddingTop: isKeyboardVisible ? 20 : 0,
         flexGrow: 1,
@@ -114,13 +111,13 @@ export default function LoginScreen() {
       <View>
         {/* Logo Section - Animate/Adjust based on keyboard */}
         {/* Dynamic Margin: Reduced gap as requested (mb-10), Tight gap when typing (mb-1) */}
-        <View className={`items-center ${isKeyboardVisible ? "mb-1" : "mb-10"}`}>
+        <View className={`items-center ${isKeyboardVisible ? 'mb-1' : 'mb-10'}`}>
           <Image
-            source={require("../../assets/images/logoicon.png")}
+            source={require('../../assets/images/logoicon.png')}
             // Shrink logo when keyboard is visible to mimic Facebook style
-            style={{ 
-              width: isKeyboardVisible ? 140 : 180, 
-              height: isKeyboardVisible ? 140 : 180 
+            style={{
+              width: isKeyboardVisible ? 140 : 180,
+              height: isKeyboardVisible ? 140 : 180,
             }}
             resizeMode="contain"
             fadeDuration={0}
@@ -138,9 +135,9 @@ export default function LoginScreen() {
               setIdentifier(text);
               // Simple validation: check if contains Thai characters (invalid for email/phone)
               if (/[ก-๙]/.test(text)) {
-                setIdentifierError("กรุณากรอกเป็นภาษาอังกฤษหรือตัวเลข");
+                setIdentifierError('กรุณากรอกเป็นภาษาอังกฤษหรือตัวเลข');
               } else {
-                setIdentifierError("");
+                setIdentifierError('');
               }
             }}
             error={identifierError}
@@ -162,7 +159,7 @@ export default function LoginScreen() {
           {/* Forgot Password */}
           <TouchableOpacity
             className="self-end mb-8 mt-2"
-            onPress={() => router.push("/(auth)/forgot-password")}
+            onPress={() => router.push('/(auth)/forgot-password')}
             activeOpacity={0.7}
           >
             <Text style={{ fontSize: 13 }} className="font-kanit text-gray-500">
@@ -182,17 +179,14 @@ export default function LoginScreen() {
           {/* Register Link */}
           <View className="flex-row justify-center items-center">
             <Text className="font-kanit text-gray-500" style={{ fontSize: 14 }}>
-              ยังไม่มีบัญชี ?{" "}
+              ยังไม่มีบัญชี ?{' '}
             </Text>
-            <TouchableOpacity
-              onPress={() => router.push("/(auth)/register")}
-              activeOpacity={0.7}
-            >
+            <TouchableOpacity onPress={() => router.push('/(auth)/register')} activeOpacity={0.7}>
               <Text
                 className="font-kanit text-primary font-semibold"
-                style={{ fontSize: 14, color: "#EB6A6A" }}
+                style={{ fontSize: 14, color: '#EB6A6A' }}
               >
-                 สมัครสมาชิก
+                สมัครสมาชิก
               </Text>
             </TouchableOpacity>
           </View>

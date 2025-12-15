@@ -1,23 +1,17 @@
-import React, { useState, useRef, useEffect } from "react";
-import {
-  TouchableOpacity,
-  ScrollView,
-  View,
-  Text,
-  Alert,
-} from "react-native";
-import { useRouter } from "expo-router";
-import { useMutation } from "@tanstack/react-query";
-import { register } from "@/services/authService";
-import { getErrorMessage, showErrorMessage } from "@/utils/errorHelper";
-import Logger from "@/utils/logger";
-import { FloatingLabelInput } from "@/components/FloatingLabelInput";
-import { ScreenWrapper } from "@/components/ScreenWrapper";
-import { ScreenHeader } from "@/components/ScreenHeader";
-import { PrimaryButton } from "@/components/PrimaryButton";
-import { GenderSelect } from "@/components/GenderSelect";
-import { useAuth } from "@/context/AuthContext";
-import { PasswordStrengthIndicator } from "@/components/PasswordStrengthIndicator";
+import React, { useState, useRef } from 'react';
+import { TouchableOpacity, ScrollView, View, Text, Alert } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useMutation } from '@tanstack/react-query';
+import { register } from '@/services/authService';
+import { showErrorMessage } from '@/utils/errorHelper';
+import Logger from '@/utils/logger';
+import { FloatingLabelInput } from '@/components/FloatingLabelInput';
+import { ScreenWrapper } from '@/components/ScreenWrapper';
+import { ScreenHeader } from '@/components/ScreenHeader';
+import { PrimaryButton } from '@/components/PrimaryButton';
+import { GenderSelect } from '@/components/GenderSelect';
+import { useAuth } from '@/context/AuthContext';
+import { PasswordStrengthIndicator } from '@/components/PasswordStrengthIndicator';
 
 // ==========================================
 // 📱 LAYER: View (Component)
@@ -28,29 +22,27 @@ export default function RegisterScreen() {
   // 🧩 LAYER: Logic (Local State)
   // Purpose: Manage form inputs
   // ==========================================
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [gender, setGender] = useState("");
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
-  const [emailError, setEmailError] = useState("");
-  const [password, setPassword] = useState("");
-  const [passwordError, setPasswordError] = useState("");
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [gender, setGender] = useState('');
+  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [password, setPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
   const router = useRouter();
   const scrollViewRef = useRef<ScrollView>(null);
-  const { signIn } = useAuth(); // Access auth context
+  const _auth = useAuth(); // Auth context available if needed
 
   // ==========================================
   // ⚙️ LAYER: Logic (Mutation)
   // Purpose: Handle registration API call
   // ==========================================
-  /* import { RegisterPayload } from "@/services/authService"; // Ensure import exists if not already */
 
   const registerMutation = useMutation({
-    mutationFn: async (data: any) => {
-      // NOTE: data is typed as any here because form state is loose, 
-      // but service expects RegisterPayload.
-      return await register(data);
+    mutationFn: async (data: unknown) => {
+      // Type assertion: trust that form validation ensures correct structure
+      return await register(data as Parameters<typeof register>[0]);
     },
     onSuccess: async (data) => {
       // Don't sign in immediately to avoid race condition with ProtectedRoute
@@ -58,15 +50,15 @@ export default function RegisterScreen() {
 
       // Redirect to success screen
       router.replace({
-        pathname: "/(auth)/success",
+        pathname: '/(auth)/success',
         params: {
-          type: "register",
-          token: data.token // Pass token for manual sign-in later
+          type: 'register',
+          token: data.token, // Pass token for manual sign-in later
         },
       });
     },
     onError: (error: unknown) => {
-      showErrorMessage("ลงทะเบียนล้มเหลว", error);
+      showErrorMessage('ลงทะเบียนล้มเหลว', error);
     },
   });
 
@@ -76,24 +68,21 @@ export default function RegisterScreen() {
   // ==========================================
   const handleRegister = async () => {
     if (!firstName || !lastName || !email || !password || !gender) {
-      Alert.alert("กรุณากรอกข้อมูล", "โปรดกรอกข้อมูลให้ครบถ้วน รวมถึงเพศ");
+      Alert.alert('กรุณากรอกข้อมูล', 'โปรดกรอกข้อมูลให้ครบถ้วน รวมถึงเพศ');
       return;
     }
     if (emailError) {
-      Alert.alert("อีเมลไม่ถูกต้อง", "กรุณากรอกอีเมลเป็นภาษาอังกฤษ");
+      Alert.alert('อีเมลไม่ถูกต้อง', 'กรุณากรอกอีเมลเป็นภาษาอังกฤษ');
       return;
     }
     if (password.length < 8) {
-      Alert.alert("รหัสผ่านไม่ถูกต้อง", "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร");
+      Alert.alert('รหัสผ่านไม่ถูกต้อง', 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร');
       return;
     }
 
-    const cleanedPhone = phone.replace(/\D/g, "");
+    const cleanedPhone = phone.replace(/\D/g, '');
     if (phone && !/^0\d{9}$/.test(cleanedPhone)) {
-      Alert.alert(
-        "เบอร์โทรศัพท์ไม่ถูกต้อง",
-        "กรอกเฉพาะตัวเลข 10 หลักและขึ้นต้นด้วย 0"
-      );
+      Alert.alert('เบอร์โทรศัพท์ไม่ถูกต้อง', 'กรอกเฉพาะตัวเลข 10 หลักและขึ้นต้นด้วย 0');
       return;
     }
 
@@ -106,7 +95,7 @@ export default function RegisterScreen() {
       phone: cleanedPhone || undefined,
     };
 
-    Logger.info("Sending registration payload:", payload);
+    Logger.info('Sending registration payload:', payload);
     registerMutation.mutate(payload);
   };
 
@@ -120,7 +109,7 @@ export default function RegisterScreen() {
       keyboardAvoiding
       scrollViewProps={{
         bounces: false, // iOS: ห้ามเด้งดึ๋ง
-        overScrollMode: "never", // Android: ห้ามเด้งแสง
+        overScrollMode: 'never', // Android: ห้ามเด้งแสง
       }}
       scrollViewRef={scrollViewRef} // Pass ref correctly
       header={<ScreenHeader title="" onBack={router.back} />}
@@ -133,10 +122,7 @@ export default function RegisterScreen() {
         >
           ลงทะเบียน
         </Text>
-        <Text
-          className="font-kanit text-gray-500"
-          style={{ fontSize: 15, marginBottom: 24 }}
-        >
+        <Text className="font-kanit text-gray-500" style={{ fontSize: 15, marginBottom: 24 }}>
           กรุณากรอกรายละเอียดของคุณเพื่อเข้าใช้งาน
         </Text>
 
@@ -176,7 +162,7 @@ export default function RegisterScreen() {
               label="เบอร์โทรศัพท์"
               value={phone}
               onChangeText={(text) => {
-                const cleaned = text.replace(/[^0-9]/g, "");
+                const cleaned = text.replace(/[^0-9]/g, '');
                 if (cleaned.length <= 10) {
                   setPhone(cleaned);
                 }
@@ -195,9 +181,9 @@ export default function RegisterScreen() {
               onChangeText={(text) => {
                 setEmail(text);
                 if (/[ก-๙]/.test(text)) {
-                  setEmailError("กรุณากรอกอีเมลเป็นภาษาอังกฤษ");
+                  setEmailError('กรุณากรอกอีเมลเป็นภาษาอังกฤษ');
                 } else {
-                  setEmailError("");
+                  setEmailError('');
                 }
               }}
               error={emailError}
@@ -217,9 +203,9 @@ export default function RegisterScreen() {
               onChangeText={(text) => {
                 setPassword(text);
                 if (/[ก-๙]/.test(text)) {
-                  setPasswordError("กรุณากรอกรหัสผ่านเป็นภาษาอังกฤษ");
+                  setPasswordError('กรุณากรอกรหัสผ่านเป็นภาษาอังกฤษ');
                 } else {
-                  setPasswordError("");
+                  setPasswordError('');
                 }
               }}
               error={passwordError}
@@ -245,20 +231,11 @@ export default function RegisterScreen() {
 
         {/* Login Link */}
         <View className="flex-row justify-center items-center mt-6">
-          <Text
-            className="font-kanit text-gray-500"
-            style={{ fontSize: 15 }}
-          >
-            มีบัญชีอยู่แล้ว ?{" "}
+          <Text className="font-kanit text-gray-500" style={{ fontSize: 15 }}>
+            มีบัญชีอยู่แล้ว ?{' '}
           </Text>
-          <TouchableOpacity
-            onPress={() => router.push("/(auth)/login")}
-            activeOpacity={0.7}
-          >
-            <Text
-              className="font-kanit font-semibold"
-              style={{ fontSize: 15, color: "#EB6A6A" }}
-            >
+          <TouchableOpacity onPress={() => router.push('/(auth)/login')} activeOpacity={0.7}>
+            <Text className="font-kanit font-semibold" style={{ fontSize: 15, color: '#EB6A6A' }}>
               เข้าสู่ระบบ
             </Text>
           </TouchableOpacity>

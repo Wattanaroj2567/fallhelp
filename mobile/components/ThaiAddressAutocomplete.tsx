@@ -1,5 +1,5 @@
 // components/ThaiAddressAutocomplete.tsx
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,10 +10,10 @@ import {
   Pressable,
   KeyboardAvoidingView,
   Platform,
-} from "react-native";
-import { MaterialIcons } from "@expo/vector-icons";
-import { useTheme } from "react-native-paper";
-import thailandData from "@/assets/thailand-address.json";
+} from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
+import { useTheme } from 'react-native-paper';
+import thailandData from '@/assets/thailand-address.json';
 
 interface ThailandAddress {
   district: string;
@@ -44,14 +44,14 @@ interface ThaiAddressAutocompleteProps {
 export function ThaiAddressAutocomplete({
   value,
   onChange,
-  placeholder = "ค้นหาที่อยู่โดยพิมพ์ตำบล, อำเภอ, จังหวัด หรือรหัสไปรษณีย์",
+  placeholder = 'ค้นหาที่อยู่โดยพิมพ์ตำบล, อำเภอ, จังหวัด หรือรหัสไปรษณีย์',
   isRequired = false,
   error,
 }: ThaiAddressAutocompleteProps) {
   const theme = useTheme();
   const [showModal, setShowModal] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
 
   // Debounce search query (300ms)
   useEffect(() => {
@@ -82,8 +82,8 @@ export function ThaiAddressAutocomplete({
   }, [debouncedQuery]);
 
   const handleOpen = () => {
-    setSearchQuery("");
-    setDebouncedQuery("");
+    setSearchQuery('');
+    setDebouncedQuery('');
     setShowModal(true);
   };
 
@@ -95,14 +95,14 @@ export function ThaiAddressAutocomplete({
       zipcode: String(address.zipcode),
     });
     setShowModal(false);
-    setSearchQuery("");
-    setDebouncedQuery("");
+    setSearchQuery('');
+    setDebouncedQuery('');
   };
 
   const handleClose = () => {
     setShowModal(false);
-    setSearchQuery("");
-    setDebouncedQuery("");
+    setSearchQuery('');
+    setDebouncedQuery('');
   };
 
   const formatDisplayValue = () => {
@@ -110,15 +110,7 @@ export function ThaiAddressAutocomplete({
     return `${value.district} » ${value.amphoe} » ${value.province} » ${value.zipcode}`;
   };
 
-  const labelColor = error
-    ? theme.colors.error
-    : value?.district
-      ? "#a3a6af"
-      : "#a3a6af";
-
-  const borderColor = error
-    ? theme.colors.error
-    : "#E5E7EB"; // Always gray unless error (as per user request)
+  const borderColor = error ? theme.colors.error : '#E5E7EB'; // Always gray unless error (as per user request)
 
   return (
     <View style={{ marginBottom: 16, marginTop: 4 }}>
@@ -137,7 +129,7 @@ export function ThaiAddressAutocomplete({
             className="font-kanit"
             style={{
               fontSize: 12,
-              color: error ? theme.colors.error : "#a3a6af"
+              color: error ? theme.colors.error : '#a3a6af',
             }}
           >
             ค้นหาที่อยู่ {isRequired && <Text className="text-red-500">*</Text>}
@@ -149,7 +141,7 @@ export function ThaiAddressAutocomplete({
           <Text
             className="flex-1 font-kanit text-[16px] mr-2"
             style={{
-              color: value?.district ? theme.colors.onSurface : "#a3a6af", // Gray if placeholder
+              color: value?.district ? theme.colors.onSurface : '#a3a6af', // Gray if placeholder
             }}
             numberOfLines={1}
           >
@@ -160,25 +152,15 @@ export function ThaiAddressAutocomplete({
       </TouchableOpacity>
 
       {/* Error Message */}
-      {error && (
-        <Text className="font-kanit text-xs text-red-500 mt-1 ml-1">{error}</Text>
-      )}
+      {error && <Text className="font-kanit text-xs text-red-500 mt-1 ml-1">{error}</Text>}
 
       {/* Search Modal */}
-      <Modal
-        visible={showModal}
-        transparent
-        animationType="slide"
-        onRequestClose={handleClose}
-      >
+      <Modal visible={showModal} transparent animationType="slide" onRequestClose={handleClose}>
         <KeyboardAvoidingView
           className="flex-1"
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
-          <Pressable
-            className="flex-1 bg-black/50 justify-end"
-            onPress={handleClose}
-          >
+          <Pressable className="flex-1 bg-black/50 justify-end" onPress={handleClose}>
             <Pressable
               className="bg-white rounded-t-[20px] max-h-[90%] pb-5"
               onPress={(e) => e.stopPropagation()}
@@ -205,7 +187,7 @@ export function ThaiAddressAutocomplete({
                   autoFocus
                 />
                 {searchQuery ? (
-                  <TouchableOpacity onPress={() => setSearchQuery("")}>
+                  <TouchableOpacity onPress={() => setSearchQuery('')}>
                     <MaterialIcons name="close" size={20} color="#a3a6af" />
                   </TouchableOpacity>
                 ) : null}
@@ -214,11 +196,7 @@ export function ThaiAddressAutocomplete({
               {/* Search Hint */}
               {searchQuery.length < 2 && (
                 <View className="flex-row items-center px-4 py-2 gap-1.5">
-                  <MaterialIcons
-                    name="info-outline"
-                    size={16}
-                    color="#a3a6af"
-                  />
+                  <MaterialIcons name="info-outline" size={16} color="#a3a6af" />
                   <Text className="font-kanit text-sm text-gray-400">
                     พิมพ์อย่างน้อย 2 ตัวอักษรเพื่อค้นหา
                   </Text>
@@ -240,34 +218,22 @@ export function ThaiAddressAutocomplete({
                   >
                     <View className="flex-1">
                       <Text className="font-kanit text-[15px] leading-[22px]">
-                        <Text className="font-semibold text-gray-700">
-                          {item.district}
-                        </Text>
-                        {" » "}
+                        <Text className="font-semibold text-gray-700">{item.district}</Text>
+                        {' » '}
                         <Text className="text-gray-500">{item.amphoe}</Text>
-                        {" » "}
+                        {' » '}
                         <Text className="text-gray-500">{item.province}</Text>
-                        {" » "}
-                        <Text className="font-medium text-[#16AD78]">
-                          {item.zipcode}
-                        </Text>
+                        {' » '}
+                        <Text className="font-medium text-[#16AD78]">{item.zipcode}</Text>
                       </Text>
                     </View>
-                    <MaterialIcons
-                      name="chevron-right"
-                      size={20}
-                      color="#a3a6af"
-                    />
+                    <MaterialIcons name="chevron-right" size={20} color="#a3a6af" />
                   </TouchableOpacity>
                 )}
                 ListEmptyComponent={
                   debouncedQuery.length >= 2 ? (
                     <View className="py-12 items-center">
-                      <MaterialIcons
-                        name="search-off"
-                        size={48}
-                        color="#E5E7EB"
-                      />
+                      <MaterialIcons name="search-off" size={48} color="#E5E7EB" />
                       <Text className="font-kanit text-base text-gray-500 mt-3 mb-1">
                         ไม่พบที่อยู่ที่ค้นหา
                       </Text>

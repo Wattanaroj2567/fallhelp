@@ -1,8 +1,8 @@
-import React from "react";
-import { View, Text } from "react-native";
-import { MaterialIcons } from "@expo/vector-icons";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Bounceable } from "./Bounceable";
+import React from 'react';
+import { View, Text } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Bounceable } from './Bounceable';
 
 interface ScreenHeaderProps {
   title: string;
@@ -11,7 +11,7 @@ interface ScreenHeaderProps {
   transparent?: boolean;
   backgroundColor?: string;
   noSafeArea?: boolean;
-  style?: any;
+  style?: object;
 }
 
 export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
@@ -27,12 +27,19 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
 
   return (
     <View
-      className={`${(transparent && !noSafeArea) ? "bg-black/30" : ""
-        } ${!noSafeArea ? "rounded-b-[32px] pb-2" : ""}`}
-      style={[{
-        paddingTop: (transparent && !noSafeArea) ? insets.top : 0,
-        backgroundColor: (transparent && !noSafeArea) ? undefined : (backgroundColor || (!noSafeArea ? "white" : undefined))
-      }, style]}
+      className={`${
+        transparent && !noSafeArea ? 'bg-black/30' : ''
+      } ${!noSafeArea ? 'rounded-b-[32px] pb-2' : ''}`}
+      style={[
+        {
+          paddingTop: transparent && !noSafeArea ? insets.top : 0,
+          backgroundColor:
+            transparent && !noSafeArea
+              ? undefined
+              : backgroundColor || (!noSafeArea ? 'white' : undefined),
+        },
+        style,
+      ]}
     >
       <View className="flex-row items-center justify-between px-4 py-4">
         {/* Left: Back Button or Placeholder */}
@@ -44,11 +51,7 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             scale={0.9}
           >
-            <MaterialIcons
-              name="arrow-back"
-              size={28}
-              color={transparent ? "white" : "#374151"}
-            />
+            <MaterialIcons name="arrow-back" size={28} color={transparent ? 'white' : '#374151'} />
           </Bounceable>
         ) : (
           <View className="w-8 h-11" />
@@ -56,8 +59,9 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
 
         {/* Center: Title */}
         <Text
-          className={`font-kanit text-xl ${transparent ? "text-white" : "text-gray-900"
-            } text-center flex-1`}
+          className={`font-kanit text-xl ${
+            transparent ? 'text-white' : 'text-gray-900'
+          } text-center flex-1`}
           numberOfLines={1}
         >
           {title}

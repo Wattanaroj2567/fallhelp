@@ -100,11 +100,7 @@ export {
   inviteMember,
   removeMember,
 } from './elderService';
-export type {
-  CreateElderPayload,
-  UpdateElderPayload,
-  InviteMemberPayload,
-} from './elderService';
+export type { CreateElderPayload, UpdateElderPayload, InviteMemberPayload } from './elderService';
 
 // =============================================================================
 // Device Service
@@ -148,10 +144,7 @@ export {
   updateContact,
   deleteContact,
 } from './emergencyContactService';
-export type {
-  CreateContactPayload,
-  UpdateContactPayload,
-} from './emergencyContactService';
+export type { CreateContactPayload, UpdateContactPayload } from './emergencyContactService';
 
 // =============================================================================
 // Notification Service

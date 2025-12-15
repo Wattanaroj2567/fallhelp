@@ -1,6 +1,6 @@
-import React from "react";
-import { View, ActivityIndicator, Text } from "react-native";
-import { ScreenWrapper } from "./ScreenWrapper";
+import React from 'react';
+import { View, ActivityIndicator, Text } from 'react-native';
+import { ScreenWrapper } from './ScreenWrapper';
 
 interface LoadingScreenProps {
   /**
@@ -17,21 +17,19 @@ interface LoadingScreenProps {
 }
 
 export function LoadingScreen({
-  message = "กำลังโหลด...",
+  message = 'กำลังโหลด...',
   useScreenWrapper = false,
 }: LoadingScreenProps) {
   const Content = (
     <View className="flex-1 items-center justify-center bg-white">
       <ActivityIndicator size="large" color="#16AD78" />
-      {message && (
-        <Text className="mt-4 text-gray-500 font-kanit text-base">{message}</Text>
-      )}
+      {message && <Text className="mt-4 text-gray-500 font-kanit text-base">{message}</Text>}
     </View>
   );
 
   if (useScreenWrapper) {
     return (
-      <ScreenWrapper useScrollView={false} style={{ backgroundColor: "white" }}>
+      <ScreenWrapper useScrollView={false} style={{ backgroundColor: 'white' }}>
         {Content}
       </ScreenWrapper>
     );

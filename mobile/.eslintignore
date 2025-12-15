@@ -1,0 +1,10 @@
+node_modules
+.expo
+dist
+assets
+Mockup-UI-Figma
+babel.config.js
+metro.config.js
+tailwind.config.js
+.eslintrc.js
+*.config.js

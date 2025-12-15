@@ -4,6 +4,7 @@ import * as Device from 'expo-device';
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 import { updatePushToken } from '@/services';
+import { getToken } from '@/services/tokenStorage';
 import Logger from '@/utils/logger';
 
 // Configure how notifications are handled when app is in foreground
@@ -77,7 +78,6 @@ export const usePushNotifications = (): PushNotificationState => {
       // Send token to backend
       // Send token to backend if user is logged in
       try {
-        const { getToken } = require('@/services/tokenStorage');
         const authToken = await getToken();
         if (authToken) {
           await updatePushToken({ pushToken: token });
@@ -85,15 +85,17 @@ export const usePushNotifications = (): PushNotificationState => {
         } else {
           Logger.debug('User not logged in, skipping push token save');
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         // Check for 401 Unauthorized (invalid/expired token)
         // [CRITICAL] DO NOT REMOVE OR MODIFY THIS CHECK WITHOUT TESTING STARTUP FLOW
         // This logic suppresses "Invalid token" errors that occur when the app starts
         // and tries to register a push token before the user has logged in.
         // We check status, message, and stringified error to be absolutely sure we catch it.
-        const status = err?.status || err?.response?.status;
-        const message = err?.message || '';
-        const isUnauthorized = status === 401 || message.includes('401') || JSON.stringify(err).includes('401');
+        const error = err as { status?: number; response?: { status?: number }; message?: string };
+        const status = error?.status || error?.response?.status;
+        const message = error?.message || '';
+        const isUnauthorized =
+          status === 401 || message.includes('401') || JSON.stringify(err).includes('401');
 
         // Only log if it's NOT a 401 error
         if (!isUnauthorized) {

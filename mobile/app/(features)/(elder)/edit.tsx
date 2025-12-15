@@ -1,35 +1,21 @@
-import React, { useState, useRef, useEffect } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  Alert,
-  ActivityIndicator,
-  Platform,
-  Modal,
-  Pressable,
-  Keyboard,
-} from "react-native";
-import { useRouter } from "expo-router";
-import { MaterialIcons } from "@expo/vector-icons";
-import { TextInput as PaperTextInput, useTheme } from "react-native-paper";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getUserElders } from "@/services/userService";
-import { updateElder } from "@/services/elderService";
-import Logger from "@/utils/logger";
-import { showErrorMessage } from "@/utils/errorHelper";
-import { FloatingLabelInput } from "@/components/FloatingLabelInput";
-import { ScreenWrapper } from "@/components/ScreenWrapper";
-import { ScreenHeader } from "@/components/ScreenHeader";
-import { PrimaryButton } from "@/components/PrimaryButton";
-import { GenderSelect } from "@/components/GenderSelect";
-import { FloatingLabelDatePicker } from "@/components/FloatingLabelDatePicker";
-import {
-  ThaiAddressAutocomplete,
-  AddressData,
-} from "@/components/ThaiAddressAutocomplete";
-import { LoadingScreen } from "@/components/LoadingScreen";
+import React, { useState, useRef, useEffect } from 'react';
+import { View, Text, ScrollView, Alert, Platform } from 'react-native';
+import { useRouter } from 'expo-router';
+import { MaterialIcons } from '@expo/vector-icons';
+import { useTheme } from 'react-native-paper';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getUserElders } from '@/services/userService';
+import { updateElder } from '@/services/elderService';
+import Logger from '@/utils/logger';
+import { showErrorMessage } from '@/utils/errorHelper';
+import { FloatingLabelInput } from '@/components/FloatingLabelInput';
+import { ScreenWrapper } from '@/components/ScreenWrapper';
+import { ScreenHeader } from '@/components/ScreenHeader';
+import { PrimaryButton } from '@/components/PrimaryButton';
+import { GenderSelect } from '@/components/GenderSelect';
+import { FloatingLabelDatePicker } from '@/components/FloatingLabelDatePicker';
+import { ThaiAddressAutocomplete, AddressData } from '@/components/ThaiAddressAutocomplete';
+import { LoadingScreen } from '@/components/LoadingScreen';
 
 // ==========================================
 // 📱 LAYER: View (Component)
@@ -38,7 +24,7 @@ import { LoadingScreen } from "@/components/LoadingScreen";
 export default function EditElderInfo() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const theme = useTheme();
+  const _theme = useTheme();
   const scrollViewRef = useRef<ScrollView>(null);
   // Keyboard listener removed to allow always-scroll
 
@@ -46,17 +32,17 @@ export default function EditElderInfo() {
   // 🧩 LAYER: Logic (Local State)
   // Purpose: Manage form inputs
   // ==========================================
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [gender, setGender] = useState("");
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [gender, setGender] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState<Date | null>(null);
-  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [_showDatePicker, setShowDatePicker] = useState(false);
 
-  const [height, setHeight] = useState("");
-  const [weight, setWeight] = useState("");
-  const [medicalCondition, setMedicalCondition] = useState("");
-  const [houseNumber, setHouseNumber] = useState("");
-  const [village, setVillage] = useState("");
+  const [height, setHeight] = useState('');
+  const [weight, setWeight] = useState('');
+  const [medicalCondition, setMedicalCondition] = useState('');
+  const [houseNumber, setHouseNumber] = useState('');
+  const [village, setVillage] = useState('');
   const [address, setAddress] = useState<AddressData | null>(null);
 
   // ==========================================
@@ -64,7 +50,7 @@ export default function EditElderInfo() {
   // Purpose: Fetch current elder data
   // ==========================================
   const { data: elder, isLoading: isFetching } = useQuery({
-    queryKey: ["userElders"],
+    queryKey: ['userElders'],
     queryFn: async () => {
       const elders = await getUserElders();
       return elders && elders.length > 0 ? elders[0] : null;
@@ -79,27 +65,22 @@ export default function EditElderInfo() {
   // ==========================================
   useEffect(() => {
     if (elder) {
-      setFirstName(elder.firstName || "");
-      setLastName(elder.lastName || "");
-      setGender(elder.gender || "");
+      setFirstName(elder.firstName || '');
+      setLastName(elder.lastName || '');
+      setGender(elder.gender || '');
 
       if (elder.dateOfBirth) {
         setDateOfBirth(new Date(elder.dateOfBirth));
       }
 
-      setHeight(elder.height ? elder.height.toString() : "");
-      setWeight(elder.weight ? elder.weight.toString() : "");
-      setMedicalCondition(elder.diseases ? elder.diseases.join(", ") : "");
-      setHouseNumber(elder.houseNumber || "");
-      setVillage(elder.village || "");
+      setHeight(elder.height ? elder.height.toString() : '');
+      setWeight(elder.weight ? elder.weight.toString() : '');
+      setMedicalCondition(elder.diseases ? elder.diseases.join(', ') : '');
+      setHouseNumber(elder.houseNumber || '');
+      setVillage(elder.village || '');
 
       // Parse address from backend format
-      if (
-        elder.subdistrict &&
-        elder.district &&
-        elder.province &&
-        elder.zipcode
-      ) {
+      if (elder.subdistrict && elder.district && elder.province && elder.zipcode) {
         setAddress({
           district: elder.subdistrict,
           amphoe: elder.district,
@@ -115,19 +96,19 @@ export default function EditElderInfo() {
   // Purpose: Update elder profile
   // ==========================================
   const updateMutation = useMutation({
-    mutationFn: async (data: any) => {
-      if (!elder?.id) throw new Error("No elder ID");
-      return await updateElder(elder.id, data);
+    mutationFn: async (data: unknown) => {
+      if (!elder?.id) throw new Error('No elder ID');
+      return await updateElder(elder.id, data as Parameters<typeof updateElder>[1]);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["userElders"] });
-      Alert.alert("สำเร็จ", "บันทึกข้อมูลเรียบร้อยแล้ว", [
-        { text: "ตกลง", onPress: () => router.back() },
+      queryClient.invalidateQueries({ queryKey: ['userElders'] });
+      Alert.alert('สำเร็จ', 'บันทึกข้อมูลเรียบร้อยแล้ว', [
+        { text: 'ตกลง', onPress: () => router.back() },
       ]);
     },
     onError: (error) => {
-      Logger.error("Update failed:", error);
-      showErrorMessage("ข้อผิดพลาด", error);
+      Logger.error('Update failed:', error);
+      showErrorMessage('ข้อผิดพลาด', error);
     },
   });
 
@@ -140,19 +121,19 @@ export default function EditElderInfo() {
 
     // Validation
     if (!firstName.trim()) {
-      Alert.alert("กรุณากรอกข้อมูล", "กรุณากรอกชื่อผู้สูงอายุ");
+      Alert.alert('กรุณากรอกข้อมูล', 'กรุณากรอกชื่อผู้สูงอายุ');
       return;
     }
     if (!lastName.trim()) {
-      Alert.alert("กรุณากรอกข้อมูล", "กรุณากรอกนามสกุลผู้สูงอายุ");
+      Alert.alert('กรุณากรอกข้อมูล', 'กรุณากรอกนามสกุลผู้สูงอายุ');
       return;
     }
     if (!gender) {
-      Alert.alert("กรุณาเลือกข้อมูล", "กรุณาเลือกเพศ");
+      Alert.alert('กรุณาเลือกข้อมูล', 'กรุณาเลือกเพศ');
       return;
     }
     if (!dateOfBirth) {
-      Alert.alert("กรุณาเลือกข้อมูล", "กรุณาระบุวันเกิด");
+      Alert.alert('กรุณาเลือกข้อมูล', 'กรุณาระบุวันเกิด');
       return;
     }
 
@@ -166,55 +147,52 @@ export default function EditElderInfo() {
     }
 
     if (age < 55) {
-      Alert.alert(
-        "อายุไม่ถึงเกณฑ์",
-        "ผู้สูงอายุต้องมีอายุ 55 ปีขึ้นไป กรุณาตรวจสอบปีเกิดอีกครั้ง"
-      );
+      Alert.alert('อายุไม่ถึงเกณฑ์', 'ผู้สูงอายุต้องมีอายุ 55 ปีขึ้นไป กรุณาตรวจสอบปีเกิดอีกครั้ง');
       return;
     }
 
     // Validate Height (Required)
     if (!height || isNaN(Number(height)) || Number(height) <= 0) {
-      Alert.alert("กรุณากรอกข้อมูล", "กรุณากรอกส่วนสูงให้ถูกต้อง");
+      Alert.alert('กรุณากรอกข้อมูล', 'กรุณากรอกส่วนสูงให้ถูกต้อง');
       return;
     }
 
     // Validate Weight (Required)
     if (!weight || isNaN(Number(weight)) || Number(weight) <= 0) {
-      Alert.alert("กรุณากรอกข้อมูล", "กรุณากรอกน้ำหนักให้ถูกต้อง");
+      Alert.alert('กรุณากรอกข้อมูล', 'กรุณากรอกน้ำหนักให้ถูกต้อง');
       return;
     }
 
     // Validate House Number (Required)
     if (!houseNumber.trim()) {
-      Alert.alert("กรุณากรอกข้อมูล", "กรุณากรอกบ้านเลขที่");
+      Alert.alert('กรุณากรอกข้อมูล', 'กรุณากรอกบ้านเลขที่');
       return;
     }
 
     // Validate Village (Required)
     if (!village.trim()) {
-      Alert.alert("กรุณากรอกข้อมูล", "กรุณากรอกหมู่ที่/หมู่บ้าน");
+      Alert.alert('กรุณากรอกข้อมูล', 'กรุณากรอกหมู่ที่/หมู่บ้าน');
       return;
     }
 
     // Validate Address (Required)
     if (!address || !address.district || !address.province) {
-      Alert.alert("กรุณากรอกข้อมูล", "กรุณาเลือกที่อยู่");
+      Alert.alert('กรุณากรอกข้อมูล', 'กรุณาเลือกที่อยู่');
       return;
     }
 
     const payload = {
       firstName: firstName.trim(),
       lastName: lastName.trim(),
-      gender: gender as "MALE" | "FEMALE" | "OTHER",
+      gender: gender as 'MALE' | 'FEMALE' | 'OTHER',
       dateOfBirth: dateOfBirth.toISOString(),
       height: Number(height),
       weight: Number(weight),
       diseases: medicalCondition
         ? medicalCondition
-          .split(",")
-          .map((d) => d.trim())
-          .filter((d) => d)
+            .split(',')
+            .map((d) => d.trim())
+            .filter((d) => d)
         : [],
       houseNumber: houseNumber.trim(),
       village: village.trim(),
@@ -227,26 +205,24 @@ export default function EditElderInfo() {
     updateMutation.mutate(payload);
   };
 
-  const onDateChange = (event: any, selectedDate?: Date) => {
+  const _onDateChange = (event: unknown, selectedDate?: Date) => {
     // If read only, ignore
     if (isReadOnly) return;
 
     const currentDate = selectedDate || dateOfBirth || new Date();
-    if (Platform.OS === "android") {
+    if (Platform.OS === 'android') {
       setShowDatePicker(false);
     }
     setDateOfBirth(currentDate);
   };
 
-  const formatDate = (date: Date | null) => {
-    if (!date) return "วัน/เดือน/ปีเกิด";
+  const _formatDate = (date: Date | null) => {
+    if (!date) return 'วัน/เดือน/ปีเกิด';
     const day = date.getDate();
-    const month = date.toLocaleDateString("th-TH", { month: "long" });
+    const month = date.toLocaleDateString('th-TH', { month: 'long' });
     const year = date.getFullYear() + 543;
     return `${day} ${month} ${year}`;
   };
-
-
 
   // ==========================================
   // 🖼️ LAYER: View (Main Render)
@@ -263,7 +239,7 @@ export default function EditElderInfo() {
       keyboardAvoiding
       scrollViewProps={{
         bounces: false, // No elastic bounce
-        overScrollMode: "never", // No glow effect
+        overScrollMode: 'never', // No glow effect
         scrollEnabled: true, // Allow scroll when needed
         showsVerticalScrollIndicator: false, // Hide scroll bar for cleaner look
       }}
@@ -276,13 +252,10 @@ export default function EditElderInfo() {
           className="font-kanit font-bold text-gray-900"
           style={{ fontSize: 28, marginBottom: 8 }}
         >
-          {isReadOnly ? "ข้อมูลผู้สูงอายุ" : "แก้ไขข้อมูลผู้สูงอายุ"}
+          {isReadOnly ? 'ข้อมูลผู้สูงอายุ' : 'แก้ไขข้อมูลผู้สูงอายุ'}
         </Text>
-        <Text
-          className="font-kanit text-gray-500"
-          style={{ fontSize: 15, marginBottom: 16 }}
-        >
-          {isReadOnly ? "ดูรายละเอียดข้อมูลผู้สูงอายุ" : "กรุณากรอกข้อมูลผู้สูงอายุที่ต้องการแก้ไข"}
+        <Text className="font-kanit text-gray-500" style={{ fontSize: 15, marginBottom: 16 }}>
+          {isReadOnly ? 'ดูรายละเอียดข้อมูลผู้สูงอายุ' : 'กรุณากรอกข้อมูลผู้สูงอายุที่ต้องการแก้ไข'}
         </Text>
 
         {/* Read-only Warning */}
@@ -290,12 +263,17 @@ export default function EditElderInfo() {
           <View className="bg-yellow-50 rounded-2xl p-4 border border-yellow-100 flex-row items-center mb-4">
             <MaterialIcons name="lock" size={20} color="#CA8A04" style={{ marginRight: 8 }} />
             <Text className="font-kanit text-yellow-700 flex-1" style={{ fontSize: 14 }}>
-              คุณอยู่ในสถานะ "ดูได้อย่างเดียว" ไม่สามารถแก้ไขข้อมูลได้ กรุณาติดต่อญาติผู้ดูแลหลักหากต้องการเปลี่ยนแปลง
+              คุณอยู่ในสถานะ "ดูได้อย่างเดียว" ไม่สามารถแก้ไขข้อมูลได้
+              กรุณาติดต่อญาติผู้ดูแลหลักหากต้องการเปลี่ยนแปลง
             </Text>
           </View>
         )}
 
-        <View className="mb-6" style={{ opacity: isReadOnly ? 0.8 : 1 }} pointerEvents={isReadOnly ? 'none' : 'auto'}>
+        <View
+          className="mb-6"
+          style={{ opacity: isReadOnly ? 0.8 : 1 }}
+          pointerEvents={isReadOnly ? 'none' : 'auto'}
+        >
           {/* Elder Name & Lastname - FloatingLabelInput Match Register */}
           <View className="flex-row gap-3">
             {/* First Name */}
@@ -398,7 +376,7 @@ export default function EditElderInfo() {
             value={address}
             onChange={setAddress}
             isRequired
-          // Need to pass editable or similar prop if component supports it, otherwise View pointerEvents handles it
+            // Need to pass editable or similar prop if component supports it, otherwise View pointerEvents handles it
           />
         </View>
 
@@ -415,7 +393,6 @@ export default function EditElderInfo() {
       </View>
 
       {/* Date Picker Modal (iOS) or standard (Android) */}
-
     </ScreenWrapper>
   );
 }

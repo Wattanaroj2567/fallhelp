@@ -1,30 +1,22 @@
-import "react-native-reanimated";
-import "../global.css";
+import 'react-native-reanimated';
+import '../global.css';
 
-import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { DefaultTheme, ThemeProvider } from "@react-navigation/native";
-import { useFonts } from "expo-font";
-import {
-  Stack,
-  SplashScreen,
-  useRouter,
-  useSegments,
-  useNavigationContainerRef,
-} from "expo-router";
-import { useEffect } from "react";
-import { PaperProvider, MD3LightTheme } from "react-native-paper";
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { useFonts } from 'expo-font';
+import { Stack, SplashScreen } from 'expo-router';
+import { useEffect } from 'react';
+import { PaperProvider } from 'react-native-paper';
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { View } from "react-native";
-import Logger from "@/utils/logger";
-import { AuthProvider, useAuth } from "@/context/AuthContext";
-import { useProtectedRoute } from "@/hooks/useProtectedRoute";
-import { AppTheme } from "@/constants/theme";
-import { LoadingScreen } from "@/components/LoadingScreen";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AuthProvider } from '@/context/AuthContext';
+import { useProtectedRoute } from '@/hooks/useProtectedRoute';
+import { AppTheme } from '@/constants/theme';
+import { LoadingScreen } from '@/components/LoadingScreen';
 
 const queryClient = new QueryClient();
 
-export { ErrorBoundary } from "expo-router";
+export { ErrorBoundary } from 'expo-router';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -45,14 +37,14 @@ function RootLayoutNav() {
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="(setup)" />
       <Stack.Screen name="(features)" />
-      <Stack.Screen name="modal" options={{ presentation: "modal" }} />
+      <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
     </Stack>
   );
 }
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
-    Kanit: require("../assets/fonts/Kanit-Regular.ttf"),
+    Kanit: require('../assets/fonts/Kanit-Regular.ttf'),
     ...FontAwesome.font,
   });
 

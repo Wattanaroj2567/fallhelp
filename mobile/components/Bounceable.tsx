@@ -1,92 +1,96 @@
-import React from "react";
-import { Pressable, PressableProps, StyleProp, ViewStyle } from "react-native";
-import Animated, {
-    useSharedValue,
-    useAnimatedStyle,
-    withSpring,
-} from "react-native-reanimated";
+import React from 'react';
+import {
+  Pressable,
+  PressableProps,
+  StyleProp,
+  ViewStyle,
+  GestureResponderEvent,
+} from 'react-native';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 export interface BounceableProps extends PressableProps {
-    scale?: number; // Target scale when pressed (default 0.96)
-    springConfig?: {
-        mass?: number;
-        stiffness?: number;
-        damping?: number;
-    };
-    style?: StyleProp<ViewStyle>;
-    debounceTime?: number;
+  scale?: number; // Target scale when pressed (default 0.96)
+  springConfig?: {
+    mass?: number;
+    stiffness?: number;
+    damping?: number;
+  };
+  style?: StyleProp<ViewStyle>;
+  debounceTime?: number;
 }
 
 export const Bounceable: React.FC<BounceableProps> = ({
-    children,
-    style,
-    scale = 0.96,
-    springConfig = { mass: 0.5, stiffness: 300, damping: 13 },
-    debounceTime = 1000, // Default debounce time 1000ms
-    disabled,
-    onPress,
-    ...props
+  children,
+  style,
+  scale = 0.96,
+  springConfig = { mass: 0.5, stiffness: 300, damping: 13 },
+  debounceTime = 1000, // Default debounce time 1000ms
+  disabled,
+  onPress,
+  ...props
 }) => {
-    const isPressed = useSharedValue(false);
-    const lastPressTime = React.useRef(0);
+  const isPressed = useSharedValue(false);
+  const lastPressTime = React.useRef(0);
 
-    const [isActive, setIsActive] = React.useState(false);
+  const [isActive, setIsActive] = React.useState(false);
 
-    const handlePress = React.useCallback((event: any) => {
-        if (!onPress || disabled) return;
+  const handlePress = React.useCallback(
+    (event: GestureResponderEvent) => {
+      if (!onPress || disabled) return;
 
-        const now = Date.now();
-        const timeSinceLastPress = now - lastPressTime.current;
+      const now = Date.now();
+      const timeSinceLastPress = now - lastPressTime.current;
 
-        if (timeSinceLastPress > debounceTime) {
-            lastPressTime.current = now;
-            onPress(event);
-        } else {
-            console.log(`Blocked double click. Time since last: ${timeSinceLastPress}ms`);
-        }
-    }, [onPress, debounceTime, disabled]);
+      if (timeSinceLastPress > debounceTime) {
+        lastPressTime.current = now;
+        // onPress expects GestureResponderEvent from PressableProps
+        onPress(event);
+      } else {
+        console.log(`Blocked double click. Time since last: ${timeSinceLastPress}ms`);
+      }
+    },
+    [onPress, debounceTime, disabled],
+  );
 
-    const animatedStyle = useAnimatedStyle(() => {
-        // Only animate scale if not disabled
-        const targetScale = isPressed.value && !disabled ? scale : 1;
-        
-        return {
-            transform: [
-                {
-                    scale: withSpring(targetScale, springConfig),
-                },
-            ],
-            // Optional: slight opacity change for better feedback
-            opacity: withSpring(isPressed.value && !disabled ? 0.9 : 1, {
-                mass: 0.5, stiffness: 200, damping: 20
-            }),
-        };
-    });
+  const animatedStyle = useAnimatedStyle(() => {
+    // Only animate scale if not disabled
+    const targetScale = isPressed.value && !disabled ? scale : 1;
 
-    return (
-        <AnimatedPressable
-            {...props}
-            onPress={handlePress}
-            disabled={disabled}
-            onPressIn={(e) => {
-                isPressed.value = true;
-                if (!disabled && scale === 1) setIsActive(true);
-                props.onPressIn?.(e);
-            }}
-            onPressOut={(e) => {
-                isPressed.value = false;
-                if (!disabled && scale === 1) setIsActive(false);
-                props.onPressOut?.(e);
-            }}
-            style={[
-                style,
-                isActive && { backgroundColor: '#E5E7EB', opacity: 0.8 },
-                animatedStyle
-            ]}
-        >
-            {children}
-        </AnimatedPressable>
-    );
+    return {
+      transform: [
+        {
+          scale: withSpring(targetScale, springConfig),
+        },
+      ],
+      // Optional: slight opacity change for better feedback
+      opacity: withSpring(isPressed.value && !disabled ? 0.9 : 1, {
+        mass: 0.5,
+        stiffness: 200,
+        damping: 20,
+      }),
+    };
+  });
+
+  return (
+    <AnimatedPressable
+      {...props}
+      onPress={handlePress}
+      disabled={disabled}
+      onPressIn={(e) => {
+        isPressed.value = true;
+        if (!disabled && scale === 1) setIsActive(true);
+        props.onPressIn?.(e);
+      }}
+      onPressOut={(e) => {
+        isPressed.value = false;
+        if (!disabled && scale === 1) setIsActive(false);
+        props.onPressOut?.(e);
+      }}
+      style={[style, isActive && { backgroundColor: '#E5E7EB', opacity: 0.8 }, animatedStyle]}
+    >
+      {children}
+    </AnimatedPressable>
+  );
 };

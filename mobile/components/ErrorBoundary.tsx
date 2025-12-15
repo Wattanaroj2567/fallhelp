@@ -1,8 +1,8 @@
-import React, { Component, ErrorInfo, ReactNode } from "react";
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { SafeAreaView } from "react-native-safe-area-context";
-import Logger from "@/utils/logger";
+import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import Logger from '@/utils/logger';
 
 interface Props {
   children: ReactNode;
@@ -28,7 +28,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    Logger.error("Uncaught error:", error, errorInfo);
+    Logger.error('Uncaught error:', error, errorInfo);
     this.setState({
       error,
       errorInfo,
@@ -57,9 +57,7 @@ export class ErrorBoundary extends Component<Props, State> {
               <Ionicons name="alert-circle" size={64} color="#EF4444" />
             </View>
 
-            <Text className="text-2xl font-bold text-gray-900 mb-2 font-kanit">
-              เกิดข้อผิดพลาด
-            </Text>
+            <Text className="text-2xl font-bold text-gray-900 mb-2 font-kanit">เกิดข้อผิดพลาด</Text>
 
             <Text className="text-base text-gray-600 text-center mb-8 font-kanit">
               ขออภัย ระบบเกิดข้อผิดพลาดที่ไม่คาดคิด กรุณาลองใหม่อีกครั้ง
@@ -77,9 +75,7 @@ export class ErrorBoundary extends Component<Props, State> {
               onPress={this.handleReset}
               className="bg-red-500 py-3 px-8 rounded-xl shadow-lg active:bg-red-600"
             >
-              <Text className="text-white font-bold font-kanit text-lg">
-                ลองใหม่อีกครั้ง
-              </Text>
+              <Text className="text-white font-bold font-kanit text-lg">ลองใหม่อีกครั้ง</Text>
             </TouchableOpacity>
           </ScrollView>
         </SafeAreaView>

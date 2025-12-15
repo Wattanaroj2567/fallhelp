@@ -52,14 +52,14 @@ export async function clearToken(): Promise<void> {
  */
 export async function clearSession(): Promise<void> {
   await clearToken();
-  
+
   if (Platform.OS !== 'web') {
     // Clear Setup Progress & IDs
     await SecureStore.deleteItemAsync('setup_step');
     await SecureStore.deleteItemAsync('setup_elderId');
     await SecureStore.deleteItemAsync('setup_deviceId');
   }
-  
+
   // Clear Cached Form Data (AsyncStorage)
   try {
     await AsyncStorage.removeItem('setup_step1_form_data');

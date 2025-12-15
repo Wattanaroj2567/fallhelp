@@ -5,7 +5,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getProfile, updateProfile, deleteAccount, getUserElders } from '@/services/userService';
 import Logger from '@/utils/logger';
-import { showErrorMessage } from "@/utils/errorHelper";
+import { showErrorMessage } from '@/utils/errorHelper';
 import * as ImagePicker from 'expo-image-picker';
 import { ProfileSkeleton } from '@/components/skeletons';
 import { Image } from 'expo-image';
@@ -20,7 +20,7 @@ import { Bounceable } from '@/components/Bounceable';
 // ==========================================
 export default function Profile() {
   const router = useRouter();
-  const navigation = useNavigation();
+  const _navigation = useNavigation();
   const queryClient = useQueryClient();
   const [uploading, setUploading] = useState(false);
   const [imageError, setImageError] = useState(false);
@@ -29,7 +29,12 @@ export default function Profile() {
   // ⚙️ LAYER: Logic (Data Fetching)
   // Purpose: Fetch user profile
   // ==========================================
-  const { data: profile, isLoading, isError, refetch } = useQuery({
+  const {
+    data: profile,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ['userProfile'],
     queryFn: getProfile,
   });
@@ -40,7 +45,7 @@ export default function Profile() {
     queryFn: getUserElders,
   });
   const currentElder = elders?.[0];
-  const isOwner = currentElder?.accessLevel === 'OWNER' || currentElder?.accessLevel === 'EDITOR';
+  const _isOwner = currentElder?.accessLevel === 'OWNER' || currentElder?.accessLevel === 'EDITOR';
 
   // Reset error state when profile image changes
   React.useEffect(() => {
@@ -101,7 +106,6 @@ export default function Profile() {
           // Note: We do NOT log the base64 string to keep terminal clean
           Logger.info('Uploading profile image (Base64)...');
           await updateProfileMutation.mutateAsync({ profileImage: base64Image });
-
         } catch (error) {
           Logger.error('Error uploading image:', error);
           Alert.alert('ผิดพลาด', 'ไม่สามารถอัปโหลดรูปภาพได้');
@@ -136,7 +140,7 @@ export default function Profile() {
             onPress={() => refetch()}
             className="mt-4 p-3 rounded-lg"
             scale={1}
-            style={{ backgroundColor: "#E5E7EB" }}
+            style={{ backgroundColor: '#E5E7EB' }}
           >
             <Text className="font-kanit">ลองใหม่</Text>
           </Bounceable>
@@ -145,8 +149,6 @@ export default function Profile() {
     );
   }
 
-
-
   // ==========================================
   // 🖼️ LAYER: View (Main Render)
   // Purpose: Render profile details
@@ -154,10 +156,7 @@ export default function Profile() {
   return (
     <ScreenWrapper edges={['top', 'left', 'right']} useScrollView={false}>
       {/* Header */}
-      <ScreenHeader 
-        title="ข้อมูลส่วนตัว" 
-        onBack={() => router.back()} 
-      />
+      <ScreenHeader title="ข้อมูลส่วนตัว" onBack={() => router.back()} />
 
       <ScrollView
         className="flex-1"
@@ -186,8 +185,8 @@ export default function Profile() {
                   style={{ width: '100%', height: '100%' }}
                   contentFit="cover"
                   transition={200}
-                  onError={(e: any) => {
-                    Logger.error('Image Load Error:', e.nativeEvent.error);
+                  onError={(e: unknown) => {
+                    Logger.error('Image Load Error:', e);
                     setImageError(true);
                   }}
                 />
@@ -240,11 +239,14 @@ export default function Profile() {
                     </Text>
                   </View>
                 </View>
-                <Text style={{ fontSize: 14, fontWeight: '600' }} className="font-kanit text-gray-400">
+                <Text
+                  style={{ fontSize: 14, fontWeight: '600' }}
+                  className="font-kanit text-gray-400"
+                >
                   แก้ไข
                 </Text>
               </View>
-              </Bounceable>
+            </Bounceable>
 
             {/* Phone */}
             <Bounceable
@@ -262,11 +264,14 @@ export default function Profile() {
                     {profile.phone || 'ไม่ระบุ'}
                   </Text>
                 </View>
-                <Text style={{ fontSize: 14, fontWeight: '600' }} className="font-kanit text-gray-400">
+                <Text
+                  style={{ fontSize: 14, fontWeight: '600' }}
+                  className="font-kanit text-gray-400"
+                >
                   แก้ไข
                 </Text>
               </View>
-              </Bounceable>
+            </Bounceable>
 
             {/* Email */}
             <Bounceable
@@ -284,11 +289,14 @@ export default function Profile() {
                     {profile.email}
                   </Text>
                 </View>
-                <Text style={{ fontSize: 14, fontWeight: '600' }} className="font-kanit text-gray-400">
+                <Text
+                  style={{ fontSize: 14, fontWeight: '600' }}
+                  className="font-kanit text-gray-400"
+                >
                   แก้ไข
                 </Text>
               </View>
-              </Bounceable>
+            </Bounceable>
 
             {/* Password */}
             <Bounceable
@@ -306,11 +314,14 @@ export default function Profile() {
                     ••••••••
                   </Text>
                 </View>
-                <Text style={{ fontSize: 14, fontWeight: '600' }} className="font-kanit text-gray-400">
+                <Text
+                  style={{ fontSize: 14, fontWeight: '600' }}
+                  className="font-kanit text-gray-400"
+                >
                   เปลี่ยน
                 </Text>
               </View>
-              </Bounceable>
+            </Bounceable>
 
             {/* Emergency Contacts - MOVED TO SETTINGS as per plan */}
             {/* The user requested to remove this from Profile and put it in Settings */}
@@ -321,7 +332,14 @@ export default function Profile() {
         <View className="bg-blue-50 rounded-2xl p-4 flex-row items-center mb-6">
           <MaterialIcons name="verified-user" size={20} color="#3B82F6" />
           <Text style={{ fontSize: 14 }} className="font-kanit text-blue-700 ml-2">
-            บทบาท: {currentElder ? (currentElder.accessLevel === 'OWNER' ? 'ญาติผู้ดูแลหลัก' : 'ญาติผู้ดูแลเสริม') : (profile.role === 'CAREGIVER' ? 'ญาติผู้ดูแล' : profile.role)}
+            บทบาท:{' '}
+            {currentElder
+              ? currentElder.accessLevel === 'OWNER'
+                ? 'ญาติผู้ดูแลหลัก'
+                : 'ญาติผู้ดูแลเสริม'
+              : profile.role === 'CAREGIVER'
+                ? 'ญาติผู้ดูแล'
+                : profile.role}
           </Text>
         </View>
 
@@ -360,11 +378,11 @@ export default function Profile() {
                               }
                             },
                           },
-                        ]
+                        ],
                       );
                     },
                   },
-                ]
+                ],
               );
             }}
           >

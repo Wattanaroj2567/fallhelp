@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   View,
   Text,
@@ -7,11 +7,13 @@ import {
   TextStyle,
   Animated,
   TextInput as NativeTextInput,
-} from "react-native";
-import { TextInput, useTheme } from "react-native-paper";
+} from 'react-native';
+import { TextInput, useTheme } from 'react-native-paper';
 
-interface FloatingLabelInputProps
-  extends Omit<React.ComponentProps<typeof TextInput>, "error" | "label"> {
+interface FloatingLabelInputProps extends Omit<
+  React.ComponentProps<typeof TextInput>,
+  'error' | 'label'
+> {
   label: string | React.ReactNode;
   error?: string;
   containerStyle?: StyleProp<ViewStyle>;
@@ -34,7 +36,7 @@ export const FloatingLabelInput: React.FC<FloatingLabelInputProps> = ({
   value,
   style,
   multiline,
-  labelBackgroundColor = "#FFFFFF",
+  labelBackgroundColor = '#FFFFFF',
   ...props
 }) => {
   const theme = useTheme();
@@ -42,9 +44,7 @@ export const FloatingLabelInput: React.FC<FloatingLabelInputProps> = ({
   const [isFocusedInternal, setIsFocusedInternal] = React.useState(false);
 
   // Animation for floating label
-  const animatedValue = React.useRef(
-    new Animated.Value(value ? 1 : 0)
-  ).current;
+  const animatedValue = React.useRef(new Animated.Value(value ? 1 : 0)).current;
 
   const isFocused = forceFocus || isFocusedInternal;
   const focusColor = accentColor || theme.colors.primary;
@@ -57,11 +57,11 @@ export const FloatingLabelInput: React.FC<FloatingLabelInputProps> = ({
       duration: 150,
       useNativeDriver: false,
     }).start();
-  }, [isFocused, value]);
+  }, [isFocused, value, animatedValue]);
 
   // Label animation styles
   const labelStyle: Animated.AnimatedProps<StyleProp<TextStyle>> = {
-    position: "absolute",
+    position: 'absolute',
     left: 12,
     // ️ เมื่อลอย: top = -10, เมื่อในช่อง: top = 16
     top: animatedValue.interpolate({
@@ -80,14 +80,9 @@ export const FloatingLabelInput: React.FC<FloatingLabelInputProps> = ({
     zIndex: 10,
   };
 
-  const labelColor = isFocused
-    ? focusColor
-    : value
-      ? "#a3a6af"
-      : theme.colors.onSurfaceVariant;
+  const labelColor = isFocused ? focusColor : value ? '#a3a6af' : theme.colors.onSurfaceVariant;
 
-  const displayLabel =
-    typeof label === "string" ? label : "";
+  const displayLabel = typeof label === 'string' ? label : '';
 
   const inputRef = React.useRef<NativeTextInput>(null);
 
@@ -98,7 +93,7 @@ export const FloatingLabelInput: React.FC<FloatingLabelInputProps> = ({
         style={[
           labelStyle,
           {
-            fontFamily: "Kanit",
+            fontFamily: 'Kanit',
             color: labelColor,
           },
         ]}
@@ -107,12 +102,12 @@ export const FloatingLabelInput: React.FC<FloatingLabelInputProps> = ({
         suppressHighlighting={true}
       >
         {displayLabel}
-        {isRequired && <Text style={{ color: "#EF4444" }}> *</Text>}
+        {isRequired && <Text style={{ color: '#EF4444' }}> *</Text>}
       </Animated.Text>
 
       <TextInput
         ref={inputRef}
-        testID={props.testID || "floating-label-input"}
+        testID={props.testID || 'floating-label-input'}
         mode="outlined"
         // ️ ซ่อน Label ของ React Native Paper
         label=""
@@ -128,9 +123,7 @@ export const FloatingLabelInput: React.FC<FloatingLabelInputProps> = ({
           props.onBlur?.(e);
         }}
         activeOutlineColor={error ? theme.colors.error : focusColor}
-        outlineColor={
-          error ? theme.colors.error : isFocused ? focusColor : "#E5E7EB"
-        }
+        outlineColor={error ? theme.colors.error : isFocused ? focusColor : '#E5E7EB'}
         cursorColor={error ? theme.colors.error : focusColor}
         textColor={theme.colors.onSurface}
         placeholderTextColor={theme.colors.onSurfaceVariant}
@@ -139,7 +132,7 @@ export const FloatingLabelInput: React.FC<FloatingLabelInputProps> = ({
         }}
         style={[
           {
-            backgroundColor: "#FFFFFF",
+            backgroundColor: '#FFFFFF',
             fontSize: 16,
             lineHeight: 24,
             paddingVertical: 0,
@@ -153,13 +146,13 @@ export const FloatingLabelInput: React.FC<FloatingLabelInputProps> = ({
           [
             multiline
               ? {
-                paddingTop: 16,
-                paddingBottom: 16,
-                textAlignVertical: "top",
-              }
+                  paddingTop: 16,
+                  paddingBottom: 16,
+                  textAlignVertical: 'top',
+                }
               : {
-                textAlignVertical: "center",
-              },
+                  textAlignVertical: 'center',
+                },
           ] as StyleProp<TextStyle>
         }
         multiline={multiline}
@@ -168,7 +161,7 @@ export const FloatingLabelInput: React.FC<FloatingLabelInputProps> = ({
           isPassword ? (
             <TextInput.Icon
               testID="password-toggle-icon"
-              icon={showPassword ? "eye-off" : "eye"}
+              icon={showPassword ? 'eye-off' : 'eye'}
               color={theme.colors.onSurfaceVariant}
               onPress={() => setShowPassword(!showPassword)}
               forceTextInputFocus={false}
@@ -181,7 +174,7 @@ export const FloatingLabelInput: React.FC<FloatingLabelInputProps> = ({
       {error && (
         <Text
           style={{
-            fontFamily: "Kanit",
+            fontFamily: 'Kanit',
             color: theme.colors.error,
             fontSize: 12,
             marginTop: 4,
