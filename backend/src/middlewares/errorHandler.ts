@@ -14,10 +14,13 @@ export const errorHandler = (
   error: Error,
   req: Request,
   res: Response,
-  next: NextFunction
+  _next: NextFunction,
 ): void => {
   // Log errors
-  if ((error instanceof AppError && error.isOperational) || (error instanceof ApiError && error.isOperational)) {
+  if (
+    (error instanceof AppError && error.isOperational) ||
+    (error instanceof ApiError && error.isOperational)
+  ) {
     log('[Warn]: %s', error.message);
   } else {
     log('[Error]: %O', error);
@@ -141,7 +144,7 @@ export const notFoundHandler = (req: Request, res: Response): void => {
 /**
  * Async handler wrapper to catch errors in async route handlers
  */
-export const asyncHandler = (fn: Function) => {
+export const asyncHandler = (fn: (req: Request, res: Response, next: NextFunction) => unknown) => {
   return (req: Request, res: Response, next: NextFunction) => {
     Promise.resolve(fn(req, res, next)).catch(next);
   };

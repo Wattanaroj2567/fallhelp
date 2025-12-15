@@ -62,10 +62,11 @@ class SocketServerManager {
         this.userSessions.set(data.userId, socket.id);
       }
 
-      log('Client %s authenticated: { userId: %s, elderId: %s }',
+      log(
+        'Client %s authenticated: { userId: %s, elderId: %s }',
         socket.id,
         data.userId || 'none',
-        data.elderId || 'none'
+        data.elderId || 'none',
       );
 
       // Join user-specific room
@@ -217,7 +218,7 @@ class SocketServerManager {
   /**
    * Broadcast system message to all clients
    */
-  broadcastSystemMessage(message: string, data?: any): void {
+  broadcastSystemMessage(message: string, data?: unknown): void {
     if (!this.io) return;
 
     log('Broadcasting system message: %s', message);

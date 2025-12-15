@@ -53,24 +53,24 @@ export const upload = multer({
  * POST /api/upload/profile
  */
 export const uploadProfileImage = asyncHandler(async (req: Request, res: Response) => {
-    if (!req.file) {
-      throw createError.validationError('กรุณาอัปโหลดรูปภาพ');
-    }
+  if (!req.file) {
+    throw createError.validationError('กรุณาอัปโหลดรูปภาพ');
+  }
 
-    // Generate URL for the uploaded file
-    // Use request host to ensure the URL works for the client (e.g. Android Emulator uses 10.0.2.2)
-    const protocol = req.protocol;
-    const host = req.get('host');
-    const baseUrl = process.env.API_BASE_URL || `${protocol}://${host}`;
-    const imageUrl = `${baseUrl}/uploads/profiles/${req.file.filename}`;
+  // Generate URL for the uploaded file
+  // Use request host to ensure the URL works for the client (e.g. Android Emulator uses 10.0.2.2)
+  const protocol = req.protocol;
+  const host = req.get('host');
+  const baseUrl = process.env.API_BASE_URL || `${protocol}://${host}`;
+  const imageUrl = `${baseUrl}/uploads/profiles/${req.file.filename}`;
 
-    res.json({
-      success: true,
-      data: {
-        url: imageUrl,
-        filename: req.file.filename,
-      },
-    });
+  res.json({
+    success: true,
+    data: {
+      url: imageUrl,
+      filename: req.file.filename,
+    },
+  });
 });
 
 /**
@@ -78,15 +78,15 @@ export const uploadProfileImage = asyncHandler(async (req: Request, res: Respons
  * DELETE /api/upload/profile/:filename
  */
 export const deleteProfileImage = asyncHandler(async (req: Request, res: Response) => {
-    const { filename } = req.params;
-    const filePath = path.join(uploadsDir, filename);
+  const { filename } = req.params;
+  const filePath = path.join(uploadsDir, filename);
 
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-    }
+  if (fs.existsSync(filePath)) {
+    fs.unlinkSync(filePath);
+  }
 
-    res.json({
-      success: true,
-      message: 'File deleted',
-    });
+  res.json({
+    success: true,
+    message: 'File deleted',
+  });
 });

@@ -1,5 +1,5 @@
-import { Device, DeviceStatus } from '../generated/prisma/client.js';
-import { generateDevicePairingQR, generateWiFiQR } from '../utils/qrcode.js';
+import { DeviceStatus } from '../generated/prisma/client.js';
+import { generateDevicePairingQR } from '../utils/qrcode.js';
 import crypto from 'crypto';
 import prisma from '../prisma.js';
 import createDebug from 'debug';
@@ -13,8 +13,6 @@ const log = createDebug('fallhelp:device');
 // ... (skipping unchanged parts)
 
 // ...
-
-
 
 // ==========================================
 // ⚙️ LAYER: Business Logic (Service)
@@ -31,10 +29,7 @@ const generateDeviceCode = (): string => {
 /**
  * Create new device (Admin only)
  */
-export const createDevice = async (data: {
-  serialNumber: string;
-  firmwareVersion?: string;
-}) => {
+export const createDevice = async (data: { serialNumber: string; firmwareVersion?: string }) => {
   const deviceCode = generateDeviceCode();
 
   const device = await prisma.device.create({
@@ -82,11 +77,7 @@ export const getDeviceByCode = async (deviceCode: string) => {
 /**
  * Pair device with elder
  */
-export const pairDevice = async (
-  userId: string,
-  deviceCode: string,
-  elderId: string
-) => {
+export const pairDevice = async (userId: string, deviceCode: string, elderId: string) => {
   // Check if user is OWNER of this elder
   log(`[PairDevice] Checking ownership: userId=${userId}, elderId=${elderId}`);
   const access = await prisma.userElderAccess.findUnique({
@@ -226,16 +217,14 @@ export const configureWiFi = async (
   userId: string,
   deviceIdOrCode: string,
   ssid: string,
-  password: string
+  password: string,
 ) => {
   // Support both UUID (device.id) and deviceCode (8 chars)
   // Check if it looks like a UUID (contains hyphens) or deviceCode (8 chars alphanumeric)
   const isUuid = deviceIdOrCode.includes('-');
-  
+
   const device = await prisma.device.findFirst({
-    where: isUuid 
-      ? { id: deviceIdOrCode }
-      : { deviceCode: deviceIdOrCode },
+    where: isUuid ? { id: deviceIdOrCode } : { deviceCode: deviceIdOrCode },
     include: { config: true },
   });
 
@@ -281,8 +270,8 @@ export const configureWiFi = async (
   // CRITICAL: ESP32 subscribes to topic with Serial Number, not DB ID
   const topic = MQTT_TOPICS.getConfigTopic(device.serialNumber);
   mqttClient.publish(topic, {
-      wifiSSID: ssid,
-      wifiPassword: password, // Sending plaintext to device (secure transport assumed e.g. MQTTS)
+    wifiSSID: ssid,
+    wifiPassword: password, // Sending plaintext to device (secure transport assumed e.g. MQTTS)
   });
 
   return {
@@ -324,7 +313,7 @@ export const getDeviceConfig = async (userId: string, deviceId: string) => {
   if (config && config.wifiPassword) {
     try {
       config.wifiPassword = decrypt(config.wifiPassword);
-    } catch (e) {
+    } catch (_e) {
       // Logic: If decryption fails (old plaintext data), return as is or handle error
       // Ideally, we might want to migrate old data, but for now we fallback or leave it
     }
@@ -333,16 +322,13 @@ export const getDeviceConfig = async (userId: string, deviceId: string) => {
   return config;
 };
 
-
-
-
 /**
  * Update device status
  */
 export const updateDeviceStatus = async (
   deviceId: string,
   status: DeviceStatus,
-  lastOnline?: Date
+  lastOnline?: Date,
 ) => {
   return prisma.device.update({
     where: { id: deviceId },

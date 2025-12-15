@@ -1,5 +1,5 @@
 // Common response types
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   message?: string;
   data?: T;
@@ -71,7 +71,7 @@ export interface CreateElderRequest {
   zipcode?: string;
 }
 
-export interface UpdateElderRequest extends Partial<CreateElderRequest> {}
+export type UpdateElderRequest = Partial<CreateElderRequest>;
 
 export interface InviteMemberRequest {
   email: string;
@@ -108,7 +108,7 @@ export interface CreateEmergencyContactRequest {
   priority: number;
 }
 
-export interface UpdateEmergencyContactRequest extends Partial<CreateEmergencyContactRequest> {}
+export type UpdateEmergencyContactRequest = Partial<CreateEmergencyContactRequest>;
 
 // Event types
 export interface EventQueryParams {

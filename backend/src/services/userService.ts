@@ -20,7 +20,7 @@ export const getUserProfile = async (userId: string): Promise<Omit<User, 'passwo
     throw createError.userNotFound();
   }
 
-  const { password, ...userWithoutPassword } = user;
+  const { password: _password, ...userWithoutPassword } = user;
   return userWithoutPassword;
 };
 
@@ -35,7 +35,7 @@ export const updateUserProfile = async (
     phone?: string;
     profileImage?: string;
     gender?: string;
-  }
+  },
 ): Promise<Omit<User, 'password'>> => {
   const user = await prisma.user.update({
     where: { id: userId },
@@ -45,7 +45,7 @@ export const updateUserProfile = async (
     },
   });
 
-  const { password, ...userWithoutPassword } = user;
+  const { password: _password, ...userWithoutPassword } = user;
   return userWithoutPassword;
 };
 
@@ -55,7 +55,7 @@ export const updateUserProfile = async (
 export const changePassword = async (
   userId: string,
   currentPassword: string,
-  newPassword: string
+  newPassword: string,
 ): Promise<{ message: string }> => {
   // Get user
   const user = await prisma.user.findUnique({
@@ -131,7 +131,7 @@ export const getUserElders = async (userId: string) => {
  */
 export const updatePushToken = async (
   userId: string,
-  pushToken: string
+  pushToken: string,
 ): Promise<{ message: string }> => {
   // Validate Expo Push Token format
   if (!pushToken || !pushToken.startsWith('ExponentPushToken[')) {

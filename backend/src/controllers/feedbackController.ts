@@ -10,76 +10,79 @@ import { createError } from '../utils/ApiError.js';
 // ==========================================
 
 export const submitFeedback = asyncHandler(async (req: Request, res: Response) => {
-    const { message, userName, type } = req.body;
-    const userId = (req as any).user?.userId || null;
+  const { message, userName, type } = req.body;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const userId = (req as any).user?.userId || null;
 
-    if (!message) {
-        throw createError.missingField('ข้อความ');
-    }
+  if (!message) {
+    throw createError.missingField('ข้อความ');
+  }
 
-    // Validate type if provided
-    const feedbackType: FeedbackType = type === 'REPAIR_REQUEST' ? 'REPAIR_REQUEST' : 'COMMENT';
+  // Validate type if provided
+  const feedbackType: FeedbackType = type === 'REPAIR_REQUEST' ? 'REPAIR_REQUEST' : 'COMMENT';
 
-    const feedback = await feedbackService.createFeedback(userId, message, userName, feedbackType);
+  const feedback = await feedbackService.createFeedback(userId, message, userName, feedbackType);
 
-    res.status(201).json({
-        success: true,
-        data: feedback,
-    });
+  res.status(201).json({
+    success: true,
+    data: feedback,
+  });
 });
 
 export const getFeedbacks = asyncHandler(async (req: Request, res: Response) => {
-    const feedbacks = await feedbackService.getAllFeedbacks();
+  const feedbacks = await feedbackService.getAllFeedbacks();
 
-    res.json({
-        success: true,
-        data: feedbacks,
-    });
+  res.json({
+    success: true,
+    data: feedbacks,
+  });
 });
 
 export const updateStatus = asyncHandler(async (req: Request, res: Response) => {
-    const { id } = req.params;
-    const { status } = req.body;
+  const { id } = req.params;
+  const { status } = req.body;
 
-    const feedback = await feedbackService.updateFeedbackStatus(id, status);
+  const feedback = await feedbackService.updateFeedbackStatus(id, status);
 
-    res.json({
-        success: true,
-        data: feedback,
-    });
+  res.json({
+    success: true,
+    data: feedback,
+  });
 });
 
 export const getRepairRequests = asyncHandler(async (req: Request, res: Response) => {
-    const userId = (req as any).user?.userId;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const userId = (req as any).user?.userId;
 
-    if (!userId) {
-        throw createError.accessDenied();
-    }
+  if (!userId) {
+    throw createError.accessDenied();
+  }
 
-    const repairRequests = await feedbackService.getUserRepairRequests(userId);
+  const repairRequests = await feedbackService.getUserRepairRequests(userId);
 
-    res.json({
-        success: true,
-        data: repairRequests,
-    });
+  res.json({
+    success: true,
+    data: repairRequests,
+  });
 });
 
 export const deleteRepairRequest = asyncHandler(async (req: Request, res: Response) => {
-    const userId = (req as any).user?.userId;
-    const { id } = req.params;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const userId = (req as any).user?.userId;
+  const { id } = req.params;
 
-    if (!userId) {
-        throw createError.accessDenied();
-    }
+  if (!userId) {
+    throw createError.accessDenied();
+  }
 
-    const deleted = await feedbackService.deleteUserFeedback(id, userId);
+  const deleted = await feedbackService.deleteUserFeedback(id, userId);
 
-    if (!deleted) {
-        throw createError.resourceNotFound();
-    }
+  if (!deleted) {
+    throw createError.resourceNotFound();
+  }
 
-    res.json({
-        success: true,
-        data: { id },
-    });
+  res.json({
+    success: true,
+    data: { id },
+  });
 });

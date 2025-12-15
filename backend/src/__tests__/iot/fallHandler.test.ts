@@ -1,6 +1,6 @@
 /**
  * 🧪 Priority 1: IoT Logic Tests (Life Saving)
- * 
+ *
  * Tests for the critical fall detection handler.
  * These tests simulate MQTT messages with REAL payload structures
  * that ESP32 devices actually send.
@@ -23,7 +23,7 @@ jest.mock('../../prisma', () => ({
   },
 }));
 
-// Mock Event Service  
+// Mock Event Service
 const mockCreateEvent = jest.fn();
 jest.mock('../../services/eventService', () => ({
   createEvent: mockCreateEvent,
@@ -86,7 +86,7 @@ describe('🚨 Priority 1: Fall Detection Handler (Life Saving Logic)', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     // Setup default mock returns
     mockFindFirst.mockResolvedValue(MOCK_DEVICE);
     mockCreateEvent.mockResolvedValue(MOCK_EVENT);
@@ -123,7 +123,7 @@ describe('🚨 Priority 1: Fall Detection Handler (Life Saving Logic)', () => {
     expect(mockNotifyFallDetection).toHaveBeenCalledWith(
       MOCK_DEVICE.elderId,
       MOCK_EVENT.id,
-      MOCK_EVENT.timestamp
+      MOCK_EVENT.timestamp,
     );
   });
 

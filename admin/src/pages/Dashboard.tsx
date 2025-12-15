@@ -1,5 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
-import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import {
   Users as UsersIcon,
@@ -7,83 +5,23 @@ import {
   Activity,
   Calendar,
 } from "lucide-react";
-
-// Type definitions
-interface User {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  role: string;
-  isActive: boolean;
-}
-
-interface CaregiverAccess {
-  user: {
-    id: string;
-    firstName: string;
-    lastName: string;
-  };
-}
-
-interface Elder {
-  id: string;
-  firstName: string;
-  lastName: string;
-  gender: string;
-  dateOfBirth: string;
-  isActive: boolean;
-  caregivers?: CaregiverAccess[];
-}
-
-// Helper function to convert date to Buddhist Era
-const toBuddhistYear = (date: Date | string): string => {
-  const d = new Date(date);
-  const buddhistYear = d.getFullYear() + 543;
-  const day = d.getDate().toString().padStart(2, "0");
-  const month = (d.getMonth() + 1).toString().padStart(2, "0");
-  return `${day}/${month}/${buddhistYear}`;
-};
+import { useAdminDashboard } from "../hooks/useAdminDashboard";
+import { useAdminUsers } from "../hooks/useAdminUsers";
+import { useAdminElders } from "../hooks/useAdminElders";
+import { LoadingSkeleton } from "../components/LoadingSkeleton";
+import { StatusBadge } from "../components/StatusBadge";
+import { toBuddhistYear } from "../utils/date";
+import type { User, Elder, CaregiverAccess } from "../types";
 
 export default function Dashboard() {
   const { user: currentUser } = useAuth();
 
-  const { data, isLoading: dashboardLoading } = useQuery({
-    queryKey: ["dashboardSummary"],
-    queryFn: async () => {
-      const response = await api.get("/admin/dashboard");
-      return response.data.data;
-    },
-    refetchInterval: 5000,
-  });
-
-  const { data: users, isLoading: usersLoading } = useQuery({
-    queryKey: ["users"],
-    queryFn: async () => {
-      const response = await api.get("/admin/users");
-      return response.data.data;
-    },
-    refetchInterval: 5000,
-  });
-
-  const { data: elders, isLoading: eldersLoading } = useQuery({
-    queryKey: ["elders"],
-    queryFn: async () => {
-      const response = await api.get("/admin/elders");
-      return response.data.data;
-    },
-    refetchInterval: 5000,
-  });
+  const { data, isLoading: dashboardLoading } = useAdminDashboard();
+  const { data: users, isLoading: usersLoading } = useAdminUsers();
+  const { data: elders, isLoading: eldersLoading } = useAdminElders();
 
   if (dashboardLoading || usersLoading || eldersLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-500">Loading dashboard...</p>
-        </div>
-      </div>
-    );
+    return <LoadingSkeleton message="Loading dashboard..." />;
   }
 
   const summary = [
@@ -187,24 +125,10 @@ export default function Dashboard() {
                     </td>
                     <td className="px-6 py-4 text-gray-600">{user.email}</td>
                     <td className="px-6 py-4">
-                      <span
-                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${user.role === "ADMIN"
-                          ? "bg-purple-100 text-purple-700 border border-purple-200"
-                          : "bg-blue-100 text-blue-700 border border-blue-200"
-                          }`}
-                      >
-                        {user.role}
-                      </span>
+                      <StatusBadge status={user.role} />
                     </td>
                     <td className="px-6 py-4">
-                      <span
-                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${user.isActive
-                          ? "bg-green-100 text-green-700 border border-green-200"
-                          : "bg-red-100 text-red-700 border border-red-200"
-                          }`}
-                      >
-                        {user.isActive ? "Active" : "Inactive"}
-                      </span>
+                      <StatusBadge status={user.isActive ? "Active" : "Inactive"} />
                     </td>
                   </tr>
                 ))}
@@ -271,9 +195,7 @@ export default function Dashboard() {
                       )}
                     </td>
                     <td className="px-6 py-4">
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-700">
-                        {elder.gender}
-                      </span>
+                      <StatusBadge status={elder.gender} />
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2 text-gray-700">
@@ -284,14 +206,7 @@ export default function Dashboard() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span
-                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${elder.isActive
-                          ? "bg-green-100 text-green-700 border border-green-200"
-                          : "bg-red-100 text-red-700 border border-red-200"
-                          }`}
-                      >
-                        {elder.isActive ? "Active" : "Inactive"}
-                      </span>
+                      <StatusBadge status={elder.isActive ? "Active" : "Inactive"} />
                     </td>
                   </tr>
                 ))}

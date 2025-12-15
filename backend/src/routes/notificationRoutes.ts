@@ -6,7 +6,7 @@ import {
   markAsRead,
   markAllAsRead,
   deleteNotification,
-  clearAllNotifications
+  clearAllNotifications,
 } from '../controllers/notificationController';
 
 const router = Router();

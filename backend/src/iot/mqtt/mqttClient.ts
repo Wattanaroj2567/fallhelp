@@ -3,7 +3,7 @@ import createDebug from 'debug';
 import { fallHandler } from './handlers/fallHandler';
 import { heartRateHandler } from './handlers/heartRateHandler';
 import { statusHandler } from './handlers/statusHandler';
-import { MQTT_TOPICS } from './topics';
+import { MQTT_TOPICS, FallDetectionPayload, HeartRatePayload, DeviceStatusPayload } from './topics';
 
 // ==========================================
 // 📡 LAYER: Interface (IoT)
@@ -99,10 +99,10 @@ class MQTTClientManager {
       this.logMsg('Message received on %s: %s', topic, message);
 
       // Parse JSON payload
-      let data: any;
+      let data: unknown;
       try {
         data = JSON.parse(message);
-      } catch (e) {
+      } catch (_e) {
         this.logMsg('Invalid JSON payload: %s', message);
         return;
       }
@@ -116,11 +116,11 @@ class MQTTClientManager {
 
       // Route to appropriate handler based on topic
       if (topic.includes('/fall')) {
-        await fallHandler(deviceId, data);
+        await fallHandler(deviceId, data as FallDetectionPayload);
       } else if (topic.includes('/heartrate')) {
-        await heartRateHandler(deviceId, data);
+        await heartRateHandler(deviceId, data as HeartRatePayload);
       } else if (topic.includes('/status')) {
-        await statusHandler(deviceId, data);
+        await statusHandler(deviceId, data as DeviceStatusPayload);
       } else {
         this.log('Unknown topic: %s', topic);
       }

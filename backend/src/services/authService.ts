@@ -1,9 +1,8 @@
-import { User, AuthOtp, Gender } from '../generated/prisma/client.js';
+import { User, Gender } from '../generated/prisma/client.js';
 import { hashPassword, comparePassword, generateOtp } from '../utils/password.js';
 import { generateToken, JwtPayload } from '../utils/jwt.js';
 import { addMinutes } from '../utils/time.js';
 import { sendOtpEmail, sendWelcomeEmail } from '../utils/email.js';
-import { AppError } from '../utils/AppError.js';
 import { createError } from '../utils/ApiError.js';
 import createDebug from 'debug';
 import prisma from '../prisma.js';
@@ -92,7 +91,7 @@ export const register = async (data: {
   });
 
   // Remove password from response
-  const { password, ...userWithoutPassword } = user;
+  const { password: _password, ...userWithoutPassword } = user;
 
   return {
     user: userWithoutPassword,
@@ -105,7 +104,7 @@ export const register = async (data: {
  */
 export const login = async (
   identifier: string,
-  password: string
+  password: string,
 ): Promise<{ user: Omit<User, 'password'>; token: string }> => {
   // Find user by email or phone
   const user = await prisma.user.findFirst({
@@ -138,7 +137,7 @@ export const login = async (
   const token = generateToken(payload);
 
   // Remove password from response
-  const { password: _, ...userWithoutPassword } = user;
+  const { password: _password, ...userWithoutPassword } = user;
 
   return {
     user: userWithoutPassword,
@@ -152,7 +151,7 @@ export const login = async (
 export const requestOtp = async (
   email: string,
   purpose: 'PASSWORD_RESET' | 'EMAIL_VERIFICATION' | 'PHONE_VERIFICATION',
-  allowedRole: 'CAREGIVER' | 'ADMIN' | 'ALL' = 'CAREGIVER' // Default: only CAREGIVER for mobile app
+  allowedRole: 'CAREGIVER' | 'ADMIN' | 'ALL' = 'CAREGIVER', // Default: only CAREGIVER for mobile app
 ): Promise<{ message: string; referenceCode: string; expiresInMinutes: number }> => {
   // Check if user exists
   const user = await prisma.user.findUnique({
@@ -215,7 +214,7 @@ export const requestOtp = async (
 export const verifyOtp = async (
   email: string,
   code: string,
-  purpose: 'PASSWORD_RESET' | 'EMAIL_VERIFICATION' | 'PHONE_VERIFICATION'
+  purpose: 'PASSWORD_RESET' | 'EMAIL_VERIFICATION' | 'PHONE_VERIFICATION',
 ): Promise<{ valid: boolean; message: string }> => {
   // Find user
   const user = await prisma.user.findUnique({
@@ -276,7 +275,7 @@ export const verifyOtp = async (
 export const resetPassword = async (
   email: string,
   code: string,
-  newPassword: string
+  newPassword: string,
 ): Promise<{ message: string }> => {
   // Verify OTP first
   const otpResult = await verifyOtp(email, code, 'PASSWORD_RESET');
@@ -320,7 +319,7 @@ export const getProfile = async (userId: string): Promise<Omit<User, 'password'>
     throw createError.userNotFound();
   }
 
-  const { password, ...userWithoutPassword } = user;
+  const { password: _password, ...userWithoutPassword } = user;
   return userWithoutPassword;
 };
 

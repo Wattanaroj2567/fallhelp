@@ -1,4 +1,4 @@
-import { Elder, AccessLevel } from '../generated/prisma/client.js';
+import { AccessLevel, Prisma } from '../generated/prisma/client.js';
 import prisma from '../prisma.js';
 import { sendInvitationEmail } from '../utils/email.js';
 import { ApiError, createError } from '../utils/ApiError.js';
@@ -32,7 +32,7 @@ export const createElder = async (
     district?: string;
     province?: string;
     zipcode?: string;
-  }
+  },
 ) => {
   // Convert dateOfBirth string to Date if needed
   const processedData = {
@@ -162,9 +162,7 @@ export const getElderById = async (userId: string, elderId: string) => {
         },
       },
       emergencyContacts: {
-        where: {
-
-        },
+        where: {},
         orderBy: {
           priority: 'asc',
         },
@@ -210,7 +208,7 @@ export const updateElder = async (
     district?: string;
     province?: string;
     zipcode?: string;
-  }
+  },
 ) => {
   // Check access level
   const access = await prisma.userElderAccess.findUnique({
@@ -238,7 +236,6 @@ export const updateElder = async (
     include: {
       device: true,
       emergencyContacts: {
-
         orderBy: { priority: 'asc' },
       },
     },
@@ -300,8 +297,8 @@ export const deleteElder = async (userId: string, elderId: string) => {
     await prisma.elder.delete({
       where: { id: elderId },
     });
-  } catch (error: any) {
-    if (error.code === 'P2025') {
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
       // Record already deleted, consider it a success
       return {
         message: 'Elder deleted successfully (already deleted)',
@@ -318,11 +315,7 @@ export const deleteElder = async (userId: string, elderId: string) => {
 /**
  * Invite member (only OWNER can invite)
  */
-export const inviteMember = async (
-  userId: string,
-  elderId: string,
-  inviteeEmail: string
-) => {
+export const inviteMember = async (userId: string, elderId: string, inviteeEmail: string) => {
   // Check if requester is OWNER
   const access = await prisma.userElderAccess.findUnique({
     where: {
@@ -343,7 +336,10 @@ export const inviteMember = async (
   });
 
   if (!inviteeUser) {
-    throw new ApiError('user_not_found', 'ไม่พบผู้ใช้งานที่มีอีเมลนี้ กรุณาตรวจสอบอีเมลอีกครั้ง หรือผู้ใช้ยังไม่ได้ลงทะเบียน');
+    throw new ApiError(
+      'user_not_found',
+      'ไม่พบผู้ใช้งานที่มีอีเมลนี้ กรุณาตรวจสอบอีเมลอีกครั้ง หรือผู้ใช้ยังไม่ได้ลงทะเบียน',
+    );
   }
 
   // Check if already has access
@@ -396,7 +392,7 @@ export const inviteMember = async (
     const elderName = `${elder.firstName} ${elder.lastName}`;
 
     // Fire and forget email (don't block response)
-    sendInvitationEmail(inviteeEmail, inviterName, elderName).catch((err: any) => {
+    sendInvitationEmail(inviteeEmail, inviterName, elderName).catch((err) => {
       console.error('Failed to send invitation email:', err);
     });
   }
@@ -411,7 +407,7 @@ export const updateMemberAccess = async (
   userId: string,
   elderId: string,
   targetUserId: string,
-  newAccessLevel: AccessLevel
+  newAccessLevel: AccessLevel,
 ) => {
   // Check if requester is OWNER
   const access = await prisma.userElderAccess.findUnique({
@@ -485,11 +481,7 @@ export const updateMemberAccess = async (
 /**
  * Remove member (only OWNER can remove)
  */
-export const removeMember = async (
-  userId: string,
-  elderId: string,
-  memberUserId: string
-) => {
+export const removeMember = async (userId: string, elderId: string, memberUserId: string) => {
   // Check if requester is OWNER
   const access = await prisma.userElderAccess.findUnique({
     where: {

@@ -76,7 +76,7 @@ export const optionalAuth = (req: Request, res: Response, next: NextFunction): v
       const decoded = verifyToken(token);
       req.user = decoded;
     }
-  } catch (error) {
+  } catch (_error) {
     // Ignore errors, continue without user
   }
 

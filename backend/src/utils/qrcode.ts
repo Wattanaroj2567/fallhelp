@@ -12,7 +12,7 @@ export const generateQRCode = async (data: string): Promise<string> => {
       width: 300,
       margin: 2,
     });
-  } catch (error) {
+  } catch (_error) {
     throw createError.qrcodeGenerationFailed();
   }
 };
@@ -25,16 +25,20 @@ export const generateQRCode = async (data: string): Promise<string> => {
  */
 export const generateDevicePairingQR = async (
   deviceCode: string,
-  serialNumber: string
+  serialNumber: string,
 ): Promise<string> => {
   // Use JSON format for now (แสดงข้อมูลได้ทุกแอปสแกน QR)
-  const data = JSON.stringify({
-    type: 'FALLHELP_DEVICE',
-    deviceCode,
-    serialNumber,
-    pairUrl: `fallhelp://pair?deviceCode=${deviceCode}&serialNumber=${serialNumber}`
-  }, null, 2);
-  
+  const data = JSON.stringify(
+    {
+      type: 'FALLHELP_DEVICE',
+      deviceCode,
+      serialNumber,
+      pairUrl: `fallhelp://pair?deviceCode=${deviceCode}&serialNumber=${serialNumber}`,
+    },
+    null,
+    2,
+  );
+
   return generateQRCode(data);
 };
 

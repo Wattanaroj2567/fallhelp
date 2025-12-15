@@ -9,7 +9,7 @@ interface ValidationRule {
   min?: number;
   max?: number;
   pattern?: RegExp;
-  custom?: (value: any) => boolean;
+  custom?: (value: unknown) => boolean;
   message?: string;
 }
 
@@ -95,9 +95,7 @@ export const validate = (rules: ValidationRule[]) => {
 /**
  * Validate email format
  */
-export const validateEmail = validate([
-  { field: 'email', required: true, type: 'email' },
-]);
+export const validateEmail = validate([{ field: 'email', required: true, type: 'email' }]);
 
 /**
  * Validate login request
@@ -116,8 +114,20 @@ export const validateRegister = validate([
   { field: 'password', required: true, type: 'string', minLength: 8 },
   { field: 'firstName', required: true, type: 'string', minLength: 1 },
   { field: 'lastName', required: true, type: 'string', minLength: 1 },
-  { field: 'gender', required: false, type: 'string', custom: (value) => ['MALE', 'FEMALE', 'OTHER'].includes(value), message: 'Gender must be MALE, FEMALE, or OTHER' },
-  { field: 'phone', required: false, type: 'string', pattern: /^0\d{9}$/, message: 'Phone must be 10 digits starting with 0' },
+  {
+    field: 'gender',
+    required: false,
+    type: 'string',
+    custom: (value) => ['MALE', 'FEMALE', 'OTHER'].includes(value as string),
+    message: 'Gender must be MALE, FEMALE, or OTHER',
+  },
+  {
+    field: 'phone',
+    required: false,
+    type: 'string',
+    pattern: /^0\d{9}$/,
+    message: 'Phone must be 10 digits starting with 0',
+  },
 ]);
 
 /**

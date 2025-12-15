@@ -1,4 +1,4 @@
-import { EventType, EventSeverity } from '../generated/prisma/client.js';
+import { EventType, EventSeverity, Prisma } from '../generated/prisma/client.js';
 import { getDateRange } from '../utils/time.js';
 import prisma from '../prisma.js';
 import { createError } from '../utils/ApiError.js';
@@ -23,7 +23,7 @@ export const createEvent = async (data: {
   gyroscopeX?: number;
   gyroscopeY?: number;
   gyroscopeZ?: number;
-  metadata?: any;
+  metadata?: Prisma.InputJsonValue;
   timestamp?: Date;
 }) => {
   const event = await prisma.event.create({
@@ -75,7 +75,7 @@ export const getEventsByElder = async (
     endDate?: Date;
     page?: number;
     limit?: number;
-  } = {}
+  } = {},
 ) => {
   // Check if user has access to this elder
   const access = await prisma.userElderAccess.findUnique({
@@ -95,7 +95,7 @@ export const getEventsByElder = async (
   const limit = options.limit || 20;
   const skip = (page - 1) * limit;
 
-  const where: any = {
+  const where: Prisma.EventWhereInput = {
     elderId,
   };
 
@@ -297,12 +297,23 @@ export const getDailySummary = async (userId: string, elderId: string, days: num
   });
 
   // Group by date
-  const summaryByDate: Record<string, any> = {};
+  const summaryByDate: Record<
+    string,
+    {
+      date: string;
+      total: number;
+      falls: number;
+      cancelledFalls: number;
+      heartRateHigh: number;
+      heartRateLow: number;
+      deviceOffline: number;
+    }
+  > = {};
 
   events.forEach((event) => {
     const date = event.timestamp.toISOString().split('T')[0];
 
-  if (!summaryByDate[date]) {
+    if (!summaryByDate[date]) {
       summaryByDate[date] = {
         date,
         total: 0,
@@ -330,15 +341,18 @@ export const getDailySummary = async (userId: string, elderId: string, days: num
     }
   });
 
-  return Object.values(summaryByDate).sort((a: any, b: any) =>
-    a.date.localeCompare(b.date)
-  );
+  return Object.values(summaryByDate).sort((a, b) => a.date.localeCompare(b.date));
 };
 
 /**
  * Get monthly event summary
  */
-export const getMonthlySummary = async (userId: string, elderId: string, year: number, month: number) => {
+export const getMonthlySummary = async (
+  userId: string,
+  elderId: string,
+  year: number,
+  month: number,
+) => {
   // Check access
   const access = await prisma.userElderAccess.findUnique({
     where: {
@@ -398,7 +412,10 @@ export const getMonthlySummary = async (userId: string, elderId: string, year: n
       summary.deviceOfflineCount++;
     }
 
-    if (event.value && ['HEART_RATE_HIGH', 'HEART_RATE_LOW', 'HEART_RATE_NORMAL'].includes(event.type)) {
+    if (
+      event.value &&
+      ['HEART_RATE_HIGH', 'HEART_RATE_LOW', 'HEART_RATE_NORMAL'].includes(event.type)
+    ) {
       heartRateSum += event.value;
       heartRateCount++;
       heartRates.push(event.value);

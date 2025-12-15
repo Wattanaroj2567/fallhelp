@@ -14,7 +14,7 @@ import { createError, ApiError } from '../utils/ApiError.js';
 export const createEmergencyContact = asyncHandler(async (req: Request, res: Response) => {
   const userId = req.user!.userId;
   const elderId = req.params.elderId || req.params.id;
-  const { name, phone, relationship, priority } = req.body;
+  const { name, phone, relationship } = req.body;
 
   // Check if user is OWNER
   const access = await prisma.userElderAccess.findUnique({

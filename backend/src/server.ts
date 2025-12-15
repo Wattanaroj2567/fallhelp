@@ -70,20 +70,23 @@ server.listen(PORT, async () => {
     try {
       logMqtt('Connecting to MQTT broker...');
       await mqttClient.connect();
-    } catch (error) {
+    } catch (_error) {
       logMqtt('MQTT broker not available - IoT features disabled');
       logMqtt('To enable IoT, start a broker and set MQTT_BROKER_URL or unset MQTT_DISABLED');
     }
   }
 
   // Cleanup expired OTPs every hour
-  setInterval(async () => {
-    try {
-      await cleanupExpiredOtps();
-    } catch (error) {
-      log('Error cleaning up expired OTPs: %O', error);
-    }
-  }, 60 * 60 * 1000); // 1 hour
+  setInterval(
+    async () => {
+      try {
+        await cleanupExpiredOtps();
+      } catch (error) {
+        log('Error cleaning up expired OTPs: %O', error);
+      }
+    },
+    60 * 60 * 1000,
+  ); // 1 hour
 
   // Run initial cleanup on startup
   cleanupExpiredOtps().catch((error) => {

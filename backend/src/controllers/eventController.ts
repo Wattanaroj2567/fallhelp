@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import * as eventService from '../services/eventService';
+import { EventType } from '../generated/prisma/client.js';
 import { asyncHandler } from '../middlewares/errorHandler';
 
 // ==========================================
@@ -15,7 +16,7 @@ export const getEvents = asyncHandler(async (req: Request, res: Response) => {
   const { elderId, type, startDate, endDate, page, limit } = req.query;
 
   const result = await eventService.getEventsByElder(userId, elderId as string, {
-    type: type as any,
+    type: type as EventType,
     startDate: startDate ? new Date(startDate as string) : undefined,
     endDate: endDate ? new Date(endDate as string) : undefined,
     page: page ? parseInt(page as string) : undefined,
@@ -37,11 +38,7 @@ export const getEventById = asyncHandler(async (req: Request, res: Response) => 
   const { id } = req.params;
   const { timestamp } = req.query;
 
-  const event = await eventService.getEventById(
-    userId,
-    id,
-    new Date(timestamp as string)
-  );
+  const event = await eventService.getEventById(userId, id, new Date(timestamp as string));
 
   res.json({
     success: true,
@@ -57,11 +54,7 @@ export const cancelFallEvent = asyncHandler(async (req: Request, res: Response) 
   const { id } = req.params;
   const { timestamp } = req.body;
 
-  const event = await eventService.cancelFallEvent(
-    userId,
-    id,
-    new Date(timestamp)
-  );
+  const event = await eventService.cancelFallEvent(userId, id, new Date(timestamp));
 
   res.json({
     success: true,
@@ -80,7 +73,7 @@ export const getDailySummary = asyncHandler(async (req: Request, res: Response) 
   const summary = await eventService.getDailySummary(
     userId,
     elderId as string,
-    days ? parseInt(days as string) : 7
+    days ? parseInt(days as string) : 7,
   );
 
   res.json({
@@ -100,7 +93,7 @@ export const getMonthlySummary = asyncHandler(async (req: Request, res: Response
     userId,
     elderId as string,
     parseInt(year as string),
-    parseInt(month as string)
+    parseInt(month as string),
   );
 
   res.json({
@@ -116,10 +109,7 @@ export const getRecentEvents = asyncHandler(async (req: Request, res: Response) 
   const userId = req.user!.userId;
   const { limit } = req.query;
 
-  const events = await eventService.getRecentEvents(
-    userId,
-    limit ? parseInt(limit as string) : 10
-  );
+  const events = await eventService.getRecentEvents(userId, limit ? parseInt(limit as string) : 10);
 
   res.json({
     success: true,

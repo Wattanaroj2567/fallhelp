@@ -10,10 +10,7 @@ const log = createDebug('fallhelp:mqtt:fall');
 /**
  * Handle fall detection events from MQTT
  */
-export async function fallHandler(
-  deviceId: string,
-  payload: FallDetectionPayload
-): Promise<void> {
+export async function fallHandler(deviceId: string, payload: FallDetectionPayload): Promise<void> {
   try {
     log('🚨 Fall detected for device %s: %O', deviceId, payload);
 

@@ -1,6 +1,4 @@
 import React, { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import api from "../services/api";
 import { QRCodeSVG } from "qrcode.react";
 import {
   Plus,
@@ -11,124 +9,63 @@ import {
   Activity,
   Link,
 } from "lucide-react";
-
-interface Device {
-  id: string;
-  serialNumber: string;
-  deviceCode: string;
-  status: "ACTIVE" | "INACTIVE" | "MAINTENANCE" | "PAIRED" | "UNPAIRED";
-  firmwareVersion: string;
-  lastOnline: string | null;
-  elder?: {
-    firstName: string;
-    lastName: string;
-  };
-}
+import { useAdminDevices, useCreateDevice, useDeleteDevice, useUnpairDevice } from "../hooks/useAdminDevices";
+import { LoadingSkeleton } from "../components/LoadingSkeleton";
+import { StatusBadge } from "../components/StatusBadge";
+import { EmptyState } from "../components/EmptyState";
+import type { Device, CreateDevicePayload } from "../types";
 
 export default function Devices() {
   const [showModal, setShowModal] = useState(false);
-  const [newDevice, setNewDevice] = useState({
+  const [newDevice, setNewDevice] = useState<CreateDevicePayload>({
     serialNumber: "",
     firmwareVersion: "1.0.0",
   });
   const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
-
-  const queryClient = useQueryClient();
-
-  const { data: devices, isLoading } = useQuery({
-    queryKey: ["devices"],
-    queryFn: async () => {
-      const response = await api.get("/admin/devices");
-      return response.data.data as Device[];
-    },
-    refetchInterval: 5000,
-  });
-
-  const createMutation = useMutation({
-    mutationFn: async (data: typeof newDevice) => {
-      return await api.post("/admin/devices", data);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["devices"] });
-      setShowModal(false);
-      setNewDevice({ serialNumber: "", firmwareVersion: "1.0.0" });
-    },
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    createMutation.mutate(newDevice);
-  };
-
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [unpairId, setUnpairId] = useState<string | null>(null);
 
-  const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      return await api.delete(`/admin/devices/${id}`);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["devices"] });
-      setDeleteId(null);
-    },
-    onError: (error: unknown) => {
-      const err = error as { response?: { data?: { message?: string } } };
-      alert(err.response?.data?.message || "Failed to delete device");
-    },
-  });
+  const { data: devices, isLoading } = useAdminDevices();
+  const createMutation = useCreateDevice();
+  const deleteMutation = useDeleteDevice();
+  const unpairMutation = useUnpairDevice();
 
-  const unpairMutation = useMutation({
-    mutationFn: async (id: string) => {
-      return await api.post(`/admin/devices/${id}/unpair`);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["devices"] });
-      setUnpairId(null);
-    },
-    onError: (error: unknown) => {
-      const err = error as { response?: { data?: { message?: string } } };
-      alert(err.response?.data?.message || "Failed to unpair device");
-    },
-  });
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    createMutation.mutate(newDevice, {
+      onSuccess: () => {
+        setShowModal(false);
+        setNewDevice({ serialNumber: "", firmwareVersion: "1.0.0" });
+      },
+    });
+  };
 
   const handleDelete = () => {
     if (deleteId) {
-      deleteMutation.mutate(deleteId);
+      deleteMutation.mutate(deleteId, {
+        onSuccess: () => setDeleteId(null),
+        onError: (error: unknown) => {
+          const err = error as { response?: { data?: { message?: string } } };
+          alert(err.response?.data?.message || "Failed to delete device");
+        },
+      });
     }
   };
 
   const handleUnpair = () => {
     if (unpairId) {
-      unpairMutation.mutate(unpairId);
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "ACTIVE":
-        return "bg-green-100 text-green-800 border-green-200";
-      case "INACTIVE":
-        return "bg-gray-100 text-gray-800 border-gray-200";
-      case "MAINTENANCE":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      case "PAIRED":
-        return "bg-blue-100 text-blue-800 border-blue-200";
-      case "UNPAIRED":
-        return "bg-purple-100 text-purple-800 border-purple-200";
-      default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
+      unpairMutation.mutate(unpairId, {
+        onSuccess: () => setUnpairId(null),
+        onError: (error: unknown) => {
+          const err = error as { response?: { data?: { message?: string } } };
+          alert(err.response?.data?.message || "Failed to unpair device");
+        },
+      });
     }
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
-          <p className="text-gray-500">Loading devices...</p>
-        </div>
-      </div>
-    );
+    return <LoadingSkeleton message="Loading devices..." color="green" />;
   }
 
   return (
@@ -250,13 +187,7 @@ export default function Devices() {
                       </code>
                     </td>
                     <td className="px-6 py-4">
-                      <span
-                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(
-                          device.status
-                        )}`}
-                      >
-                        {device.status}
-                      </span>
+                      <StatusBadge status={device.status} variant="device" />
                     </td>
                     <td className="px-6 py-4">
                       {device.elder ? (
@@ -298,17 +229,12 @@ export default function Devices() {
                 ))}
                 {devices?.length === 0 && (
                   <tr>
-                    <td
-                      colSpan={5}
-                      className="px-6 py-12 text-center text-gray-500"
-                    >
-                      <div className="flex flex-col items-center gap-3">
-                        <Smartphone className="w-12 h-12 text-gray-300" />
-                        <p className="font-medium">No devices registered yet</p>
-                        <p className="text-sm">
-                          Register your first device to get started
-                        </p>
-                      </div>
+                    <td colSpan={5} className="px-6 py-12">
+                      <EmptyState
+                        icon={Smartphone}
+                        title="No devices registered yet"
+                        message="Register your first device to get started"
+                      />
                     </td>
                   </tr>
                 )}

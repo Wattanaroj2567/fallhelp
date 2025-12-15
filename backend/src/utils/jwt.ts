@@ -23,7 +23,7 @@ export const generateToken = (payload: JwtPayload): string => {
 export const verifyToken = (token: string): JwtPayload => {
   try {
     return jwt.verify(token, JWT_SECRET) as JwtPayload;
-  } catch (error) {
+  } catch (_error) {
     throw createError.invalidToken();
   }
 };

@@ -1,6 +1,6 @@
 /**
  * 🧪 Priority 2: Emergency Notification Flow Tests
- * 
+ *
  * Tests for the notification service that sends push notifications
  * to caregivers during emergencies.
  */
@@ -88,7 +88,7 @@ describe('🚨 Priority 2: Emergency Notification Flow', () => {
     // Default mock returns
     mockElderFindUnique.mockResolvedValue(MOCK_ELDER);
     mockNotificationCreate.mockImplementation((args) =>
-      Promise.resolve({ id: 'notification-' + Date.now(), ...args.data })
+      Promise.resolve({ id: 'notification-' + Date.now(), ...args.data }),
     );
     mockNotificationUpdate.mockResolvedValue({});
     mockSendNotification.mockResolvedValue(true);
@@ -105,12 +105,9 @@ describe('🚨 Priority 2: Emergency Notification Flow', () => {
 
       expect(mockSendFallAlert).toHaveBeenCalledTimes(1);
       expect(mockSendFallAlert).toHaveBeenCalledWith(
-        [
-          'ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]',
-          'ExponentPushToken[yyyyyyyyyyyyyyyyyyyyyy]',
-        ],
+        ['ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]', 'ExponentPushToken[yyyyyyyyyyyyyyyyyyyyyy]'],
         'สมหญิง รักษาสุขภาพ',
-        MOCK_TIMESTAMP
+        MOCK_TIMESTAMP,
       );
     });
 
@@ -153,7 +150,7 @@ describe('🚨 Priority 2: Emergency Notification Flow', () => {
         expect.any(Array),
         'สมหญิง รักษาสุขภาพ',
         150,
-        'HIGH'
+        'HIGH',
       );
     });
 
@@ -164,7 +161,7 @@ describe('🚨 Priority 2: Emergency Notification Flow', () => {
         expect.any(Array),
         'สมหญิง รักษาสุขภาพ',
         45,
-        'LOW'
+        'LOW',
       );
     });
   });
@@ -197,7 +194,7 @@ describe('🚨 Priority 2: Emergency Notification Flow', () => {
         expect.objectContaining({
           title: '⚠️ ตรวจพบการหกล้ม',
           body: 'สมหญิง รักษาสุขภาพ อาจหกล้ม กรุณาตรวจสอบด่วน!',
-        })
+        }),
       );
 
       // Notification marked as sent

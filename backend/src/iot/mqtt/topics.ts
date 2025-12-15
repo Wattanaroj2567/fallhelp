@@ -1,6 +1,6 @@
 /**
  * MQTT Topics for FallHelp IoT devices
- * 
+ *
  * Topic Structure:
  * - device/{deviceId}/fall - Fall detection events
  * - device/{deviceId}/heartrate - Heart rate readings
@@ -13,7 +13,7 @@ export const MQTT_TOPICS = {
   FALL_DETECTION_WILDCARD: 'device/+/fall',
   HEART_RATE_WILDCARD: 'device/+/heartrate',
   DEVICE_STATUS_WILDCARD: 'device/+/status',
-  
+
   // Publish patterns (functions to generate specific topics)
   getFallDetectionTopic: (deviceId: string) => `device/${deviceId}/fall`,
   getHeartRateTopic: (deviceId: string) => `device/${deviceId}/heartrate`,

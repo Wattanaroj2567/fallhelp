@@ -78,7 +78,7 @@ export const configureWiFi = asyncHandler(async (req: Request, res: Response) =>
   const userId = req.user!.userId;
   const { id } = req.params;
   const { ssid, password, wifiPassword } = req.body;
-  
+
   // Support both 'password' and 'wifiPassword' field names
   const finalPassword = password || wifiPassword;
 
@@ -105,5 +105,3 @@ export const getDeviceConfig = asyncHandler(async (req: Request, res: Response) 
     data: config,
   });
 });
-
-

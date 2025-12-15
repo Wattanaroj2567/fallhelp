@@ -1,5 +1,10 @@
-import { NotificationType } from '../generated/prisma/client.js';
-import { sendNotification, sendFallAlert, sendHeartRateAlert, sendDeviceOfflineAlert } from '../utils/pushNotification.js';
+import { NotificationType, Prisma } from '../generated/prisma/client.js';
+import {
+  sendNotification,
+  sendFallAlert,
+  sendHeartRateAlert,
+  sendDeviceOfflineAlert,
+} from '../utils/pushNotification.js';
 import prisma from '../prisma.js';
 import { createError } from '../utils/ApiError.js';
 
@@ -54,13 +59,13 @@ export const getUserNotifications = async (
     unreadOnly?: boolean;
     page?: number;
     limit?: number;
-  } = {}
+  } = {},
 ) => {
   const page = options.page || 1;
   const limit = options.limit || 20;
   const skip = (page - 1) * limit;
 
-  const where: any = { userId };
+  const where: Prisma.NotificationWhereInput = { userId };
   if (options.unreadOnly) {
     where.isRead = false;
   }
@@ -138,7 +143,11 @@ export const markAllAsRead = async (userId: string) => {
 /**
  * Notify fall detection
  */
-export const notifyFallDetection = async (elderId: string, eventId: string, eventTimestamp: Date) => {
+export const notifyFallDetection = async (
+  elderId: string,
+  eventId: string,
+  eventTimestamp: Date,
+) => {
   // Get elder info with caregivers
   const elder = await prisma.elder.findUnique({
     where: { id: elderId },
@@ -158,9 +167,9 @@ export const notifyFallDetection = async (elderId: string, eventId: string, even
   const elderName = `${elder.firstName} ${elder.lastName}`;
 
   // Collect all valid push tokens from caregivers
-  const pushTokens = (elder as any).caregivers
-    .map((caregiver: any) => caregiver.user.pushToken)
-    .filter((token: any): token is string => token !== null && token !== undefined);
+  const pushTokens = elder.caregivers
+    .map((caregiver) => caregiver.user.pushToken)
+    .filter((token): token is string => token !== null && token !== undefined);
 
   // Send Expo Push Notifications
   if (pushTokens.length > 0) {
@@ -168,7 +177,7 @@ export const notifyFallDetection = async (elderId: string, eventId: string, even
   }
 
   // Create notifications for all caregivers
-  const notifications = (elder as any).caregivers.map((caregiver: any) =>
+  const notifications = elder.caregivers.map((caregiver) =>
     createNotification({
       userId: caregiver.userId,
       eventId,
@@ -177,7 +186,7 @@ export const notifyFallDetection = async (elderId: string, eventId: string, even
       title: '⚠️ ตรวจพบการหกล้ม',
       message: `${elderName} อาจหกล้ม กรุณาตรวจสอบด่วน!`,
       pushToken: caregiver.user.pushToken || undefined,
-    })
+    }),
   );
 
   await Promise.all(notifications);
@@ -191,7 +200,7 @@ export const notifyHeartRateAlert = async (
   eventId: string,
   eventTimestamp: Date,
   value: number,
-  type: 'HIGH' | 'LOW'
+  type: 'HIGH' | 'LOW',
 ) => {
   const elder = await prisma.elder.findUnique({
     where: { id: elderId },
@@ -216,10 +225,10 @@ export const notifyHeartRateAlert = async (
   }
 
   const elderName = `${elder.firstName} ${elder.lastName}`;
-  
+
   // Collect all valid push tokens
   const pushTokens = elder.caregivers
-    .map(caregiver => caregiver.user.pushToken)
+    .map((caregiver) => caregiver.user.pushToken)
     .filter((token): token is string => token !== null && token !== undefined);
 
   if (pushTokens.length > 0) {
@@ -235,7 +244,7 @@ export const notifyHeartRateAlert = async (
       title: type === 'HIGH' ? '⚠️ ชีพจรสูงผิดปกติ' : '⚠️ ชีพจรต่ำผิดปกติ',
       message: `${elderName} มีชีพจร ${value} BPM`,
       pushToken: caregiver.user.pushToken || undefined,
-    })
+    }),
   );
 
   await Promise.all(notifications);
@@ -244,7 +253,11 @@ export const notifyHeartRateAlert = async (
 /**
  * Notify device offline
  */
-export const notifyDeviceOffline = async (elderId: string, eventId: string, eventTimestamp: Date) => {
+export const notifyDeviceOffline = async (
+  elderId: string,
+  eventId: string,
+  eventTimestamp: Date,
+) => {
   const elder = await prisma.elder.findUnique({
     where: { id: elderId },
     include: {
@@ -268,10 +281,10 @@ export const notifyDeviceOffline = async (elderId: string, eventId: string, even
   }
 
   const elderName = `${elder.firstName} ${elder.lastName}`;
-  
+
   // Collect all valid push tokens
   const pushTokens = elder.caregivers
-    .map(caregiver => caregiver.user.pushToken)
+    .map((caregiver) => caregiver.user.pushToken)
     .filter((token): token is string => token !== null && token !== undefined);
 
   if (pushTokens.length > 0) {
@@ -287,7 +300,7 @@ export const notifyDeviceOffline = async (elderId: string, eventId: string, even
       title: '📱 อุปกรณ์หลุดการเชื่อมต่อ',
       message: `อุปกรณ์ของ ${elderName} ออฟไลน์ อาจเกิดจาก: WiFi หลุด, แบตหมด หรือปิดเครื่อง`,
       pushToken: caregiver.user.pushToken || undefined,
-    })
+    }),
   );
 
   await Promise.all(notifications);

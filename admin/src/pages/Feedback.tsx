@@ -1,41 +1,21 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import api from "../services/api";
 import { CheckCircle, Clock, MessageSquare, Wrench, MessageCircle, Filter } from "lucide-react";
-
-interface Feedback {
-  id: string;
-  message: string;
-  userName?: string; // Display name from mobile
-  ticketNumber?: string; // REP-001, REP-002 for repair requests
-  status: "PENDING" | "REVIEWED" | "RESOLVED";
-  createdAt: string;
-  user: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-    phone?: string | null;
-    profileImage: string | null;
-  } | null;
-}
+import { useAdminFeedback, useUpdateFeedbackStatus } from "../hooks/useAdminFeedback";
+import { LoadingSkeleton } from "../components/LoadingSkeleton";
+import { StatusBadge } from "../components/StatusBadge";
+import { EmptyState } from "../components/EmptyState";
+import type { Feedback, FeedbackTypeFilter } from "../types";
 
 export default function Feedback() {
-  const queryClient = useQueryClient();
-  const [typeFilter, setTypeFilter] = useState<"all" | "feedback" | "repair">("all");
+  const [typeFilter, setTypeFilter] = useState<FeedbackTypeFilter>("all");
 
   const {
     data: feedbacks,
     isLoading,
     isError,
-  } = useQuery({
-    queryKey: ["feedbacks"],
-    queryFn: async () => {
-      const response = await api.get("/feedback");
-      return response.data.data as Feedback[];
-    },
-    refetchInterval: 5000,
-  });
+  } = useAdminFeedback();
+
+  const updateStatusMutation = useUpdateFeedbackStatus();
 
   // Helper function to check if feedback is a repair request
   const isRepairRequest = (message: string) => {
@@ -50,24 +30,8 @@ export default function Feedback() {
     return true;
   });
 
-  const updateStatusMutation = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      await api.patch(`/feedback/${id}/status`, { status });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["feedbacks"] });
-    },
-  });
-
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-500">Loading feedback...</p>
-        </div>
-      </div>
-    );
+    return <LoadingSkeleton message="Loading feedback..." />;
   }
 
   if (isError) {
@@ -192,16 +156,7 @@ export default function Feedback() {
                       </span>
                     )}
                     {/* Status Badge */}
-                    <span
-                      className={`px-3 py-1 text-xs font-semibold rounded-full ${feedback.status === "PENDING"
-                        ? "bg-yellow-100 text-yellow-700"
-                        : feedback.status === "REVIEWED"
-                          ? "bg-blue-100 text-blue-700"
-                          : "bg-green-100 text-green-700"
-                        }`}
-                    >
-                      {feedback.status}
-                    </span>
+                    <StatusBadge status={feedback.status} variant="feedback" />
                   </div>
                   {(feedback.user?.email || feedback.user?.phone) && (
                     <div className="flex items-center gap-4 mt-1">
@@ -266,34 +221,18 @@ export default function Feedback() {
             </div>
           ))}
           {filteredFeedbacks?.length === 0 && feedbacks && feedbacks.length > 0 && (
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
-              <div className="flex flex-col items-center">
-                <div className="p-4 bg-gray-100 rounded-full mb-4">
-                  <Filter className="w-12 h-12 text-gray-400" />
-                </div>
-                <p className="text-lg font-medium text-gray-900 mb-2">
-                  No {typeFilter === "repair" ? "repair requests" : "feedback"} found
-                </p>
-                <p className="text-sm text-gray-500">
-                  Try changing the filter to see more results
-                </p>
-              </div>
-            </div>
+            <EmptyState
+              icon={Filter}
+              title={`No ${typeFilter === "repair" ? "repair requests" : "feedback"} found`}
+              message="Try changing the filter to see more results"
+            />
           )}
           {feedbacks?.length === 0 && (
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
-              <div className="flex flex-col items-center">
-                <div className="p-4 bg-gray-100 rounded-full mb-4">
-                  <MessageSquare className="w-12 h-12 text-gray-400" />
-                </div>
-                <p className="text-lg font-medium text-gray-900 mb-2">
-                  No feedback yet
-                </p>
-                <p className="text-sm text-gray-500">
-                  User feedback will appear here
-                </p>
-              </div>
-            </div>
+            <EmptyState
+              icon={MessageSquare}
+              title="No feedback yet"
+              message="User feedback will appear here"
+            />
           )}
         </div>
       </div>

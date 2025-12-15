@@ -1,4 +1,5 @@
 import prisma from '../prisma.js';
+import { Prisma } from '../generated/prisma/client.js';
 import * as deviceService from './deviceService.js';
 import { createError, ApiError } from '../utils/ApiError.js';
 
@@ -59,16 +60,18 @@ export const getDashboardSummary = async () => {
 /**
  * Get all users (Admin only)
  */
-export const getAllUsers = async (options: {
-  page?: number;
-  limit?: number;
-  search?: string;
-} = {}) => {
+export const getAllUsers = async (
+  options: {
+    page?: number;
+    limit?: number;
+    search?: string;
+  } = {},
+) => {
   const page = options.page || 1;
   const limit = options.limit || 20;
   const skip = (page - 1) * limit;
 
-  const where: any = {};
+  const where: Prisma.UserWhereInput = {};
   if (options.search) {
     where.OR = [
       { email: { contains: options.search, mode: 'insensitive' } },
@@ -119,16 +122,18 @@ export const getAllUsers = async (options: {
 /**
  * Get all elders (Admin only)
  */
-export const getAllElders = async (options: {
-  page?: number;
-  limit?: number;
-  includeInactive?: boolean;
-} = {}) => {
+export const getAllElders = async (
+  options: {
+    page?: number;
+    limit?: number;
+    includeInactive?: boolean;
+  } = {},
+) => {
   const page = options.page || 1;
   const limit = options.limit || 20;
   const skip = (page - 1) * limit;
 
-  const where: any = {};
+  const where: Prisma.ElderWhereInput = {};
   if (!options.includeInactive) {
     where.isActive = true;
   }
@@ -188,10 +193,7 @@ export const getAllElders = async (options: {
 /**
  * Create device (Admin only)
  */
-export const createDevice = async (data: {
-  serialNumber: string;
-  firmwareVersion?: string;
-}) => {
+export const createDevice = async (data: { serialNumber: string; firmwareVersion?: string }) => {
   return deviceService.createDevice(data);
 };
 
@@ -217,15 +219,16 @@ export const deleteDevice = async (id: string) => {
   }
 
   if (device.status === 'PAIRED' || device.elderId) {
-    throw new ApiError('device_already_paired', 'ไม่สามารถลบอุปกรณ์ที่ถูกจับคู่อยู่ กรุณายกเลิกการจับคู่ก่อน');
+    throw new ApiError(
+      'device_already_paired',
+      'ไม่สามารถลบอุปกรณ์ที่ถูกจับคู่อยู่ กรุณายกเลิกการจับคู่ก่อน',
+    );
   }
 
   return prisma.device.delete({
     where: { id },
   });
 };
-
-
 
 /**
  * Get event summary for admin

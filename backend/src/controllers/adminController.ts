@@ -116,17 +116,13 @@ export const forceUnpairDevice = asyncHandler(async (req: Request, res: Response
   });
 });
 
-
-
 /**
  * GET /api/admin/events/stats
  */
 export const getEventSummary = asyncHandler(async (req: Request, res: Response) => {
   const { days } = req.query;
 
-  const summary = await adminService.getEventSummary(
-    days ? parseInt(days as string) : 30
-  );
+  const summary = await adminService.getEventSummary(days ? parseInt(days as string) : 30);
 
   res.json({
     success: true,

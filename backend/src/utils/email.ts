@@ -11,9 +11,13 @@ const EMAIL_FROM = process.env.EMAIL_FROM || 'FallHelp <support@fallhelp.tawanla
 
 // Log API key status on load (for debugging)
 if (RESEND_API_KEY) {
-  console.log(`✅ Resend API key is configured (starts with: ${RESEND_API_KEY.substring(0, 8)}...)`);
+  console.log(
+    `✅ Resend API key is configured (starts with: ${RESEND_API_KEY.substring(0, 8)}...)`,
+  );
 } else {
-  console.warn('⚠️ Resend API key is NOT configured - emails will be logged to console only. Please set RESEND_API_KEY in .env');
+  console.warn(
+    '⚠️ Resend API key is NOT configured - emails will be logged to console only. Please set RESEND_API_KEY in .env',
+  );
 }
 
 // Initialize Resend client
@@ -53,7 +57,7 @@ export const sendEmail = async (options: {
     // Call Resend API - note: 'to' must be an array per docs
     const { data, error } = await client.emails.send({
       from: EMAIL_FROM,
-      to: [options.to],  // Must be an array per Resend API docs
+      to: [options.to], // Must be an array per Resend API docs
       subject: options.subject,
       html: options.html,
     });
@@ -64,7 +68,7 @@ export const sendEmail = async (options: {
     }
 
     log('✅ Email sent successfully! ID: %s', data?.id);
-  } catch (error: any) {
+  } catch (error) {
     log('❌ Email send error: %O', error);
     throw createError.emailFailed();
   }
@@ -77,13 +81,14 @@ export const sendOtpEmail = async (
   email: string,
   code: string,
   purpose: string,
-  referenceCode?: string
+  referenceCode?: string,
 ): Promise<void> => {
-  const purposeText = {
-    PASSWORD_RESET: 'รีเซ็ตรหัสผ่าน',
-    EMAIL_VERIFICATION: 'ยืนยันอีเมล',
-    PHONE_VERIFICATION: 'ยืนยันเบอร์โทรศัพท์',
-  }[purpose] || purpose;
+  const purposeText =
+    {
+      PASSWORD_RESET: 'รีเซ็ตรหัสผ่าน',
+      EMAIL_VERIFICATION: 'ยืนยันอีเมล',
+      PHONE_VERIFICATION: 'ยืนยันเบอร์โทรศัพท์',
+    }[purpose] || purpose;
 
   const html = `
     <!DOCTYPE html>
@@ -182,11 +187,15 @@ export const sendOtpEmail = async (
           
           <div class="otp-code">${code}</div>
           
-          ${referenceCode ? `
+          ${
+            referenceCode
+              ? `
           <div style="text-align: center; margin: 15px 0;">
             <p style="font-size: 14px; color: #666; margin: 0;">รหัสอ้างอิง: <strong style="color: #7B8E54;">${referenceCode}</strong></p>
           </div>
-          ` : ''}
+          `
+              : ''
+          }
           
           <div class="info-box">
             <p>รหัสนี้จะหมดอายุใน <strong>5 นาที</strong></p>
@@ -231,10 +240,7 @@ ${referenceCode ? `รหัสอ้างอิง: ${referenceCode}` : ''}
 /**
  * Send welcome email (Thai language)
  */
-export const sendWelcomeEmail = async (
-  email: string,
-  firstName: string
-): Promise<void> => {
+export const sendWelcomeEmail = async (email: string, firstName: string): Promise<void> => {
   const html = `
     <!DOCTYPE html>
     <html lang="th">
@@ -345,7 +351,7 @@ export const sendWelcomeEmail = async (
 export const sendInvitationEmail = async (
   email: string,
   inviterName: string,
-  elderName: string
+  elderName: string,
 ): Promise<void> => {
   const html = `
     <!DOCTYPE html>

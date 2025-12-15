@@ -1,4 +1,5 @@
 import { HeartRatePayload } from '../topics';
+import { EventType, EventSeverity } from '../../../generated/prisma/client.js';
 import { createEvent } from '../../../services/eventService';
 import { notifyHeartRateAlert } from '../../../services/notificationService';
 import prisma from '../../../prisma';
@@ -10,10 +11,7 @@ const log = createDebug('fallhelp:mqtt:heartrate');
 /**
  * Handle heart rate readings from MQTT
  */
-export async function heartRateHandler(
-  deviceId: string,
-  payload: HeartRatePayload
-): Promise<void> {
+export async function heartRateHandler(deviceId: string, payload: HeartRatePayload): Promise<void> {
   try {
     log('💓 Heart rate reading for device %s: %d BPM', deviceId, payload.heartRate);
 
@@ -56,8 +54,8 @@ export async function heartRateHandler(
       const event = await createEvent({
         elderId: device.elderId,
         deviceId: device.id,
-        type: eventType as any,
-        severity: severity as any,
+        type: eventType as EventType,
+        severity: severity as EventSeverity,
         value: payload.heartRate,
         metadata: {
           threshold: isLow ? hrLow : hrHigh,
@@ -74,10 +72,12 @@ export async function heartRateHandler(
         event.id,
         event.timestamp,
         payload.heartRate,
-        isLow ? 'LOW' : 'HIGH'
+        isLow ? 'LOW' : 'HIGH',
       );
 
-      const elderName = device.elder ? `${device.elder.firstName} ${device.elder.lastName}` : 'Unknown';
+      const elderName = device.elder
+        ? `${device.elder.firstName} ${device.elder.lastName}`
+        : 'Unknown';
 
       socketServer.emitHeartRateAlert({
         eventId: event.id,
@@ -92,7 +92,9 @@ export async function heartRateHandler(
       });
     } else {
       // Just emit real-time update for normal readings (no event creation)
-      const elderName = device.elder ? `${device.elder.firstName} ${device.elder.lastName}` : 'Unknown';
+      const elderName = device.elder
+        ? `${device.elder.firstName} ${device.elder.lastName}`
+        : 'Unknown';
       socketServer.emitHeartRateUpdate({
         elderId: device.elderId,
         elderName,

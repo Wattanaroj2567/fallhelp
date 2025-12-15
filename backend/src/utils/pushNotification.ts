@@ -1,12 +1,12 @@
 /**
  * Expo Push Notification utilities
  * Uses Expo Push Notification API instead of Firebase Admin SDK
- * 
+ *
  * ✅ Supports: Expo Go (Android & iOS), Standalone Apps, EAS Build
- * 
+ *
  * Documentation: https://docs.expo.dev/push-notifications/sending-notifications/
  * API Endpoint: https://exp.host/--/api/v2/push/send
- * 
+ *
  * Token Format: ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]
  * - Same token format for both Android and iOS
  * - Works with Expo Go app (Development)
@@ -20,7 +20,7 @@ const log = createDebug('fallhelp:push');
 interface NotificationPayload {
   title: string;
   body: string;
-  data?: Record<string, any>;
+  data?: Record<string, unknown>;
 }
 
 /**
@@ -28,7 +28,7 @@ interface NotificationPayload {
  */
 export const sendNotification = async (
   expoPushToken: string,
-  payload: NotificationPayload
+  payload: NotificationPayload,
 ): Promise<boolean> => {
   try {
     // Validate Expo Push Token format
@@ -48,7 +48,7 @@ export const sendNotification = async (
     const response = await fetch('https://exp.host/--/api/v2/push/send', {
       method: 'POST',
       headers: {
-        'Accept': 'application/json',
+        Accept: 'application/json',
         'Accept-Encoding': 'gzip, deflate',
         'Content-Type': 'application/json',
       },
@@ -75,12 +75,12 @@ export const sendNotification = async (
  */
 export const sendMulticastNotification = async (
   expoPushTokens: string[],
-  payload: NotificationPayload
+  payload: NotificationPayload,
 ): Promise<number> => {
   try {
     // Filter valid tokens
-    const validTokens = expoPushTokens.filter(token => 
-      token && token.startsWith('ExponentPushToken[')
+    const validTokens = expoPushTokens.filter(
+      (token) => token && token.startsWith('ExponentPushToken['),
     );
 
     if (validTokens.length === 0) {
@@ -88,7 +88,7 @@ export const sendMulticastNotification = async (
       return 0;
     }
 
-    const messages = validTokens.map(token => ({
+    const messages = validTokens.map((token) => ({
       to: token,
       sound: 'default',
       title: payload.title,
@@ -99,7 +99,7 @@ export const sendMulticastNotification = async (
     const response = await fetch('https://exp.host/--/api/v2/push/send', {
       method: 'POST',
       headers: {
-        'Accept': 'application/json',
+        Accept: 'application/json',
         'Accept-Encoding': 'gzip, deflate',
         'Content-Type': 'application/json',
       },
@@ -108,7 +108,8 @@ export const sendMulticastNotification = async (
 
     const result = await response.json();
 
-    const successCount = result.data?.filter((r: any) => r.status === 'ok').length || 0;
+    const successCount =
+      result.data?.filter((r: { status: string }) => r.status === 'ok').length || 0;
     log('[Expo Push] ✅ Sent to %d/%d devices', successCount, validTokens.length);
 
     return successCount;
@@ -124,7 +125,7 @@ export const sendMulticastNotification = async (
 export const sendFallAlert = async (
   pushTokens: string[],
   elderName: string,
-  timestamp: Date
+  timestamp: Date,
 ): Promise<void> => {
   await sendMulticastNotification(pushTokens, {
     title: '⚠️ ตรวจพบการหกล้ม',
@@ -143,7 +144,7 @@ export const sendHeartRateAlert = async (
   pushTokens: string[],
   elderName: string,
   value: number,
-  type: 'HIGH' | 'LOW'
+  type: 'HIGH' | 'LOW',
 ): Promise<void> => {
   await sendMulticastNotification(pushTokens, {
     title: type === 'HIGH' ? '⚠️ ชีพจรสูงผิดปกติ' : '⚠️ ชีพจรต่ำผิดปกติ',
@@ -161,7 +162,7 @@ export const sendHeartRateAlert = async (
  */
 export const sendDeviceOfflineAlert = async (
   pushTokens: string[],
-  elderName: string
+  elderName: string,
 ): Promise<void> => {
   await sendMulticastNotification(pushTokens, {
     title: '📱 อุปกรณ์ขาดการเชื่อมต่อ',

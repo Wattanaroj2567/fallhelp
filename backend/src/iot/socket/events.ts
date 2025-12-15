@@ -1,11 +1,11 @@
 /**
  * Socket.io Event Types for FallHelp Real-time Communication
- * 
+ *
  * Client -> Server Events:
  * - authenticate: Client sends userId and elderId to join specific rooms
  * - ping: Connection health check
  * - disconnect: Client disconnects
- * 
+ *
  * Server -> Client Events:
  * - authenticated: Confirmation of successful authentication
  * - pong: Response to ping
@@ -61,7 +61,7 @@ export interface DeviceStatusUpdate {
   elderId?: string;
   status: 'online' | 'offline';
   lastOnline: string;
-  metadata?: any;
+  metadata?: unknown;
 }
 
 export interface EventStatusChangedEvent {
@@ -73,7 +73,7 @@ export interface EventStatusChangedEvent {
 
 export interface SystemMessageEvent {
   message: string;
-  data?: any;
+  data?: unknown;
   timestamp: string; // ISO 8601
 }
 

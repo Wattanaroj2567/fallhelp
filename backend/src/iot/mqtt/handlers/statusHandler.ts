@@ -1,4 +1,5 @@
 import { DeviceStatusPayload } from '../topics';
+import { EventType, EventSeverity } from '../../../generated/prisma/client.js';
 import { createEvent } from '../../../services/eventService';
 import { notifyDeviceOffline } from '../../../services/notificationService';
 import prisma from '../../../prisma';
@@ -10,10 +11,7 @@ const log = createDebug('fallhelp:mqtt:status');
 /**
  * Handle device status updates from MQTT
  */
-export async function statusHandler(
-  deviceId: string,
-  payload: DeviceStatusPayload
-): Promise<void> {
+export async function statusHandler(deviceId: string, payload: DeviceStatusPayload): Promise<void> {
   try {
     log('📊 Device status update for %s: %O', deviceId, payload);
 
@@ -53,8 +51,8 @@ export async function statusHandler(
       await createEvent({
         elderId: device.elderId,
         deviceId: device.id,
-        type: 'DEVICE_OFFLINE' as any,
-        severity: 'WARNING' as any,
+        type: 'DEVICE_OFFLINE' as EventType,
+        severity: 'WARNING' as EventSeverity,
         timestamp: new Date(payload.timestamp),
         metadata: {
           previousOnlineAt: device.lastOnline,
@@ -62,14 +60,18 @@ export async function statusHandler(
       });
 
       // Notify caregivers
-      await notifyDeviceOffline(device.elderId, 'offline-' + Date.now(), new Date(payload.timestamp));
+      await notifyDeviceOffline(
+        device.elderId,
+        'offline-' + Date.now(),
+        new Date(payload.timestamp),
+      );
     } else if (!wasOnline && payload.online && device.elderId) {
       log('✅ Device %s came online', deviceId);
       await createEvent({
         elderId: device.elderId,
         deviceId: device.id,
-        type: 'DEVICE_ONLINE' as any,
-        severity: 'NORMAL' as any,
+        type: 'DEVICE_ONLINE' as EventType,
+        severity: 'NORMAL' as EventSeverity,
         timestamp: new Date(payload.timestamp),
       });
     }
