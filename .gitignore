@@ -26,8 +26,26 @@ lerna-debug.log*
 .DS_Store
 Thumbs.db
 *.swp
+
+# Build outputs
+dist/
+build/
+out/
+public/build/
+admin/dist/
+mobile/dist/
+mobile/build/
+backend/dist/
+backend/build/
+
+# TypeScript
+*.tsbuildinfo
+
+# Environment
 *.swo
 *~
+
+.env*
 
 # IDE / Editor
 .vscode/
@@ -37,12 +55,14 @@ Thumbs.db
 .fleet/
 
 # Testing
+
 coverage/
 .nyc_output/
 
 # Temporary files
 tmp/
 temp/
+
 *.tmp
 
 # Database
@@ -50,8 +70,61 @@ temp/
 *.sqlite3
 *.db
 
+# JetBrains
+.idea/
+
+# Test/coverage
+coverage/
+*.lcov
+.nyc_output/
+
+# Temporary files
+
 # Secrets & Keys
 *.pem
+
+# Cursor/Code AI
+.cursor/
+
+# Arduino
+*.hex
+*.elf
+*.bin
+
+# Ignore generated Prisma files
+backend/src/generated/
+backend/prisma/migrations/
+
+# Ignore documentation cache
+**/.docz/
+
+# Ignore worktrees
+.git/worktrees/
+
+# Ignore lockfiles (optional, if you use only one)
+# package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Ignore local SQLite/Prisma DB
+*.db
+*.sqlite
+
+# Ignore Python cache (if any)
+__pycache__/
+*.pyc
+
+# AGENT/AI logs
+AGENT.log
+
+# Fallback logs
+fallback.log
+
+# Expo/React Native
+.expo/
+.expo-shared/
+web-build/
+
 *.key
 *.cert
 firebase-adminsdk.json
@@ -63,3 +136,19 @@ GoogleService-Info.plist
 .parcel-cache/
 .next/
 .nuxt/
+
+# Worktrees (if needed)
+.cursor/
+
+# Debug files
+*.log
+debug.log
+
+# TypeScript
+*.tsbuildinfo
+
+# Package manager locks (optional - some teams prefer to commit these)
+# Uncomment if you want to ignore lock files
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml

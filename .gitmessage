@@ -1,0 +1,43 @@
+# <type>(<scope>): <subject>
+#
+# <body>
+#
+# <footer>
+
+# Type: ชนิดของการเปลี่ยนแปลง
+# feat:     ฟีเจอร์ใหม่
+# fix:     แก้ไขบั๊ก
+# refactor: ปรับปรุงโค้ด (ไม่เปลี่ยนพฤติกรรม)
+# style:   การจัดรูปแบบ (ไม่มีผลต่อโค้ด)
+# docs:    เอกสาร
+# test:    เพิ่ม/แก้ไข tests
+# chore:   งานอื่นๆ (build, config, etc.)
+# perf:    ปรับปรุงประสิทธิภาพ
+# ci:      CI/CD changes
+
+# Scope: ขอบเขต (optional)
+# mobile, backend, admin, arduino, docs
+
+# Subject: ข้อความสั้นๆ (50 ตัวอักษร)
+# - ใช้ imperative mood (เช่น "add" ไม่ใช่ "added" หรือ "adds")
+# - ไม่มี period (.) ท้ายประโยค
+# - ภาษาไทยหรืออังกฤษก็ได้
+
+# Body: รายละเอียด (optional)
+# - อธิบายว่าทำไมและอย่างไร
+# - แยกบรรทัดว่างจาก subject
+# - Wrap ที่ 72 characters
+
+# Footer: ข้อมูลเพิ่มเติม (optional)
+# - Breaking changes: BREAKING CHANGE: <description>
+# - Issues: Closes #123, Fixes #456
+
+# ตัวอย่าง:
+# feat(mobile): เพิ่ม error handling แบบ unified
+#
+# - ปรับปรุง toApiError() ให้จัดการ network/timeout errors
+# - ทำให้ errorHelper.ts เป็น thin wrapper
+# - แก้ไข components ให้ใช้ showErrorMessage() แทน Alert.alert()
+#
+# Closes #123
+
