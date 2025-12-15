@@ -29,7 +29,7 @@ export function LoadingScreen({
 
   if (useScreenWrapper) {
     return (
-      <ScreenWrapper useScrollView={false} style={{ backgroundColor: 'white' }}>
+      <ScreenWrapper useScrollView={false} className="bg-white">
         {Content}
       </ScreenWrapper>
     );

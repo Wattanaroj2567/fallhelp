@@ -39,8 +39,7 @@ export const PrimaryButton: React.FC<PrimaryButtonProps> = ({
   return (
     <Bounceable
       testID={props.testID || 'primary-button'}
-      className={`${baseStyle} ${bgStyle}`}
-      style={[{ opacity }, style]}
+      className={`${baseStyle} ${bgStyle} ${disabled || loading ? 'opacity-70' : ''}`}
       disabled={disabled || loading}
       scale={0.96}
       {...props}

@@ -43,6 +43,7 @@ export type {
   Member,
   Notification,
   // Utilities
+  ApiResponse,
   Paginated,
   DailySummary,
   MonthlySummary,

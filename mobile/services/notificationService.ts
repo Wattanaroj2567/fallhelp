@@ -5,7 +5,7 @@
 
 import { apiClient, toApiError } from './api';
 import Logger from '@/utils/logger';
-import { Notification, Paginated } from './types';
+import type { ApiResponse, Notification, Paginated } from './types';
 
 /**
  * Registers the Expo push notification token with the backend
@@ -42,7 +42,7 @@ export async function listNotifications(
 
 export async function getUnreadCount(): Promise<number> {
   try {
-    const { data } = await apiClient.get<{ success: boolean; data: { count: number } }>(
+    const { data } = await apiClient.get<ApiResponse<{ count: number }>>(
       '/api/notifications/unread-count',
     );
     return data.data.count;

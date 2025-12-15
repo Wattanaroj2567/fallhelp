@@ -354,10 +354,13 @@ export default function Step1() {
   };
 
   const handleBack = () => {
-    // Simply go back to the welcome screen
-    // We do NOT delete the elder here anymore, to avoid complex state issues and errors.
-    // The previous logic caused crashes when navigating back.
-    router.replace('/(setup)/empty-state');
+    // Navigate back naturally in the stack
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      // Fallback if accessed directly
+      router.replace('/(setup)/empty-state');
+    }
   };
 
   const _onDateChange = (event: unknown, selectedDate?: Date) => {
@@ -406,7 +409,7 @@ export default function Step1() {
       <View className="flex-1 mt-4">
         {/* Form Fields */}
         <View className="mb-6">
-          {/* Elder Name & Lastname */}
+          {/* Elder Name & Lastname - FloatingLabelInput Match Register */}
           <View className="flex-row gap-3">
             {/* First Name */}
             <View className="flex-1">
@@ -414,16 +417,17 @@ export default function Step1() {
                 label="ชื่อ"
                 value={firstName}
                 onChangeText={setFirstName}
-                isRequired
+                isRequired={true}
               />
             </View>
+
             {/* Last Name */}
             <View className="flex-1">
               <FloatingLabelInput
                 label="นามสกุล"
                 value={lastName}
                 onChangeText={setLastName}
-                isRequired
+                isRequired={true}
               />
             </View>
           </View>
@@ -435,14 +439,13 @@ export default function Step1() {
           <FloatingLabelDatePicker
             value={dateOfBirth}
             onChange={(date) => {
-              // Close other inputs
               Keyboard.dismiss();
               setDateOfBirth(date);
             }}
             isRequired={true}
           />
 
-          {/* Height and Weight */}
+          {/* Height and Weight - FloatingLabelInput Match Register */}
           <View className="flex-row gap-3">
             <View className="flex-1">
               <FloatingLabelInput
@@ -450,7 +453,7 @@ export default function Step1() {
                 value={height}
                 onChangeText={setHeight}
                 keyboardType="numeric"
-                isRequired
+                isRequired={true}
               />
             </View>
             <View className="flex-1">
@@ -459,12 +462,12 @@ export default function Step1() {
                 value={weight}
                 onChangeText={setWeight}
                 keyboardType="numeric"
-                isRequired
+                isRequired={true}
               />
             </View>
           </View>
 
-          {/* Medical Condition - Single line */}
+          {/* Medical Condition */}
           <View>
             <FloatingLabelInput
               label="โรคประจำตัว หรือ เคยป่วย (ถ้ามี)"
@@ -480,7 +483,7 @@ export default function Step1() {
                 label="บ้านเลขที่"
                 value={houseNumber}
                 onChangeText={setHouseNumber}
-                isRequired
+                isRequired={true}
               />
             </View>
             <View className="flex-1">
@@ -488,7 +491,7 @@ export default function Step1() {
                 label="หมู่ที่/หมู่บ้าน"
                 value={village}
                 onChangeText={setVillage}
-                isRequired
+                isRequired={true}
               />
             </View>
           </View>

@@ -74,9 +74,21 @@ export function useProtectedRoute() {
         hasCheckedSetup.current = true;
 
         // On error, check if it's an auth error (401/403) - might need to sign out
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const apiError = error as Record<string, any>;
-        const status = apiError?.response?.status || apiError?.status;
+        // Type guard for error with status
+        type ErrorWithStatus = {
+          response?: { status?: number };
+          status?: number;
+        };
+
+        const getErrorStatus = (err: unknown): number | undefined => {
+          if (typeof err === 'object' && err !== null) {
+            const errorObj = err as ErrorWithStatus;
+            return errorObj.response?.status ?? errorObj.status;
+          }
+          return undefined;
+        };
+
+        const status = getErrorStatus(error);
 
         // If auth error, redirect to login (token might be invalid)
         if (status === 401 || status === 403) {

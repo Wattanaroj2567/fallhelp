@@ -46,6 +46,10 @@ export async function heartRateHandler(deviceId: string, payload: HeartRatePaylo
     const isHigh = payload.heartRate > hrHigh;
     const isAbnormal = isLow || isHigh;
 
+    // Use server time instead of ESP32 millis() timestamp
+    // ESP32 sends millis() (relative time since boot), not Unix timestamp
+    const serverTimestamp = new Date();
+
     // 3. Only create event if abnormal
     if (isAbnormal) {
       const eventType = isLow ? 'HEART_RATE_LOW' : 'HEART_RATE_HIGH';
@@ -61,7 +65,7 @@ export async function heartRateHandler(deviceId: string, payload: HeartRatePaylo
           threshold: isLow ? hrLow : hrHigh,
           direction: isLow ? 'LOW' : 'HIGH',
         },
-        timestamp: new Date(payload.timestamp),
+        timestamp: serverTimestamp,
       });
 
       log('⚠️ Abnormal heart rate event created: %s', event.id);
@@ -100,7 +104,7 @@ export async function heartRateHandler(deviceId: string, payload: HeartRatePaylo
         elderName,
         deviceId: device.id,
         deviceCode: device.deviceCode,
-        timestamp: new Date(payload.timestamp),
+        timestamp: serverTimestamp,
         heartRate: payload.heartRate,
       });
     }

@@ -36,14 +36,49 @@ export async function statusHandler(deviceId: string, payload: DeviceStatusPaylo
       ? Date.now() - device.lastOnline.getTime() < 5 * 60 * 1000 // 5 minutes
       : false;
 
+    // Use server time instead of ESP32 millis() timestamp
+    // ESP32 sends millis() (relative time since boot), not Unix timestamp
+    const serverTimestamp = new Date();
+
+    // Update device status and WiFi status
+    // If device is online, it means WiFi is connected (device cannot connect to MQTT without WiFi)
+    // Ensure all fields are populated - never leave fields empty unnecessarily
     await prisma.device.update({
       where: { id: device.id },
       data: {
-        lastOnline: new Date(payload.timestamp),
-        firmwareVersion: payload.firmwareVersion || device.firmwareVersion,
+        lastOnline: serverTimestamp, // Always update when device sends status
+        firmwareVersion: payload.firmwareVersion || device.firmwareVersion || '1.0.0', // Default if missing
         status: payload.online ? 'ACTIVE' : 'INACTIVE',
+        updatedAt: serverTimestamp, // Explicitly update timestamp
       },
     });
+
+    // Update WiFi status in DeviceConfig
+    // If device sends online=true, WiFi must be connected (device needs WiFi to connect to MQTT)
+    // Ensure all fields are populated - never leave fields empty unnecessarily
+    if (payload.online) {
+      await prisma.deviceConfig.updateMany({
+        where: { deviceId: device.id },
+        data: {
+          wifiStatus: 'CONNECTED',
+          ipAddress: payload.ip || null, // ESP32 sends IP in status message - use null instead of undefined
+          updatedAt: serverTimestamp, // Explicitly update timestamp
+        },
+      });
+    } else {
+      // Device offline - WiFi might be disconnected or MQTT connection lost
+      // Only update to DISCONNECTED if it was CONFIGURING (to avoid overwriting ERROR state)
+      await prisma.deviceConfig.updateMany({
+        where: {
+          deviceId: device.id,
+          wifiStatus: 'CONFIGURING', // Only update if still in CONFIGURING state
+        },
+        data: {
+          wifiStatus: 'DISCONNECTED',
+          updatedAt: serverTimestamp, // Explicitly update timestamp
+        },
+      });
+    }
 
     // 3. Check if device went offline
     if (wasOnline && !payload.online && device.elderId) {
@@ -53,18 +88,14 @@ export async function statusHandler(deviceId: string, payload: DeviceStatusPaylo
         deviceId: device.id,
         type: 'DEVICE_OFFLINE' as EventType,
         severity: 'WARNING' as EventSeverity,
-        timestamp: new Date(payload.timestamp),
+        timestamp: serverTimestamp,
         metadata: {
           previousOnlineAt: device.lastOnline,
         },
       });
 
       // Notify caregivers
-      await notifyDeviceOffline(
-        device.elderId,
-        'offline-' + Date.now(),
-        new Date(payload.timestamp),
-      );
+      await notifyDeviceOffline(device.elderId, 'offline-' + Date.now(), serverTimestamp);
     } else if (!wasOnline && payload.online && device.elderId) {
       log('✅ Device %s came online', deviceId);
       await createEvent({
@@ -72,7 +103,7 @@ export async function statusHandler(deviceId: string, payload: DeviceStatusPaylo
         deviceId: device.id,
         type: 'DEVICE_ONLINE' as EventType,
         severity: 'NORMAL' as EventSeverity,
-        timestamp: new Date(payload.timestamp),
+        timestamp: serverTimestamp,
       });
     }
 
@@ -87,7 +118,7 @@ export async function statusHandler(deviceId: string, payload: DeviceStatusPaylo
         online: payload.online,
         signalStrength: payload.signalStrength,
         firmwareVersion: payload.firmwareVersion,
-        timestamp: new Date(payload.timestamp),
+        timestamp: serverTimestamp,
       });
     }
 

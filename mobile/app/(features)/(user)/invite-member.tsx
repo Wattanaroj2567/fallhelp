@@ -182,7 +182,6 @@ export default function InviteMember() {
             title="ส่งคำเชิญ"
             onPress={handleInvite}
             loading={inviteMutation.isPending}
-            disabled={!email.trim() || !!emailError}
           />
         </View>
       </View>

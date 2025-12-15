@@ -8,11 +8,15 @@ import prisma from './prisma';
 import { socketServer } from './iot/socket/socketServer';
 import { mqttClient } from './iot/mqtt/mqttClient';
 import { cleanupExpiredOtps } from './services/authService';
+import { validateAndLogConfig } from './utils/configValidator';
 
 // ==========================================
 // ⚙️ LAYER: Core (Server Entry Point)
 // Purpose: Initialize HTTP server, Database, Socket.io, and MQTT
 // ==========================================
+
+// Validate configuration at startup
+validateAndLogConfig(process.env);
 
 const PORT = process.env.PORT || 3000;
 const log = createDebug('fallhelp:server');

@@ -2,6 +2,8 @@ import Constants from 'expo-constants';
 
 import { Platform } from 'react-native';
 
+import { validateAndLogConfig } from './configValidator';
+
 // Central configuration for backend communication.
 // Reads from Expo public env if present; otherwise falls back to app.json > extra.*.
 const extra = Constants.expoConfig?.extra ?? {};
@@ -15,12 +17,20 @@ const getHostIp = () => {
     return ip;
   }
 
-  // [C] FALLBACK IP FOR STANDALONE BUILD
-  // แก้ไข IP ตรงนี้ให้เป็น IP ของเครื่อง Server (คอมพิวเตอร์ของคุณ) ก่อนสั่ง Build
-  // ตัวอย่าง: '192.168.1.100'
-  const FALLBACK_IP = '192.168.1.102';
-  console.log('[Config] Using Fallback IP (Standalone):', FALLBACK_IP);
-  return FALLBACK_IP;
+  // Fallback: Read from environment variable or app.json extra
+  const fallbackIp =
+    (typeof extra === 'object' && typeof extra?.apiHost === 'string' && extra.apiHost) ||
+    process.env.EXPO_PUBLIC_API_HOST ||
+    null;
+
+  if (fallbackIp) {
+    console.log('[Config] Using Fallback IP from config:', fallbackIp);
+    return fallbackIp;
+  }
+
+  // Last resort: localhost for development
+  console.warn('[Config] No API host configured, using localhost');
+  return 'localhost';
 };
 
 const HOST_IP = getHostIp();
@@ -44,5 +54,8 @@ export const CONFIG = {
   SOCKET_URL,
   REQUEST_TIMEOUT,
 };
+
+// Validate configuration at startup
+validateAndLogConfig(CONFIG);
 
 export type AppConfig = typeof CONFIG;

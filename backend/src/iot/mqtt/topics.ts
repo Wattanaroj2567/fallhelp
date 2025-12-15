@@ -27,7 +27,7 @@ export const MQTT_TOPICS = {
 
 // Fall Detection Payload
 export interface FallDetectionPayload {
-  timestamp: string; // ISO 8601
+  timestamp: number | string; // ESP32 sends millis() (number), but we use server time
   accelerationX: number;
   accelerationY: number;
   accelerationZ: number;
@@ -37,17 +37,18 @@ export interface FallDetectionPayload {
 
 // Heart Rate Payload
 export interface HeartRatePayload {
-  timestamp: string; // ISO 8601
+  timestamp: number | string; // ESP32 sends millis() (number), but we use server time
   heartRate: number; // BPM
   isAbnormal?: boolean; // Pre-calculated by device
 }
 
 // Device Status Payload
 export interface DeviceStatusPayload {
-  timestamp: string; // ISO 8601
+  timestamp: number | string; // ESP32 sends millis() (number), but we use server time
   online: boolean;
   signalStrength?: number; // RSSI (dBm)
   firmwareVersion?: string;
+  ip?: string; // IP address (ESP32 sends this when WiFi is connected)
 }
 
 // Config Payload (Backend -> Device)

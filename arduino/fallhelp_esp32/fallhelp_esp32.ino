@@ -33,7 +33,7 @@
 // ==================== Configuration ====================
 #define AP_SSID_PREFIX "FallHelp-"
 // No Password - Open Network for easy Captive Portal
-#define MQTT_SERVER "192.168.1.102"  // Pre-configured MQTT Server
+#define MQTT_SERVER_DEFAULT "192.168.1.102"  // Default MQTT Server (fallback only)
 #define MQTT_PORT 1883
 #define WIFI_CHECK_INTERVAL 5000
 #define STATUS_INTERVAL 15000
@@ -55,7 +55,7 @@ bool apMode = false;
 String deviceSerial = "";
 String savedSSID = "";
 String savedPassword = "";
-String mqttServer = MQTT_SERVER;
+String mqttServer = "";  // Loaded from Preferences or default
 unsigned long lastStatusTime = 0;
 unsigned long lastWifiCheckTime = 0;
 
@@ -63,6 +63,8 @@ unsigned long lastWifiCheckTime = 0;
 void loadWiFiConfig();
 void saveWiFiConfig(String ssid, String password);
 void clearWiFiConfig();
+void loadMQTTConfig();
+void saveMQTTConfig(String server);
 void startAPMode();
 void startStationMode();
 void setupWebServer();
@@ -298,6 +300,7 @@ void setup() {
 
   preferences.begin("fallhelp", false);
   loadWiFiConfig();
+  loadMQTTConfig();
 
   // Setup MQTT Callback
   mqtt.setCallback(mqttCallback);
@@ -538,9 +541,10 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
     return;
   }
 
-  // Check for WiFi Config Update via MQTT
+  // Check for Config Update via MQTT
   String configTopic = "device/" + deviceSerial + "/config";
   if (String(topic) == configTopic) {
+    // WiFi Config Update
     if (doc.containsKey("wifiSSID") && doc.containsKey("wifiPassword")) {
       String newSSID = doc["wifiSSID"];
       String newPass = doc["wifiPassword"];
@@ -551,6 +555,20 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
       saveWiFiConfig(newSSID, newPass);
       
       Serial.println("🔄 Restarting to apply new WiFi settings...");
+      delay(1000);
+      ESP.restart();
+    }
+    
+    // MQTT Server Config Update
+    if (doc.containsKey("mqttServer")) {
+      String newMQTTServer = doc["mqttServer"];
+      
+      Serial.println("⚙️ Received New MQTT Server Config via MQTT!");
+      Serial.printf("   MQTT Server: %s\n", newMQTTServer.c_str());
+      
+      saveMQTTConfig(newMQTTServer);
+      
+      Serial.println("🔄 Restarting to apply new MQTT server settings...");
       delay(1000);
       ESP.restart();
     }
@@ -628,6 +646,22 @@ void clearWiFiConfig() {
   preferences.remove("password");
   savedSSID = "";
   Serial.println("🗑️ Config cleared");
+}
+
+void loadMQTTConfig() {
+  mqttServer = preferences.getString("mqttServer", "");
+  if (mqttServer.length() == 0) {
+    mqttServer = String(MQTT_SERVER_DEFAULT);
+    Serial.printf("📡 Using default MQTT server: %s\n", mqttServer.c_str());
+  } else {
+    Serial.printf("📡 Loaded MQTT server from config: %s\n", mqttServer.c_str());
+  }
+}
+
+void saveMQTTConfig(String server) {
+  preferences.putString("mqttServer", server);
+  mqttServer = server;
+  Serial.printf("💾 MQTT server saved: %s\n", mqttServer.c_str());
 }
 
 void handleSerialCommands() {

@@ -59,8 +59,8 @@ export default function RepairScreen() {
       Logger.info('Repair history result:', result);
       return result;
     },
-    staleTime: 0, // Always consider data stale for immediate refetch
-    refetchInterval: 30000, // Auto-refresh every 30 seconds to get status updates
+    // Removed staleTime - use default from QueryClient (0)
+    // Removed refetchInterval - no auto-refresh (manual refresh only)
   });
 
   // ==========================================
@@ -286,7 +286,6 @@ export default function RepairScreen() {
                 title="ส่งเรื่อง"
                 onPress={handleSubmit}
                 loading={repairMutation.isPending}
-                disabled={!message.trim() || !subject.trim()}
               />
             </View>
           ) : (

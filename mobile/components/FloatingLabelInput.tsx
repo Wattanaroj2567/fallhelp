@@ -172,15 +172,7 @@ export const FloatingLabelInput: React.FC<FloatingLabelInputProps> = ({
       />
 
       {error && (
-        <Text
-          style={{
-            fontFamily: 'Kanit',
-            color: theme.colors.error,
-            fontSize: 12,
-            marginTop: 4,
-            marginLeft: 4,
-          }}
-        >
+        <Text className="font-kanit text-red-500 text-xs mt-1 ml-1">
           {error}
         </Text>
       )}

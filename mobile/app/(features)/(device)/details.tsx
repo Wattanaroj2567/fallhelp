@@ -10,6 +10,7 @@ import { showErrorMessage } from '@/utils/errorHelper';
 import { unpairDevice } from '@/services/deviceService';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { Bounceable } from '@/components/Bounceable';
+import { useSocketContext } from '@/context/SocketContext';
 
 // Helper function to format last seen time as relative
 const formatLastSeen = (dateString: string | Date): string => {
@@ -55,6 +56,9 @@ export default function DeviceDetails() {
 
   const device = elderInfo?.device;
   const isReadOnly = elderInfo?.accessLevel === 'VIEWER';
+
+  // Get real-time socket connection status (via Global Context)
+  const { isConnected, lastHeartUpdate } = useSocketContext();
 
   // Refetch when screen is focused (e.g., when navigating back)
   useFocusEffect(
@@ -109,7 +113,8 @@ export default function DeviceDetails() {
 
   // Determine device state for 3-color scheme
   const hasDevice = !!device;
-  const isOnline = device?.status === 'ACTIVE';
+  // Use real-time socket connection status instead of database status
+  const isOnline = isConnected;
 
   // Color scheme based on state
   const getStateColors = () => {
@@ -192,9 +197,11 @@ export default function DeviceDetails() {
                 </View>
 
                 {/* Last Seen - Show for offline devices */}
-                {!isOnline && device?.lastOnline && (
+                {/* Use lastHeartUpdate from socket (real-time) or fallback to device.lastOnline from database */}
+                {!isOnline && (lastHeartUpdate || device?.lastOnline) && (
                   <Text className="text-xs font-kanit text-gray-400 mb-6">
-                    ออนไลน์ล่าสุด: {formatLastSeen(device.lastOnline)}
+                    ออนไลน์ล่าสุด:{' '}
+                    {formatLastSeen((lastHeartUpdate || device.lastOnline) as Date | string)}
                   </Text>
                 )}
                 {isOnline && <View className="mb-6" />}

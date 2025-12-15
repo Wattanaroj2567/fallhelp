@@ -139,6 +139,19 @@ export type Member = {
   grantedAt?: string;
 };
 
+/**
+ * Standard API Response Format
+ * All backend responses follow this structure
+ */
+export type ApiResponse<T> = {
+  success: boolean;
+  data: T;
+  message?: string;
+};
+
+/**
+ * Paginated Response Format
+ */
 export type Paginated<T> = {
   data: T[];
   total?: number;

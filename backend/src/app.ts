@@ -33,23 +33,8 @@ app.use(
   }),
 );
 
-// Custom JSON parser for Swagger UI (handles text/plain with JSON content)
-app.use(express.text({ type: ['text/plain', 'application/json', '*/json'], limit: '10mb' }));
-app.use((req, res, next) => {
-  // If body is a string (from text parser), try to parse as JSON
-  if (typeof req.body === 'string' && req.body.trim()) {
-    try {
-      req.body = JSON.parse(req.body);
-    } catch (_e) {
-      // If parse fails and content-type suggests JSON, return error
-      if (req.is('json') || req.is('*/json')) {
-        return res.status(400).json({ success: false, error: 'Invalid JSON' });
-      }
-    }
-  }
-  next();
-});
-
+// Standard JSON parser
+app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 // Rate limiting

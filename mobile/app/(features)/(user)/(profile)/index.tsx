@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, ScrollView, ActivityIndicator, RefreshControl, Alert } from 'react-native';
-import { useRouter, useNavigation } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getProfile, updateProfile, deleteAccount, getUserElders } from '@/services/userService';
@@ -20,7 +20,6 @@ import { Bounceable } from '@/components/Bounceable';
 // ==========================================
 export default function Profile() {
   const router = useRouter();
-  const _navigation = useNavigation();
   const queryClient = useQueryClient();
   const [uploading, setUploading] = useState(false);
   const [imageError, setImageError] = useState(false);
@@ -33,19 +32,33 @@ export default function Profile() {
     data: profile,
     isLoading,
     isError,
-    refetch,
+    refetch: refetchProfile,
   } = useQuery({
     queryKey: ['userProfile'],
     queryFn: getProfile,
+    staleTime: 0, // Always consider data stale
+    refetchOnMount: 'always', // Always refetch when component mounts
   });
 
   // Fetch Current Elder Access Level
-  const { data: elders } = useQuery({
+  const { data: elders, refetch: refetchElders } = useQuery({
     queryKey: ['userElders'],
     queryFn: getUserElders,
+    staleTime: 0, // Always consider data stale
+    refetchOnMount: 'always', // Always refetch when component mounts
   });
   const currentElder = elders?.[0];
   const _isOwner = currentElder?.accessLevel === 'OWNER' || currentElder?.accessLevel === 'EDITOR';
+
+  // Refetch data when screen comes into focus (e.g., when navigating back)
+  // Using useFocusEffect + invalidateQueries for instant data display (like Emergency page pattern)
+  useFocusEffect(
+    useCallback(() => {
+      // Refetch queries instead of invalidating to prevent flickering
+      queryClient.refetchQueries({ queryKey: ['userProfile'] });
+      queryClient.refetchQueries({ queryKey: ['userElders'] });
+    }, [queryClient]),
+  );
 
   // Reset error state when profile image changes
   React.useEffect(() => {
@@ -137,7 +150,10 @@ export default function Profile() {
             ไม่พบข้อมูลโปรไฟล์
           </Text>
           <Bounceable
-            onPress={() => refetch()}
+            onPress={() => {
+              refetchProfile();
+              refetchElders();
+            }}
             className="mt-4 p-3 rounded-lg"
             scale={1}
             style={{ backgroundColor: '#E5E7EB' }}
@@ -162,7 +178,14 @@ export default function Profile() {
         className="flex-1"
         contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 40 }}
         refreshControl={
-          <RefreshControl refreshing={isLoading} onRefresh={refetch} colors={['#16AD78']} />
+          <RefreshControl
+            refreshing={isLoading}
+            onRefresh={() => {
+              refetchProfile();
+              refetchElders();
+            }}
+            colors={['#16AD78']}
+          />
         }
         showsVerticalScrollIndicator={false}
       >

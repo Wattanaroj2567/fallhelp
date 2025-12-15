@@ -1,6 +1,6 @@
 // components/AddressSelect.tsx
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View } from 'react-native';
 import { getProvinces, getAmphoes, getDistricts, getZipcode } from '@/utils/thailandAddress';
 import { FloatingLabelInput } from './FloatingLabelInput';
 import { AutocompleteInput } from './AutocompleteInput';
@@ -110,7 +110,7 @@ export default function AddressSelect({ value, onChange, errors }: AddressSelect
   };
 
   return (
-    <View style={styles.container}>
+    <View className="gap-4">
       <FloatingLabelInput
         label="บ้านเลขที่"
         value={value.houseNumber}
@@ -173,9 +173,3 @@ export default function AddressSelect({ value, onChange, errors }: AddressSelect
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    gap: 16,
-  },
-});

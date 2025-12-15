@@ -39,6 +39,10 @@ export async function fallHandler(deviceId: string, payload: FallDetectionPayloa
       return;
     }
 
+    // Use server time instead of ESP32 millis() timestamp
+    // ESP32 sends millis() (relative time since boot), not Unix timestamp
+    const serverTimestamp = new Date();
+
     // 2. Create fall event in database (no GPS data)
     const event = await createEvent({
       elderId: device.elderId,
@@ -49,7 +53,7 @@ export async function fallHandler(deviceId: string, payload: FallDetectionPayloa
       accelerometerY: payload.accelerationY,
       accelerometerZ: payload.accelerationZ,
       metadata: { magnitude: payload.magnitude },
-      timestamp: new Date(payload.timestamp),
+      timestamp: serverTimestamp,
     });
 
     log('✅ Fall event created: %s', event.id);

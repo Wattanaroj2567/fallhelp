@@ -10,11 +10,26 @@ import { PaperProvider } from 'react-native-paper';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/context/AuthContext';
+import { SocketProvider } from '@/context/SocketContext';
 import { useProtectedRoute } from '@/hooks/useProtectedRoute';
 import { AppTheme } from '@/constants/theme';
 import { LoadingScreen } from '@/components/LoadingScreen';
 
-const queryClient = new QueryClient();
+// ==========================================
+// ⚙️ React Query Configuration
+// Purpose: Global query defaults for consistent data fetching behavior
+// ==========================================
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 0, // Data is stale immediately → refetch on component mount
+      gcTime: 5 * 60 * 1000, // Keep cache for 5 minutes (formerly cacheTime)
+      refetchOnWindowFocus: false, // Disable auto-refetch on window focus
+      refetchOnMount: true, // Refetch when component mounts (if data is stale)
+      retry: 1, // Retry failed queries once
+    },
+  },
+});
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -65,11 +80,13 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClient}>
-        <ThemeProvider value={DefaultTheme}>
-          <PaperProvider theme={AppTheme}>
-            <RootLayoutNav />
-          </PaperProvider>
-        </ThemeProvider>
+        <SocketProvider>
+          <ThemeProvider value={DefaultTheme}>
+            <PaperProvider theme={AppTheme}>
+              <RootLayoutNav />
+            </PaperProvider>
+          </ThemeProvider>
+        </SocketProvider>
       </QueryClientProvider>
     </AuthProvider>
   );

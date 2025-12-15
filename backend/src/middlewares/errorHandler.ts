@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { Prisma } from '../generated/prisma/client.js';
 import createDebug from 'debug';
-import { AppError } from '../utils/AppError.js';
 import { ApiError, ErrorMessages } from '../utils/ApiError.js';
 
 const log = createDebug('fallhelp:error');
@@ -17,16 +16,13 @@ export const errorHandler = (
   _next: NextFunction,
 ): void => {
   // Log errors
-  if (
-    (error instanceof AppError && error.isOperational) ||
-    (error instanceof ApiError && error.isOperational)
-  ) {
+  if (error instanceof ApiError && error.isOperational) {
     log('[Warn]: %s', error.message);
   } else {
     log('[Error]: %O', error);
   }
 
-  // New ApiError (Thai-friendly)
+  // ApiError (Thai-friendly)
   if (error instanceof ApiError) {
     res.status(error.statusCode).json({
       success: false,
@@ -34,15 +30,6 @@ export const errorHandler = (
         code: error.code,
         message: error.messageTh, // Thai message by default
       },
-    });
-    return;
-  }
-
-  // Legacy AppError (for backward compatibility)
-  if (error instanceof AppError) {
-    res.status(error.statusCode).json({
-      success: false,
-      error: error.message,
     });
     return;
   }

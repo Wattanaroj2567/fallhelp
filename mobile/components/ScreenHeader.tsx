@@ -50,6 +50,7 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
             className="p-2 -ml-2"
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             scale={0.9}
+            debounceTime={0}
           >
             <MaterialIcons name="arrow-back" size={28} color={transparent ? 'white' : '#374151'} />
           </Bounceable>

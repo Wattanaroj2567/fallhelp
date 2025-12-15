@@ -4,7 +4,7 @@
  */
 
 import { apiClient, toApiError } from './api';
-import type { EmergencyContact } from './types';
+import type { ApiResponse, EmergencyContact } from './types';
 
 export type CreateContactPayload = {
   name: string;
@@ -17,7 +17,7 @@ export type UpdateContactPayload = Partial<CreateContactPayload>;
 
 export async function listContacts(elderId: string): Promise<EmergencyContact[]> {
   try {
-    const { data } = await apiClient.get<{ success: boolean; data: EmergencyContact[] }>(
+    const { data } = await apiClient.get<ApiResponse<EmergencyContact[]>>(
       `/api/elders/${elderId}/emergency-contacts`,
     );
     return data.data;
@@ -31,11 +31,11 @@ export async function createContact(
   payload: CreateContactPayload,
 ): Promise<EmergencyContact> {
   try {
-    const { data } = await apiClient.post<EmergencyContact>(
+    const { data } = await apiClient.post<ApiResponse<EmergencyContact>>(
       `/api/elders/${elderId}/emergency-contacts`,
       payload,
     );
-    return data;
+    return data.data;
   } catch (error) {
     throw toApiError(error);
   }
@@ -46,7 +46,7 @@ export async function updateContact(
   payload: Partial<CreateContactPayload>,
 ): Promise<EmergencyContact> {
   try {
-    const { data } = await apiClient.put<{ success: boolean; data: EmergencyContact }>(
+    const { data } = await apiClient.put<ApiResponse<EmergencyContact>>(
       `/api/emergency-contacts/${id}`,
       payload,
     );

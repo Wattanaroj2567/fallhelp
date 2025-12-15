@@ -4,7 +4,7 @@
  */
 
 import { apiClient, toApiError } from './api';
-import type { Elder, Member } from './types';
+import type { ApiResponse, Elder, Member } from './types';
 
 export type CreateElderPayload = {
   firstName: string;
@@ -36,10 +36,7 @@ export type InviteMemberPayload = {
 
 export async function createElder(payload: CreateElderPayload): Promise<Elder> {
   try {
-    const response = await apiClient.post<{ data: Elder; success: boolean }>(
-      '/api/elders',
-      payload,
-    );
+    const response = await apiClient.post<ApiResponse<Elder>>('/api/elders', payload);
     return response.data.data;
   } catch (error) {
     throw toApiError(error);
@@ -48,7 +45,7 @@ export async function createElder(payload: CreateElderPayload): Promise<Elder> {
 
 export async function listElders(): Promise<Elder[]> {
   try {
-    const response = await apiClient.get<{ data: Elder[]; success: boolean }>('/api/elders');
+    const response = await apiClient.get<ApiResponse<Elder[]>>('/api/elders');
     return response.data.data || [];
   } catch (error) {
     throw toApiError(error);
@@ -57,9 +54,7 @@ export async function listElders(): Promise<Elder[]> {
 
 export async function getElder(elderId: string): Promise<Elder> {
   try {
-    const response = await apiClient.get<{ data: Elder; success: boolean }>(
-      `/api/elders/${elderId}`,
-    );
+    const response = await apiClient.get<ApiResponse<Elder>>(`/api/elders/${elderId}`);
     return response.data.data;
   } catch (error) {
     throw toApiError(error);
@@ -68,10 +63,7 @@ export async function getElder(elderId: string): Promise<Elder> {
 
 export async function updateElder(elderId: string, payload: UpdateElderPayload): Promise<Elder> {
   try {
-    const response = await apiClient.put<{ data: Elder; success: boolean }>(
-      `/api/elders/${elderId}`,
-      payload,
-    );
+    const response = await apiClient.put<ApiResponse<Elder>>(`/api/elders/${elderId}`, payload);
     return response.data.data;
   } catch (error) {
     throw toApiError(error);
@@ -80,9 +72,7 @@ export async function updateElder(elderId: string, payload: UpdateElderPayload):
 
 export async function deactivateElder(elderId: string): Promise<Elder> {
   try {
-    const response = await apiClient.patch<{ data: Elder; success: boolean }>(
-      `/api/elders/${elderId}/deactivate`,
-    );
+    const response = await apiClient.patch<ApiResponse<Elder>>(`/api/elders/${elderId}/deactivate`);
     return response.data.data;
   } catch (error) {
     throw toApiError(error);
@@ -99,9 +89,7 @@ export async function deleteElder(elderId: string): Promise<void> {
 
 export async function listMembers(elderId: string): Promise<Member[]> {
   try {
-    const response = await apiClient.get<{ data: Member[]; success: boolean }>(
-      `/api/elders/${elderId}/members`,
-    );
+    const response = await apiClient.get<ApiResponse<Member[]>>(`/api/elders/${elderId}/members`);
     return response.data.data || [];
   } catch (error) {
     throw toApiError(error);
@@ -110,7 +98,7 @@ export async function listMembers(elderId: string): Promise<Member[]> {
 
 export async function inviteMember(elderId: string, payload: InviteMemberPayload): Promise<Member> {
   try {
-    const response = await apiClient.post<{ data: Member; success: boolean }>(
+    const response = await apiClient.post<ApiResponse<Member>>(
       `/api/elders/${elderId}/members`,
       payload,
     );
@@ -126,7 +114,7 @@ export async function updateMemberAccess(
   accessLevel: 'EDITOR' | 'VIEWER',
 ): Promise<Member> {
   try {
-    const response = await apiClient.patch<{ data: Member; success: boolean }>(
+    const response = await apiClient.patch<ApiResponse<Member>>(
       `/api/elders/${elderId}/members/${memberId}`,
       { accessLevel },
     );

@@ -4,7 +4,7 @@
  */
 
 import { apiClient, toApiError } from './api';
-import type { Elder, UserProfile } from './types';
+import type { ApiResponse, Elder, UserProfile } from './types';
 
 export type UpdateProfilePayload = Partial<
   Pick<UserProfile, 'firstName' | 'lastName' | 'phone' | 'profileImage' | 'email' | 'gender'>
@@ -21,9 +21,7 @@ export type UpdatePushTokenPayload = {
 
 export async function getProfile(): Promise<UserProfile> {
   try {
-    const response = await apiClient.get<{ data: UserProfile; success: boolean }>(
-      '/api/users/profile',
-    );
+    const response = await apiClient.get<ApiResponse<UserProfile>>('/api/users/profile');
     return response.data.data;
   } catch (error) {
     throw toApiError(error);
@@ -32,10 +30,7 @@ export async function getProfile(): Promise<UserProfile> {
 
 export async function updateProfile(payload: UpdateProfilePayload): Promise<UserProfile> {
   try {
-    const response = await apiClient.put<{ data: UserProfile; success: boolean }>(
-      '/api/users/profile',
-      payload,
-    );
+    const response = await apiClient.put<ApiResponse<UserProfile>>('/api/users/profile', payload);
     return response.data.data;
   } catch (error) {
     throw toApiError(error);
@@ -60,7 +55,7 @@ export async function updatePushToken(payload: UpdatePushTokenPayload) {
 
 export async function getUserElders(): Promise<Elder[]> {
   try {
-    const response = await apiClient.get<{ data: Elder[]; success: boolean }>('/api/users/elders');
+    const response = await apiClient.get<ApiResponse<Elder[]>>('/api/users/elders');
     const elders = response.data.data || [];
     return elders;
   } catch (error) {

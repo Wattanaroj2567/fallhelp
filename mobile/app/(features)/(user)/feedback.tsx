@@ -131,7 +131,6 @@ export default function FeedbackScreen() {
           title="ส่งความคิดเห็น"
           onPress={handleSubmit}
           loading={feedbackMutation.isPending}
-          disabled={!message.trim()}
         />
       </View>
     </ScreenWrapper>

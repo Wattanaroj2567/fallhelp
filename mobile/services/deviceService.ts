@@ -4,7 +4,7 @@
  */
 
 import { apiClient, toApiError } from './api';
-import type { Device, DeviceConfig } from './types';
+import type { ApiResponse, Device, DeviceConfig } from './types';
 
 export type CreateDevicePayload = {
   deviceCode: string;
@@ -38,13 +38,6 @@ export type UpdateDeviceConfigPayload = Partial<
   >
 >;
 
-// Helper type for API response
-type ApiResponse<T> = {
-  success: boolean;
-  message?: string;
-  data: T;
-};
-
 export async function createDevice(payload: CreateDevicePayload): Promise<Device> {
   try {
     const { data } = await apiClient.post<ApiResponse<Device>>('/api/devices', payload);
@@ -56,8 +49,10 @@ export async function createDevice(payload: CreateDevicePayload): Promise<Device
 
 export async function getPairingQr(deviceCode: string): Promise<{ qr: string }> {
   try {
-    const { data } = await apiClient.get<{ qr: string }>(`/api/devices/qr/${deviceCode}`);
-    return data;
+    const { data } = await apiClient.get<ApiResponse<{ qr: string }>>(
+      `/api/devices/qr/${deviceCode}`,
+    );
+    return data.data;
   } catch (error) {
     throw toApiError(error);
   }

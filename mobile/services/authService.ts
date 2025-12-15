@@ -7,16 +7,14 @@ import { apiClient, toApiError } from './api';
 import { clearToken, setToken } from './tokenStorage';
 import type { UserProfile } from './types';
 
+import type { ApiResponse } from './types';
+
 export type AuthResponse = {
   token: string;
   user: UserProfile;
 };
 
-export type BackendAuthResponse = {
-  success: boolean;
-  message: string;
-  data: AuthResponse;
-};
+export type BackendAuthResponse = ApiResponse<AuthResponse>;
 
 export type LoginPayload = {
   email?: string;
@@ -78,7 +76,7 @@ export type OtpResponse = {
 
 export async function requestOtp(payload: RequestOtpPayload): Promise<OtpResponse> {
   try {
-    const { data } = await apiClient.post<{ success: boolean; data: OtpResponse }>(
+    const { data } = await apiClient.post<ApiResponse<OtpResponse>>(
       '/api/auth/request-otp',
       payload,
     );
@@ -95,7 +93,7 @@ export type VerifyOtpResponse = {
 
 export async function verifyOtp(payload: VerifyOtpPayload): Promise<VerifyOtpResponse> {
   try {
-    const { data } = await apiClient.post<{ success: boolean; data: VerifyOtpResponse }>(
+    const { data } = await apiClient.post<ApiResponse<VerifyOtpResponse>>(
       '/api/auth/verify-otp',
       payload,
     );
