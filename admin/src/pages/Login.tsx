@@ -8,14 +8,12 @@ export default function Login() {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
     setLoading(true);
 
     try {
@@ -23,7 +21,6 @@ export default function Login() {
       const { token, user } = response.data.data; // Note: api response structure might be data.data based on controller
 
       if (user.role !== "ADMIN") {
-        setError("การเข้าถึงถูกปฏิเสธ ต้องใช้สิทธิ์ผู้ดูแลระบบ");
         setLoading(false);
         return;
       }
@@ -31,70 +28,8 @@ export default function Login() {
       login(token, user);
       navigate("/");
     } catch (err) {
-      // Extract error message safely - handle both string and object formats
-      let errorMessage = "เข้าสู่ระบบล้มเหลว";
-
-      try {
-        const error = err as {
-          response?: {
-            data?: {
-              error?: string | { code?: string; message?: string };
-              message?: string | { code?: string; message?: string };
-            };
-          };
-        };
-
-        const errorData = error.response?.data?.error;
-        const messageData = error.response?.data?.message;
-
-        // Try error object first
-        if (typeof errorData === "string") {
-          errorMessage = errorData;
-        } else if (
-          errorData &&
-          typeof errorData === "object" &&
-          errorData !== null &&
-          !Array.isArray(errorData) &&
-          "message" in errorData
-        ) {
-          // Extract message from error object
-          const msg = errorData.message;
-          if (typeof msg === "string" && msg.trim()) {
-            errorMessage = msg;
-          }
-        }
-
-        // Fallback to message field
-        if (errorMessage === "เข้าสู่ระบบล้มเหลว") {
-          if (typeof messageData === "string") {
-            errorMessage = messageData;
-          } else if (
-            messageData &&
-            typeof messageData === "object" &&
-            messageData !== null &&
-            !Array.isArray(messageData) &&
-            "message" in messageData
-          ) {
-            const msg = messageData.message;
-            if (typeof msg === "string" && msg.trim()) {
-              errorMessage = msg;
-            }
-          }
-        }
-      } catch (parseError) {
-        // If anything goes wrong, use default message
-        console.warn("[Login] Error parsing error response:", parseError);
-        errorMessage = "เข้าสู่ระบบล้มเหลว";
-      }
-
-      // Ensure errorMessage is always a string (never an object)
-      // Double check to prevent any object from being set
-      const finalMessage =
-        typeof errorMessage === "string"
-          ? errorMessage.trim() || "เข้าสู่ระบบล้มเหลว"
-          : "เข้าสู่ระบบล้มเหลว";
-
-      setError(finalMessage);
+      // Silently handle error - no error message displayed
+      console.error("[Login] Login failed:", err);
     } finally {
       setLoading(false);
     }
