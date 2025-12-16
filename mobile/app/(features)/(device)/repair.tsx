@@ -1,12 +1,12 @@
 import React, { useState, useRef } from 'react';
 import { View, Text, Alert, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { GestureHandlerRootView, Swipeable } from 'react-native-gesture-handler';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { submitFeedback, getRepairHistory, deleteRepairRequest } from '@/services/feedbackService';
-import { getProfile } from '@/services/userService';
+import { getProfile, getUserElders } from '@/services/userService';
 import { ScreenWrapper } from '@/components/ScreenWrapper';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { PrimaryButton } from '@/components/PrimaryButton';
@@ -22,6 +22,7 @@ import { showErrorMessage } from '@/utils/errorHelper';
 export default function RepairScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const params = useLocalSearchParams<{ deviceId?: string }>();
 
   // ==========================================
   // 🧩 LAYER: Logic (Local State)
@@ -43,6 +44,17 @@ export default function RepairScreen() {
   const { data: userProfile } = useQuery({
     queryKey: ['userProfile'],
     queryFn: getProfile,
+  });
+
+  // Fetch current elder to get device info (fallback if no deviceId in params)
+  const { data: elderInfo } = useQuery({
+    queryKey: ['userElders'],
+    queryFn: async () => {
+      const { getUserElders } = await import('@/services/userService');
+      const elders = await getUserElders();
+      return elders && elders.length > 0 ? elders[0] : null;
+    },
+    enabled: !params.deviceId, // Only fetch if deviceId not provided in params
   });
 
   const {
@@ -68,8 +80,12 @@ export default function RepairScreen() {
   // Purpose: Submit repair request (using feedback API for now)
   // ==========================================
   const repairMutation = useMutation({
-    mutationFn: (data: { message: string; userName?: string; type: 'REPAIR_REQUEST' }) =>
-      submitFeedback(data),
+    mutationFn: (data: {
+      message: string;
+      userName?: string;
+      type: 'REPAIR_REQUEST';
+      deviceId?: string | null;
+    }) => submitFeedback(data),
     onSuccess: () => {
       Alert.alert(
         'ส่งเรื่องแจ้งซ่อมสำเร็จ',
@@ -153,11 +169,13 @@ export default function RepairScreen() {
     }
 
     const userName = userProfile ? `${userProfile.firstName} ${userProfile.lastName}` : undefined;
+    // Use deviceId from params if available, otherwise fallback to elderInfo device
+    const deviceId = params.deviceId || elderInfo?.device?.id || null;
 
     const fullMessage = `[REPAIR REQUEST] Topic: ${subject}\nDetails: ${message}`;
 
     Logger.info('Submitting repair request:', fullMessage);
-    repairMutation.mutate({ message: fullMessage, userName, type: 'REPAIR_REQUEST' });
+    repairMutation.mutate({ message: fullMessage, userName, type: 'REPAIR_REQUEST', deviceId });
   };
 
   // ==========================================
@@ -502,19 +520,50 @@ export default function RepairScreen() {
                                 }}
                               >
                                 <View style={{ flex: 1 }}>
-                                  {item.ticketNumber && (
-                                    <Text
-                                      style={{
-                                        fontFamily: 'Kanit',
-                                        fontSize: 11,
-                                        color: '#6366F1',
-                                        fontWeight: '600',
-                                        marginBottom: 2,
-                                      }}
-                                    >
-                                      {item.ticketNumber}
-                                    </Text>
-                                  )}
+                                  <View
+                                    style={{
+                                      flexDirection: 'row',
+                                      alignItems: 'center',
+                                      gap: 8,
+                                      marginBottom: 4,
+                                    }}
+                                  >
+                                    {item.ticketNumber && (
+                                      <Text
+                                        style={{
+                                          fontFamily: 'Kanit',
+                                          fontSize: 11,
+                                          color: '#6366F1',
+                                          fontWeight: '600',
+                                        }}
+                                      >
+                                        {item.ticketNumber}
+                                      </Text>
+                                    )}
+                                    {item.device?.deviceCode && (
+                                      <>
+                                        <Text
+                                          style={{
+                                            fontFamily: 'Kanit',
+                                            fontSize: 11,
+                                            color: '#9CA3AF',
+                                          }}
+                                        >
+                                          •
+                                        </Text>
+                                        <Text
+                                          style={{
+                                            fontFamily: 'Kanit',
+                                            fontSize: 11,
+                                            color: '#059669',
+                                            fontWeight: '600',
+                                          }}
+                                        >
+                                          อุปกรณ์: {item.device.deviceCode}
+                                        </Text>
+                                      </>
+                                    )}
+                                  </View>
                                   <Text
                                     style={{
                                       fontFamily: 'Kanit',

@@ -32,8 +32,10 @@ export async function statusHandler(deviceId: string, payload: DeviceStatusPaylo
     }
 
     // 2. Update device status in database
+    // Use 30 seconds threshold to match mobile app logic
+    const OFFLINE_THRESHOLD_MS = 30 * 1000; // 30 seconds - matches mobile app
     const wasOnline = device.lastOnline
-      ? Date.now() - device.lastOnline.getTime() < 5 * 60 * 1000 // 5 minutes
+      ? Date.now() - device.lastOnline.getTime() < OFFLINE_THRESHOLD_MS
       : false;
 
     // Use server time instead of ESP32 millis() timestamp

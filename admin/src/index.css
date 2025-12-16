@@ -1,15 +1,23 @@
 @import "tailwindcss";
-
 @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap');
+
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
   --font-kanit: 'Kanit', sans-serif;
+  --font-sans: var(--font-kanit), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   --color-primary: #16AD78;
   --color-secondary: #3B82F6;
 }
 
+@layer utilities {
+  .font-kanit {
+    font-family: var(--font-kanit);
+  }
+}
+
 body {
-  font-family: var(--font-kanit);
+  font-family: var(--font-kanit), ui-sans-serif, system-ui, sans-serif;
 }
 
 /* Hide native password reveal button in Edge/Internet Explorer */

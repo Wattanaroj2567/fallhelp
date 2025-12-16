@@ -278,7 +278,12 @@ export default function DeviceDetails() {
               <View className="rounded-[24px] overflow-hidden">
                 {/* Repair */}
                 <Bounceable
-                  onPress={() => router.push('/(features)/(device)/repair')}
+                  onPress={() =>
+                    router.push({
+                      pathname: '/(features)/(device)/repair',
+                      params: { deviceId: device?.id || undefined },
+                    })
+                  }
                   className="border-b border-gray-100 active:bg-gray-50"
                   scale={1}
                   style={{ backgroundColor: 'white' }}

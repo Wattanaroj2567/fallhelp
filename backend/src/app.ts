@@ -25,10 +25,31 @@ const logDocs = createDebug('fallhelp:api:docs');
 // Middleware
 app.use(
   cors({
-    origin: [
-      process.env.FRONTEND_URL || 'http://localhost:8081',
-      process.env.ADMIN_URL || 'http://localhost:5173',
-    ],
+    origin: (origin, callback) => {
+      // In development, allow all localhost origins for flexibility
+      if (process.env.NODE_ENV !== 'production') {
+        if (
+          !origin ||
+          origin.startsWith('http://localhost:') ||
+          origin.startsWith('http://127.0.0.1:')
+        ) {
+          callback(null, true);
+          return;
+        }
+      }
+
+      // In production, use strict CORS settings
+      const allowedOrigins = [
+        process.env.FRONTEND_URL || 'http://localhost:8081',
+        process.env.ADMIN_URL || 'http://localhost:5173',
+      ].filter(Boolean);
+
+      if (origin && allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
   }),
 );

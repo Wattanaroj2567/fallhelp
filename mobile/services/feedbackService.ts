@@ -17,6 +17,10 @@ export interface FeedbackItem {
   ticketNumber?: string; // REP-001, REP-002 for repair requests
   createdAt: string;
   status: 'PENDING' | 'REVIEWED' | 'RESOLVED';
+  device?: {
+    id: string;
+    deviceCode: string;
+  } | null;
 }
 
 /**
@@ -29,6 +33,7 @@ export async function submitFeedback(data: {
   message: string;
   userName?: string;
   type?: FeedbackType;
+  deviceId?: string | null;
 }): Promise<unknown> {
   try {
     const response = await apiClient.post('/api/feedback', data);

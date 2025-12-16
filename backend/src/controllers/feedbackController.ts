@@ -10,7 +10,7 @@ import { createError } from '../utils/ApiError.js';
 // ==========================================
 
 export const submitFeedback = asyncHandler(async (req: Request, res: Response) => {
-  const { message, userName, type } = req.body;
+  const { message, userName, type, deviceId } = req.body;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const userId = (req as any).user?.userId || null;
 
@@ -21,7 +21,13 @@ export const submitFeedback = asyncHandler(async (req: Request, res: Response) =
   // Validate type if provided
   const feedbackType: FeedbackType = type === 'REPAIR_REQUEST' ? 'REPAIR_REQUEST' : 'COMMENT';
 
-  const feedback = await feedbackService.createFeedback(userId, message, userName, feedbackType);
+  const feedback = await feedbackService.createFeedback(
+    userId,
+    message,
+    userName,
+    feedbackType,
+    deviceId,
+  );
 
   res.status(201).json({
     success: true,
@@ -41,6 +47,10 @@ export const getFeedbacks = asyncHandler(async (req: Request, res: Response) => 
 export const updateStatus = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   const { status } = req.body;
+
+  if (!status) {
+    throw createError.missingField('status');
+  }
 
   const feedback = await feedbackService.updateFeedbackStatus(id, status);
 

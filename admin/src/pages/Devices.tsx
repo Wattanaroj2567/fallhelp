@@ -9,7 +9,12 @@ import {
   Activity,
   Link,
 } from "lucide-react";
-import { useAdminDevices, useCreateDevice, useDeleteDevice, useUnpairDevice } from "../hooks/useAdminDevices";
+import {
+  useAdminDevices,
+  useCreateDevice,
+  useDeleteDevice,
+  useUnpairDevice,
+} from "../hooks/useAdminDevices";
 import { LoadingSkeleton } from "../components/LoadingSkeleton";
 import { StatusBadge } from "../components/StatusBadge";
 import { EmptyState } from "../components/EmptyState";
@@ -46,7 +51,7 @@ export default function Devices() {
         onSuccess: () => setDeleteId(null),
         onError: (error: unknown) => {
           const err = error as { response?: { data?: { message?: string } } };
-          alert(err.response?.data?.message || "Failed to delete device");
+          alert(err.response?.data?.message || "ลบอุปกรณ์ไม่สำเร็จ");
         },
       });
     }
@@ -58,90 +63,100 @@ export default function Devices() {
         onSuccess: () => setUnpairId(null),
         onError: (error: unknown) => {
           const err = error as { response?: { data?: { message?: string } } };
-          alert(err.response?.data?.message || "Failed to unpair device");
+          alert(
+            err.response?.data?.message || "ยกเลิกการจับคู่อุปกรณ์ไม่สำเร็จ"
+          );
         },
       });
     }
   };
 
   if (isLoading) {
-    return <LoadingSkeleton message="Loading devices..." color="green" />;
+    return <LoadingSkeleton message="กำลังโหลดอุปกรณ์..." color="green" />;
   }
 
   return (
     <>
-      <div className="min-h-screen bg-linear-to-br from-slate-50 via-green-50 to-emerald-50">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-50/50 to-emerald-50/20 dark:from-gray-900 dark:via-gray-900/50 dark:to-emerald-900/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
           <div className="flex justify-between items-center mb-8">
             <div>
-              <h1 className="text-3xl font-bold bg-linear-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
-                Device Management
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-gray-100 dark:to-gray-300 bg-clip-text text-transparent">
+                จัดการอุปกรณ์
               </h1>
-              <p className="text-sm text-gray-500 mt-1">
-                Monitor and manage IoT devices
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                ลงทะเบียน ตรวจสอบสถานะ และจัดการอุปกรณ์ทั้งหมดในระบบ
               </p>
             </div>
             <button
               onClick={() => setShowModal(true)}
-              className="bg-linear-to-r from-green-500 to-emerald-600 text-white px-6 py-3 rounded-xl flex items-center gap-2 hover:from-green-600 hover:to-emerald-700 transition-all shadow-lg hover:shadow-xl"
+              className="bg-green-600 text-white px-6 py-3 rounded-xl flex items-center gap-2 hover:bg-green-700 transition-all shadow-lg hover:shadow-xl"
             >
               <Plus size={20} />
-              <span className="font-semibold">Register Device</span>
+              <span className="font-semibold">ลงทะเบียนอุปกรณ์</span>
             </button>
           </div>
 
           {/* Summary Cards */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <p className="text-sm text-gray-500 mb-1">Total Devices</p>
-                  <p className="text-3xl font-bold text-gray-900">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                    อุปกรณ์ทั้งหมด
+                  </p>
+                  <p className="text-3xl font-bold text-gray-700 dark:text-gray-200">
                     {devices?.length || 0}
                   </p>
                 </div>
-                <div className="p-2.5 bg-linear-to-br from-gray-500 to-gray-600 rounded-xl">
+                <div className="p-2.5 bg-gradient-to-br from-slate-500 to-slate-600 rounded-xl">
                   <Smartphone className="w-6 h-6 text-white" />
                 </div>
               </div>
             </div>
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <p className="text-sm text-gray-500 mb-1">Paired</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                    จับคู่แล้ว
+                  </p>
                   <p className="text-3xl font-bold text-blue-600">
                     {devices?.filter((d) => d.status === "PAIRED").length || 0}
                   </p>
                 </div>
-                <div className="p-2.5 bg-linear-to-br from-blue-500 to-blue-600 rounded-xl">
+                <div className="p-2.5 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl">
                   <Link className="w-6 h-6 text-white" />
                 </div>
               </div>
             </div>
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <p className="text-sm text-gray-500 mb-1">Active</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                    ใช้งานอยู่
+                  </p>
                   <p className="text-3xl font-bold text-green-600">
                     {devices?.filter((d) => d.status === "ACTIVE").length || 0}
                   </p>
                 </div>
-                <div className="p-2.5 bg-linear-to-br from-green-500 to-green-600 rounded-xl">
+                <div className="p-2.5 bg-gradient-to-br from-green-500 to-green-600 rounded-xl">
                   <Activity className="w-6 h-6 text-white" />
                 </div>
               </div>
             </div>
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <p className="text-sm text-gray-500 mb-1">Unpaired</p>
-                  <p className="text-3xl font-bold text-purple-600">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                    ยังไม่จับคู่
+                  </p>
+                  <p className="text-3xl font-bold text-orange-600">
                     {devices?.filter((d) => d.status === "UNPAIRED").length ||
                       0}
                   </p>
                 </div>
-                <div className="p-2.5 bg-linear-to-br from-purple-500 to-purple-600 rounded-xl">
+                <div className="p-2.5 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl">
                   <Unplug className="w-6 h-6 text-white" />
                 </div>
               </div>
@@ -149,40 +164,37 @@ export default function Devices() {
           </div>
 
           {/* Devices Table */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
             <table className="w-full">
               <thead>
-                <tr className="bg-linear-to-r from-gray-50 to-green-50 border-b border-gray-200">
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Serial Number
+                <tr className="bg-gradient-to-r from-gray-50 to-green-50 dark:from-gray-700 dark:to-gray-700 border-b border-gray-200 dark:border-gray-600">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                    หมายเลขอุปกรณ์
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Device Code
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                    รหัสอุปกรณ์
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Status
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                    สถานะ
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Assigned To
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Actions
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                    จัดการ
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                 {devices?.map((device) => (
                   <tr
                     key={device.id}
-                    className="hover:bg-green-50/50 transition-colors"
+                    className="hover:bg-green-50/50 dark:hover:bg-gray-700/50 transition-colors"
                   >
                     <td className="px-6 py-4">
-                      <span className="font-semibold text-gray-900">
+                      <span className="font-semibold text-gray-900 dark:text-gray-100">
                         {device.serialNumber}
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <code className="px-3 py-1 bg-gray-100 rounded-lg text-sm font-mono text-gray-700">
+                      <code className="px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-lg text-sm font-mono text-gray-700 dark:text-gray-300">
                         {device.deviceCode}
                       </code>
                     </td>
@@ -190,28 +202,19 @@ export default function Devices() {
                       <StatusBadge status={device.status} variant="device" />
                     </td>
                     <td className="px-6 py-4">
-                      {device.elder ? (
-                        <span className="text-gray-700 font-medium">
-                          {device.elder.firstName} {device.elder.lastName}
-                        </span>
-                      ) : (
-                        <span className="text-gray-400 italic">-</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => setSelectedDevice(device)}
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                          title="View QR Code"
+                          className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                          title="ดู QR Code"
                         >
                           <QrCode size={18} />
                         </button>
                         {device.status === "PAIRED" && (
                           <button
                             onClick={() => setUnpairId(device.id)}
-                            className="p-2 text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
-                            title="Force Unpair"
+                            className="p-2 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-lg transition-colors"
+                            title="ยกเลิกการจับคู่"
                           >
                             <Unplug size={18} />
                           </button>
@@ -219,7 +222,7 @@ export default function Devices() {
                         <button
                           onClick={() => setDeleteId(device.id)}
                           className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                          title="Delete Device"
+                          title="ลบอุปกรณ์"
                         >
                           <Trash2 size={18} />
                         </button>
@@ -229,7 +232,7 @@ export default function Devices() {
                 ))}
                 {devices?.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="px-6 py-12">
+                    <td colSpan={4} className="px-6 py-12">
                       <EmptyState
                         icon={Smartphone}
                         title="No devices registered yet"
@@ -247,19 +250,19 @@ export default function Devices() {
       {/* Register Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl p-8 w-full max-w-md shadow-2xl">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 w-full max-w-md shadow-2xl">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-linear-to-br from-green-500 to-emerald-600 rounded-lg">
+              <div className="p-2 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg">
                 <Plus className="w-6 h-6 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900">
-                Register New Device
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                ลงทะเบียนอุปกรณ์ใหม่
               </h2>
             </div>
             <form onSubmit={handleSubmit} className="space-y-5">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Serial Number
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                  หมายเลขอุปกรณ์
                 </label>
                 <input
                   type="text"
@@ -268,13 +271,13 @@ export default function Devices() {
                   onChange={(e) =>
                     setNewDevice({ ...newDevice, serialNumber: e.target.value })
                   }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all"
                   placeholder="SN-12345678"
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Firmware Version
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                  เวอร์ชันเฟิร์มแวร์
                 </label>
                 <input
                   type="text"
@@ -286,7 +289,7 @@ export default function Devices() {
                       firmwareVersion: e.target.value,
                     })
                   }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all"
                   placeholder="1.0.0"
                 />
               </div>
@@ -294,18 +297,18 @@ export default function Devices() {
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-6 py-3 text-gray-600 hover:bg-gray-100 rounded-xl font-medium transition-colors"
+                  className="px-6 py-3 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl font-medium transition-colors"
                 >
-                  Cancel
+                  ยกเลิก
                 </button>
                 <button
                   type="submit"
                   disabled={createMutation.isPending}
-                  className="px-6 py-3 bg-linear-to-r from-green-500 to-emerald-600 text-white rounded-xl font-semibold hover:from-green-600 hover:to-emerald-700 disabled:opacity-50 transition-all shadow-lg"
+                  className="px-6 py-3 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 disabled:opacity-50 transition-all shadow-lg"
                 >
                   {createMutation.isPending
-                    ? "Registering..."
-                    : "Register Device"}
+                    ? "กำลังลงทะเบียน..."
+                    : "ลงทะเบียนอุปกรณ์"}
                 </button>
               </div>
             </form>
@@ -316,21 +319,21 @@ export default function Devices() {
       {/* QR Code Modal */}
       {selectedDevice && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 print:p-0 print:bg-white print:static print:block">
-          <div className="bg-white rounded-2xl p-8 w-full max-w-md text-center shadow-2xl print:shadow-none print:w-full print:max-w-none print:p-0">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 w-full max-w-md text-center shadow-2xl print:shadow-none print:w-full print:max-w-none print:p-0">
             <div className="print-content">
               <div className="flex items-center justify-center gap-3 mb-4 print:mb-6">
-                <div className="p-3 bg-linear-to-br from-green-500 to-emerald-600 rounded-xl print:hidden">
+                <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl print:hidden">
                   <QrCode className="w-6 h-6 text-white" />
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900 print:text-3xl">
-                  Device QR Code
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 print:text-3xl">
+                  QR Code อุปกรณ์
                 </h2>
               </div>
-              <p className="text-gray-500 mb-6 text-sm print:hidden">
-                Scan this code with the mobile app to pair the device.
+              <p className="text-gray-500 dark:text-gray-400 mb-6 text-sm print:hidden">
+                สแกนรหัสนี้ด้วยแอปมือถือเพื่อจับคู่อุปกรณ์
               </p>
 
-              <div className="flex justify-center mb-6 p-6 bg-linear-to-br from-gray-50 to-green-50 rounded-2xl border-2 border-gray-200 print:border-gray-300 print:bg-white">
+              <div className="flex justify-center mb-6 p-6 bg-gradient-to-br from-gray-50 to-green-50 dark:from-gray-700 dark:to-gray-700 rounded-2xl border-2 border-gray-200 dark:border-gray-600 print:border-gray-300 print:bg-white">
                 <QRCodeSVG
                   value={selectedDevice.deviceCode}
                   size={220}
@@ -338,49 +341,26 @@ export default function Devices() {
                 />
               </div>
 
-              <div className="bg-gray-50 p-4 rounded-xl mb-6 print:bg-transparent print:border-2 print:border-gray-300">
-                <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-2">
-                  Device Code
+              <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-xl mb-6 print:bg-transparent print:border-2 print:border-gray-300">
+                <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold mb-2">
+                  รหัสอุปกรณ์
                 </p>
-                <p className="font-mono text-xl font-bold text-gray-900 tracking-wider">
+                <p className="font-mono text-xl font-bold text-gray-900 dark:text-gray-100 tracking-wider">
                   {selectedDevice.deviceCode}
                 </p>
               </div>
 
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-4 print:hidden">
-                <p className="text-xs text-blue-700 font-medium">
-                  Serial: {selectedDevice.serialNumber}
+              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-xl p-3 mb-4 print:hidden">
+                <p className="text-xs text-blue-700 dark:text-blue-300 font-medium">
+                  หมายเลข: {selectedDevice.serialNumber}
                 </p>
-              </div>
-
-              {/* First Time Setup Notice */}
-              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 print:hidden text-left">
-                <p className="text-sm font-semibold text-amber-800 mb-3">
-                  ⚠️ การตั้งค่าครั้งแรก (First Time Setup)
-                </p>
-                <table className="text-xs text-amber-700 w-full">
-                  <tbody>
-                    <tr>
-                      <td className="py-1 pr-2 align-top font-medium whitespace-nowrap">1. เชื่อม WiFi:</td>
-                      <td className="py-1"><code className="bg-amber-100 px-1.5 py-0.5 rounded font-mono">FallHelp-XXXXXX</code> <span className="text-green-600 font-medium">(ไม่มีรหัสผ่าน)</span></td>
-                    </tr>
-                    <tr>
-                      <td className="py-1 pr-2 align-top font-medium whitespace-nowrap">2. หน้าตั้งค่า:</td>
-                      <td className="py-1"><span className="text-green-600 font-medium">เปิดอัตโนมัติ!</span> (Captive Portal)</td>
-                    </tr>
-                    <tr>
-                      <td className="py-1 pr-2 align-top font-medium whitespace-nowrap">3. กรอก:</td>
-                      <td className="py-1">WiFi SSID และ Password เท่านั้น</td>
-                    </tr>
-                  </tbody>
-                </table>
               </div>
             </div>
 
             <div className="flex gap-3 print:hidden">
               <button
                 onClick={() => window.print()}
-                className="flex-1 py-3 bg-linear-to-r from-green-500 to-emerald-600 text-white rounded-xl hover:from-green-600 hover:to-emerald-700 font-semibold flex items-center justify-center gap-2 shadow-lg transition-all"
+                className="flex-1 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 font-semibold flex items-center justify-center gap-2 shadow-lg transition-all"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -397,13 +377,13 @@ export default function Devices() {
                   <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
                   <rect x="6" y="14" width="12" height="8"></rect>
                 </svg>
-                <span>Print Label</span>
+                <span>พิมพ์ป้าย</span>
               </button>
               <button
                 onClick={() => setSelectedDevice(null)}
-                className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 font-semibold transition-colors"
+                className="flex-1 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 font-semibold transition-colors"
               >
-                Close
+                ปิด
               </button>
             </div>
           </div>
@@ -413,32 +393,32 @@ export default function Devices() {
       {/* Delete Confirmation Modal */}
       {deleteId && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl p-8 w-full max-w-md shadow-2xl">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 w-full max-w-md shadow-2xl">
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-red-100 rounded-lg">
-                <Trash2 className="w-6 h-6 text-red-600" />
+              <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
+                <Trash2 className="w-6 h-6 text-red-600 dark:text-red-400" />
               </div>
-              <h2 className="text-2xl font-bold text-red-600">
-                Delete Device?
+              <h2 className="text-2xl font-bold text-red-600 dark:text-red-400">
+                ลบอุปกรณ์?
               </h2>
             </div>
-            <p className="text-gray-600 mb-8 leading-relaxed">
-              Are you sure you want to delete this device? This action cannot be
-              undone and will permanently remove all device data.
+            <p className="text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
+              คุณแน่ใจหรือไม่ว่าต้องการลบอุปกรณ์นี้?
+              การกระทำนี้ไม่สามารถย้อนกลับได้และจะลบข้อมูลอุปกรณ์ทั้งหมดอย่างถาวร
             </p>
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setDeleteId(null)}
-                className="px-6 py-3 text-gray-600 hover:bg-gray-100 rounded-xl font-medium transition-colors"
+                className="px-6 py-3 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl font-medium transition-colors"
               >
-                Cancel
+                ยกเลิก
               </button>
               <button
                 onClick={handleDelete}
                 disabled={deleteMutation.isPending}
                 className="px-6 py-3 bg-red-600 text-white rounded-xl font-semibold hover:bg-red-700 disabled:opacity-50 transition-all shadow-lg"
               >
-                {deleteMutation.isPending ? "Deleting..." : "Delete Device"}
+                {deleteMutation.isPending ? "กำลังลบ..." : "ลบอุปกรณ์"}
               </button>
             </div>
           </div>
@@ -448,32 +428,34 @@ export default function Devices() {
       {/* Unpair Confirmation Modal */}
       {unpairId && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl p-8 w-full max-w-md shadow-2xl">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 w-full max-w-md shadow-2xl">
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-orange-100 rounded-lg">
-                <Unplug className="w-6 h-6 text-orange-600" />
+              <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
+                <Unplug className="w-6 h-6 text-orange-600 dark:text-orange-400" />
               </div>
-              <h2 className="text-2xl font-bold text-orange-600">
-                Force Unpair Device?
+              <h2 className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                ยกเลิกการจับคู่อุปกรณ์?
               </h2>
             </div>
-            <p className="text-gray-600 mb-8 leading-relaxed">
-              Are you sure you want to force unpair this device? This will
-              disconnect it from the current elder and reset its pairing status.
+            <p className="text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
+              คุณแน่ใจหรือไม่ว่าต้องการยกเลิกการจับคู่อุปกรณ์นี้?
+              การกระทำนี้จะยกเลิกการเชื่อมต่อกับผู้สูงอายุปัจจุบันและรีเซ็ตสถานะการจับคู่
             </p>
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setUnpairId(null)}
-                className="px-6 py-3 text-gray-600 hover:bg-gray-100 rounded-xl font-medium transition-colors"
+                className="px-6 py-3 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl font-medium transition-colors"
               >
-                Cancel
+                ยกเลิก
               </button>
               <button
                 onClick={handleUnpair}
                 disabled={unpairMutation.isPending}
                 className="px-6 py-3 bg-orange-600 text-white rounded-xl font-semibold hover:bg-orange-700 disabled:opacity-50 transition-all shadow-lg"
               >
-                {unpairMutation.isPending ? "Unpairing..." : "Force Unpair"}
+                {unpairMutation.isPending
+                  ? "กำลังยกเลิก..."
+                  : "ยกเลิกการจับคู่"}
               </button>
             </div>
           </div>

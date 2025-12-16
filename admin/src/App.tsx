@@ -1,15 +1,14 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AuthProvider, useAuth } from './context/AuthContext';
-import DashboardLayout from './layouts/DashboardLayout';
-import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
-import Devices from './pages/Devices';
-import Users from './pages/Users';
-import Feedback from './pages/Feedback';
-
-import ErrorBoundary from './components/ErrorBoundary';
+import React from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import { ThemeProvider } from "./context/ThemeContext";
+import DashboardLayout from "./layouts/DashboardLayout";
+import Login from "./pages/Login";
+import Dashboard from "./pages/Dashboard";
+import Devices from "./pages/Devices";
+import Users from "./pages/Users";
+import Feedback from "./pages/Feedback";
 
 const queryClient = new QueryClient();
 
@@ -17,7 +16,11 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        Loading...
+      </div>
+    );
   }
 
   if (!isAuthenticated) {
@@ -27,23 +30,29 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-
-
 export default function App() {
   return (
-    <ErrorBoundary>
+    <ThemeProvider>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <BrowserRouter>
+          <BrowserRouter
+            future={{
+              v7_startTransition: true,
+              v7_relativeSplatPath: true,
+            }}
+          >
             <Routes>
               <Route path="/login" element={<Login />} />
               {/* Password reset removed for security - Admin uses seed script */}
 
-              <Route path="/" element={
-                <ProtectedRoute>
-                  <DashboardLayout />
-                </ProtectedRoute>
-              }>
+              <Route
+                path="/"
+                element={
+                  <ProtectedRoute>
+                    <DashboardLayout />
+                  </ProtectedRoute>
+                }
+              >
                 <Route index element={<Dashboard />} />
                 <Route path="devices" element={<Devices />} />
                 <Route path="users" element={<Users />} />
@@ -53,6 +62,6 @@ export default function App() {
           </BrowserRouter>
         </AuthProvider>
       </QueryClientProvider>
-    </ErrorBoundary>
+    </ThemeProvider>
   );
 }

@@ -64,30 +64,30 @@ enum OtpPurpose {
 // ==================== ELDER & DEVICE ====================
 
 model Elder {
-  id           String    @id @default(uuid())
-  firstName    String
-  lastName     String
-  gender       Gender?
-  dateOfBirth  DateTime?
-  height       Float? // ส่วนสูง (cm)
-  weight       Float? // น้ำหนัก (kg)
-  diseases     String[] // โรคประจำตัว
-  
+  id          String    @id @default(uuid())
+  firstName   String
+  lastName    String
+  gender      Gender?
+  dateOfBirth DateTime?
+  height      Float? // ส่วนสูง (cm)
+  weight      Float? // น้ำหนัก (kg)
+  diseases    String[] // โรคประจำตัว
+
   // ที่อยู่แบบแยกฟิลด์
-  houseNumber  String?  // บ้านเลขที่
-  village      String?  // หมู่บ้าน/อาคาร
-  subdistrict  String?  // ตำบล/แขวง
-  district     String?  // อำเภอ/เขต
-  province     String?  // จังหวัด
-  zipcode      String?  // รหัสไปรษณีย์
-  
+  houseNumber String? // บ้านเลขที่
+  village     String? // หมู่บ้าน/อาคาร
+  subdistrict String? // ตำบล/แขวง
+  district    String? // อำเภอ/เขต
+  province    String? // จังหวัด
+  zipcode     String? // รหัสไปรษณีย์
+
   profileImage String?
   bloodType    String?
   allergies    String[]
   medications  String[]
-  isActive     Boolean   @default(true)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   // Relations
   device            Device?
@@ -117,8 +117,9 @@ model Device {
   updatedAt       DateTime     @updatedAt
 
   // Relations
-  config DeviceConfig?
-  events Event[]
+  config    DeviceConfig?
+  events    Event[]
+  feedbacks Feedback[]
 
   @@map("devices")
 }
@@ -304,7 +305,7 @@ enum AccessLevel {
 // ==================== FEEDBACK ====================
 
 enum FeedbackType {
-  COMMENT        // ความคิดเห็นทั่วไป (from feedback screen)
+  COMMENT // ความคิดเห็นทั่วไป (from feedback screen)
   REPAIR_REQUEST // การแจ้งซ่อม (from repair screen)
 }
 
@@ -312,6 +313,8 @@ model Feedback {
   id           String         @id @default(uuid())
   userId       String? // Optional: User might send anonymously or if we want to track
   user         User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  deviceId     String? // Device ID for repair requests
+  device       Device?        @relation(fields: [deviceId], references: [id], onDelete: SetNull)
   type         FeedbackType   @default(COMMENT)
   ticketNumber String?        @unique // REP-001, REP-002 for REPAIR_REQUEST
   message      String
@@ -322,6 +325,7 @@ model Feedback {
 
   @@index([userId, type])
   @@index([ticketNumber])
+  @@index([deviceId])
   @@map("feedbacks")
 }
 

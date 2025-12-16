@@ -2,6 +2,7 @@ import prisma from '../prisma.js';
 import { Prisma } from '../generated/prisma/client.js';
 import * as deviceService from './deviceService.js';
 import { createError, ApiError } from '../utils/ApiError.js';
+import { isDeviceOnline } from './deviceService.js';
 
 // ==========================================
 // ⚙️ LAYER: Business Logic (Service)
@@ -12,6 +13,21 @@ import { createError, ApiError } from '../utils/ApiError.js';
  * Get dashboard summary
  */
 export const getDashboardSummary = async () => {
+  // Update device statuses based on lastOnline (devices that haven't been online in 30 seconds should be INACTIVE)
+  // Uses 30 seconds threshold to match mobile app logic
+  const OFFLINE_THRESHOLD_MS = 30 * 1000; // 30 seconds - matches mobile app
+  const thresholdTime = new Date(Date.now() - OFFLINE_THRESHOLD_MS);
+
+  await prisma.device.updateMany({
+    where: {
+      status: 'ACTIVE',
+      OR: [{ lastOnline: null }, { lastOnline: { lt: thresholdTime } }],
+    },
+    data: {
+      status: 'INACTIVE',
+    },
+  });
+
   const [
     totalUsers,
     activeUsers,
@@ -22,8 +38,8 @@ export const getDashboardSummary = async () => {
     todayEvents,
     todayFalls,
   ] = await Promise.all([
-    prisma.user.count(),
-    prisma.user.count({ where: { isActive: true } }),
+    prisma.user.count({ where: { role: { not: 'ADMIN' } } }),
+    prisma.user.count({ where: { isActive: true, role: { not: 'ADMIN' } } }),
     prisma.device.count(),
     prisma.device.count({ where: { status: 'ACTIVE' } }),
     prisma.elder.count(),
@@ -80,7 +96,7 @@ export const getAllUsers = async (
     ];
   }
 
-  const [users, total] = await Promise.all([
+  const [usersData, total] = await Promise.all([
     prisma.user.findMany({
       where,
       select: {
@@ -92,6 +108,12 @@ export const getAllUsers = async (
         role: true,
         isActive: true,
         createdAt: true,
+        elders: {
+          select: {
+            accessLevel: true,
+          },
+          take: 1, // Only need to check if any exists
+        },
         _count: {
           select: {
             elders: true,
@@ -107,6 +129,25 @@ export const getAllUsers = async (
     }),
     prisma.user.count({ where }),
   ]);
+
+  // Map users and determine caregiver type
+  const users = usersData.map((user) => {
+    let caregiverType: 'OWNER' | 'MEMBER' | null = null;
+
+    if (user.role === 'CAREGIVER') {
+      // Check if user has at least one OWNER access level
+      const hasOwnerAccess = user.elders.some((access) => access.accessLevel === 'OWNER');
+      caregiverType = hasOwnerAccess ? 'OWNER' : 'MEMBER';
+    }
+
+    // Remove elders array from response, keep only needed fields
+    const { elders: _elders, ...userWithoutElders } = user;
+
+    return {
+      ...userWithoutElders,
+      caregiverType,
+    };
+  });
 
   return {
     users,
@@ -152,6 +193,7 @@ export const getAllElders = async (
         },
         caregivers: {
           select: {
+            accessLevel: true,
             user: {
               select: {
                 id: true,

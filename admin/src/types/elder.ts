@@ -1,4 +1,4 @@
-import { CaregiverAccess } from './user';
+import { CaregiverAccess } from "./user";
 
 export interface Elder {
   id: string;
@@ -8,5 +8,10 @@ export interface Elder {
   dateOfBirth: string;
   isActive: boolean;
   caregivers?: CaregiverAccess[];
+  device?: {
+    id: string;
+    deviceCode: string;
+    status?: string;
+    lastOnline?: string | null;
+  } | null;
 }
-

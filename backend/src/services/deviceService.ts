@@ -340,9 +340,38 @@ export const updateDeviceStatus = async (
 };
 
 /**
+ * Check if device should be considered online based on lastOnline timestamp
+ * Device is considered offline if lastOnline is older than 5 minutes
+ */
+export const isDeviceOnline = (lastOnline: Date | null): boolean => {
+  if (!lastOnline) return false;
+  const now = Date.now();
+  const lastOnlineTime = lastOnline.getTime();
+  const OFFLINE_THRESHOLD = 5 * 60 * 1000; // 5 minutes
+  return now - lastOnlineTime < OFFLINE_THRESHOLD;
+};
+
+/**
  * Get all devices (Admin only)
+ * Automatically updates device status based on lastOnline timestamp
+ * Uses 30 seconds threshold to match mobile app logic
  */
 export const getAllDevices = async () => {
+  const OFFLINE_THRESHOLD_MS = 30 * 1000; // 30 seconds - matches mobile app
+  const thresholdTime = new Date(Date.now() - OFFLINE_THRESHOLD_MS);
+
+  // Update devices that should be INACTIVE (status is ACTIVE but lastOnline is too old)
+  await prisma.device.updateMany({
+    where: {
+      status: 'ACTIVE',
+      OR: [{ lastOnline: null }, { lastOnline: { lt: thresholdTime } }],
+    },
+    data: {
+      status: 'INACTIVE',
+    },
+  });
+
+  // Fetch all devices with relations
   return prisma.device.findMany({
     include: {
       elder: {

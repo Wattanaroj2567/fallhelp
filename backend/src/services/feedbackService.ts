@@ -1,5 +1,6 @@
 import { FeedbackStatus, FeedbackType } from '../generated/prisma/client.js';
 import prisma from '../prisma.js';
+import { createError } from '../utils/ApiError.js';
 
 // ==========================================
 // ⚙️ LAYER: Business Logic (Service)
@@ -45,6 +46,7 @@ export const createFeedback = async (
   message: string,
   userName?: string,
   type: FeedbackType = 'COMMENT',
+  deviceId?: string | null,
 ) => {
   // Generate ticket number only for repair requests
   const ticketNumber = type === 'REPAIR_REQUEST' ? await generateTicketNumber() : null;
@@ -56,6 +58,7 @@ export const createFeedback = async (
       userName,
       type,
       ticketNumber,
+      deviceId: type === 'REPAIR_REQUEST' ? deviceId : null, // Only store deviceId for repair requests
     },
   });
 };
@@ -65,7 +68,16 @@ export const createFeedback = async (
  */
 export const getAllFeedbacks = async () => {
   return prisma.feedback.findMany({
-    include: {
+    select: {
+      id: true,
+      type: true,
+      message: true,
+      userName: true,
+      ticketNumber: true,
+      status: true,
+      createdAt: true,
+      updatedAt: true,
+      userId: true,
       user: {
         select: {
           id: true,
@@ -74,6 +86,12 @@ export const getAllFeedbacks = async () => {
           email: true,
           phone: true,
           profileImage: true,
+        },
+      },
+      device: {
+        select: {
+          id: true,
+          deviceCode: true,
         },
       },
     },
@@ -85,8 +103,24 @@ export const getAllFeedbacks = async () => {
 
 /**
  * Update feedback status (Admin only)
+ * Only allow status updates for REPAIR_REQUEST type
  */
 export const updateFeedbackStatus = async (id: string, status: FeedbackStatus) => {
+  // First verify it's a repair request
+  const feedback = await prisma.feedback.findUnique({
+    where: { id },
+    select: { type: true },
+  });
+
+  if (!feedback) {
+    throw createError.resourceNotFound();
+  }
+
+  // Only allow status updates for repair requests
+  if (feedback.type !== 'REPAIR_REQUEST') {
+    throw new Error('สามารถอัปเดตสถานะได้เฉพาะคำขอซ่อมแซมเท่านั้น');
+  }
+
   return prisma.feedback.update({
     where: { id },
     data: { status },
@@ -115,6 +149,22 @@ export const getUserRepairRequests = async (userId: string) => {
     where: {
       userId,
       type: 'REPAIR_REQUEST',
+    },
+    select: {
+      id: true,
+      type: true,
+      message: true,
+      userName: true,
+      ticketNumber: true,
+      status: true,
+      createdAt: true,
+      updatedAt: true,
+      device: {
+        select: {
+          id: true,
+          deviceCode: true,
+        },
+      },
     },
     orderBy: {
       createdAt: 'desc',
