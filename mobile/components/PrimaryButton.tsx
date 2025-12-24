@@ -33,15 +33,13 @@ export const PrimaryButton: React.FC<PrimaryButtonProps> = ({
     textStyle = 'text-gray-700';
   }
 
-  // Disabled/Loading opacity
-  const opacity = disabled || loading ? 0.7 : 1;
-
   return (
     <Bounceable
       testID={props.testID || 'primary-button'}
       className={`${baseStyle} ${bgStyle} ${disabled || loading ? 'opacity-70' : ''}`}
       disabled={disabled || loading}
       scale={0.96}
+      style={style}
       {...props}
     >
       {loading ? (

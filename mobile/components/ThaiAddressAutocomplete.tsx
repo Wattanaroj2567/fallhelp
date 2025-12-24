@@ -50,7 +50,7 @@ export function ThaiAddressAutocomplete({
   const [showModal, setShowModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
-  
+
   // Lazy Loading State
   const [data, setData] = useState<ThailandAddress[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(false);
@@ -66,7 +66,7 @@ export function ThaiAddressAutocomplete({
           const loadedData = require('@/assets/thailand-address.json') as ThailandAddress[];
           setData(loadedData);
         } catch (e) {
-          console.error("Failed to load address data", e);
+          console.error('Failed to load address data', e);
         } finally {
           setIsLoadingData(false);
         }

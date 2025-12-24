@@ -22,13 +22,17 @@
     },
     "android": {
       "package": "com.fallhelp.mobile",
+      "androidStatusBar": {
+        "barStyle": "dark-content",
+        "backgroundColor": "#ffffff",
+        "translucent": false
+      },
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/logoicon.png",
+        "foregroundImage": "./assets/images/logoicon-adaptive.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "usesCleartextTraffic": true,
       "permissions": ["android.permission.CAMERA", "android.permission.ACCESS_FINE_LOCATION"]
     },
     "web": {
@@ -59,6 +63,9 @@
     ],
     "extra": {
       "router": {},
+      "apiHost": "192.168.1.100",
+      "apiUrl": "http://192.168.1.100:3000",
+      "socketUrl": "http://192.168.1.100:3000",
       "eas": {
         "projectId": "e7494794-3e1d-4904-8d3a-72ad2c0fea2d"
       }

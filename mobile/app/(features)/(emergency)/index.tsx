@@ -68,8 +68,9 @@ export default function EmergencyContacts() {
   // Refetch when screen comes into focus
   useFocusEffect(
     React.useCallback(() => {
+      queryClient.invalidateQueries({ queryKey: ['userElders'] });
       refetch();
-    }, [refetch]),
+    }, [refetch, queryClient]),
   );
 
   // ==========================================

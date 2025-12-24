@@ -14,7 +14,9 @@ export const useCurrentElder = () => {
       const elders = await getUserElders();
       return elders && elders.length > 0 ? elders[0] : null;
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes - data stays fresh
+    staleTime: 0, // always stale to force refetch on focus/nav for fresh role/elder
     gcTime: 10 * 60 * 1000, // 10 minutes - cache time (formerly cacheTime)
+    refetchOnReconnect: true,
+    refetchOnMount: true,
   });
 };

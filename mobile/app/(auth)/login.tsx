@@ -173,11 +173,11 @@ export default function LoginScreen() {
             title="เข้าสู่ระบบ"
             onPress={handleLogin}
             loading={loginMutation.isPending}
-            style={{ marginBottom: 20 }}
+            style={{ marginBottom: 28 }}
           />
 
           {/* Register Link */}
-          <View className="flex-row justify-center items-center">
+          <View className="flex-row justify-center items-center mt-3">
             <Text className="font-kanit text-gray-500" style={{ fontSize: 14 }}>
               ยังไม่มีบัญชี ?{' '}
             </Text>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useQueryClient } from '@tanstack/react-query';
 import { getProfile, updateProfile } from '@/services/userService';
 import Logger from '@/utils/logger';
 import { FloatingLabelInput } from '@/components/FloatingLabelInput';
@@ -17,6 +18,7 @@ export default function ChangeEmail() {
   const [currentEmail, setCurrentEmail] = useState('');
   const [newEmail, setNewEmail] = useState('');
   const [emailError, setEmailError] = useState('');
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     fetchProfile();
@@ -62,6 +64,8 @@ export default function ChangeEmail() {
     setSaving(true);
     try {
       await updateProfile({ email: newEmail.trim() });
+      queryClient.invalidateQueries({ queryKey: ['userProfile'] });
+      queryClient.invalidateQueries({ queryKey: ['userElders'] });
 
       Alert.alert('สำเร็จ', 'เปลี่ยนอีเมลเรียบร้อยแล้ว', [
         {

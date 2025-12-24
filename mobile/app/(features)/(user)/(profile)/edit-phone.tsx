@@ -55,6 +55,7 @@ export default function EditPhone() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['userProfile'] });
+      queryClient.invalidateQueries({ queryKey: ['userElders'] });
       Alert.alert('สำเร็จ', 'บันทึกเบอร์โทรศัพท์เรียบร้อยแล้ว', [
         {
           text: 'ตกลง',

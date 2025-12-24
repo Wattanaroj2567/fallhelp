@@ -20,6 +20,15 @@ export async function listEvents(filters: EventFilters = {}): Promise<Paginated<
     const { data } = await apiClient.get<Paginated<Event>>('/api/events', { params: filters });
     return data;
   } catch (error) {
+    const apiErr = toApiError(error);
+    if (apiErr.status === 403) {
+      return {
+        data: [],
+        page: 1,
+        pageSize: filters.pageSize ?? 0,
+        total: 0,
+      } as Paginated<Event>;
+    }
     throw toApiError(error);
   }
 }

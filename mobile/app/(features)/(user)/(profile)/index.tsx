@@ -23,6 +23,11 @@ export default function Profile() {
   const queryClient = useQueryClient();
   const [uploading, setUploading] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const handleBack = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ['userProfile'] });
+    queryClient.invalidateQueries({ queryKey: ['userElders'] });
+    router.back();
+  }, [queryClient, router]);
 
   // ==========================================
   // ⚙️ LAYER: Logic (Data Fetching)
@@ -54,7 +59,8 @@ export default function Profile() {
   // Using useFocusEffect + invalidateQueries for instant data display (like Emergency page pattern)
   useFocusEffect(
     useCallback(() => {
-      // Refetch queries instead of invalidating to prevent flickering
+      queryClient.invalidateQueries({ queryKey: ['userProfile'] });
+      queryClient.invalidateQueries({ queryKey: ['userElders'] });
       queryClient.refetchQueries({ queryKey: ['userProfile'] });
       queryClient.refetchQueries({ queryKey: ['userElders'] });
     }, [queryClient]),
@@ -172,7 +178,7 @@ export default function Profile() {
   return (
     <ScreenWrapper edges={['top', 'left', 'right']} useScrollView={false}>
       {/* Header */}
-      <ScreenHeader title="ข้อมูลส่วนตัว" onBack={() => router.back()} />
+      <ScreenHeader title="ข้อมูลส่วนตัว" onBack={handleBack} />
 
       <ScrollView
         className="flex-1"
@@ -352,7 +358,7 @@ export default function Profile() {
         </View>
 
         {/* Role Badge */}
-        <View className="bg-blue-50 rounded-2xl p-4 flex-row items-center mb-6">
+        <View className="bg-blue-50 rounded-2xl p-4 flex-row items-center mb-4">
           <MaterialIcons name="verified-user" size={20} color="#3B82F6" />
           <Text style={{ fontSize: 14 }} className="font-kanit text-blue-700 ml-2">
             บทบาท:{' '}
@@ -368,7 +374,7 @@ export default function Profile() {
 
         {/* Delete Account Button */}
         {/* Delete Account Link (Discreet) */}
-        <View className="items-center mt-4 mb-8">
+        <View className="items-center mt-3 mb-12">
           <Bounceable
             scale={0.98}
             onPress={() => {

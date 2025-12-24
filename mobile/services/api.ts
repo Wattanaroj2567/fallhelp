@@ -76,6 +76,12 @@ apiClient.interceptors.response.use(
     else if (error.code === 'ERR_NETWORK' || !error.response) {
       Logger.warn(`Network Error: ${error.config?.method?.toUpperCase()} ${error.config?.url}`);
     }
+    // Handle 403 access denied (suppress noisy error)
+    else if (error.response?.status === 403) {
+      Logger.warn(
+        `API 403 (Access Denied): ${error.config?.method?.toUpperCase()} ${error.config?.url}`,
+      );
+    }
     // Log other errors
     else {
       Logger.error(

@@ -6,7 +6,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { GestureHandlerRootView, Swipeable } from 'react-native-gesture-handler';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { submitFeedback, getRepairHistory, deleteRepairRequest } from '@/services/feedbackService';
-import { getProfile, getUserElders } from '@/services/userService';
+import { getProfile } from '@/services/userService';
 import { ScreenWrapper } from '@/components/ScreenWrapper';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { PrimaryButton } from '@/components/PrimaryButton';

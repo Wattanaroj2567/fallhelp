@@ -63,6 +63,7 @@ export default function EditUserInfo() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['userProfile'] });
+      queryClient.invalidateQueries({ queryKey: ['userElders'] });
       Alert.alert('สำเร็จ', 'บันทึกข้อมูลเรียบร้อยแล้ว', [
         {
           text: 'ตกลง',

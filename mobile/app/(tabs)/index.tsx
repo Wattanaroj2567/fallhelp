@@ -109,15 +109,20 @@ export default function Home() {
   // Refetch data when screen is focused
   useFocusEffect(
     React.useCallback(() => {
-      // Refetch data in background without invalidating cache (prevents loading flicker)
+      // Force data to fresh state on focus (covers gesture back)
+      queryClient.invalidateQueries({ queryKey: ['userElders'] });
+      queryClient.invalidateQueries({ queryKey: ['userProfile'] });
+      queryClient.invalidateQueries({ queryKey: ['unreadCount'] });
+      if (!isConnected) {
+        queryClient.invalidateQueries({ queryKey: ['initialEvents'] });
+      }
+
       queryClient.refetchQueries({ queryKey: ['userElders'] });
       queryClient.refetchQueries({ queryKey: ['userProfile'] });
-      // Only refetch events if we are not connected to socket
-      // If connected, we trust the live stream and don't want stale API data to override
+      queryClient.refetchQueries({ queryKey: ['unreadCount'] });
       if (!isConnected) {
         queryClient.refetchQueries({ queryKey: ['initialEvents'] });
       }
-      queryClient.refetchQueries({ queryKey: ['unreadCount'] });
     }, [queryClient, isConnected]),
   );
 

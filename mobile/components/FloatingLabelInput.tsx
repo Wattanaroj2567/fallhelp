@@ -171,11 +171,7 @@ export const FloatingLabelInput: React.FC<FloatingLabelInputProps> = ({
         {...props}
       />
 
-      {error && (
-        <Text className="font-kanit text-red-500 text-xs mt-1 ml-1">
-          {error}
-        </Text>
-      )}
+      {error && <Text className="font-kanit text-red-500 text-xs mt-1 ml-1">{error}</Text>}
     </View>
   );
 };
