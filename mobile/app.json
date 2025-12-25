@@ -20,13 +20,13 @@
         "ITSAppUsesNonExemptEncryption": false
       }
     },
+    "androidStatusBar": {
+      "barStyle": "dark-content",
+      "backgroundColor": "#ffffff",
+      "translucent": false
+    },
     "android": {
       "package": "com.fallhelp.mobile",
-      "androidStatusBar": {
-        "barStyle": "dark-content",
-        "backgroundColor": "#ffffff",
-        "translucent": false
-      },
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/logoicon-adaptive.png",
         "backgroundColor": "#ffffff"
