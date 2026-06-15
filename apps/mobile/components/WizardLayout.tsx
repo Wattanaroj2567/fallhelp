@@ -22,6 +22,7 @@ import { ScreenWrapper } from './ScreenWrapper';
 import { AppScreenHeader } from './AppScreenHeader';
 
 import { useScreenTestId } from '../utils/testId';
+import { getFormBasePadding } from '../utils/navigationBarInset';
 
 // label ของแต่ละขั้นถูกตรึงไว้ เพื่อให้ progress bar ใช้คำเดียวกันทั้ง flow
 const STEP_LABELS = ['กรอกข้อมูล\nผู้สูงอายุ', 'ติดตั้งอุปกรณ์', 'ตั้งค่า WiFi'];
@@ -161,14 +162,17 @@ export const WizardLayout: React.FC<WizardLayoutProps> = ({
   rightHeaderElement,
 }) => {
   const insets = useSafeAreaInsets();
+  const { paddingBottom: customPaddingBottom, ...restContentContainerStyle } =
+    contentContainerStyle ?? {};
 
   // สร้าง testID กลางของหน้าจอ onboarding
   // ไฟล์ถัดไป: utils/testId.ts
   const screenTestId = useScreenTestId();
 
-  // คำนวณระยะห่างด้านล่างแบบอัตโนมัติ (Adaptive Padding)
-  // เพื่อให้ปุ่มกดยืนยันในแต่ละ Step อยู่ในตำแหน่งที่สมดุลที่สุด
-  const adaptivePaddingBottom = insets.bottom > 0 ? insets.bottom + 8 : 32;
+  // คำนวณเฉพาะ base padding แล้วให้ ScreenWrapper reserve พื้นที่ system nav ที่ viewport
+  const adaptivePaddingBottom = getFormBasePadding({
+    basePadding: typeof customPaddingBottom === 'number' ? customPaddingBottom : undefined,
+  });
 
   // โหมดโปร่งใสใช้กับ step ที่ต้องให้ content ด้านหลังเต็มจอ เช่น camera overlay
   if (transparent) {
@@ -216,10 +220,11 @@ export const WizardLayout: React.FC<WizardLayoutProps> = ({
       // เราจัดการระยะห่างด้านล่างเองผ่าน padding เพื่อความแม่นยำและสม่ำเสมอในทุกขนาดหน้าจอ
       edges={['top', 'left', 'right']}
       useScrollView={useScrollView}
+      reserveBottomInset
       contentContainerStyle={{
         paddingBottom: adaptivePaddingBottom,
         flexGrow: 1,
-        ...contentContainerStyle,
+        ...restContentContainerStyle,
       }}
       {...(scrollViewProps !== undefined ? { scrollViewProps } : {})}
       keyboardAvoiding={keyboardAvoiding}

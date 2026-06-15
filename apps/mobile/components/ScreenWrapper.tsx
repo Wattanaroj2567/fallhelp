@@ -11,12 +11,13 @@
  */
 
 import React from 'react';
-import { ViewStyle, View, Keyboard, Pressable } from 'react-native';
+import { StyleProp, ViewStyle, View, Keyboard, Pressable } from 'react-native';
 import { SafeAreaView, Edge } from 'react-native-safe-area-context';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { StatusBar } from 'expo-status-bar';
 
 import { useScreenTestId } from '../utils/testId';
+import { useNavBarInset } from '../hooks/useNavBarInset';
 
 interface ScreenWrapperProps {
   children: React.ReactNode;
@@ -32,6 +33,7 @@ interface ScreenWrapperProps {
   className?: string | undefined;
   testID?: string | undefined;
   enableAutomaticScroll?: boolean;
+  reserveBottomInset?: boolean;
 }
 
 export const ScreenWrapper: React.FC<ScreenWrapperProps> = ({
@@ -48,9 +50,12 @@ export const ScreenWrapper: React.FC<ScreenWrapperProps> = ({
   useSafeArea = true,
   testID,
   enableAutomaticScroll = true,
+  reserveBottomInset = false,
 }) => {
   const baseClassName = className || 'flex-1 bg-white';
   const Container = useSafeArea ? SafeAreaView : View;
+  const { style: scrollViewStyle, ...restScrollViewProps } = scrollViewProps ?? {};
+  const navBarInset = useNavBarInset({ assumeAndroidNavigationBarVisible: false });
 
   // สร้าง testID กลางของหน้าจอ เพื่อให้ test หา screen ได้สม่ำเสมอ
   // ไฟล์ถัดไป: utils/testId.ts
@@ -58,6 +63,8 @@ export const ScreenWrapper: React.FC<ScreenWrapperProps> = ({
 
   // ถ้ามี header แยกอยู่ด้านบนแล้ว จะไม่ให้ SafeAreaView ดัน top ซ้ำ
   const safeAreaEdges = header ? edges?.filter((e) => e !== 'top') : edges;
+  const reservedBottomStyle: StyleProp<ViewStyle> =
+    reserveBottomInset && navBarInset > 0 ? { marginBottom: navBarInset } : null;
 
   return (
     <Container
@@ -74,7 +81,7 @@ export const ScreenWrapper: React.FC<ScreenWrapperProps> = ({
           {/* ใช้ KeyboardAwareScrollView เป็นแกนกลางของหน้าฟอร์มเพื่อลดอาการเลื่อนผิดตำแหน่งตอนเปิด keyboard */}
           <KeyboardAwareScrollView
             ref={scrollViewRef}
-            style={{ flex: 1 }}
+            style={[{ flex: 1 }, reservedBottomStyle, scrollViewStyle]}
             contentContainerStyle={[
               { paddingHorizontal: 24, paddingBottom: 24, flexGrow: 1 },
               contentContainerStyle,
@@ -87,7 +94,7 @@ export const ScreenWrapper: React.FC<ScreenWrapperProps> = ({
             viewIsInsideTabBar={false}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={true}
-            {...scrollViewProps}
+            {...restScrollViewProps}
           >
             {children}
           </KeyboardAwareScrollView>
@@ -96,13 +103,13 @@ export const ScreenWrapper: React.FC<ScreenWrapperProps> = ({
         // โหมด fixed view นี้แตะพื้นหลังเพื่อ dismiss keyboard ได้เสถียรกว่าใช้ View ธรรมดา
         <Pressable onPress={Keyboard.dismiss} style={{ flex: 1 }}>
           {header}
-          <View style={[{ flex: 1 }, contentContainerStyle]}>{children}</View>
+          <View style={[{ flex: 1 }, reservedBottomStyle, contentContainerStyle]}>{children}</View>
         </Pressable>
       ) : (
         // โหมด fixed view นี้เหมาะกับหน้าที่มี list หรือ interaction เฉพาะทาง
         <>
           {header}
-          <View style={[{ flex: 1 }, contentContainerStyle]}>{children}</View>
+          <View style={[{ flex: 1 }, reservedBottomStyle, contentContainerStyle]}>{children}</View>
         </>
       )}
     </Container>

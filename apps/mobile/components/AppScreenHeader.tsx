@@ -28,6 +28,9 @@ interface AppScreenHeaderProps {
   style?: object;
 }
 
+const HEADER_ROW_HEIGHT = 56;
+const HEADER_ACTION_SIZE = 44;
+
 export const AppScreenHeader: React.FC<AppScreenHeaderProps> = ({
   title,
   onBack,
@@ -42,7 +45,7 @@ export const AppScreenHeader: React.FC<AppScreenHeaderProps> = ({
 
   return (
     <View
-      className={!noSafeArea ? 'rounded-b-[32px] pb-2' : ''}
+      className={!noSafeArea ? 'rounded-b-[28px]' : ''}
       style={[
         {
           paddingTop: noSafeArea ? 0 : insets.top,
@@ -55,7 +58,10 @@ export const AppScreenHeader: React.FC<AppScreenHeaderProps> = ({
       ]}
     >
       {/* ใช้ระยะขอบแนวนอนเดียวกับหน้าจอหลัก เพื่อให้ title และ action จัดแนวตรงกัน */}
-      <View className="flex-row items-center justify-between px-6 py-4">
+      <View
+        className="flex-row items-center justify-between px-6"
+        style={{ height: HEADER_ROW_HEIGHT }}
+      >
         {onBack ? (
           <Bounceable
             testID="back-button"
@@ -63,7 +69,8 @@ export const AppScreenHeader: React.FC<AppScreenHeaderProps> = ({
               Keyboard.dismiss();
               onBack();
             }}
-            className="p-2 -ml-2"
+            className="-ml-2 items-center justify-center"
+            style={{ width: HEADER_ACTION_SIZE, height: HEADER_ACTION_SIZE }}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             scale={0.9}
             debounceTime={0}
@@ -71,7 +78,7 @@ export const AppScreenHeader: React.FC<AppScreenHeaderProps> = ({
             <MaterialSymbol name="arrow_back" size={28} color={transparent ? 'white' : '#374151'} />
           </Bounceable>
         ) : (
-          <View className="w-8 h-11" />
+          <View style={{ width: HEADER_ACTION_SIZE, height: HEADER_ACTION_SIZE }} />
         )}
 
         <KanitText
@@ -83,9 +90,14 @@ export const AppScreenHeader: React.FC<AppScreenHeaderProps> = ({
 
         {/* rightElement ใช้สำหรับ action เฉพาะหน้าจอ เช่น ปุ่มเพิ่มหรือปุ่มตั้งค่า */}
         {rightElement ? (
-          <View className="flex-row items-center">{rightElement}</View>
+          <View
+            className="flex-row items-center justify-center"
+            style={{ minWidth: HEADER_ACTION_SIZE, minHeight: HEADER_ACTION_SIZE }}
+          >
+            {rightElement}
+          </View>
         ) : (
-          <View className="w-8 h-11" />
+          <View style={{ width: HEADER_ACTION_SIZE, height: HEADER_ACTION_SIZE }} />
         )}
       </View>
     </View>
