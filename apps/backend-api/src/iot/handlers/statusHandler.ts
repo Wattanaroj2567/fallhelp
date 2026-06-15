@@ -118,6 +118,9 @@ function emitPairedDeviceStatus(
 
 export async function statusHandler(deviceId: string, data: unknown): Promise<void> {
   try {
+    // Flow หลักของไฟล์นี้:
+    // validate payload -> load device context -> reset unpaired device หรือ update connectivity -> emit realtime status
+
     const payload = validateStatusPayload(data);
 
     if (!payload) {

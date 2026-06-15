@@ -88,6 +88,9 @@ export async function fallHandler(
   options: FallHandlerOptions = {},
 ): Promise<void> {
   try {
+    // Flow หลักของไฟล์นี้:
+    // validate payload -> dedup -> load device context -> persist lifecycle event -> emit realtime/notification side effects
+
     const mode: FallHandlingMode = options.mode ?? 'confirmed';
 
     const payload = validateFallPayload(data);
@@ -115,6 +118,7 @@ export async function fallHandler(
       return;
     }
 
+    // Flow suspected: เก็บ pending event และส่ง internal lifecycle signal เท่านั้น
     if (mode === 'suspected') {
       log('⏳ Suspected fall for device %s: %O', deviceId, payload);
 
@@ -161,6 +165,7 @@ export async function fallHandler(
       return;
     }
 
+    // Flow confirmed: ยืนยัน pending event ก่อน เพื่อคง BPM ตอน impact ให้แม่นที่สุด
     log('🚨 Fall confirmed for device %s: %O', deviceId, payload);
 
     // เมื่อยืนยันแล้ว ให้หา pending event ล่าสุดมา update เป็น CONFIRMED ก่อน
@@ -210,7 +215,8 @@ export async function fallHandler(
       return;
     }
 
-    // fallback สำหรับ flow เก่าหรือกรณี pending event หายไปก่อน confirmed
+    // Flow fallback สำหรับ firmware เก่าหรือกรณี pending event หายไปก่อน confirmed
+    // ยังต้องสร้าง notification เฉพาะเมื่อยืนยันการล้มแล้วเท่านั้น
     const heartRateAtFall = resolveBpmFromPayload(payload);
 
     const event = await createEvent({

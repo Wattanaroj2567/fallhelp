@@ -43,6 +43,9 @@ function emitHeartRateUpdate(
 
 export async function heartRateHandler(deviceId: string, data: unknown): Promise<void> {
   try {
+    // Flow หลักของไฟล์นี้:
+    // validate payload -> load paired device/elder -> normalize unreliable readings -> emit realtime heart rate
+
     const payload = validateHeartRatePayload(data);
 
     if (!payload) {

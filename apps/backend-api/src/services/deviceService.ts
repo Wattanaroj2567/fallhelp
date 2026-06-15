@@ -138,6 +138,8 @@ async function recoverDeviceConfigIfStale(device: {
 }
 
 export const getDeviceByCode = async (deviceCode: string) => {
+  // Flow หลัก: lookup device by QR code -> ensure exists -> return pairable metadata
+
   // ใช้หลังสแกน QR เพื่อดูว่า deviceCode นี้มีอยู่และยังจับคู่ได้หรือไม่
   const device = await prisma.device.findUnique({
     where: { deviceCode },
@@ -159,6 +161,8 @@ export const getDeviceByCode = async (deviceCode: string) => {
 };
 
 export const pairDevice = async (userId: string, deviceCode: string, elderId: string) => {
+  // Flow หลัก: verify elder ownership -> verify device availability -> enforce one device per elder -> pair device
+
   // ตรวจว่า elder ที่จะจับคู่อุปกรณ์เป็นของ user ปัจจุบันจริง
   log(`[PairDevice] Checking ownership: userId=${userId}, elderId=${elderId}`);
   const elder = await prisma.elder.findFirst({
@@ -216,6 +220,8 @@ export const pairDevice = async (userId: string, deviceCode: string, elderId: st
 };
 
 export const unpairDevice = async (userId: string, deviceId: string) => {
+  // Flow หลัก: load device -> verify ownership -> update DB source of truth -> best-effort reset hardware
+
   const device = await prisma.device.findUnique({
     where: { id: deviceId },
     include: { elder: true },
@@ -263,6 +269,8 @@ export const configureWiFi = async (
   ssid: string,
   password: string,
 ) => {
+  // Flow หลัก: verify paired device/ownership -> mark CONFIGURING -> publish MQTT config -> wait ACK -> return config state
+
   // รองรับทั้ง device.id และ deviceCode เพราะบาง flow เริ่มจาก QR code
   const isUuid = deviceIdOrCode.includes('-');
 
@@ -364,6 +372,8 @@ export const configureWiFi = async (
 };
 
 export const getDeviceConfig = async (userId: string, deviceId: string) => {
+  // Flow หลัก: load paired device -> verify ownership -> recover stale CONFIGURING -> return WiFi config state
+
   const isUuid = deviceId.includes('-');
 
   const device = await prisma.device.findFirst({
@@ -438,6 +448,7 @@ export interface DeviceStatusContext {
 export const findDeviceBySerial = async (
   serialNumber: string,
 ): Promise<DeviceForFallHandler | null> => {
+  // MQTT handlers ใช้ serialNumber จาก topic เพื่อหา device context
   return prisma.device.findFirst({
     where: { serialNumber },
     select: {
@@ -458,6 +469,8 @@ export const findDeviceBySerial = async (
 export const findDeviceStatusContext = async (
   serialNumber: string,
 ): Promise<DeviceStatusContext | null> => {
+  // Flow หลัก: lookup device by serial -> validate domain status values -> return typed context for statusHandler
+
   // deviceId ใน MQTT topic คือ serialNumber ของ ESP32
   const device = await prisma.device.findFirst({
     where: { serialNumber },

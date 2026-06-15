@@ -20,6 +20,9 @@ const log = createDebug('fallhelp:mqtt:fall-cancelled');
 
 export async function fallCancelledHandler(deviceId: string): Promise<void> {
   try {
+    // Flow หลักของไฟล์นี้:
+    // load device context -> cancel pending event จากปุ่มอุปกรณ์ -> emit internal lifecycle signal
+
     log('🟢 Fall cancelled by device %s', deviceId);
 
     // ค้นหาอุปกรณ์จาก serialNumber ที่มากับ MQTT topic

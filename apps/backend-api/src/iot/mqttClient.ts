@@ -46,6 +46,7 @@ class MQTTClientManager {
   private logMsg = createDebug('fallhelp:mqtt:msg');
   private pendingConfigAcks = new Map<string, PendingConfigAck>();
 
+  // Lifecycle การเชื่อมต่อ MQTT
   async connect(): Promise<void> {
     if (backendEnv.mqttDisabled) {
       this.log('🚫 MQTT is disabled by configuration');
@@ -136,6 +137,7 @@ class MQTTClientManager {
     });
   }
 
+  // Routing ข้อความและ guard อุปกรณ์ที่ unpair แล้ว
   private async handleMessage(
     topic: string,
     payload: Buffer,
@@ -236,6 +238,7 @@ class MQTTClientManager {
     }
   }
 
+  // Routing unified event จาก firmware canonical topic
   private async handleUnifiedEvent(deviceId: string, data: Record<string, unknown>): Promise<void> {
     const normalizedEvent = normalizeUnifiedEvent(data);
 
@@ -278,6 +281,7 @@ class MQTTClientManager {
     }
   }
 
+  // Lifecycle ของ config ACK
   private handleConfigAck(deviceId: string, payload: Record<string, unknown>): void {
     const rawRequestId = payload['requestId'];
     const requestId = typeof rawRequestId === 'string' ? rawRequestId : '';
@@ -354,6 +358,7 @@ class MQTTClientManager {
     return topic.includes('/config/ack');
   }
 
+  // Helpers สำหรับ publish
   async publish(
     topic: string,
     message: string | object,
@@ -399,6 +404,7 @@ class MQTTClientManager {
     this.log('🧹 Cleared retained config command for %s', deviceId);
   }
 
+  // Public API สำหรับรอ ACK
   waitForConfigAck(
     deviceId: string,
     requestId: string,
@@ -444,6 +450,7 @@ class MQTTClientManager {
     return `${deviceId}:${requestId}`;
   }
 
+  // Helpers สำหรับ cleanup และ log redaction
   private rejectAllPendingConfigAcks(error: Error): void {
     // ถ้า MQTT หลุด ต้อง reject waiter ทั้งหมด เพื่อไม่ให้ request ค้างจน timeout เอง
     for (const pending of this.pendingConfigAcks.values()) {
