@@ -281,7 +281,7 @@ fallhelp/
 ### 1. Clone & Install
 
 ```bash
-git clone https://github.com/tawanSkyvoker/fallhelp.git
+git clone https://github.com/Wattanaroj2567/fallhelp.git
 cd fallhelp
 npm run install:all
 npm run platform:check
