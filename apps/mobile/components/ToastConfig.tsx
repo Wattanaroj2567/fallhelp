@@ -47,20 +47,20 @@ export const toastConfig = {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: 'rgba(28, 28, 30, 0.92)',
+    backgroundColor: '#2F2F31',
     borderRadius: 16,
     paddingHorizontal: 20,
-    paddingVertical: 14,
+    paddingVertical: 13,
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'center',
     maxWidth: 280,
     minWidth: 160,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.22,
+    shadowRadius: 8,
+    elevation: 6,
   },
   icon: {
     marginRight: 8,
@@ -69,5 +69,9 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#FFFFFF',
     flexShrink: 1,
+    backgroundColor: 'transparent',
+    includeFontPadding: false,
+    letterSpacing: 0,
+    textAlignVertical: 'center',
   },
 });

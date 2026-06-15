@@ -13,6 +13,8 @@ import Toast from 'react-native-toast-message';
 
 type ToastType = 'success' | 'error' | 'info';
 
+let queuedSuccessToast: string | null = null;
+
 function show(type: ToastType, message: string): void {
   Toast.show({
     type,
@@ -25,4 +27,21 @@ function show(type: ToastType, message: string): void {
 
 export function showSuccessToast(message: string): void {
   show('success', message);
+}
+
+export function showSuccessToastOnNextFrame(message: string): void {
+  // ใช้กับ flow ที่เพิ่งเปลี่ยน state/dialog ให้ toast เริ่มหลัง layout frame ปัจจุบันจบก่อน
+  requestAnimationFrame(() => {
+    showSuccessToast(message);
+  });
+}
+
+export function queueSuccessToastForNextScreen(message: string): void {
+  queuedSuccessToast = message;
+}
+
+export function consumeQueuedSuccessToast(): string | null {
+  const message = queuedSuccessToast;
+  queuedSuccessToast = null;
+  return message;
 }
