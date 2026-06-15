@@ -122,6 +122,10 @@ function DevicePendantIcon({ className = "w-5 h-5", ...props }: React.ComponentP
 }
 
 export default function Devices() {
+  // Flow หลักของไฟล์นี้:
+  // โหลด devices -> คำนวณสถานะ/summary/pagination -> action handlers -> render table/modals/print labels
+
+  // Pagination, modal และ form state
   const [devicesPage, setDevicesPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
   const [newDevice, setNewDevice] = useState<CreateDevicePayload>({
@@ -132,12 +136,14 @@ export default function Devices() {
   const [unpairId, setUnpairId] = useState<string | null>(null);
   const [now, setNow] = useState(() => Date.now());
 
+  // Clock tick สำหรับ online/offline fallback
   useEffect(() => {
     // tick เวลาเพื่อให้สถานะ online/offline fallback เปลี่ยนได้ แม้ข้อมูลจาก backend ยังไม่ refetch
     const timer = setInterval(() => setNow(Date.now()), DEVICE_CLOCK_TICK_MS);
     return () => clearInterval(timer);
   }, []);
 
+  // Query และ mutations สำหรับ device management
   // โหลดรายการอุปกรณ์และเตรียม mutation สำหรับ action ของ admin
   // ไฟล์ถัดไป: hooks/useAdminDevices.ts
   const { data: devices, isLoading } = useAdminDevices();
@@ -145,6 +151,7 @@ export default function Devices() {
   const deleteMutation = useDeleteDevice();
   const unpairMutation = useUnpairDevice();
 
+  // Action handlers
   const handleSubmit = (e: React.FormEvent): void => {
     e.preventDefault();
 
@@ -205,6 +212,7 @@ export default function Devices() {
     }
   };
 
+  // Display helpers
   const isPaired = (device: Device) => Boolean(device.elderId);
 
   const isDeviceOnlineLocal = (lastOnline: Date | null | undefined): boolean => {
@@ -230,10 +238,12 @@ export default function Devices() {
     return isOnline(device) ? "ONLINE" : "OFFLINE";
   };
 
+  // Render loading
   if (isLoading) {
     return <LoadingSkeleton message="กำลังโหลดอุปกรณ์..." color="green" fullScreen={false} />;
   }
 
+  // Summary และ pagination values
   const pairedCount = devices?.filter((d) => isPaired(d)).length || 0;
   const activeCount = devices?.filter((d) => isPaired(d) && isOnline(d)).length || 0;
   const unpairedCount = devices?.filter((d) => !isPaired(d)).length || 0;
@@ -244,6 +254,7 @@ export default function Devices() {
   const normalizedSerialNumber = normalizeDeviceSerial(newDevice.serialNumber);
   const isSerialNumberValid = isValidDeviceSerial(normalizedSerialNumber);
 
+  // Render device management table และ modals
   return (
     <>
       <div className="admin-page-shell">
