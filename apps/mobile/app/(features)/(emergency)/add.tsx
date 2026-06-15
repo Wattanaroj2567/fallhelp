@@ -30,7 +30,7 @@ import { createContact } from '../../../services/emergencyContactService';
 import { showErrorMessage } from '../../../utils/errorHelper';
 import Logger from '../../../utils/logger';
 import { showDialog } from '../../../utils/dialogService';
-import { showSuccessToast } from '../../../utils/toast';
+import { queueSuccessToastForNextScreen } from '../../../utils/toast';
 import { getThaiPhoneValidationError, sanitizePhoneInput } from '../../../utils/phoneValidation';
 import { getRequiredTextValidationError } from '../../../utils/formValidation';
 import {
@@ -41,11 +41,15 @@ import {
 import { useCurrentElder } from '../../../hooks/useCurrentElder';
 import { queryKeys } from '../../../hooks/queryKeys';
 import { useUnsavedChanges } from '../../../hooks/useUnsavedChanges';
-import { useNavBarInset } from '../../../hooks/useNavBarInset';
+import { useFormBasePadding } from '../../../hooks/useFormBottomPadding';
 
 import type { EmergencyContact } from '../../../services/types';
 
 export default function AddEmergencyContactScreen() {
+  // Flow หลักของไฟล์นี้:
+  // โหลด elder -> เตรียม form/unsaved state -> validate/save optimistic contact -> render form
+
+  // Navigation และ cache state
   const [isNavigating, setIsNavigating] = useState(false);
 
   // รับ params เพื่อดูว่าต้อง redirect ไปไหนหลังบันทึกเสร็จ
@@ -54,8 +58,8 @@ export default function AddEmergencyContactScreen() {
   // ใช้จัดการ cache ของ React Query หลังเพิ่มผู้ติดต่อสำเร็จ
   const queryClient = useQueryClient();
 
-  // เพิ่มระยะด้านล่าง ไม่ให้ปุ่มชน Navigation Bar ของเครื่อง
-  const navBarInset = useNavBarInset();
+  // เพิ่มระยะท้ายฟอร์มตาม system navigation bar อัตโนมัติ
+  const formBottomPadding = useFormBasePadding({ basePadding: 40 });
 
   // โหลดข้อมูลผู้สูงอายุปัจจุบัน
   // ใช้ elderId สำหรับสร้างผู้ติดต่อฉุกเฉิน
@@ -77,6 +81,7 @@ export default function AddEmergencyContactScreen() {
     message: 'คุณมีข้อมูลที่ยังไม่ได้บันทึก ต้องการออกจากหน้านี้หรือไม่?',
   });
 
+  // Unsaved changes guard
   useEffect(() => {
     // รวม relationship ปกติและกรณีเลือก "อื่นๆ"
     const effectiveRelationship = buildEmergencyRelationshipValue(relationship, customRelationship);
@@ -88,6 +93,7 @@ export default function AddEmergencyContactScreen() {
     setHasChanges(hasInput);
   }, [name, phone, relationship, customRelationship, setHasChanges]);
 
+  // Mutation สำหรับสร้างผู้ติดต่อฉุกเฉิน
   // จัดการขั้นตอนสร้างผู้ติดต่อฉุกเฉิน
   // เมื่อเรียก mutate() ระบบจะเข้ามาทำงานที่ mutationFn
   const createMutation = useMutation({
@@ -141,12 +147,12 @@ export default function AddEmergencyContactScreen() {
           : [...current, createdContact];
       });
 
-      // sync จาก server แบบ background ไม่บล็อก navigation หรือ toast
-      void queryClient.invalidateQueries({
-        queryKey: queryKeys.emergencyContacts(elderId),
-      });
-
-      showSuccessToast('เพิ่มผู้ติดต่อแล้ว');
+      // sync จาก server หลังเฟรมแรกของ toast เพื่อลดงาน JS ตอน animation เริ่มขึ้นบน Android
+      setTimeout(() => {
+        void queryClient.invalidateQueries({
+          queryKey: queryKeys.emergencyContacts(elderId),
+        });
+      }, 120);
     },
     onError: (error: unknown, _variables, context) => {
       setIsNavigating(false);
@@ -159,6 +165,7 @@ export default function AddEmergencyContactScreen() {
     },
   });
 
+  // Action handlers
   const handleSave = () => {
     if (isNavigating) return;
     setIsNavigating(true);
@@ -199,32 +206,36 @@ export default function AddEmergencyContactScreen() {
     // บันทึกสำเร็จในเชิง UX แล้ว ไม่ต้องเตือน unsaved changes ระหว่างกลับหน้ารายชื่อ
     resetChanges();
 
-    // กลับหน้าก่อนเพื่อให้ฟอร์มตอบสนองไว ส่วน mutation/cache ทำงานต่อด้านหลัง
-    // แสดง Toast และส่ง Navigation Toast ทันทีเพื่อให้ขึ้นพร้อมกับการเปลี่ยนหน้าจออย่างรวดเร็ว
-    if (redirect === 'call') {
-      router.replace('/(features)/(emergency)/call');
-    } else {
-      router.replace('/(features)/(emergency)/contacts');
-    }
-
-    // เริ่มสร้างผู้ติดต่อฉุกเฉิน
-    // ถัดไปไปที่ createMutation ด้านบน
+    // เริ่มสร้างผู้ติดต่อก่อน navigate เพื่อให้ optimistic cache พร้อมใช้ทันทีในหน้าถัดไป
     createMutation.mutate({
       name: cleanedName,
       phone: cleanedPhone,
       ...(nextRelationship ? { relationship: nextRelationship } : {}),
     });
+
+    // ฝาก toast ให้หน้าปลายทางแสดงตอน focus จริง เพื่อลด timing race กับ navigation queue
+    queueSuccessToastForNextScreen('เพิ่มผู้ติดต่อแล้ว');
+
+    // กลับหน้าก่อนเพื่อให้ฟอร์มตอบสนองไว ส่วน mutation/cache ทำงานต่อด้านหลัง
+    if (redirect === 'call') {
+      router.replace('/(features)/(emergency)/call');
+    } else {
+      router.replace('/(features)/(emergency)/contacts');
+    }
   };
 
+  // Render loading
   if (isElderLoading) {
     return <LoadingScreen useScreenWrapper />;
   }
 
+  // Render form
   return (
     <ScreenWrapper
+      reserveBottomInset
       contentContainerStyle={{
         paddingHorizontal: 24,
-        paddingBottom: 40 + navBarInset,
+        paddingBottom: formBottomPadding,
       }}
       scrollViewProps={{
         bounces: false,

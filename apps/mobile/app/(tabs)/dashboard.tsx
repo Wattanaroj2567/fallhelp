@@ -12,16 +12,7 @@
  */
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import {
-  View,
-  ScrollView,
-  Image,
-  LayoutChangeEvent,
-  Dimensions,
-  Platform,
-  StatusBar,
-  useWindowDimensions,
-} from 'react-native';
+import { View, ScrollView, Image, LayoutChangeEvent } from 'react-native';
 import { MaterialSymbol } from '../../components/MaterialSymbol';
 import { MaterialIconSolid } from '../../components/MaterialIconSolid';
 import { useIsFocused } from '@react-navigation/native';
@@ -65,6 +56,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useCurrentElder } from '../../hooks/useCurrentElder';
 import { queryKeys } from '../../hooks/queryKeys';
 import { useHomeDisplayState } from '../../hooks/useHomeDisplayState';
+import { useNavBarInset } from '../../hooks/useNavBarInset';
 
 import type { RealtimeHeartConfidence } from '../../store/useSensorStore';
 import type { RealtimeFallStatus } from '../../store/useFallAlertStore';
@@ -85,6 +77,7 @@ type DashboardSignalSnapshot = {
 
 type PressTimeoutRef = React.MutableRefObject<ReturnType<typeof setTimeout> | null>;
 type PressLockRef = React.MutableRefObject<boolean>;
+type EmergencyButtonState = 'EMERGENCY' | 'SETUP' | 'STANDBY';
 
 // เก็บ eventId ที่ caregiver กด "รับทราบแล้ว"
 // อันนี้เป็นสถานะฝั่งแอป ไม่ใช่การ cancel เหตุการณ์ในระบบ
@@ -196,6 +189,9 @@ const formatTime = (date: Date | null): string => {
 };
 
 export default function DashboardScreen() {
+  // Flow หลักของไฟล์นี้:
+  // เตรียม context/layout -> โหลดข้อมูล -> sync realtime/API -> action handlers -> display state -> render
+
   // ใช้จัดการ cache ของ React Query
   const queryClient = useQueryClient();
 
@@ -226,23 +222,35 @@ export default function DashboardScreen() {
   const elderCardPressTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const profilePressLockRef = useRef(false);
   const profilePressTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const emergencyPressLockRef = useRef(false);
+  const emergencyPressTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isConnectedRef = useRef(false);
   const elderIdRef = useRef<string | undefined>(undefined);
   const hasStableSnapshotRef = useRef(false);
 
   // คำนวณ safe area และ navigation bar เพื่อจัด layout ให้ไม่โดนบัง
-  const { top, bottom } = useSafeAreaInsets();
-  const { height: windowHeight } = useWindowDimensions();
-  const screenHeight = Dimensions.get('screen').height;
-
-  const statusBarHeight = Platform.OS === 'android' ? (StatusBar.currentHeight ?? 0) : 0;
-  const androidNavBarHeight =
-    Platform.OS === 'android' ? Math.max(0, screenHeight - windowHeight - statusBarHeight) : 0;
-  const hasSystemNavBar = bottom > 0 || androidNavBarHeight > 0;
+  const { top } = useSafeAreaInsets();
+  const navBarInset = useNavBarInset({ assumeAndroidNavigationBarVisible: false });
+  const hasSystemNavBar = navBarInset > 0;
 
   const emergencyGap = hasSystemNavBar ? 0 : 16;
   const emergencyContentPadding =
     emergencyButtonHeight > 0 ? emergencyButtonHeight + emergencyGap : 96 + emergencyGap;
+
+  const dashboardContentPaddingTop = hasSystemNavBar ? 16 : 20;
+  const overviewTitleSpacingClass = hasSystemNavBar ? 'mb-3' : 'mb-4';
+  const eventCardSpacingClass = hasSystemNavBar
+    ? 'py-3 mb-4 min-h-[144px]'
+    : 'py-4 mb-5 min-h-[156px]';
+  const eventHeaderSpacingClass = hasSystemNavBar ? 'mb-3' : 'mb-4';
+  const eventIconSizeClass = hasSystemNavBar ? 'w-12 h-12' : 'w-14 h-14';
+  const eventIconSize = hasSystemNavBar ? 26 : 30;
+  const dashboardPairSpacingClass = hasSystemNavBar ? 'mb-4' : 'mb-5';
+  const dashboardPairCardHeightClass = hasSystemNavBar ? 'min-h-[118px]' : 'min-h-[130px]';
+  const dashboardPairCardPaddingClass = hasSystemNavBar ? 'pt-3 px-4 pb-2' : 'pt-4 px-4 pb-2';
+  const dashboardPairIconSizeClass = hasSystemNavBar ? 'w-11 h-11' : 'w-12 h-12';
+  const dashboardPairIconSize = hasSystemNavBar ? 22 : 24;
+  const heartValueSizeClass = hasSystemNavBar ? 'text-3xl' : 'text-4xl';
 
   const elderCardSpacingClass = hasSystemNavBar ? 'mt-0 mb-6' : 'mt-0 mb-4';
   const elderCardPaddingClass = hasSystemNavBar ? 'p-4' : 'p-6';
@@ -250,7 +258,7 @@ export default function DashboardScreen() {
   const elderNameSizeClass = hasSystemNavBar ? 'text-lg' : 'text-xl';
   const elderRowGapClass = 'gap-5';
 
-  // อ่านสถานะ sensor จาก realtime store
+  // State จาก realtime store
   const {
     isConnected,
     socketConnected: _socketConnected,
@@ -272,7 +280,7 @@ export default function DashboardScreen() {
   const setActiveFallEventId = useFallAlertStore((s) => s.setActiveFallEventId);
   const setActiveFallBpm = useFallAlertStore((s) => s.setActiveFallBpm);
 
-  // โหลดข้อมูลผู้สูงอายุปัจจุบัน
+  // Query ข้อมูลหลักของ dashboard
   const { data: elderInfo, refetch: refetchElder } = useCurrentElder({
     enabled: isSignedIn,
     staleTime: 0,
@@ -305,6 +313,7 @@ export default function DashboardScreen() {
     staleTime: 0,
   });
 
+  // Sync snapshot และ lifecycle ของหน้าจอ
   useEffect(() => {
     if (userProfile?.profileImage === lastProfileImage) return;
 
@@ -526,6 +535,7 @@ export default function DashboardScreen() {
   const lastOnlineStr = String(elderInfo?.device?.lastOnline);
   const lastFallUpdateTime = lastFallUpdate?.getTime();
 
+  // Sync API history กลับเข้า fall alert store เมื่อเปิด dashboard
   useEffect(() => {
     const sync = async () => {
       if (!initialEvents || !isSignedIn) return;
@@ -580,9 +590,7 @@ export default function DashboardScreen() {
     lastFallUpdateTime,
   ]);
 
-  const emergencyPressLockRef = useRef(false);
-  const emergencyPressTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
+  // Action handlers ของ dashboard
   const handleAcknowledge = async () => {
     if (!activeFallEventId && fallStatus === 'FALL') {
       showDialog(
@@ -730,6 +738,7 @@ export default function DashboardScreen() {
     setEmergencyButtonHeight((prev) => (prev === nextHeight ? prev : nextHeight));
   };
 
+  // Display state ก่อน render
   // รวม state หลายแหล่ง แล้วให้ hook คำนวณค่าที่ควรใช้แสดงผลจริง
   const {
     displayElder,
@@ -769,8 +778,6 @@ export default function DashboardScreen() {
   });
 
   // ปุ่มโทรฉุกเฉิน 3 สถานะ — เช็คจากบนลงล่าง (Priority 1 → 2 → 3)
-  type EmergencyButtonState = 'EMERGENCY' | 'SETUP' | 'STANDBY';
-
   const emergencyButtonState = useMemo((): EmergencyButtonState => {
     // Priority 1: เซนเซอร์ตรวจพบการล้มและยังไม่รับทราบ
     if (shouldShowFallAlert) return 'EMERGENCY';
@@ -1083,11 +1090,14 @@ export default function DashboardScreen() {
             overScrollMode="never"
             contentContainerStyle={{
               paddingHorizontal: 16,
-              paddingTop: 20,
+              paddingTop: dashboardContentPaddingTop,
               paddingBottom: emergencyContentPadding,
             }}
           >
-            <KanitText weight="regular" className="text-xl text-gray-900 mb-4">
+            <KanitText
+              weight="regular"
+              className={`text-xl text-gray-900 ${overviewTitleSpacingClass}`}
+            >
               ภาพรวม
             </KanitText>
 
@@ -1096,7 +1106,7 @@ export default function DashboardScreen() {
               <DashboardEventCardSkeleton />
             ) : (
               <View
-                className={`px-4 py-4 rounded-[28px] mb-5 border min-h-[156px] bg-white shadow-sm ${shouldShowFallAlert ? 'border-red-100' : 'border-gray-100'}`}
+                className={`px-4 rounded-[28px] border bg-white shadow-sm ${eventCardSpacingClass} ${shouldShowFallAlert ? 'border-red-100' : 'border-gray-100'}`}
               >
                 {!shouldShowFallAlert && shouldShowStaleFall && (
                   <View className="absolute top-4 right-4 bg-gray-100 px-3 py-1 rounded-full border border-gray-200">
@@ -1114,10 +1124,10 @@ export default function DashboardScreen() {
                   </View>
                 )}
 
-                <View className="flex-row items-start mb-4">
+                <View className={`flex-row items-start ${eventHeaderSpacingClass}`}>
                   <View className="flex-row items-center gap-4 flex-1">
                     <View
-                      className={`w-14 h-14 rounded-full items-center justify-center ${shouldShowFallAlert ? 'bg-red-100' : shouldShowStaleFall ? 'bg-gray-100' : isDeviceOnlineForDisplay ? 'bg-blue-50' : 'bg-gray-100'}`}
+                      className={`${eventIconSizeClass} rounded-full items-center justify-center ${shouldShowFallAlert ? 'bg-red-100' : shouldShowStaleFall ? 'bg-gray-100' : isDeviceOnlineForDisplay ? 'bg-blue-50' : 'bg-gray-100'}`}
                     >
                       <MaterialSymbol
                         name={
@@ -1131,7 +1141,7 @@ export default function DashboardScreen() {
                                   ? 'accessibility'
                                   : 'signal_wifi_off'
                         }
-                        size={30}
+                        size={eventIconSize}
                         color={
                           shouldShowFallAlert
                             ? '#EF4444'
@@ -1213,7 +1223,7 @@ export default function DashboardScreen() {
             )}
 
             {/* การ์ดอุปกรณ์และการ์ดชีพจร */}
-            <View className="flex-row items-stretch mb-5">
+            <View className={`flex-row items-stretch ${dashboardPairSpacingClass}`}>
               {isDashboardSyncing && displayElder?.device ? (
                 <DashboardDeviceCardSkeleton />
               ) : (
@@ -1221,12 +1231,12 @@ export default function DashboardScreen() {
                   onPress={handleDeviceCardPress}
                   disabled={isDeviceCardDisabled}
                   testID="home-device-card"
-                  className="flex-1 min-h-[130px] bg-white pt-4 px-4 pb-2 rounded-[24px] border border-gray-100 shadow-sm mr-1.5"
+                  className={`flex-1 ${dashboardPairCardHeightClass} bg-white ${dashboardPairCardPaddingClass} rounded-[24px] border border-gray-100 shadow-sm mr-1.5`}
                   scale={0.95}
                 >
                   <View className="flex-row justify-between items-start">
                     <View
-                      className={`w-12 h-12 rounded-2xl items-center justify-center ${
+                      className={`${dashboardPairIconSizeClass} rounded-2xl items-center justify-center ${
                         !displayElder?.device
                           ? 'bg-gray-100'
                           : isDeviceOnlineForDisplay
@@ -1236,7 +1246,7 @@ export default function DashboardScreen() {
                     >
                       <MaterialSymbol
                         name="devices"
-                        size={24}
+                        size={dashboardPairIconSize}
                         color={
                           !displayElder?.device
                             ? '#9CA3AF'
@@ -1293,7 +1303,9 @@ export default function DashboardScreen() {
               {isDashboardSyncing && displayElder?.device ? (
                 <DashboardHeartRateCardSkeleton />
               ) : (
-                <View className="flex-1 min-h-[130px] bg-white pt-4 px-4 pb-2 rounded-[24px] border border-gray-100 shadow-sm ml-1.5 relative overflow-hidden">
+                <View
+                  className={`flex-1 ${dashboardPairCardHeightClass} bg-white ${dashboardPairCardPaddingClass} rounded-[24px] border border-gray-100 shadow-sm ml-1.5 relative overflow-hidden`}
+                >
                   {hrStatus && isDeviceOnlineForDisplay && (
                     <View
                       className="absolute top-4 right-4 px-2 py-0.5 rounded-md z-20"
@@ -1307,13 +1319,13 @@ export default function DashboardScreen() {
 
                   <View className="flex-row justify-between items-start z-10">
                     <View
-                      className={`w-12 h-12 rounded-2xl items-center justify-center ${
+                      className={`${dashboardPairIconSizeClass} rounded-2xl items-center justify-center ${
                         isDeviceOnlineForDisplay ? 'bg-red-100' : 'bg-gray-100'
                       }`}
                     >
                       <MaterialIconSolid
                         name="favorite"
-                        size={24}
+                        size={dashboardPairIconSize}
                         color={isDeviceOnlineForDisplay ? '#EF4444' : '#9CA3AF'}
                       />
                     </View>
@@ -1326,7 +1338,7 @@ export default function DashboardScreen() {
 
                     <View className="flex-row items-baseline gap-1">
                       <KanitText
-                        className={`text-4xl ${
+                        className={`${heartValueSizeClass} ${
                           (!shouldShowHeartRate && !shouldShowEventHeartContext) ||
                           !isDeviceOnlineForDisplay
                             ? 'text-gray-400'

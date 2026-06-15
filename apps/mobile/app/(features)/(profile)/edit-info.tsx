@@ -35,12 +35,14 @@ import { getRequiredTextValidationError } from '../../../utils/formValidation';
 
 import { queryKeys } from '../../../hooks/queryKeys';
 import { useUnsavedChanges } from '../../../hooks/useUnsavedChanges';
+import { useFormBasePadding } from '../../../hooks/useFormBottomPadding';
 
 import type { Gender, UserProfile } from '../../../services/types';
 
 export default function ProfileEditInfoScreen() {
   // ใช้จัดการ cache ของ React Query หลังอัปเดตข้อมูลสำเร็จ
   const queryClient = useQueryClient();
+  const formBottomPadding = useFormBasePadding({ basePadding: 24 });
 
   // State ของฟอร์มแก้ไขข้อมูลส่วนตัว
   const [firstName, setFirstName] = useState('');
@@ -174,9 +176,10 @@ export default function ProfileEditInfoScreen() {
 
   return (
     <ScreenWrapper
+      reserveBottomInset
       contentContainerStyle={{
         paddingHorizontal: 24,
-        paddingBottom: 24,
+        paddingBottom: formBottomPadding,
         flexGrow: 1,
       }}
       scrollViewProps={{

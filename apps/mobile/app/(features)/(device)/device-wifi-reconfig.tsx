@@ -35,13 +35,15 @@ import { useAppSearchParams } from '../../../utils/searchParams';
 import { getWifiCredentialValidationError } from '../../../utils/formValidation';
 import { runAfterKeyboardDismiss } from '../../../utils/keyboard';
 
-import { useNavBarInset } from '../../../hooks/useNavBarInset';
+import { useFormBasePadding } from '../../../hooks/useFormBottomPadding';
 import { useCurrentElder } from '../../../hooks/useCurrentElder';
 import { useDeviceSetupStore } from '../../../store/useDeviceSetupStore';
 import { useSensorStore } from '../../../store/useSensorStore';
 
 import type { WiFiNetwork } from '../../../services/wifiScannerService';
 import type { WifiStatus } from '../../../services/types';
+
+type WifiReconfigStep = 'scan' | 'manual' | 'password' | 'verifying' | 'success';
 
 // เวลาสูงสุดที่รอให้อุปกรณ์ยืนยันว่าเปลี่ยน WiFi สำเร็จ
 const VERIFY_TIMEOUT_MS = 25_000;
@@ -64,8 +66,12 @@ const getVerifyStageMessage = (elapsedMs: number): string => {
 };
 
 export default function DeviceWifiReconfigScreen() {
-  // เพิ่มระยะด้านล่าง ไม่ให้ input หรือปุ่มชน Navigation Bar ของเครื่อง
-  const navBarInset = useNavBarInset();
+  // Flow หลักของไฟล์นี้:
+  // เตรียม device/WiFi state -> scan/select network -> send backend command -> verify online result -> render
+
+  // Device และ layout state
+  // เพิ่มระยะท้ายฟอร์มตาม system navigation bar อัตโนมัติ
+  const formBottomPadding = useFormBasePadding({ basePadding: 24 });
 
   // อ่าน params ที่ถูกส่งมาจาก device-info หรือ device-wifi-setup
   const searchParams = useAppSearchParams();
@@ -85,9 +91,7 @@ export default function DeviceWifiReconfigScreen() {
   } = useSensorStore();
 
   // step ใช้ควบคุมว่า UI ตอนนี้อยู่ช่วงไหน
-  const [step, setStep] = useState<'scan' | 'manual' | 'password' | 'verifying' | 'success'>(
-    'scan',
-  );
+  const [step, setStep] = useState<WifiReconfigStep>('scan');
 
   // รายการ WiFi ที่สแกนได้ และ WiFi ที่ผู้ใช้เลือก
   const [isScanning, setIsScanning] = useState(true);
@@ -122,6 +126,7 @@ export default function DeviceWifiReconfigScreen() {
   // กัน success/fail ทำงานซ้ำหลายรอบจากหลายแหล่ง เช่น socket + polling
   const hasCompletedRef = useRef(false);
 
+  // Timer helpers
   const clearTimers = useCallback(() => {
     // ล้าง timer ทั้งหมดที่เกี่ยวกับการ verify
     if (verifyIntervalRef.current) clearInterval(verifyIntervalRef.current);
@@ -129,6 +134,7 @@ export default function DeviceWifiReconfigScreen() {
     if (verifyTimerRef.current) clearInterval(verifyTimerRef.current);
   }, []);
 
+  // Lifecycle: sync realtime target device
   useEffect(() => {
     if (!elderInfo?.id || !elderInfo?.device?.id) return;
 
@@ -136,6 +142,7 @@ export default function DeviceWifiReconfigScreen() {
     useDeviceSetupStore.getState().setElderConfig(elderInfo.id, elderInfo.device.id);
   }, [elderInfo?.device?.id, elderInfo?.id]);
 
+  // Input handlers
   const handleCustomSSIDChange = useCallback((value: string) => {
     // Ref ใช้เก็บค่าล่าสุดตอนส่งจริง, State ใช้แสดงใน input
     customSSIDRef.current = value;
@@ -148,6 +155,7 @@ export default function DeviceWifiReconfigScreen() {
     setPassword(value);
   }, []);
 
+  // Verification helpers
   const finishProcess = useCallback(
     (isSuccess: boolean) => {
       // กันการจบ flow ซ้ำ
@@ -184,6 +192,7 @@ export default function DeviceWifiReconfigScreen() {
     [clearTimers, selectedNetwork],
   );
 
+  // Verification timers และ progress text
   useEffect(() => {
     if (step !== 'verifying') {
       if (verifyTimerRef.current) {
@@ -213,6 +222,7 @@ export default function DeviceWifiReconfigScreen() {
     };
   }, [step]);
 
+  // Success navigation
   useEffect(() => {
     if (step !== 'success') return;
 
@@ -222,6 +232,7 @@ export default function DeviceWifiReconfigScreen() {
     return () => clearTimeout(timeout);
   }, [step]);
 
+  // Realtime verification จาก socket/store
   useEffect(() => {
     if (step !== 'verifying') return;
 
@@ -252,6 +263,7 @@ export default function DeviceWifiReconfigScreen() {
     }
   }, [currentSSID, deviceOnline, finishProcess, lastHeartUpdate, lastStatusUpdate, step]);
 
+  // Backend polling verification
   const startVerification = useCallback(() => {
     // เริ่มรอยืนยันผลหลังส่งคำสั่งเปลี่ยน WiFi ไป Backend แล้ว
     setStep('verifying');
@@ -296,6 +308,7 @@ export default function DeviceWifiReconfigScreen() {
     verifyTimeoutRef.current = setTimeout(() => finishProcess(false), VERIFY_TIMEOUT_MS);
   }, [currentSSID, deviceCode, deviceOnline, finishProcess]);
 
+  // WiFi scan workflow
   const scanWiFi = useCallback(async () => {
     setIsScanning(true);
 
@@ -328,6 +341,7 @@ export default function DeviceWifiReconfigScreen() {
     }
   }, [deviceCode]);
 
+  // Mutation สำหรับส่งคำสั่งเปลี่ยน WiFi ไป Backend
   // จัดการขั้นตอนส่งคำสั่งเปลี่ยน WiFi ไป Backend
   // เมื่อเรียก mutate() ระบบจะเข้ามาทำงานที่ mutationFn
   const configMutation = useMutation({
@@ -344,6 +358,7 @@ export default function DeviceWifiReconfigScreen() {
     },
   });
 
+  // Action handlers
   const handleNetworkSelect = (network: WiFiNetwork) => {
     Keyboard.dismiss();
 
@@ -403,7 +418,6 @@ export default function DeviceWifiReconfigScreen() {
       return;
     }
 
-    Keyboard.dismiss();
     const runProvision = () => {
       // เก็บ SSID เป้าหมายไว้เทียบผลหลังอุปกรณ์กลับมาออนไลน์
       targetSSIDRef.current = targetSSID;
@@ -412,7 +426,12 @@ export default function DeviceWifiReconfigScreen() {
       // ถัดไปไปที่ configMutation ด้านบน
       configMutation.mutate({ ssid: targetSSID, wifiPassword: latestPassword });
     };
-    runProvision();
+
+    // รอให้คีย์บอร์ด Android หุบจบก่อนค่อยส่งคำสั่ง เพื่อไม่ให้หน้าสลับระหว่าง keyboard animation
+    runAfterKeyboardDismiss(runProvision, {
+      waitAfterHideMs: 100,
+      maxWaitMs: 300,
+    });
   };
 
   const handleBack = () => {
@@ -453,8 +472,10 @@ export default function DeviceWifiReconfigScreen() {
   // ใช้ suppress unused warning เพราะ verifyStatus ถูกอัปเดตไว้สำหรับ polling/status ภายใน
   void verifyStatus;
 
+  // Render ตาม step ปัจจุบัน
   return (
     <ScreenWrapper
+      reserveBottomInset={step === 'password' || step === 'manual'}
       useScrollView={step === 'password' || step === 'manual'}
       header={
         <ScreenHeader
@@ -465,7 +486,7 @@ export default function DeviceWifiReconfigScreen() {
       contentContainerStyle={{
         flexGrow: 1,
         paddingHorizontal: 24,
-        paddingBottom: step === 'password' || step === 'manual' ? 24 + navBarInset : 0,
+        paddingBottom: step === 'password' || step === 'manual' ? formBottomPadding : 0,
       }}
       edges={['top', 'left', 'right']}
       scrollViewProps={{

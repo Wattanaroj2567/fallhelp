@@ -45,12 +45,15 @@ import {
 import { useCurrentElder } from '../../../hooks/useCurrentElder';
 import { queryKeys } from '../../../hooks/queryKeys';
 import { useUnsavedChanges } from '../../../hooks/useUnsavedChanges';
-import { useNavBarInset } from '../../../hooks/useNavBarInset';
 
 import type { AddressData } from '../../../components/CascadingAddressPicker';
 import type { Elder } from '../../../services/types';
 
 export default function EditElderInfoScreen() {
+  // Flow หลักของไฟล์นี้:
+  // โหลด elder -> hydrate form -> track unsaved changes -> validate/save -> render form
+
+  // Params, refs และ cache state
   // อ่าน query parameters สำหรับโฟกัสฟิลด์ที่ต้องการ
   const { focus } = useLocalSearchParams<{ focus?: string }>();
 
@@ -64,9 +67,6 @@ export default function EditElderInfoScreen() {
   // ใช้จัดการ cache ของ React Query หลังอัปเดตข้อมูลสำเร็จ
   const queryClient = useQueryClient();
 
-  // เพิ่มระยะด้านล่าง ไม่ให้ปุ่มชน Navigation Bar ของเครื่อง
-  const navBarInset = useNavBarInset();
-
   // โหลดข้อมูลผู้สูงอายุปัจจุบัน
   const { data: elder, isLoading: isEldersLoading } = useCurrentElder({
     staleTime: 1000 * 60 * 5,
@@ -79,6 +79,7 @@ export default function EditElderInfoScreen() {
     message: 'คุณมีการแก้ไขที่ยังไม่ได้บันทึก ต้องการออกจากหน้านี้หรือไม่?',
   });
 
+  // Form state
   // State ของฟอร์มที่ผู้ใช้แก้ไข
   const [firstName, setFirstName] = useState(() => elder?.firstName || '');
   const [lastName, setLastName] = useState(() => elder?.lastName || '');
@@ -149,6 +150,7 @@ export default function EditElderInfoScreen() {
 
   const isAwaitingHydration = Boolean(elder?.id && initialValues === null);
 
+  // Hydration effects
   useEffect(() => {
     const elderKey = elder?.id ?? '';
 
@@ -267,6 +269,7 @@ export default function EditElderInfoScreen() {
     setHasChanges,
   ]);
 
+  // Mutation สำหรับบันทึกข้อมูลผู้สูงอายุ
   // จัดการขั้นตอนบันทึกข้อมูลผู้สูงอายุ
   // เมื่อเรียก mutate() ระบบจะเข้ามาทำงานที่ mutationFn
   const updateMutation = useMutation({
@@ -292,6 +295,7 @@ export default function EditElderInfoScreen() {
     },
   });
 
+  // Action handlers
   const handleSave = () => {
     // ปิด keyboard ทันทีที่กดปุ่ม ก่อน navigation เริ่มทำงาน
     Keyboard.dismiss();
@@ -360,17 +364,19 @@ export default function EditElderInfoScreen() {
     updateMutation.mutate(payload);
   };
 
+  // Render loading
   if ((isEldersLoading && !elder) || isAwaitingHydration) {
     return <LoadingScreen useScreenWrapper message="กำลังโหลดข้อมูล..." />;
   }
 
+  // Render form
   return (
     <FormLayout
-      paddingBottom={40 + navBarInset}
+      paddingBottom={40}
       header={<ScreenHeader title="" onBack={() => router.back()} />}
       scrollViewRef={scrollViewRef}
     >
-      <View className="flex-1">
+      <View>
         <KanitText weight="medium" className="text-[28px] text-gray-900 mb-2">
           แก้ไขข้อมูลผู้สูงอายุ
         </KanitText>

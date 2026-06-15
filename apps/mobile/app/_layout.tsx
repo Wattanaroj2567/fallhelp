@@ -309,7 +309,7 @@ export default function RootLayout() {
         </AuthProvider>
 
         {/* Toast แสดงข้อความ success/error แบบลอย */}
-        <Toast config={toastConfig} />
+        <Toast config={toastConfig} swipeable={false} />
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

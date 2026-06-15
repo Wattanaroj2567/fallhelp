@@ -36,6 +36,7 @@ import { safeRouter as router } from '../../../utils/safeRouter';
 import { listContacts } from '../../../services/emergencyContactService';
 import Logger from '../../../utils/logger';
 import { showDialog } from '../../../utils/dialogService';
+import { consumeQueuedSuccessToast, showSuccessToastOnNextFrame } from '../../../utils/toast';
 
 import { useCurrentElder } from '../../../hooks/useCurrentElder';
 import { queryKeys } from '../../../hooks/queryKeys';
@@ -44,6 +45,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { EmergencyContact } from '../../../services/types';
 
 export default function EmergencyCallScreen() {
+  // Flow หลักของไฟล์นี้:
+  // โหลด elder/contacts -> เลือก top contacts -> เปิด dialer -> render emergency options
+
+  // Cache และ navigation state
   // ใช้จัดการ cache ของ React Query
   const queryClient = useQueryClient();
 
@@ -92,23 +97,38 @@ export default function EmergencyCallScreen() {
     staleTime: 30_000,
   });
 
+  // Lifecycle: refresh elder state เมื่อกลับมา call screen
   useFocusEffect(
     useCallback(() => {
       setIsNavigating(false);
 
+      const queuedToast = consumeQueuedSuccessToast();
+      if (queuedToast) {
+        showSuccessToastOnNextFrame(queuedToast);
+      }
+
       // รีเฟรชข้อมูลผู้สูงอายุ เพื่อให้สถานะสิทธิ์และข้อมูลล่าสุดตรงกับ server
-      queryClient.invalidateQueries({ queryKey: queryKeys.currentElder() });
+      const syncTimer = setTimeout(
+        () => {
+          queryClient.invalidateQueries({ queryKey: queryKeys.currentElder() });
+        },
+        queuedToast ? 220 : 0,
+      );
+
+      return () => clearTimeout(syncTimer);
     }, [queryClient]),
   );
 
   // แสดงเฉพาะ 3 รายชื่อแรก
   // ลำดับนี้มาจาก priority ที่ backend/service คืนมา
   const topContacts = contacts ? contacts.slice(0, 3) : [];
+  const hasEmergencyContacts = topContacts.length > 0;
 
   // รอให้ elder และ contacts พร้อมก่อน
   // กันไม่ให้ empty state กระพริบตอนเปิดหน้า
   const isDataLoading = isEldersLoading || isContactsLoading;
 
+  // Action handlers
   const handleCall = async (phoneNumber: string) => {
     const url = `tel:${phoneNumber}`;
 
@@ -128,6 +148,7 @@ export default function EmergencyCallScreen() {
     }
   };
 
+  // Render emergency call options
   return (
     <ScreenWrapper
       edges={['top']}
@@ -142,7 +163,7 @@ export default function EmergencyCallScreen() {
       }
     >
       <View className="flex-1 px-6 pt-4 pb-2">
-        {isOwner && topContacts && topContacts.length > 0 && (
+        {isOwner && hasEmergencyContacts && (
           <View className="bg-white rounded-[24px] shadow-sm border border-gray-100 mb-4">
             <View className="rounded-[24px] overflow-hidden">
               <Bounceable
@@ -257,7 +278,9 @@ export default function EmergencyCallScreen() {
 
         <View className="flex-row items-center justify-between mb-2">
           <KanitText className="text-base text-gray-800">รายการผู้ติดต่อฉุกเฉิน</KanitText>
-          <KanitText className="text-xs text-gray-400 font-kanit">แตะชื่อเพื่อโทรทันที</KanitText>
+          {hasEmergencyContacts && (
+            <KanitText className="text-xs text-gray-400 font-kanit">แตะชื่อเพื่อโทรทันที</KanitText>
+          )}
         </View>
 
         <View className="flex-1 justify-start gap-3">
@@ -266,7 +289,7 @@ export default function EmergencyCallScreen() {
             <View className="flex-1">
               <ListItemSkeleton count={3} />
             </View>
-          ) : topContacts && topContacts.length > 0 ? (
+          ) : hasEmergencyContacts ? (
             <>
               {topContacts.map((item, index) => (
                 <View key={item.id} className="mb-1">

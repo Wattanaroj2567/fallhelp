@@ -46,6 +46,15 @@ type DisplaySignals = {
   lastStatusUpdate: Date | null;
 };
 
+type FallCardSnapshot = {
+  shouldShowFallAlert: boolean;
+  shouldShowFallSuspected: boolean;
+  shouldShowStaleFall: boolean;
+  shouldShowFallDetailAction: boolean;
+  fallDisplayLabel: string;
+  lastUpdatedAt: Date | null;
+};
+
 type UseHomeDisplayStateParams = {
   now: number;
   isTransitioning: boolean;
@@ -89,15 +98,12 @@ export function useHomeDisplayState({
   firstSocketConnectedAt,
   screenEnterAt,
 }: UseHomeDisplayStateParams) {
+  // Flow หลักของ hook นี้:
+  // เลือก elder/signal ที่ใช้แสดง -> คำนวณ fall/connectivity/heart -> sync snapshot -> คืน display contract
+
+  // State สำหรับ snapshot
   // snapshot ของการ์ดเหตุการณ์ ใช้ตรึงผลล่าสุดระหว่าง dashboard sync หรือ refetch
-  const [fallCardSnapshot, setFallCardSnapshot] = useState<{
-    shouldShowFallAlert: boolean;
-    shouldShowFallSuspected: boolean;
-    shouldShowStaleFall: boolean;
-    shouldShowFallDetailAction: boolean;
-    fallDisplayLabel: string;
-    lastUpdatedAt: Date | null;
-  } | null>(null);
+  const [fallCardSnapshot, setFallCardSnapshot] = useState<FallCardSnapshot | null>(null);
 
   // timestamp ที่ใช้แสดง “สถานะล่าสุด” โดยไม่ผูกกับ now ทุกครั้งจน UI กระพริบ
   const [stableStatusTimestamp, setStableStatusTimestamp] = useState<Date | null>(null);
@@ -108,6 +114,7 @@ export function useHomeDisplayState({
   // ใช้ระบุว่า snapshot ปัจจุบันเป็นของ elder/device ไหน
   const snapshotOwnerKeyRef = useRef<string | null>(null);
 
+  // เลือก elder และ realtime signal ที่ UI ควรใช้จริง
   const displayElder = useMemo(() => {
     // ถ้ารู้แน่ชัดว่าอุปกรณ์ใน elderInfo กับ stableElderInfo ไม่ตรงกัน (เพิ่งผูก หรือ เพิ่งยกเลิก)
     // ไม่ควรใช้ stableElderInfo มาบังข้อมูลใหม่
@@ -165,6 +172,7 @@ export function useHomeDisplayState({
     ],
   );
 
+  // ล้าง snapshot เมื่อเปลี่ยน elder/device จริง
   useEffect(() => {
     const ownerKey = `${displayElder?.id ?? 'no-elder'}:${displayElder?.device?.id ?? 'no-device'}`;
 
@@ -187,6 +195,7 @@ export function useHomeDisplayState({
 
   const hasDevice = !!displayElder?.device;
 
+  // สถานะเหตุการณ์ล้ม
   // ถ้า caregiver กด “รับทราบแล้ว” และไม่มี active fall event ให้ถือว่าสถานะ fall เก่ากลับเป็นปกติ
   const shouldOverrideFallAsNormal =
     manualAcknowledgedAt &&
@@ -235,6 +244,7 @@ export function useHomeDisplayState({
       ? new Date(latestFallEventFromApi.timestamp)
       : displaySignals.lastFallUpdate;
 
+  // สถานะ connectivity ของอุปกรณ์
   // อ่าน snapshot สถานะอุปกรณ์จาก API เพื่อใช้ร่วมกับ realtime signal
   // ไฟล์ถัดไป: utils/deviceConnectivity.ts
   const apiReportsOnline = isDeviceMarkedOnlineByApi(displayElder?.device);
@@ -337,6 +347,7 @@ export function useHomeDisplayState({
 
   const isDeviceCardDisabled = hasDevice && shouldShowConnecting;
 
+  // สถานะ heart และ event card
   const isHeartDataFresh =
     !!displaySignals.lastHeartUpdate &&
     now - displaySignals.lastHeartUpdate.getTime() <= HEART_FRESHNESS_MS;
@@ -392,6 +403,7 @@ export function useHomeDisplayState({
         ? 'ปกติ'
         : 'ยังไม่มีข้อมูลเหตุการณ์';
 
+  // fallback snapshot ของการ์ดเหตุการณ์
   // หลัง caregiver รับทราบแล้ว ไม่ควรใช้ snapshot เก่าที่เคยแสดง fall alert
   const shouldBypassFallSnapshotAfterAcknowledge =
     !!manualAcknowledgedAt &&
@@ -427,6 +439,7 @@ export function useHomeDisplayState({
   const fallDisplayLabel = fallbackFallSnapshot?.fallDisplayLabel ?? rawFallDisplayLabel;
   const lastUpdatedAt = fallbackFallSnapshot?.lastUpdatedAt ?? rawLastUpdatedAt;
 
+  // Effects สำหรับ snapshot
   useEffect(() => {
     if (shouldShowDashboardSync || shouldShowConnecting || !hasFetchedInitialEvents) return;
 
@@ -521,6 +534,7 @@ export function useHomeDisplayState({
     ? manualAcknowledgedAt
     : stableStatusTimestamp;
 
+  // contract ที่ dashboard screen ใช้ render
   return {
     displayElder,
     displaySignals,

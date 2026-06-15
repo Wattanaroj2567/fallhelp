@@ -37,14 +37,20 @@ import {
 import { useCurrentElder } from '../../../hooks/useCurrentElder';
 import { queryKeys } from '../../../hooks/queryKeys';
 import { useNavBarInset } from '../../../hooks/useNavBarInset';
+import { useFormBasePadding } from '../../../hooks/useFormBottomPadding';
 import { useDarkNavigationBarWhen } from '../../../hooks/useNavigationBar';
 
 export default function DevicePairingScreen() {
+  // Flow หลักของไฟล์นี้:
+  // เตรียม pairing state -> ตรวจ permission/elder -> pair device -> refresh cache -> render scanner/manual/success
+
+  // Camera, layout และ cache state
   // ใช้จัดการ permission กล้องสำหรับสแกน QR Code
   const [permission, requestPermission] = useCameraPermissions();
 
   // เพิ่มระยะด้านล่าง ไม่ให้ปุ่มชน Navigation Bar ของเครื่อง
   const navBarInset = useNavBarInset();
+  const formBottomPadding = useFormBasePadding({ basePadding: 24 });
 
   // ใช้จัดการ cache ของ React Query หลังผูกอุปกรณ์สำเร็จ
   const queryClient = useQueryClient();
@@ -75,6 +81,7 @@ export default function DevicePairingScreen() {
   // ใช้ elderId ตอนผูกอุปกรณ์
   const { data: currentElder } = useCurrentElder();
 
+  // Lifecycle guards
   useEffect(() => {
     mountedRef.current = true;
 
@@ -99,6 +106,7 @@ export default function DevicePairingScreen() {
     }
   }, [permission, requestPermission]);
 
+  // Mutation สำหรับผูกอุปกรณ์จาก feature flow
   // จัดการขั้นตอนผูกอุปกรณ์ของหน้านี้
   // เมื่อเรียก mutate() ระบบจะเข้ามาทำงานที่ mutationFn
   const pairMutation = useMutation({
@@ -171,6 +179,7 @@ export default function DevicePairingScreen() {
     },
   });
 
+  // Action handlers
   const handleManualPairing = () => {
     Keyboard.dismiss();
 
@@ -228,12 +237,14 @@ export default function DevicePairingScreen() {
     }
   }, [pairedDevice, showManualEntry]);
 
+  // Render: manual entry
   if (showManualEntry) {
     return (
       <ScreenWrapper
+        reserveBottomInset
         contentContainerStyle={{
           paddingHorizontal: 24,
-          paddingBottom: 24 + navBarInset,
+          paddingBottom: formBottomPadding,
           flexGrow: 1,
         }}
         useScrollView
@@ -290,6 +301,7 @@ export default function DevicePairingScreen() {
     );
   }
 
+  // Render: scanner หรือ success state
   return (
     <View style={[StyleSheet.absoluteFill, { backgroundColor: '#000000' }]}>
       <StatusBar style="light" />
@@ -318,7 +330,7 @@ export default function DevicePairingScreen() {
                   ผูกอุปกรณ์เรียบร้อยแล้ว
                 </KanitText>
                 <KanitText className="text-white text-lg text-center mb-10" style={styles.hintText}>
-                  กดปุ่มด้านล่างเพื่อตั้งค่า Wi-Fi ให้อุปกรณ์
+                  กดปุ่มด้านล่างเพื่อตั้งค่า WiFi ให้อุปกรณ์
                 </KanitText>
                 <TouchableOpacity
                   onPress={() => {
@@ -335,7 +347,7 @@ export default function DevicePairingScreen() {
                   className="bg-white rounded-2xl py-4 w-full items-center"
                 >
                   <KanitText weight="medium" className="text-green-600 text-lg">
-                    ไปตั้งค่า Wi-Fi
+                    ไปตั้งค่า WiFi
                   </KanitText>
                 </TouchableOpacity>
               </View>

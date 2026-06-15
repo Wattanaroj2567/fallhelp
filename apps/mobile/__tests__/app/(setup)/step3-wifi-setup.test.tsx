@@ -254,4 +254,40 @@ describe('Step3 (WiFi Setup)', () => {
     });
     expect(await findByText('เลือก WiFi')).toBeTruthy();
   });
+
+  it('waits for keyboard dismissal before provisioning a selected WiFi password', async () => {
+    mockedBleService.initialize.mockResolvedValue(true);
+    mockedBleService.getState.mockResolvedValue('on' as never);
+    mockedBleService.scanForDevices.mockImplementation(async (onDeviceFound) => {
+      onDeviceFound({
+        id: 'ble-device-1',
+        name: 'FallDetector-DAF380',
+        rssi: -35,
+      });
+    });
+    mockedWifiScannerService.scanNetworks.mockResolvedValue({
+      networks: [
+        {
+          SSID: 'Home WiFi',
+          BSSID: 'bssid-home',
+          level: -45,
+          frequency: 2412,
+          capabilities: '[WPA2-PSK-CCMP][ESS]',
+          timestamp: 1,
+        },
+      ],
+    });
+    mockedWifiScannerService.isSecured.mockReturnValue(true);
+
+    const { findByTestId, findByText } = renderWithProviders(<Step3WifiSetupScreen />);
+
+    fireEvent.press(await findByTestId('unknown-security-network'));
+    fireEvent.changeText(await findByTestId('floating-label-input'), 'password123');
+    fireEvent.press(await findByText('เชื่อมต่อ'));
+
+    await waitFor(() => {
+      expect(mockedRunAfterKeyboardDismiss).toHaveBeenCalled();
+      expect(mockedBleService.sendWiFiCredentials).toHaveBeenCalledWith('Home WiFi', 'password123');
+    });
+  });
 });

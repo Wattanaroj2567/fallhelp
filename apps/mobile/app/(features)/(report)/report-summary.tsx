@@ -222,6 +222,7 @@ export default function ReportSummaryScreen() {
       <ScreenWrapper
         edges={['top']}
         useScrollView={false}
+        reserveBottomInset
         className="flex-1 bg-white"
         header={<ScreenHeader title="รายงานสรุปประจำเดือน" onBack={() => router.back()} />}
       >
@@ -255,6 +256,7 @@ export default function ReportSummaryScreen() {
     <ScreenWrapper
       edges={['top']}
       useScrollView={false}
+      reserveBottomInset
       className="flex-1 bg-white"
       header={<ScreenHeader title="รายงานสรุปประจำเดือน" onBack={() => router.back()} />}
     >

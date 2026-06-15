@@ -61,12 +61,17 @@ const getLastRealtimeActivityAgeMs = (
 };
 
 export const useSocketConnection = () => {
+  // Flow หลักของ hook นี้:
+  // เตรียม identity/timers -> sync cache helpers -> watchdog -> socket lifecycle -> public controls
+
   const queryClient = useQueryClient();
 
+  // ตัวระบุ connection
   // elderId/deviceId มาจาก setup store และใช้กำหนดว่าจะเชื่อม socket ของอุปกรณ์ไหน
   const elderId = useDeviceSetupStore((s) => s.elderId);
   const deviceId = useDeviceSetupStore((s) => s.deviceId);
 
+  // Refs และ timers ของ realtime lifecycle
   const socketRef = useRef<Socket | null>(null);
   const appState = useRef(AppState.currentState);
 
@@ -83,6 +88,7 @@ export const useSocketConnection = () => {
   // Dashboard ยังไม่แสดง suspected แต่ watchdog จะไม่ mark offline ระหว่างรอยืนยัน
   const fallPendingUntilRef = useRef<number | null>(null);
 
+  // Helpers สำหรับ fall pending guard
   const isInFallPendingWindow = useCallback((now: number): boolean => {
     return fallPendingUntilRef.current !== null && now < fallPendingUntilRef.current;
   }, []);
@@ -91,6 +97,7 @@ export const useSocketConnection = () => {
     fallPendingUntilRef.current = null;
   }, []);
 
+  // Helpers สำหรับ sync cache
   const syncNotificationBadge = useCallback(
     (reason: string) => {
       Logger.debug('[useSocketConnection] Sync badge:', { reason });
@@ -168,6 +175,7 @@ export const useSocketConnection = () => {
     [elderId, queryClient],
   );
 
+  // Watchdog ตรวจข้อมูล stale ระหว่าง socket ยังทำงาน
   useEffect(() => {
     const interval = setInterval(() => {
       const now = Date.now();
@@ -201,6 +209,7 @@ export const useSocketConnection = () => {
     return () => clearInterval(interval);
   }, [isInFallPendingWindow]);
 
+  // Socket lifecycle และ event handlers
   useEffect(() => {
     if (!elderId || !deviceId) {
       Logger.debug('[useSocketConnection] Skip: No elder/device');
@@ -577,6 +586,7 @@ export const useSocketConnection = () => {
     clearFallPendingWindow,
   ]);
 
+  // Public controls สำหรับ provider ที่เรียก hook นี้
   const reconnect = useCallback(() => {
     const socket = socketRef.current;
 

@@ -26,6 +26,7 @@ import { showErrorMessage } from '../../utils/errorHelper';
 import { showDialog } from '../../utils/dialogService';
 import { getOtpValidationError, sanitizeOtpInput } from '../../utils/formValidation';
 
+import { useFormBasePadding } from '../../hooks/useFormBottomPadding';
 import { useAppSearchParams } from '../../utils/searchParams';
 
 const THEME_COLOR = '#16AD78';
@@ -33,6 +34,8 @@ const OTP_LENGTH = 6;
 const RESEND_COOLDOWN_SECONDS = 60;
 
 export default function VerifyOtpScreen() {
+  const formBottomPadding = useFormBasePadding({ basePadding: 40 });
+
   // อ่านข้อมูลที่ถูกส่งมาจากหน้า Forgot Password
   const searchParams = useAppSearchParams();
 
@@ -171,9 +174,10 @@ export default function VerifyOtpScreen() {
   return (
     <ScreenWrapper
       useScrollView={true}
+      reserveBottomInset
       contentContainerStyle={{
         paddingHorizontal: 24,
-        paddingBottom: 40,
+        paddingBottom: formBottomPadding,
         flex: 1,
       }}
       scrollViewProps={{

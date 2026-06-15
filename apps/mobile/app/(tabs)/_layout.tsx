@@ -14,14 +14,19 @@ import React from 'react';
 import { Tabs } from 'expo-router';
 import { MaterialSymbol } from '../../components/MaterialSymbol';
 import { MaterialIconSolid } from '../../components/MaterialIconSolid';
+import { useNavBarInset } from '../../hooks/useNavBarInset';
 
 // สีหลักของ Tab Bar
 const TAB_ACTIVE_COLOR = '#16AD78';
 const TAB_INACTIVE_COLOR = '#9CA3AF';
 const TAB_BAR_BG_COLOR = '#FFFFFF';
 const TAB_BAR_BORDER_COLOR = '#E5E7EB';
+const TAB_BAR_CONTENT_HEIGHT = 68;
+const TAB_BAR_PADDING_BOTTOM = 8;
 
 export default function TabLayout() {
+  const navBarInset = useNavBarInset({ assumeAndroidNavigationBarVisible: false });
+
   return (
     <Tabs
       // หน้าแรกของกลุ่ม tabs หลังผู้ใช้เข้าสู่ระบบ
@@ -45,9 +50,9 @@ export default function TabLayout() {
         tabBarStyle: {
           backgroundColor: TAB_BAR_BG_COLOR,
           borderTopColor: TAB_BAR_BORDER_COLOR,
-          height: 68,
+          height: TAB_BAR_CONTENT_HEIGHT + navBarInset,
           paddingTop: 8,
-          paddingBottom: 8,
+          paddingBottom: TAB_BAR_PADDING_BOTTOM + navBarInset,
         },
       }}
     >

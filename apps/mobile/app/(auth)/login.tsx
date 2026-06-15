@@ -30,15 +30,15 @@ import {
 } from '../../utils/formValidation';
 
 import { useAuth } from '../../context/AuthContext';
-import { useNavBarInset } from '../../hooks/useNavBarInset';
+import { useFormBasePadding } from '../../hooks/useFormBottomPadding';
 
 export default function LoginScreen() {
   // ใช้สำหรับบันทึกสถานะว่า Login สำเร็จแล้ว
   // ถัดไปจะทำงานผ่าน AuthContext
   const { signIn } = useAuth();
 
-  // เพิ่มระยะด้านล่าง ไม่ให้เนื้อหาชน Navigation Bar ของเครื่อง
-  const navBarInset = useNavBarInset();
+  // เพิ่มระยะท้ายฟอร์มตาม system navigation bar อัตโนมัติ
+  const formBottomPadding = useFormBasePadding({ basePadding: 40 });
 
   // เก็บอีเมล/เบอร์โทรศัพท์ที่ผู้ใช้กรอก
   const [identifier, setIdentifier] = useState('');
@@ -115,16 +115,20 @@ export default function LoginScreen() {
   return (
     <ScreenWrapper
       useScrollView={true}
+      reserveBottomInset
       contentContainerStyle={{
         paddingHorizontal: 32,
-        paddingBottom: 40 + navBarInset,
+        paddingBottom: formBottomPadding,
         paddingTop: 0,
         justifyContent: 'center',
         flexGrow: 1,
       }}
       scrollViewProps={{
         bounces: false,
+        scrollEnabled: false,
         overScrollMode: 'never',
+        enableOnAndroid: true,
+        enableAutomaticScroll: true,
         showsVerticalScrollIndicator: false,
       }}
     >

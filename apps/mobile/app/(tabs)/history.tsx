@@ -51,6 +51,10 @@ export const filterVisibleHistoryEvents = (events: Event[]): Event[] =>
   events.filter((event) => event.fallStage === 'CONFIRMED' || event.fallStage === 'CANCELLED');
 
 export default function HistoryScreen() {
+  // Flow หลักของไฟล์นี้:
+  // โหลด elder/history -> prefetch monthly summary -> sync realtime event refresh -> format/render list
+
+  // Query และ realtime state
   const queryClient = useQueryClient();
 
   // อ่านเวลาล่าสุดของเหตุการณ์ล้มจาก realtime store
@@ -79,6 +83,7 @@ export default function HistoryScreen() {
   // ใช้ elderId สำหรับดึงประวัติเหตุการณ์
   const { data: elder, isLoading: isLoadingElder } = useCurrentElder();
 
+  // Lifecycle: sync realtime target device
   React.useEffect(() => {
     if (!elder?.id || !elder?.device?.id) return;
 
@@ -86,6 +91,7 @@ export default function HistoryScreen() {
     useDeviceSetupStore.getState().setElderConfig(elder.id, elder.device.id);
   }, [elder?.device?.id, elder?.id]);
 
+  // Query ประวัติเหตุการณ์และรายงานเดือนปัจจุบัน
   // โหลดประวัติเหตุการณ์จาก Backend
   const {
     data: events,
@@ -134,6 +140,7 @@ export default function HistoryScreen() {
   const isLoadingEvents = isLoadingElder || isLoading;
   const hasNoElder = !isLoadingElder && !elder?.id;
 
+  // Realtime refresh effects
   React.useEffect(() => {
     if (!lastFallUpdate || !elder?.id) return;
 
@@ -167,6 +174,7 @@ export default function HistoryScreen() {
     };
   }, []);
 
+  // Display values
   const displayEvents = events || [];
 
   // จำกัดจำนวนรายการตามตัวเลือกที่ผู้ใช้เลือก
@@ -190,6 +198,7 @@ export default function HistoryScreen() {
     }
   }, [latestEventId, triggerHighlight]);
 
+  // Render helpers
   const getEventDisplayInfo = (item: Event) => {
     if (item.fallStage === 'CANCELLED') {
       return {
@@ -406,6 +415,7 @@ export default function HistoryScreen() {
     );
   }
 
+  // Render history screen
   return (
     <ScreenWrapper
       edges={['top']}

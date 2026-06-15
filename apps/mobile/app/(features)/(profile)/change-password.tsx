@@ -29,12 +29,12 @@ import { showDialog } from '../../../utils/dialogService';
 import { showSuccessToast } from '../../../utils/toast';
 import { getPasswordPairValidationError } from '../../../utils/formValidation';
 
-import { useNavBarInset } from '../../../hooks/useNavBarInset';
+import { useFormBasePadding } from '../../../hooks/useFormBottomPadding';
 import { useUnsavedChanges } from '../../../hooks/useUnsavedChanges';
 
 export default function ProfileChangePasswordScreen() {
-  // เพิ่มระยะด้านล่าง ไม่ให้ปุ่มชน Navigation Bar ของเครื่อง
-  const navBarInset = useNavBarInset();
+  // เพิ่มระยะท้ายฟอร์มตาม system navigation bar อัตโนมัติ
+  const formBottomPadding = useFormBasePadding({ basePadding: 24 });
 
   // State ของฟอร์มเปลี่ยนรหัสผ่าน
   const [currentPassword, setCurrentPassword] = useState('');
@@ -99,9 +99,10 @@ export default function ProfileChangePasswordScreen() {
 
   return (
     <ScreenWrapper
+      reserveBottomInset
       contentContainerStyle={{
         paddingHorizontal: 24,
-        paddingBottom: 24 + navBarInset,
+        paddingBottom: formBottomPadding,
         flexGrow: 1,
       }}
       useScrollView={true}

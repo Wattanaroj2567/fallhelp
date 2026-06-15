@@ -44,6 +44,10 @@ import { useNavBarInset } from '../../hooks/useNavBarInset';
 import { useDarkNavigationBarWhen } from '../../hooks/useNavigationBar';
 
 export default function Step2DevicePairingScreen() {
+  // Flow หลักของไฟล์นี้:
+  // เตรียม pairing state -> ตรวจ camera/device cache -> pair/change device -> render scanner/manual/success
+
+  // Camera และ layout state
   // ใช้จัดการ permission กล้องสำหรับสแกน QR Code
   const [permission, requestPermission] = useCameraPermissions();
 
@@ -71,6 +75,7 @@ export default function Step2DevicePairingScreen() {
   // กันการกดขอ permission กล้องซ้ำ ขณะที่ dialog ระบบยังเปิดอยู่
   const isRequestingCameraPermission = useRef(false);
 
+  // Lifecycle: sync device cache และ permission state
   React.useEffect(() => {
     const checkExistingDevice = async () => {
       // ตรวจว่ามี deviceId ที่เคยบันทึกไว้จากการผูกอุปกรณ์หรือไม่
@@ -122,6 +127,7 @@ export default function Step2DevicePairingScreen() {
     }
   }, [permission, requestPermission]);
 
+  // Mutation สำหรับผูกอุปกรณ์ใน setup flow
   // จัดการขั้นตอนผูกอุปกรณ์ของหน้านี้
   // เมื่อเรียก mutate() ระบบจะเข้ามาทำงานที่ mutationFn
   const pairMutation = useMutation({
@@ -193,6 +199,7 @@ export default function Step2DevicePairingScreen() {
     },
   });
 
+  // Action handlers
   const handleManualPairing = async () => {
     Keyboard.dismiss();
     // ตรวจรหัสอุปกรณ์ก่อนเริ่มผูกอุปกรณ์
@@ -292,6 +299,7 @@ export default function Step2DevicePairingScreen() {
     }
   };
 
+  // Render: manual entry
   if (showManualEntry && !existingDeviceId) {
     return (
       <WizardLayout
@@ -348,6 +356,7 @@ export default function Step2DevicePairingScreen() {
     );
   }
 
+  // Render: scanner หรือ success state
   return (
     <View style={[StyleSheet.absoluteFill, { backgroundColor: '#000000' }]}>
       <StatusBar style="light" />
@@ -375,14 +384,14 @@ export default function Step2DevicePairingScreen() {
                     ผูกอุปกรณ์เรียบร้อยแล้ว
                   </KanitText>
                   <KanitText className="text-white/90 text-lg text-center mb-10">
-                    กดปุ่มด้านล่างเพื่อตั้งค่าอินเทอร์เน็ตให้อุปกรณ์
+                    กดปุ่มด้านล่างเพื่อตั้งค่า WiFi ให้อุปกรณ์
                   </KanitText>
                   <TouchableOpacity
                     onPress={() => router.push('/(setup)/step3-wifi-setup')}
                     className="bg-white rounded-2xl py-4 mb-4 w-full items-center"
                   >
                     <KanitText weight="medium" className="text-lg text-green-600">
-                      ไปตั้งค่าอินเทอร์เน็ต
+                      ไปตั้งค่า WiFi
                     </KanitText>
                   </TouchableOpacity>
                   <TouchableOpacity

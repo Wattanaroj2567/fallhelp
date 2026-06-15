@@ -29,6 +29,9 @@ import { useAppSearchParams } from '../../../utils/searchParams';
 import Logger from '../../../utils/logger';
 
 export default function DeviceWifiSetupScreen() {
+  // Flow หลักของไฟล์นี้:
+  // โหลด device state -> ตัดสิน online/offline flow -> lock flow -> render flow ที่เลือก
+
   // from=pairing คือ flow จับคู่อุปกรณ์ใหม่ ต้องเข้าสู่ BLE provisioning ให้ชัดเจน
   const searchParams = useAppSearchParams();
   const from = searchParams.getStringOrEmpty('from');
@@ -58,6 +61,7 @@ export default function DeviceWifiSetupScreen() {
     hasRealtimeSignal: false,
   });
 
+  // เลือก flow ครั้งเดียวตอนข้อมูลพร้อม แล้วล็อกไว้จนออกจากหน้านี้
   React.useEffect(() => {
     if (lockedFlow || isLoading || !elderInfo) return;
 
@@ -88,6 +92,7 @@ export default function DeviceWifiSetupScreen() {
     socketConnected,
   ]);
 
+  // Render: loading ระหว่างตรวจสถานะ
   if (isLoading || !elderInfo || !lockedFlow) {
     return (
       <ScreenWrapper

@@ -10,15 +10,7 @@
  */
 
 import React, { useEffect } from 'react';
-import {
-  Dimensions,
-  Platform,
-  StatusBar,
-  View,
-  useWindowDimensions,
-  type StyleProp,
-  type ViewStyle,
-} from 'react-native';
+import { View, type StyleProp, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, {
   useAnimatedStyle,
@@ -27,6 +19,7 @@ import Animated, {
   withTiming,
   withSequence,
 } from 'react-native-reanimated';
+import { useNavBarInset } from '../../hooks/useNavBarInset';
 
 const PULSE_DURATION_MS = 900;
 const EMERGENCY_BUTTON_HEIGHT = 68;
@@ -53,14 +46,23 @@ export const DashboardSkeleton: React.FC = () => {
 
   const pulse = useAnimatedStyle(() => ({ opacity: opacity.value }));
 
-  const { top, bottom } = useSafeAreaInsets();
-  const { height: windowHeight } = useWindowDimensions();
-  const screenHeight = Dimensions.get('screen').height;
-  const statusBarHeight = Platform.OS === 'android' ? (StatusBar.currentHeight ?? 0) : 0;
-  const androidNavBarHeight =
-    Platform.OS === 'android' ? Math.max(0, screenHeight - windowHeight - statusBarHeight) : 0;
-  const hasSystemNavBar = bottom > 0 || androidNavBarHeight > 0;
+  const { top } = useSafeAreaInsets();
+  const navBarInset = useNavBarInset({ assumeAndroidNavigationBarVisible: false });
+  const hasSystemNavBar = navBarInset > 0;
   const emergencyGap = hasSystemNavBar ? 0 : 16;
+
+  const dashboardContentPaddingTop = hasSystemNavBar ? 16 : 20;
+  const overviewTitleSpacingClass = hasSystemNavBar ? 'mb-3' : 'mb-4';
+  const eventCardSpacingClass = hasSystemNavBar
+    ? 'py-3 mb-4 min-h-[144px]'
+    : 'py-4 mb-5 min-h-[156px]';
+  const eventHeaderSpacingClass = hasSystemNavBar ? 'mb-3' : 'mb-4';
+  const eventIconSizeClass = hasSystemNavBar ? 'w-12 h-12' : 'w-14 h-14';
+  const dashboardPairSpacingClass = hasSystemNavBar ? 'mb-4' : 'mb-5';
+  const dashboardPairCardHeightClass = hasSystemNavBar ? 'min-h-[118px]' : 'min-h-[130px]';
+  const dashboardPairCardPaddingClass = hasSystemNavBar ? 'pt-3 px-4 pb-2' : 'pt-4 px-4 pb-2';
+  const dashboardPairIconSizeClass = hasSystemNavBar ? 'w-11 h-11' : 'w-12 h-12';
+  const heartValueWidthClass = hasSystemNavBar ? 'w-[40px] h-[28px]' : 'w-[44px] h-[32px]';
 
   // คำนวณความสูงและดีไซน์แบบ Dynamic สำหรับการ์ดผู้สูงอายุ เพื่อให้เท่ากับหน้าจอแสดงผลจริง
   const elderCardSpacingClass = hasSystemNavBar ? 'mt-0 mb-6' : 'mt-0 mb-4';
@@ -96,18 +98,23 @@ export const DashboardSkeleton: React.FC = () => {
 
       {/* กรอบ content ภาพรวม — padding ด้านล่างเพื่อไม่ให้การ์ดซ้อนทับปุ่มฉุกเฉิน */}
       <View
-        className="flex-1 px-4 pt-5"
+        className="flex-1 px-4"
         style={{
+          paddingTop: dashboardContentPaddingTop,
           paddingBottom: EMERGENCY_BUTTON_HEIGHT + emergencyGap,
         }}
       >
-        <SkeletonBlock className="w-[78px] h-[22px] rounded-[10px] mb-4" />
+        <SkeletonBlock
+          className={`w-[78px] h-[22px] rounded-[10px] ${overviewTitleSpacingClass}`}
+        />
 
         {/* Event status card — จัดวางขนาด สัดส่วน Flex และระยะขอบให้ตรงกับการ์ดจริง */}
-        <View className="px-4 py-4 rounded-[28px] mb-5 border min-h-[156px] bg-white shadow-sm border-gray-100">
-          <View className="flex-row items-start mb-4">
+        <View
+          className={`px-4 rounded-[28px] border bg-white shadow-sm border-gray-100 ${eventCardSpacingClass}`}
+        >
+          <View className={`flex-row items-start ${eventHeaderSpacingClass}`}>
             <View className="flex-row items-center gap-4 flex-1">
-              <SkeletonBlock className="w-14 h-14 rounded-full" />
+              <SkeletonBlock className={`${eventIconSizeClass} rounded-full`} />
               <View className="flex-1">
                 <SkeletonBlock className="w-[112px] h-[14px] rounded-[7px] mb-2.5" />
                 <SkeletonBlock className="w-[92px] h-[26px] rounded-[10px]" />
@@ -125,10 +132,12 @@ export const DashboardSkeleton: React.FC = () => {
         </View>
 
         {/* Device card + Heart rate card — ปรับปรุงเงา ระยะ Spacing และความหนาให้ตรงแบบ 1-to-1 ที่ความสูง 130px */}
-        <View className="flex-row items-stretch mb-5">
-          <View className="flex-1 min-h-[130px] bg-white pt-4 px-4 pb-2 rounded-[24px] border border-gray-100 shadow-sm mr-1.5">
+        <View className={`flex-row items-stretch ${dashboardPairSpacingClass}`}>
+          <View
+            className={`flex-1 ${dashboardPairCardHeightClass} bg-white ${dashboardPairCardPaddingClass} rounded-[24px] border border-gray-100 shadow-sm mr-1.5`}
+          >
             <View className="flex-row justify-between items-start">
-              <SkeletonBlock className="w-12 h-12 rounded-2xl" />
+              <SkeletonBlock className={`${dashboardPairIconSizeClass} rounded-2xl`} />
               <View className="flex-row items-center gap-2">
                 <SkeletonBlock className="w-3 h-3 rounded-full" />
                 <SkeletonBlock className="w-[18px] h-7 rounded-[9px] bg-gray-100" />
@@ -140,14 +149,16 @@ export const DashboardSkeleton: React.FC = () => {
             </View>
           </View>
 
-          <View className="flex-1 min-h-[130px] bg-white pt-4 px-4 pb-2 rounded-[24px] border border-gray-100 shadow-sm ml-1.5 relative overflow-hidden">
+          <View
+            className={`flex-1 ${dashboardPairCardHeightClass} bg-white ${dashboardPairCardPaddingClass} rounded-[24px] border border-gray-100 shadow-sm ml-1.5 relative overflow-hidden`}
+          >
             <View className="flex-row justify-between items-start">
-              <SkeletonBlock className="w-12 h-12 rounded-2xl" />
+              <SkeletonBlock className={`${dashboardPairIconSizeClass} rounded-2xl`} />
             </View>
             <View className="mt-2.5">
               <SkeletonBlock className="w-[70px] h-[12px] rounded-[6px] mb-1" />
               <View className="flex-row items-baseline gap-1">
-                <SkeletonBlock className="w-[44px] h-[32px] rounded-[6px]" />
+                <SkeletonBlock className={`${heartValueWidthClass} rounded-[6px]`} />
                 <SkeletonBlock className="w-[30px] h-[12px] rounded-[5px] bg-gray-100" />
               </View>
               {/* แถวสถานะชีพจรแถวที่ 3 ปล่อยเป็นแถวโปร่งใสไว้เพื่อให้เท่ากับการ์ดจริง ป้องกัน Layout Shift */}

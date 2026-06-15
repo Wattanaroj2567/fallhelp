@@ -199,6 +199,7 @@ export default function ProfileInfoScreen() {
       <ScreenWrapper
         edges={['top', 'left', 'right']}
         useScrollView={false}
+        reserveBottomInset
         className="flex-1 bg-white"
         keyboardAvoiding={false}
         header={<ScreenHeader title="ข้อมูลส่วนตัว" onBack={handleBack} />}
@@ -244,6 +245,7 @@ export default function ProfileInfoScreen() {
     <ScreenWrapper
       edges={['top', 'left', 'right']}
       useScrollView={false}
+      reserveBottomInset
       className="flex-1 bg-white"
       keyboardAvoiding={false}
       header={

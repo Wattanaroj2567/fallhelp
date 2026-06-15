@@ -72,7 +72,7 @@ export default function SetupLayout() {
         <Stack.Screen
           name="step3-wifi-setup"
           options={{
-            title: 'ตั้งค่า Wi-Fi',
+            title: 'ตั้งค่า WiFi',
             gestureEnabled: false,
             contentStyle: { backgroundColor: '#FFFFFF' },
           }}

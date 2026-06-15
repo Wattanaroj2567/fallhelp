@@ -36,13 +36,13 @@ import {
   sanitizeEmailInput,
 } from '../../../utils/formValidation';
 
-import { useNavBarInset } from '../../../hooks/useNavBarInset';
+import { useFormBasePadding } from '../../../hooks/useFormBottomPadding';
 import { queryKeys } from '../../../hooks/queryKeys';
 import { useUnsavedChanges } from '../../../hooks/useUnsavedChanges';
 
 export default function ProfileChangeEmailScreen() {
-  // เพิ่มระยะด้านล่าง ไม่ให้ปุ่มชน Navigation Bar ของเครื่อง
-  const navBarInset = useNavBarInset();
+  // เพิ่มระยะท้ายฟอร์มตาม system navigation bar อัตโนมัติ
+  const formBottomPadding = useFormBasePadding({ basePadding: 24 });
 
   // ใช้จัดการ cache ของ React Query หลังอัปเดตอีเมลสำเร็จ
   const queryClient = useQueryClient();
@@ -136,9 +136,10 @@ export default function ProfileChangeEmailScreen() {
 
   return (
     <ScreenWrapper
+      reserveBottomInset
       contentContainerStyle={{
         paddingHorizontal: 24,
-        paddingBottom: 24 + navBarInset,
+        paddingBottom: formBottomPadding,
         flexGrow: 1,
       }}
       keyboardAvoiding

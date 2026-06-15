@@ -250,6 +250,7 @@ export default function DeviceInfoScreen() {
     <ScreenWrapper
       edges={['top']}
       useScrollView={false}
+      reserveBottomInset
       style={{ backgroundColor: '#FFFFFF' }}
       header={
         <ScreenHeader

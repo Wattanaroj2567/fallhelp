@@ -122,6 +122,10 @@ const NotificationCard = memo(function NotificationCard({ item, onPress }: Notif
 });
 
 export default function NotificationsScreen() {
+  // Flow หลักของไฟล์นี้:
+  // โหลด notifications -> refresh unread badge -> mark read actions -> render list
+
+  // Query และ refresh state
   // ใช้จัดการ cache ของ React Query
   const queryClient = useQueryClient();
 
@@ -150,6 +154,7 @@ export default function NotificationsScreen() {
     },
   });
 
+  // Refresh helpers
   const refreshNotifications = useCallback(async () => {
     // โหลดรายการแจ้งเตือนใหม่ และ refresh unread badge พร้อมกัน
     await Promise.all([
@@ -172,6 +177,7 @@ export default function NotificationsScreen() {
     setRefreshing(false);
   };
 
+  // Action handlers
   const handleMarkAllRead = async () => {
     const previousNotifications = notifications ?? [];
 
@@ -226,6 +232,7 @@ export default function NotificationsScreen() {
     [queryClient],
   );
 
+  // Render helpers
   const renderItem = useCallback(
     ({ item }: { item: Notification }) => (
       <NotificationCard item={item} onPress={handleItemPress} />
@@ -233,10 +240,12 @@ export default function NotificationsScreen() {
     [handleItemPress],
   );
 
+  // Render notifications list
   return (
     <ScreenWrapper
       edges={['top']}
       useScrollView={false}
+      reserveBottomInset
       keyboardAvoiding={false}
       header={
         <View

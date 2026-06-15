@@ -29,12 +29,12 @@ import { showDialog } from '../../utils/dialogService';
 import { getPasswordPairValidationError } from '../../utils/formValidation';
 import type { ApiError } from '../../services/api';
 
-import { useNavBarInset } from '../../hooks/useNavBarInset';
+import { useFormBasePadding } from '../../hooks/useFormBottomPadding';
 import { useAppSearchParams } from '../../utils/searchParams';
 
 export default function ResetPasswordScreen() {
-  // เพิ่มระยะด้านล่าง ไม่ให้เนื้อหาชน Navigation Bar ของเครื่อง
-  const navBarInset = useNavBarInset();
+  // เพิ่มระยะท้ายฟอร์มตาม system navigation bar อัตโนมัติ
+  const formBottomPadding = useFormBasePadding({ basePadding: 40 });
 
   // อ่านข้อมูลที่ถูกส่งมาจากหน้า Verify OTP
   const searchParams = useAppSearchParams();
@@ -166,9 +166,10 @@ export default function ResetPasswordScreen() {
 
   return (
     <ScreenWrapper
+      reserveBottomInset
       contentContainerStyle={{
         paddingHorizontal: 24,
-        paddingBottom: 40 + navBarInset,
+        paddingBottom: formBottomPadding,
         flexGrow: 1,
       }}
       scrollViewProps={{

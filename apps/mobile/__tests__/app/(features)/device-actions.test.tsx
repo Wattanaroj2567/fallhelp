@@ -9,6 +9,7 @@ import { bleService } from '../../../services/bleService';
 import { fireEvent, waitFor } from '@testing-library/react-native';
 import { wifiScannerService } from '../../../services/wifiScannerService';
 import { showDialog } from '../../../utils/dialogService';
+import { runAfterKeyboardDismiss } from '../../../utils/keyboard';
 import { Keyboard } from 'react-native';
 
 const mockCurrentElder = {
@@ -200,6 +201,9 @@ const mockedUseLocalSearchParams = useLocalSearchParams as jest.Mock;
 const mockedBleService = bleService as jest.Mocked<typeof bleService>;
 const mockedWifiScannerService = wifiScannerService as jest.Mocked<typeof wifiScannerService>;
 const mockedShowDialog = showDialog as jest.MockedFunction<typeof showDialog>;
+const mockedRunAfterKeyboardDismiss = runAfterKeyboardDismiss as jest.MockedFunction<
+  typeof runAfterKeyboardDismiss
+>;
 
 describe('Device extra screens', () => {
   beforeEach(() => {
@@ -358,7 +362,7 @@ describe('Device extra screens', () => {
     fireEvent.press(await findByText('เชื่อมต่อ'));
 
     await waitFor(() => {
-      expect(Keyboard.dismiss).toHaveBeenCalled();
+      expect(mockedRunAfterKeyboardDismiss).toHaveBeenCalled();
       expect(mockedBleService.sendWiFiCredentials).toHaveBeenCalledWith(
         'Enterprise WiFi',
         'password123',
@@ -434,7 +438,7 @@ describe('Device extra screens', () => {
     fireEvent.press(await findByText('ยืนยันการตั้งค่า'));
 
     await waitFor(() => {
-      expect(Keyboard.dismiss).toHaveBeenCalled();
+      expect(mockedRunAfterKeyboardDismiss).toHaveBeenCalled();
     });
   });
 

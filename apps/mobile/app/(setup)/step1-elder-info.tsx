@@ -47,6 +47,27 @@ import {
 import type { AddressData } from '../../components/CascadingAddressPicker';
 import type { CreateElderPayload } from '../../services/elderService';
 
+interface ElderInitialData {
+  firstName?: string;
+  lastName?: string;
+  name?: string;
+  gender?: string;
+  dateOfBirth?: string;
+  height?: number | string;
+  weight?: number | string;
+  medicalCondition?: string;
+  phone?: string;
+  houseNumber?: string;
+  villageNumber?: string;
+  villageName?: string;
+  address?: {
+    district?: string;
+    amphoe?: string;
+    province?: string;
+    zipcode?: string;
+  };
+}
+
 // ใช้เทียบว่าข้อมูลใหม่ต่างจากข้อมูลเดิมหรือไม่
 // ถ้าไม่ต่าง จะข้ามการ update แล้วไป Step 2 ได้เลย
 const isDataEqual = (obj1: Record<string, unknown>, obj2: Record<string, unknown>): boolean => {
@@ -71,6 +92,10 @@ const isDataEqual = (obj1: Record<string, unknown>, obj2: Record<string, unknown
 };
 
 export default function Step1ElderInfoScreen() {
+  // Flow หลักของไฟล์นี้:
+  // เตรียม form state -> โหลด/auto-save draft -> validate input -> submit elder profile -> render
+
+  // Form state
   // เก็บข้อมูลผู้สูงอายุที่ผู้ใช้กรอกในฟอร์ม
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -98,30 +123,10 @@ export default function Step1ElderInfoScreen() {
   // ควร scroll เฉพาะเมื่อผู้ใช้เลือกที่อยู่ใหม่เท่านั้น ไม่ใช่ตอน mount
   const hasZipScrolledRef = useRef<boolean>(false);
 
-  interface ElderInitialData {
-    firstName?: string;
-    lastName?: string;
-    name?: string;
-    gender?: string;
-    dateOfBirth?: string;
-    height?: number | string;
-    weight?: number | string;
-    medicalCondition?: string;
-    phone?: string;
-    houseNumber?: string;
-    villageNumber?: string;
-    villageName?: string;
-    address?: {
-      district?: string;
-      amphoe?: string;
-      province?: string;
-      zipcode?: string;
-    };
-  }
-
   // เก็บข้อมูลเดิมไว้เทียบกับข้อมูลที่ผู้ใช้แก้ใหม่
   const [initialData, setInitialData] = useState<ElderInitialData | null>(null);
 
+  // โหลด draft และ sync setup storage
   useEffect(() => {
     const loadFormData = async () => {
       try {
@@ -277,6 +282,7 @@ export default function Step1ElderInfoScreen() {
     return () => clearTimeout(timeout);
   }, [address?.zipcode]);
 
+  // Mutation สำหรับสร้างหรืออัปเดตข้อมูลผู้สูงอายุ
   // จัดการขั้นตอนสร้างหรืออัปเดตข้อมูลผู้สูงอายุ
   // เมื่อเรียก mutate() ระบบจะเข้ามาทำงานที่ mutationFn
   const saveElderMutation = useMutation({
@@ -341,6 +347,7 @@ export default function Step1ElderInfoScreen() {
     },
   });
 
+  // Action handlers
   const handleNext = async () => {
     // ปิด keyboard ทันทีที่กดปุ่ม ก่อน navigation เริ่มทำงาน
     Keyboard.dismiss();
@@ -499,6 +506,7 @@ export default function Step1ElderInfoScreen() {
     setDateOfBirth(currentDate);
   };
 
+  // Render form
   return (
     <WizardLayout
       currentStep={1}

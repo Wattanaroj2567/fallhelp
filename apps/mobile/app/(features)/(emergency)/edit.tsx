@@ -31,7 +31,7 @@ import { updateContact, listContacts } from '../../../services/emergencyContactS
 import Logger from '../../../utils/logger';
 import { showErrorMessage } from '../../../utils/errorHelper';
 import { showDialog } from '../../../utils/dialogService';
-import { showSuccessToast } from '../../../utils/toast';
+import { queueSuccessToastForNextScreen } from '../../../utils/toast';
 import { getThaiPhoneValidationError, sanitizePhoneInput } from '../../../utils/phoneValidation';
 import { getRequiredTextValidationError } from '../../../utils/formValidation';
 import {
@@ -44,7 +44,7 @@ import {
 import { useCurrentElder } from '../../../hooks/useCurrentElder';
 import { queryKeys } from '../../../hooks/queryKeys';
 import { useUnsavedChanges } from '../../../hooks/useUnsavedChanges';
-import { useNavBarInset } from '../../../hooks/useNavBarInset';
+import { useFormBasePadding } from '../../../hooks/useFormBottomPadding';
 import { useAppSearchParams } from '../../../utils/searchParams';
 
 import type { EmergencyContact } from '../../../services/types';
@@ -70,13 +70,17 @@ const usePhoneInput = (initialValue: string = '') => {
 };
 
 export default function EditEmergencyContactScreen() {
+  // Flow หลักของไฟล์นี้:
+  // โหลด elder/contact -> hydrate form -> track unsaved changes -> save optimistic update -> render form
+
+  // Navigation และ cache state
   const [isNavigating, setIsNavigating] = useState(false);
 
   // ใช้จัดการ cache ของ React Query หลังอัปเดตผู้ติดต่อสำเร็จ
   const queryClient = useQueryClient();
 
-  // เพิ่มระยะด้านล่าง ไม่ให้ปุ่มชน Navigation Bar ของเครื่อง
-  const navBarInset = useNavBarInset();
+  // เพิ่มระยะท้ายฟอร์มตาม system navigation bar อัตโนมัติ
+  const formBottomPadding = useFormBasePadding({ basePadding: 40 });
 
   // อ่าน id ของผู้ติดต่อจาก params
   const searchParams = useAppSearchParams<{ id?: string }>();
@@ -122,6 +126,7 @@ export default function EditEmergencyContactScreen() {
 
   const contact = contacts?.find((c) => c.id === id) || null;
 
+  // Form state
   // State ของฟอร์มแก้ไขผู้ติดต่อ (ดึงค่าเริ่มต้นจาก contact ทันทีถ้ามี)
   const [name, setName] = useState(() => contact?.name || '');
   const [relationship, setRelationship] = useState(() =>
@@ -179,6 +184,7 @@ export default function EditEmergencyContactScreen() {
   // ใช้กันการ hydrate ฟอร์มซ้ำกับ contact เดิม โดยไม่เพิ่ม render ระหว่างพิมพ์
   const hydratedContactKeyRef = useRef<string | null>(contact?.id ? `contact:${contact.id}` : null);
 
+  // Hydration และ unsaved changes effects
   useEffect(() => {
     if (contact) {
       const contactKey = `contact:${contact.id}`;
@@ -242,6 +248,7 @@ export default function EditEmergencyContactScreen() {
     setHasChanges(hasChanged);
   }, [name, phone, relationship, customRelationship, initialValues, setHasChanges]);
 
+  // Mutation สำหรับอัปเดตผู้ติดต่อฉุกเฉิน
   // จัดการขั้นตอนอัปเดตผู้ติดต่อฉุกเฉิน
   // เมื่อเรียก mutate() ระบบจะเข้ามาทำงานที่ mutationFn
   const updateMutation = useMutation({
@@ -278,12 +285,12 @@ export default function EditEmergencyContactScreen() {
         },
       );
 
-      // sync ข้อมูลจริงจาก server อีกครั้ง
-      void queryClient.invalidateQueries({
-        queryKey: queryKeys.emergencyContacts(currentElder?.id),
-      });
-
-      showSuccessToast('อัปเดตผู้ติดต่อแล้ว');
+      // sync ข้อมูลจริงจาก server หลังเฟรมแรกของ toast เพื่อลดงาน JS ตอน animation เริ่มขึ้นบน Android
+      setTimeout(() => {
+        void queryClient.invalidateQueries({
+          queryKey: queryKeys.emergencyContacts(currentElder?.id),
+        });
+      }, 120);
     },
     onError: (error: unknown, _variables, context) => {
       setIsNavigating(false);
@@ -299,6 +306,7 @@ export default function EditEmergencyContactScreen() {
     },
   });
 
+  // Action handlers
   const handleSave = () => {
     if (isNavigating) return;
     setIsNavigating(true);
@@ -344,9 +352,6 @@ export default function EditEmergencyContactScreen() {
     // บันทึกแล้ว ไม่ต้องเตือน unsaved changes ระหว่างกลับหน้ารายชื่อ
     resetChanges();
 
-    // กลับหน้าก่อนเพื่อให้ UX ตอบสนองทันที ส่วน mutation/cache ทำงานต่อด้านหลัง
-    router.back();
-
     // เริ่มอัปเดตผู้ติดต่อฉุกเฉิน
     // ถัดไปไปที่ updateMutation ด้านบน
     updateMutation.mutate({
@@ -354,8 +359,15 @@ export default function EditEmergencyContactScreen() {
       phone: sanitizePhoneInput(latestPhone),
       ...(nextRelationship ? { relationship: nextRelationship } : {}),
     });
+
+    // ฝาก toast ให้หน้ารายชื่อแสดงตอน focus จริง เพื่อลด timing race กับ navigation queue
+    queueSuccessToastForNextScreen('อัปเดตผู้ติดต่อแล้ว');
+
+    // กลับหน้าก่อนเพื่อให้ UX ตอบสนองทันที ส่วน mutation/cache ทำงานต่อด้านหลัง
+    router.back();
   };
 
+  // Render loading
   if (
     (isEldersLoading && !currentElder) ||
     (isContactLoading && !contacts) ||
@@ -364,11 +376,13 @@ export default function EditEmergencyContactScreen() {
     return <LoadingScreen useScreenWrapper message="กำลังโหลดข้อมูล..." />;
   }
 
+  // Render form
   return (
     <ScreenWrapper
+      reserveBottomInset
       contentContainerStyle={{
         paddingHorizontal: 24,
-        paddingBottom: 40 + navBarInset,
+        paddingBottom: formBottomPadding,
       }}
       scrollViewProps={{
         bounces: false,

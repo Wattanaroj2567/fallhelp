@@ -5,6 +5,7 @@ import AddEmergencyContactScreen from '../../../app/(features)/(emergency)/add';
 import EditEmergencyContactScreen from '../../../app/(features)/(emergency)/edit';
 import EmergencyCallScreen from '../../../app/(features)/(emergency)/call';
 import { useLocalSearchParams } from 'expo-router';
+import { useQuery } from '@tanstack/react-query';
 
 jest.mock('@tanstack/react-query', () => {
   const actual = jest.requireActual('@tanstack/react-query');
@@ -96,10 +97,20 @@ jest.mock('../../../utils/safeRouter', () => ({
 }));
 
 const mockedUseLocalSearchParams = useLocalSearchParams as jest.Mock;
+const mockedUseQuery = useQuery as jest.Mock;
+
+const mockEmergencyContacts = [
+  { id: 'contact-1', name: 'Test Contact', phone: '0800000000', relationship: 'Child' },
+];
 
 describe('Emergency screens', () => {
   beforeEach(() => {
     mockedUseLocalSearchParams.mockReturnValue({ id: 'contact-1' });
+    mockedUseQuery.mockReturnValue({
+      data: mockEmergencyContacts,
+      isLoading: false,
+      refetch: jest.fn(),
+    });
   });
 
   it('renders emergency contacts screen', () => {
@@ -124,5 +135,18 @@ describe('Emergency screens', () => {
     const { getByText } = renderWithProviders(<EmergencyCallScreen />);
 
     expect(getByText('โทรฉุกเฉิน')).toBeTruthy();
+  });
+
+  it('hides tap-to-call helper when emergency contacts are empty', () => {
+    mockedUseQuery.mockReturnValueOnce({
+      data: [],
+      isLoading: false,
+      refetch: jest.fn(),
+    });
+
+    const { getByText, queryByText } = renderWithProviders(<EmergencyCallScreen />);
+
+    expect(getByText('ไม่มีผู้ติดต่อฉุกเฉิน')).toBeTruthy();
+    expect(queryByText('แตะชื่อเพื่อโทรทันที')).toBeNull();
   });
 });

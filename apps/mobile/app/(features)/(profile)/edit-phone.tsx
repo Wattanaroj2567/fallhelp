@@ -36,10 +36,12 @@ import { getThaiPhoneValidationError, sanitizePhoneInput } from '../../../utils/
 
 import { queryKeys } from '../../../hooks/queryKeys';
 import { useUnsavedChanges } from '../../../hooks/useUnsavedChanges';
+import { useFormBasePadding } from '../../../hooks/useFormBottomPadding';
 
 export default function ProfileEditPhoneScreen() {
   // ใช้จัดการ cache ของ React Query หลังอัปเดตเบอร์สำเร็จ
   const queryClient = useQueryClient();
+  const formBottomPadding = useFormBasePadding({ basePadding: 24 });
 
   // State ของฟอร์มแก้ไขเบอร์โทรศัพท์
   const [phone, setPhone] = useState('');
@@ -160,9 +162,10 @@ export default function ProfileEditPhoneScreen() {
 
   return (
     <ScreenWrapper
+      reserveBottomInset
       contentContainerStyle={{
         paddingHorizontal: 24,
-        paddingBottom: 24,
+        paddingBottom: formBottomPadding,
         flexGrow: 1,
       }}
       scrollViewProps={{

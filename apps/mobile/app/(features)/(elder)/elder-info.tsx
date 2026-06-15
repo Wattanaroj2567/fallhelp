@@ -26,7 +26,6 @@ import { useFocusEffect } from 'expo-router';
 import { safeRouter as router } from '../../../utils/safeRouter';
 import { parseBirthDate } from '../../../utils/date';
 
-import { useNavBarInset } from '../../../hooks/useNavBarInset';
 import { useCurrentElder } from '../../../hooks/useCurrentElder';
 
 // คำนวณอายุจากวันเกิด
@@ -101,8 +100,8 @@ const getGenderText = (gender: string | null | undefined): string => {
 };
 
 export default function ElderInfoScreen() {
-  // เพิ่มระยะด้านล่าง ไม่ให้ปุ่มหรือ content ชน Navigation Bar ของเครื่อง
-  const navBarInset = useNavBarInset();
+  // Flow หลักของไฟล์นี้:
+  // โหลด elder -> handle loading/error/empty states -> format display fields -> render profile details
 
   // กันกดปุ่มแก้ไขข้อมูลซ้ำ รีเซ็ตเมื่อ screen focus กลับมา
   const [isEditing, setIsEditing] = useState(false);
@@ -123,6 +122,7 @@ export default function ElderInfoScreen() {
     router.replace('/(tabs)/dashboard');
   }, []);
 
+  // Query ข้อมูลผู้สูงอายุ
   // โหลดข้อมูลผู้สูงอายุปัจจุบัน — ดึงอัตโนมัติทุกครั้งที่เปิดหน้า ไม่ต้องดึงเอง
   const {
     data: elder,
@@ -137,6 +137,7 @@ export default function ElderInfoScreen() {
 
   const isInitialLoading = isLoading && !elder;
 
+  // Render loading/error/empty states
   if (isInitialLoading) {
     return <LoadingScreen useScreenWrapper message="กำลังโหลดข้อมูล..." />;
   }
@@ -182,18 +183,21 @@ export default function ElderInfoScreen() {
     );
   }
 
+  // Display values
   const age = calculateAge(elder.dateOfBirth);
 
+  // Render elder profile
   return (
     <ScreenWrapper
       edges={['top']}
       useScrollView={false}
+      reserveBottomInset
       style={{ backgroundColor: '#FFFFFF' }}
       header={<ScreenHeader title="ข้อมูลผู้สูงอายุ" onBack={handleBack} />}
     >
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40 + navBarInset }}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
       >
         <View className="mt-4">

@@ -31,7 +31,7 @@ import {
   containsThaiText,
 } from '../../utils/formValidation';
 
-import { useNavBarInset } from '../../hooks/useNavBarInset';
+import { useFormBasePadding } from '../../hooks/useFormBottomPadding';
 import { useAppSearchParams } from '../../utils/searchParams';
 
 export default function ForgotPasswordScreen() {
@@ -46,8 +46,8 @@ export default function ForgotPasswordScreen() {
   // เก็บ error ของช่องอีเมล เช่น มีตัวอักษรภาษาไทย
   const [emailError, setEmailError] = useState('');
 
-  // เพิ่มระยะด้านล่าง ไม่ให้ปุ่มชน Navigation Bar ของเครื่อง
-  const navBarInset = useNavBarInset();
+  // เพิ่มระยะท้ายฟอร์มตาม system navigation bar อัตโนมัติ
+  const formBottomPadding = useFormBasePadding({ basePadding: 40 });
 
   // จัดการขั้นตอนขอ OTP ของหน้านี้
   // เมื่อเรียก mutate() ระบบจะเข้ามาทำงานที่ mutationFn
@@ -116,9 +116,10 @@ export default function ForgotPasswordScreen() {
   return (
     <ScreenWrapper
       useScrollView={false}
+      reserveBottomInset
       contentContainerStyle={{
         paddingHorizontal: 24,
-        paddingBottom: 40 + navBarInset,
+        paddingBottom: formBottomPadding,
         flexGrow: 1,
       }}
       header={<ScreenHeader title="" onBack={router.back} />}

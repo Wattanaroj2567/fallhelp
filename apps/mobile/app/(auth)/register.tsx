@@ -106,16 +106,16 @@ export default function RegisterScreen() {
   };
 
   return (
-    <FormLayout header={<ScreenHeader title="" onBack={router.back} />}>
-      <View className="flex-1">
+    <FormLayout paddingBottom={32} header={<ScreenHeader title="" onBack={router.back} />}>
+      <View>
         <KanitText weight="medium" className="text-[28px] text-gray-900 mb-2">
           ลงทะเบียน
         </KanitText>
-        <KanitText className="text-[15px] text-gray-500 mb-6">
+        <KanitText className="text-[15px] text-gray-500 mb-5">
           กรุณากรอกรายละเอียดของคุณเพื่อเข้าใช้งาน
         </KanitText>
 
-        <View className="mb-6">
+        <View className="mb-2">
           {/* ช่องกรอกชื่อและนามสกุล */}
           <View className="flex-row gap-3">
             <View className="flex-1">
@@ -209,7 +209,7 @@ export default function RegisterScreen() {
           loading={registerMutation.isPending}
         />
 
-        <View className="flex-row justify-center items-center mt-6">
+        <View className="flex-row justify-center items-center mt-4">
           <KanitText className="text-[15px] text-gray-500">มีบัญชีอยู่แล้ว ? </KanitText>
           <TouchableOpacity onPress={() => router.push('/(auth)/login')} activeOpacity={0.7}>
             <KanitText weight="medium" className="text-[15px]" style={{ color: '#EB6A6A' }}>

@@ -57,7 +57,6 @@ import {
 
 import { useDeviceSetupStore } from '../../store/useDeviceSetupStore';
 import { useSensorStore } from '../../store/useSensorStore';
-import { useNavBarInset } from '../../hooks/useNavBarInset';
 
 // State หลักของหน้านี้
 // ใช้บอกว่า UI ตอนนี้ควรแสดงขั้นตอนไหน
@@ -128,11 +127,17 @@ const clearIntervalRef = (intervalRef: IntervalRef): void => {
   }
 };
 
-export default function Step3WifiSetupScreen() {
-  const queryClient = useQueryClient();
+const getProvisioningStageMessage = (elapsedMs: number): string => {
+  const stages = [...PROVISIONING_STATUS_STAGES].reverse();
+  const matched = stages.find((s) => elapsedMs >= s.afterMs);
+  return matched?.message ?? INITIAL_PROVISIONING_STATUS_MESSAGE;
+};
 
-  // เพิ่มระยะด้านล่าง ไม่ให้ input หรือปุ่มชน Navigation Bar ของเครื่อง
-  const navBarInset = useNavBarInset();
+export default function Step3WifiSetupScreen() {
+  // Flow หลักของไฟล์นี้:
+  // เตรียม step/device state -> lifecycle effects -> BLE/WiFi workflow -> user actions -> render
+
+  const queryClient = useQueryClient();
 
   // อ่านสถานะอุปกรณ์จาก socket/store
   // ใช้เช็กว่าอุปกรณ์ออนไลน์หลังส่ง WiFi สำเร็จหรือยัง
@@ -140,6 +145,7 @@ export default function Step3WifiSetupScreen() {
 
   // currentStep ใช้เปลี่ยน UI ทั้งหน้าใน renderContent()
   const [currentStep, setCurrentStep] = useState<SetupStep>('initializing');
+  const currentStepRef = useRef(currentStep);
 
   // เก็บ serial number ของอุปกรณ์ไว้ใช้ค้นหา BLE
   const [_deviceCode, setDeviceCode] = useState<string>('');
@@ -191,6 +197,7 @@ export default function Step3WifiSetupScreen() {
   const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const provisioningTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // Flow helpers
   const isFlowActive = useCallback((): boolean => !isExitingRef.current, []);
 
   const clearScanTimer = useCallback((): void => {
@@ -262,12 +269,7 @@ export default function Step3WifiSetupScreen() {
     provisioningTimeoutHandledRef.current = true;
   }, []);
 
-  const getProvisioningStageMessage = (elapsedMs: number): string => {
-    const stages = [...PROVISIONING_STATUS_STAGES].reverse();
-    const matched = stages.find((s) => elapsedMs >= s.afterMs);
-    return matched?.message ?? INITIAL_PROVISIONING_STATUS_MESSAGE;
-  };
-
+  // Lifecycle effects และ timers
   useEffect(() => {
     if (!provisioningStartedAt) {
       clearIntervalRef(provisioningTimerRef);
@@ -291,10 +293,7 @@ export default function Step3WifiSetupScreen() {
     };
   }, [provisioningStartedAt]);
 
-  // เก็บ currentStep ล่าสุดไว้ใน Ref
-  // callback ที่ถูกสร้างไว้ก่อนหน้าจะได้อ่าน step ล่าสุดได้
-  const currentStepRef = useRef(currentStep);
-
+  // เก็บ currentStep ล่าสุดไว้ใน Ref ให้ callback ที่ถูกสร้างไว้ก่อนหน้าอ่าน step ล่าสุดได้
   useEffect(() => {
     currentStepRef.current = currentStep;
   }, [currentStep]);
@@ -382,6 +381,7 @@ export default function Step3WifiSetupScreen() {
     };
   }, [completeProvisioningSuccess, currentStep, provisioningStartedAt, stopPolling]);
 
+  // Navigation และ failure handlers
   const handleExit = useCallback(
     async (navigate = true) => {
       if (isExitingRef.current) return;
@@ -452,6 +452,7 @@ export default function Step3WifiSetupScreen() {
     handleExitRef.current = handleExit;
   }, [handleExit]);
 
+  // BLE/WiFi workflow callbacks
   const startWiFiScan = useCallback(async () => {
     setCurrentStep('wifi-list');
     setIsScanning(true);
@@ -974,6 +975,7 @@ export default function Step3WifiSetupScreen() {
     };
   }, []);
 
+  // User action handlers
   const handleComplete = useCallback(async () => {
     try {
       // โหลดข้อมูล elder ใหม่เมื่อเข้า Dashboard หลัง setup เสร็จ
@@ -1014,9 +1016,6 @@ export default function Step3WifiSetupScreen() {
         return;
       }
 
-      // ใช้ runAfterKeyboardDismiss เพื่อให้คีย์บอร์ดปิดลงเสร็จสมบูรณ์ก่อนเริ่มเชื่อมต่อและสลับสถานะ
-      // ป้องกันปัญหาคีย์บอร์ดลอยค้างบน Android เมื่อ Input ถูก Unmount ระหว่างทาง
-      Keyboard.dismiss();
       const runProvision = async () => {
         // เช็กว่า BLE ยังเชื่อมต่ออยู่หรือไม่
         // ไฟล์ถัดไป: services/bleService.ts
@@ -1051,7 +1050,17 @@ export default function Step3WifiSetupScreen() {
         pendingExternalWifiReturnRef.current = false;
         await performProvision(finalSSID, finalPassword);
       };
-      runProvision();
+
+      // รอให้คีย์บอร์ด Android หุบจบก่อนค่อยเปลี่ยน step/provision เพื่อกัน input ถูก unmount ระหว่าง animation
+      runAfterKeyboardDismiss(
+        () => {
+          void runProvision();
+        },
+        {
+          waitAfterHideMs: 100,
+          maxWaitMs: 300,
+        },
+      );
     },
     [
       _bleConnected,
@@ -1197,6 +1206,7 @@ export default function Step3WifiSetupScreen() {
   // ระหว่าง provisioning และ success ไม่ให้กดย้อนกลับ
   const canNavigateBack = currentStep !== 'provisioning' && currentStep !== 'success';
 
+  // Render ตาม SetupStep ปัจจุบัน
   const renderContent = () => {
     switch (currentStep) {
       case 'initializing':
@@ -1402,7 +1412,7 @@ export default function Step3WifiSetupScreen() {
         useScrollView={true}
         contentContainerStyle={{
           paddingHorizontal: 24,
-          paddingBottom: 24 + navBarInset,
+          paddingBottom: 24,
           flexGrow: 1,
         }}
         scrollViewProps={{

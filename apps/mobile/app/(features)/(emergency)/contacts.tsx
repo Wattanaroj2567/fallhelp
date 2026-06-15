@@ -42,7 +42,7 @@ import {
 } from '../../../services/emergencyContactService';
 import { safeRouter as router } from '../../../utils/safeRouter';
 import { showDialog } from '../../../utils/dialogService';
-import { showSuccessToast } from '../../../utils/toast';
+import { consumeQueuedSuccessToast, showSuccessToastOnNextFrame } from '../../../utils/toast';
 import Logger from '../../../utils/logger';
 import { showErrorMessage } from '../../../utils/errorHelper';
 
@@ -262,9 +262,13 @@ const ContactItem = React.memo(function ContactItem({
 ContactItem.displayName = 'ContactItem';
 
 export default function EmergencyContactsScreen() {
+  // Flow หลักของไฟล์นี้:
+  // โหลด elder/contacts -> sync local order -> delete/reorder/edit actions -> render draggable list
+
+  // Query และ local ordering state
   const queryClient = useQueryClient();
 
-  const [localContacts, setLocalContacts] = useState<EmergencyContact[]>([]);
+  const [localContacts, setLocalContacts] = useState<EmergencyContact[] | null>(null);
   const [isNavigating, setIsNavigating] = useState(false);
   const isDraggingRef = useRef(false);
 
@@ -279,6 +283,7 @@ export default function EmergencyContactsScreen() {
   const { data: currentElder, isLoading: isElderLoading } = useCurrentElder();
   const elderId = currentElder?.id;
 
+  // โหลด contacts พร้อมใช้ cache เพื่อลดหน้ากระพริบตอนกลับจาก add/edit
   const cachedContacts = useMemo(() => {
     if (!elderId) {
       return undefined;
@@ -314,14 +319,29 @@ export default function EmergencyContactsScreen() {
     ...(cachedContacts !== undefined ? { placeholderData: cachedContacts } : {}),
   });
 
+  // Lifecycle: refetch เมื่อกลับมาหน้านี้
   useFocusEffect(
     React.useCallback(() => {
       setIsNavigating(false);
-      queryClient.invalidateQueries({ queryKey: queryKeys.currentElder() });
-      refetch();
+
+      const queuedToast = consumeQueuedSuccessToast();
+      if (queuedToast) {
+        showSuccessToastOnNextFrame(queuedToast);
+      }
+
+      const syncTimer = setTimeout(
+        () => {
+          queryClient.invalidateQueries({ queryKey: queryKeys.currentElder() });
+          refetch();
+        },
+        queuedToast ? 220 : 120,
+      );
+
+      return () => clearTimeout(syncTimer);
     }, [refetch, queryClient]),
   );
 
+  // Mutations สำหรับ delete และ reorder
   const deleteMutation = useMutation({
     mutationFn: (contactId: string) => {
       if (!elderId) {
@@ -330,25 +350,36 @@ export default function EmergencyContactsScreen() {
 
       return deleteContact(elderId, contactId);
     },
-    onSuccess: (_, contactId) => {
+    onMutate: (contactId) => {
+      if (!elderId) return { previousContacts: undefined };
+
+      const queryKey = queryKeys.emergencyContacts(elderId);
+      const previousContacts = queryClient.getQueryData<EmergencyContact[]>(queryKey);
+      const nextContacts = normalizeContactsPriority(
+        (previousContacts ?? contacts ?? []).filter((contact) => contact.id !== contactId),
+      );
+
+      queryClient.setQueryData<EmergencyContact[]>(queryKey, nextContacts);
+      setLocalContacts(nextContacts);
+
+      return { previousContacts };
+    },
+    onSuccess: () => {
+      // sync server ทีหลัง แต่ไม่แตะ cache ซ้ำทันที เพื่อกันรายการเด้งกลับระหว่าง toast animate
+      setTimeout(() => {
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.emergencyContacts(elderId),
+        });
+      }, 120);
+    },
+    onError: (error: unknown, contactId, context) => {
+      const rollbackContacts = context?.previousContacts ?? contacts ?? [];
+
       if (elderId) {
-        queryClient.setQueryData<EmergencyContact[]>(
-          queryKeys.emergencyContacts(elderId),
-          (oldContacts) =>
-            normalizeContactsPriority(
-              (oldContacts ?? []).filter((contact) => contact.id !== contactId),
-            ),
-        );
+        queryClient.setQueryData(queryKeys.emergencyContacts(elderId), rollbackContacts);
       }
 
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.emergencyContacts(elderId),
-      });
-
-      showSuccessToast('ลบผู้ติดต่อแล้ว');
-    },
-    onError: (error: unknown, contactId) => {
-      setLocalContacts(sortContactsByPriority(contacts ?? []));
+      setLocalContacts(sortContactsByPriority(rollbackContacts));
 
       showErrorMessage('ผิดพลาด', error);
       Logger.error('Delete contact failed', { contactId, error });
@@ -380,6 +411,7 @@ export default function EmergencyContactsScreen() {
     },
   });
 
+  // Sync server contacts เข้า local list เมื่อไม่ได้ลากหรือ mutate อยู่
   useEffect(() => {
     if (!contacts) {
       return;
@@ -392,7 +424,7 @@ export default function EmergencyContactsScreen() {
     setLocalContacts((previousContacts) => {
       const sortedContacts = sortContactsByPriority(contacts);
 
-      if (hasSameContactOrder(previousContacts, sortedContacts)) {
+      if (previousContacts && hasSameContactOrder(previousContacts, sortedContacts)) {
         return previousContacts;
       }
 
@@ -401,7 +433,7 @@ export default function EmergencyContactsScreen() {
   }, [contacts, deleteMutation.isPending, reorderMutation.isPending]);
 
   const displayContacts = useMemo(() => {
-    if (localContacts.length > 0) {
+    if (localContacts !== null) {
       return localContacts;
     }
 
@@ -410,7 +442,9 @@ export default function EmergencyContactsScreen() {
 
   const isReorderable = displayContacts.length > 1;
   const isMaxReached = displayContacts.length >= MAX_CONTACTS;
+  const shouldShowPriorityHint = displayContacts.length > 0;
 
+  // Action handlers
   const handleDelete = useCallback(
     (id: string, name: string) => {
       showDialog('ยืนยันการลบ', `คุณต้องการลบ ${name} ออกจากรายชื่อผู้ติดต่อฉุกเฉินใช่หรือไม่?`, [
@@ -419,10 +453,6 @@ export default function EmergencyContactsScreen() {
           text: 'ลบ',
           style: 'destructive',
           onPress: () => {
-            setLocalContacts((prevContacts) =>
-              normalizeContactsPriority(prevContacts.filter((contact) => contact.id !== id)),
-            );
-
             deleteMutation.mutate(id);
           },
         },
@@ -473,6 +503,7 @@ export default function EmergencyContactsScreen() {
     [isNavigating],
   );
 
+  // Render helpers
   const keyExtractor = useCallback(
     (item: EmergencyContact, index: number) => `${item.id}-${index}`,
     [],
@@ -502,10 +533,12 @@ export default function EmergencyContactsScreen() {
     [isReorderable, handleEdit, handleDelete, displayContacts],
   );
 
+  // Render loading
   if (isElderLoading) {
     return <LoadingScreen useScreenWrapper />;
   }
 
+  // Render contacts list
   return (
     <ScreenWrapper
       edges={['top', 'left', 'right']}
@@ -525,7 +558,7 @@ export default function EmergencyContactsScreen() {
             style={{ paddingBottom: 0 }}
           />
 
-          {elderId && (
+          {elderId && shouldShowPriorityHint && (
             <View className="bg-blue-50 rounded-2xl py-2.5 px-4 mx-6 mt-0 mb-5 flex-row items-start">
               <MaterialIconSolid name="info" size={20} color="#3B82F6" style={{ marginTop: 2 }} />
 
@@ -544,7 +577,7 @@ export default function EmergencyContactsScreen() {
         </View>
       }
     >
-      {(isLoading && localContacts.length === 0) || isElderLoading ? (
+      {(isLoading && displayContacts.length === 0) || isElderLoading ? (
         <View className="flex-1 pt-6 px-6">
           <ListItemSkeleton count={5} />
         </View>

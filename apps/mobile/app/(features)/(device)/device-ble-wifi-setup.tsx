@@ -38,7 +38,7 @@ import { getWifiCredentialValidationError } from '../../../utils/formValidation'
 import { runAfterKeyboardDismiss } from '../../../utils/keyboard';
 import { getDeviceConfig } from '../../../services/deviceService';
 
-import { useNavBarInset } from '../../../hooks/useNavBarInset';
+import { useFormBasePadding } from '../../../hooks/useFormBottomPadding';
 import { useCurrentElder } from '../../../hooks/useCurrentElder';
 import { queryKeys } from '../../../hooks/queryKeys';
 import { useDeviceSetupStore } from '../../../store/useDeviceSetupStore';
@@ -99,11 +99,22 @@ const isTerminalProvisioningStatus = (
   return status !== undefined && TERMINAL_PROVISIONING_STATUSES.has(status);
 };
 
+const getProvisioningStageMessage = (elapsedMs: number): string => {
+  // เลือกข้อความ progress ตามเวลาที่ผ่านไป
+  const stages = [...PROVISIONING_STATUS_STAGES].reverse();
+  const matched = stages.find((s) => elapsedMs >= s.afterMs);
+
+  return matched?.message ?? INITIAL_PROVISIONING_STATUS_MESSAGE;
+};
+
 export default function DeviceBleWifiSetupScreen() {
+  // Flow หลักของไฟล์นี้:
+  // เตรียม params/device state -> lifecycle effects -> BLE/WiFi workflow -> user actions -> render
+
   const queryClient = useQueryClient();
 
-  // เพิ่มระยะด้านล่าง ไม่ให้เนื้อหาชน Navigation Bar ของเครื่อง
-  const navBarInset = useNavBarInset();
+  // เพิ่มระยะท้ายฟอร์มตาม system navigation bar อัตโนมัติ
+  const formBottomPadding = useFormBasePadding({ basePadding: 24 });
 
   // อ่าน params ที่ถูกส่งมาจากหน้าก่อนหน้า
   const searchParams = useAppSearchParams();
@@ -122,6 +133,7 @@ export default function DeviceBleWifiSetupScreen() {
 
   // currentStep ใช้ควบคุมว่า renderContent() จะแสดง UI อะไร
   const [currentStep, setCurrentStep] = useState<SetupStep>('initializing');
+  const currentStepRef = useRef(currentStep);
 
   const appState = useRef(AppState.currentState);
   const scanTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -166,6 +178,7 @@ export default function DeviceBleWifiSetupScreen() {
   const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const provisioningTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // Flow helpers
   const isFlowActive = useCallback((): boolean => !isExitingRef.current, []);
 
   const showDialogIfActive = useCallback(
@@ -275,14 +288,7 @@ export default function DeviceBleWifiSetupScreen() {
     provisioningTimeoutHandledRef.current = true;
   }, []);
 
-  const getProvisioningStageMessage = (elapsedMs: number): string => {
-    // เลือกข้อความ progress ตามเวลาที่ผ่านไป
-    const stages = [...PROVISIONING_STATUS_STAGES].reverse();
-    const matched = stages.find((s) => elapsedMs >= s.afterMs);
-
-    return matched?.message ?? INITIAL_PROVISIONING_STATUS_MESSAGE;
-  };
-
+  // Lifecycle effects และ timers
   useEffect(() => {
     if (!provisioningStartedAt) {
       if (provisioningTimerRef.current) {
@@ -309,10 +315,7 @@ export default function DeviceBleWifiSetupScreen() {
     };
   }, [provisioningStartedAt]);
 
-  // เก็บ currentStep ล่าสุดไว้ใน Ref
-  // callback ที่ถูกสร้างไว้ก่อนหน้าจะอ่าน step ล่าสุดได้
-  const currentStepRef = useRef(currentStep);
-
+  // เก็บ currentStep ล่าสุดไว้ใน Ref ให้ callback ที่ถูกสร้างไว้ก่อนหน้าอ่าน step ล่าสุดได้
   useEffect(() => {
     currentStepRef.current = currentStep;
   }, [currentStep]);
@@ -414,6 +417,7 @@ export default function DeviceBleWifiSetupScreen() {
     };
   }, [completeProvisioningSuccess, currentStep, elderInfo?.device?.id, provisioningStartedAt]);
 
+  // Navigation และ failure handlers
   const handleExit = useCallback(
     async (navigate = true) => {
       if (isExitingRef.current) return;
@@ -497,6 +501,7 @@ export default function DeviceBleWifiSetupScreen() {
     handleExitRef.current = handleExit;
   }, [handleExit]);
 
+  // BLE/WiFi workflow callbacks
   const startWiFiScan = useCallback(async () => {
     setCurrentStep('wifi-list');
     setIsScanning(true);
@@ -927,6 +932,7 @@ export default function DeviceBleWifiSetupScreen() {
     };
   }, []);
 
+  // User action handlers
   const handleProvision = useCallback(
     async (wifiSSID?: string, wifiPassword?: string) => {
       // อ่านค่าล่าสุดจาก Ref ก่อนเริ่มส่ง WiFi
@@ -950,7 +956,6 @@ export default function DeviceBleWifiSetupScreen() {
         return;
       }
 
-      Keyboard.dismiss();
       const runProvision = async () => {
         // ตรวจว่า BLE ยังเชื่อมต่ออยู่หรือไม่
         // ไฟล์ถัดไป: services/bleService.ts
@@ -982,7 +987,17 @@ export default function DeviceBleWifiSetupScreen() {
         // ถัดไปส่ง WiFi ผ่าน performProvision()
         await performProvision(finalSSID, finalPassword);
       };
-      runProvision();
+
+      // รอให้คีย์บอร์ด Android หุบจบก่อนค่อยเปลี่ยน step/provision เพื่อกัน input ถูก unmount ระหว่าง animation
+      runAfterKeyboardDismiss(
+        () => {
+          void runProvision();
+        },
+        {
+          waitAfterHideMs: 100,
+          maxWaitMs: 300,
+        },
+      );
     },
     [
       _bleConnected,
@@ -1115,6 +1130,7 @@ export default function DeviceBleWifiSetupScreen() {
     }
   };
 
+  // Render helpers
   const renderBluetoothCheck = () => (
     <View className="flex-1 justify-center items-center px-6">
       <View className="mb-6">
@@ -1309,10 +1325,11 @@ export default function DeviceBleWifiSetupScreen() {
 
   return (
     <ScreenWrapper
+      reserveBottomInset
       contentContainerStyle={{
         flexGrow: 1,
         paddingHorizontal: 24,
-        paddingBottom: 24 + navBarInset,
+        paddingBottom: formBottomPadding,
       }}
       edges={['top', 'left', 'right']}
       useScrollView={true}
