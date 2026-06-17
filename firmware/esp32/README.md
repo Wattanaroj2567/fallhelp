@@ -5,7 +5,7 @@
 - Audience: Hardware Dev, Backend Dev, Mobile Dev, QA
 - Source of Truth: `src/main_firmware/`, `src/sensor_tuning/`, and firmware runbooks under `docs/`
 - Status: Active
-- Last Updated: May 30, 2026
+- Last Updated: June 17, 2026
 
 ---
 
@@ -86,7 +86,7 @@ firmware/esp32/
 │   │   ├── DeviceMqttClient.ino               ← MQTT client & handlers
 │   │   ├── (sensor log controls in `main_firmware.ino`)
 │   │   ├── SensorManager.ino                  ← Orchestrate all sensors/modules
-│   │   ├── FallDetectionConfig.ino            ← Fall thresholds, sensitivity & cancel window
+│   │   ├── FallDetectionConfig.ino            ← Fall thresholds & cancel window
 │   │   ├── MPU6050_Sensor.ino                 ← Fall detection (IMU)
 │   │   ├── PulseSensor.ino                    ← Heart-rate / PPG pipeline
 │   │   ├── FalseAlarmCancelButton.ino         ← Cancel button logic (GPIO27)

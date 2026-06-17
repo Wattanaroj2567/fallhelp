@@ -110,8 +110,6 @@ void setPulsePlotterMode(bool enabled);
 bool isPulsePlotterMode();
 void printHeartRateZoneConfig();
 
-void setFallDetectionSensitivity(int sensitivity);
-int getFallDetectionSensitivity();
 float getAccelThreshold();
 unsigned long getDurationThreshold();
 float getPostureThreshold();
@@ -981,39 +979,12 @@ CommandExecStatus executeCommand(const String &cmdRaw, bool fromMqtt,
 
   if (cmdLower == "fall config")
   {
-    Serial.printf("Fall sensitivity: %d (0=low,1=medium,2=high)\n", getFallDetectionSensitivity());
+    Serial.println("Fall thresholds are compile-time values for this uploaded build");
     Serial.printf("Accel threshold: %.2f g\n", getAccelThreshold());
     Serial.printf("Duration threshold: %lu ms\n", getDurationThreshold());
     Serial.printf("Posture threshold: %.0f deg\n", getPostureThreshold());
     if (responseMessage != nullptr)
       *responseMessage = "Fall config printed";
-    return CMD_EXEC_OK;
-  }
-
-  if (cmdLower == "fall sensitivity low")
-  {
-    setFallDetectionSensitivity(0);
-    Serial.println("✅ Fall sensitivity set to LOW");
-    if (responseMessage != nullptr)
-      *responseMessage = "Fall sensitivity set to low";
-    return CMD_EXEC_OK;
-  }
-
-  if (cmdLower == "fall sensitivity medium")
-  {
-    setFallDetectionSensitivity(1);
-    Serial.println("✅ Fall sensitivity set to MEDIUM");
-    if (responseMessage != nullptr)
-      *responseMessage = "Fall sensitivity set to medium";
-    return CMD_EXEC_OK;
-  }
-
-  if (cmdLower == "fall sensitivity high")
-  {
-    setFallDetectionSensitivity(2);
-    Serial.println("✅ Fall sensitivity set to HIGH");
-    if (responseMessage != nullptr)
-      *responseMessage = "Fall sensitivity set to high";
     return CMD_EXEC_OK;
   }
 
@@ -1141,7 +1112,7 @@ void printHelp()
     Serial.printf("  MQTT ack topic: %s\n", getMqttCmdAckTopic().c_str());
     Serial.println("  Example payloads:");
     Serial.println("    plain: mpu test");
-    Serial.println("    json : {\"cmd\":\"fall sensitivity high\",\"requestId\":\"C01-01\"}");
+    Serial.println("    json : {\"cmd\":\"fall config\",\"requestId\":\"C01-01\"}");
   }
   else
   {
@@ -1153,7 +1124,6 @@ void printHelp()
   Serial.println("  mqtt show          - show MQTT runtime status");
   Serial.println("  mqtt on|off        - enable/disable MQTT while keeping WiFi available");
   Serial.println("  fall config        - show active fall thresholds (ดูค่าเกณฑ์การล้มปัจจุบัน)");
-  Serial.println("  fall sensitivity low|medium|high (ปรับความไวการล้ม)");
   Serial.println("  i2c scan           - scan I2C bus on GPIO21/22 (สแกนสายสัญญาณ)");
   Serial.println("  sim fall           - toggle simulated fall start/stop (จำลองการล้ม)");
   Serial.println("  sim_hr_high        - send HIGH heart rate (130 BPM) manually");

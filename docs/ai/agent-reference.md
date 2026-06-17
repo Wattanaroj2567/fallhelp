@@ -5,7 +5,7 @@
 - Audience: AI agents, developers needing quick repo orientation
 - Source of Truth: current repo structure, common commands, and firmware operator workflow
 - Status: Active
-- Last Updated: May 30, 2026
+- Last Updated: June 17, 2026
 
 ---
 
@@ -183,9 +183,6 @@ Type these in Arduino IDE Serial Monitor or VS Code Serial Monitor (115200 baud)
 info
 profile
 fall config
-fall sensitivity low
-fall sensitivity medium
-fall sensitivity high
 sensor status
 ppg on / ppg off
 mpu test
@@ -203,6 +200,7 @@ mqtt on
 reboot
 ```
 
+> Fall threshold changes are compile-time tuning values in `FallDetectionConfig.ino`; edit, upload firmware, then collect a new Sensor Lab run for that threshold set.
 > Log capture is done via the Node-RED flow `fall-detection-sensor-lab-flow.v2.json`, not `mosquitto_sub` as a substitute.
 > See `firmware/esp32/fall_detection_sensor_lab/trial_protocol.md` for the per-session/per-trial steps.
 

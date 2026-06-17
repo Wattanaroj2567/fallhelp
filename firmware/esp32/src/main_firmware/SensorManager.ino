@@ -86,7 +86,7 @@ bool ensureI2CBus(bool forceReset) {
 bool initSensorManager() {
   bool anySuccess = false;
 
-  // โหลดค่า threshold/sensitivity ของ fall flow ก่อน init โมดูลที่ต้องใช้อ้างอิง
+  // โหลดค่าเกณฑ์ของ fall flow ก่อน init โมดูลที่ต้องใช้อ้างอิง
   initFallDetectionConfig();
 
   // 1. เริ่มต้น MPU6050

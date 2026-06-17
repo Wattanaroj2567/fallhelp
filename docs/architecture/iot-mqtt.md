@@ -5,7 +5,7 @@
 - Audience: Backend Dev / IoT Dev
 - Source of Truth: [mqttClient.ts](../../apps/backend-api/src/iot/mqttClient.ts), [topics.ts](../../apps/backend-api/src/iot/topics.ts), [handlers/](../../apps/backend-api/src/iot/handlers)
 - Status: Active
-- Last Updated: May 30, 2026
+- Last Updated: June 17, 2026
 
 ---
 
@@ -44,7 +44,7 @@ FallHelp ใช้ **MQTT Protocol** เป็นช่องทางหลั�
 
 | Topic                      | Purpose                                           |
 | :------------------------- | :------------------------------------------------ |
-| `device/{deviceId}/config` | ส่ง Configuration ไปยัง Device (WiFi, Thresholds) |
+| `device/{deviceId}/config` | ส่ง WiFi config หรือ reset command ไปยัง Device |
 
 > **Note:** `+` ใน topic pattern คือ MQTT Wildcard ที่จับ `deviceId` (Serial Number ของ ESP32)
 
@@ -100,15 +100,24 @@ Fields ที่ firmware ส่งจริง (จาก `topics.ts - HeartRat
 }
 ```
 
-### Device Config Payload (Backend → Device)
+### Device WiFi Config Payload (Backend → Device)
 
 ```json
 {
-  "fallThreshold": 2.5,
-  "hrLowThreshold": 60,
-  "hrHighThreshold": 100,
   "wifiSSID": "HomeWiFi",
-  "wifiPassword": "password123",
+  "wifiPassword": "<redacted>",
+  "requestId": "uuid-for-ack"
+}
+```
+
+Fall detection thresholds are compile-time firmware values in `FallDetectionConfig.ino`; they are not sent through MQTT config payloads.
+
+### Device Reset Command Payload (Backend → Device)
+
+```json
+{
+  "action": "RESET_WIFI",
+  "deviceSerial": "ESP32-ABCDEF123456",
   "requestId": "uuid-for-ack"
 }
 ```
@@ -119,6 +128,8 @@ Fields ที่ firmware ส่งจริง (จาก `topics.ts - HeartRat
 {
   "requestId": "uuid-for-ack",
   "success": true,
+  "timestamp": 123456789,
+  "reason": "WIFI_PENDING_VERIFY",
   "ip": "192.168.1.105"
 }
 ```

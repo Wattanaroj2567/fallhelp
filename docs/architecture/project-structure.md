@@ -5,7 +5,7 @@
 - Audience: Dev/QA/PM
 - Source of Truth: repository tree + [package.json](../../package.json)
 - Status: Active
-- Last Updated: May 30, 2026
+- Last Updated: June 17, 2026
 
 ---
 
@@ -108,7 +108,7 @@ fallhelp/
 │   │   │   ├── main_firmware.ino         # Orchestration & boot
 │   │   │   ├── BLEProvisioning.ino       # BLE setup & callbacks
 │   │   │   ├── WiFiConnectionManager.ino # WiFi loop & config
-│   │   │   ├── FallDetectionConfig.ino   # Fall thresholds, sensitivity, cancel window
+│   │   │   ├── FallDetectionConfig.ino   # Fall thresholds, cancel window
 │   │   │   └── DeviceMqttClient.ino      # MQTT client & payloads
 │   │   └── sensor_tuning/   # Calibration firmware (no full backend flow)
 │   ├── fall_detection_sensor_lab/ # Fall Detection Sensor Lab flow, CSV scripts, and runs

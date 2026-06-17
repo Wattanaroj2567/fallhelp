@@ -5,7 +5,7 @@
 - Audience: Hardware Dev, Backend Dev, QA
 - Source of Truth: `firmware/esp32/src/main_firmware/`, backend MQTT/runtime contracts
 - Status: Active
-- Last Updated: May 30, 2026
+- Last Updated: June 17, 2026
 
 ---
 
@@ -137,11 +137,12 @@ suspected_fall
 | --- | --- |
 | `info` | ดู runtime, WiFi, MQTT, cancel timeout, และ WiFi provisioning attempts |
 | `sensor status` | เช็ก sensor manager ถ้า firmware build รองรับ |
-| `fall config` | ดูค่า fall detection ปัจจุบัน |
 | `sim fall` | จำลอง fall flow เพื่อเช็ก alert/cancel |
 | `speaker` / `speaker status` | ทดสอบ speaker output ถ้า firmware build รองรับ |
 | `reset_nvs` | ล้าง WiFi/MQTT config แล้ว reboot |
 | `reboot` | reboot board |
+
+ค่า fall threshold ของ `main_firmware` เป็น compile-time values ใน `FallDetectionConfig.ino`; คำสั่ง `fall config` มีไว้ใน `sensor_tuning` สำหรับรอบ Sensor Lab เท่านั้น
 
 ---
 

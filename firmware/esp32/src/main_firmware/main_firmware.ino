@@ -226,8 +226,6 @@ void setActiveFallEventId(String eventId);
 void resetFalseAlarmCancelButton();
 bool consumeCancelButtonConfirmed();
 
-void setFallDetectionSensitivity(int sensitivity);
-int getFallDetectionSensitivity();
 float getAccelThreshold();
 unsigned long getDurationThreshold();
 bool initSensorManager();

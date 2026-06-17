@@ -121,6 +121,9 @@ function summarizeTrial(header, rows) {
       summary = "ทำกิจกรรมปกติโดยไม่มีการแจ้งเตือน";
     }
   } else {
+    summary = "ทำกิจกรรมปกติโดยไม่มีการแจ้งเตือน";
+  }
+
   // Override summary if there's an explicit note in the decision row or last row
   const finalSummary = (decisionRow && decisionRow.note) || last.summary || last.note || note || summary;
   return {

@@ -10,7 +10,7 @@
  * ความสามารถ:
  * - เฝ้าดูความเร่งแบบ raw 6-axis แบบ real-time
  * - ใช้ SVM ร่วมกับ complementary filter ในการตรวจ fall
- * - ปรับ sensitivity ได้
+ * - ใช้ค่าเกณฑ์จาก FallDetectionConfig.ino สำหรับการจูนทีละรอบ
  * - ส่ง event ผ่าน MQTT
  */
 

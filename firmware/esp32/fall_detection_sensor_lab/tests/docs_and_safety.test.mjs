@@ -6,6 +6,10 @@ import {
   SCHEMA,
   FW,
   FW_MAIN,
+  FW_MAIN_CONFIG,
+  FW_TUNING_CONFIG,
+  FW_TUNING_ENTRY,
+  FW_TUNING_RUNTIME_PROFILE,
   DOCKER_COMPOSE,
   BACKEND_ENV_EXAMPLE,
   NODE_RED_DOCKERFILE,
@@ -59,6 +63,30 @@ export function run() {
     "firmware publishes imu_sample (sensor_tuning lab only)",
     /publishLabImuLog\("imu_sample"/.test(fwSrc) && !/imu_sample/.test(fwMainSrc),
     "imu_sample must exist in sensor_tuning and NOT in main_firmware",
+  );
+
+  const mainConfigSrc = fs.readFileSync(FW_MAIN_CONFIG, "utf8");
+  const tuningConfigSrc = fs.readFileSync(FW_TUNING_CONFIG, "utf8");
+  const tuningEntrySrc = fs.readFileSync(FW_TUNING_ENTRY, "utf8");
+  const tuningRuntimeProfileSrc = fs.readFileSync(FW_TUNING_RUNTIME_PROFILE, "utf8");
+  const combinedFallConfig = [mainConfigSrc, tuningConfigSrc, tuningEntrySrc, tuningRuntimeProfileSrc].join("\n");
+
+  check(
+    "fall threshold config no longer exposes sensitivity presets",
+    !/SENSITIVITY|setFallDetectionSensitivity|getFallDetectionSensitivity|fall sensitivity/i.test(combinedFallConfig),
+    "threshold tuning must be traceable through code changes, not low/medium/high runtime presets",
+  );
+  check(
+    "prototype fall thresholds are compile-time constants in both firmware variants",
+    [mainConfigSrc, tuningConfigSrc].every((src) =>
+      /FALLHELP_IMPACT_THRESHOLD_G/.test(src) &&
+      /FALLHELP_STABILIZATION_WINDOW_MS/.test(src) &&
+      /FALLHELP_POSTURE_DELTA_THRESHOLD_DEG/.test(src) &&
+      !/fall_sens|fall_accel|fall_dur|fall_post/.test(src),
+    ) &&
+      /FALLHELP_FALL_CANCEL_TIMEOUT_MS/.test(mainConfigSrc) &&
+      /FALLHELP_CANCEL_TIMEOUT_MS/.test(tuningRuntimeProfileSrc),
+    "both firmware variants must use fixed threshold keys without NVS threshold persistence; cancel timeout stays in each variant owner",
   );
 
   // no hardcoded MQTT credentials in flow JSON; env placeholders are allowed

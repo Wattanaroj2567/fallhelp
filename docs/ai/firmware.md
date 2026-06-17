@@ -5,7 +5,7 @@
 - Audience: AI agents, firmware developers, reviewers touching `firmware/esp32/`
 - Source of Truth: `firmware/esp32/`, firmware runbooks, and backend MQTT/runtime contracts that consume device payloads
 - Status: Active
-- Last Updated: May 30, 2026
+- Last Updated: June 17, 2026
 
 ---
 
@@ -44,7 +44,7 @@ Do not assume new firmware changes must be accompanied by fresh `sensor-lab` dat
 | `FalseAlarmCancelButton.ino` | Local control | Cancel button: GPIO27, press detection, 15s timeout logic           |
 | `SensorManager.ino`          | Orchestration | Sensor orchestration: init, read cycle, timing                      |
 | `AlertSystem.ino`            | Local alert | Grove Speaker: alarm patterns, duration control                       |
-| `FallDetectionConfig.ino`    | Config | Fall detection thresholds, event evaluation duration, posture delta, sensitivity, and fixed 15s false-alarm cancel window |
+| `FallDetectionConfig.ino`    | Config | Compile-time fall thresholds, stabilization window, posture delta threshold, and fixed 15s false-alarm cancel window |
 | `types.h`                    | Shared header | Shared states, externs, MPU6050Data, PulseSensorData, etc.          |
 | `mqtt_secrets.h`             | Local secret | MQTT broker profile/credentials for HiveMQ Cloud or local Mosquitto (gitignored) |
 | `mqtt_secrets.h.example`     | Template | Template for MQTT broker profiles and credentials                         |
@@ -253,7 +253,7 @@ Runtime cadence: main firmware publishes device status every 5 seconds while WiF
    → Restart into BLE mode
 
 6. On RESET_NVS / CLEAR_NVS command (from backend MQTT or manual):
-   → Clear all NVS Preferences (WiFi, sensitivity, threshold configurations)
+   → Clear all NVS Preferences (WiFi credentials and runtime state)
    → Clear internal WiFi flash
    → Restart into BLE mode
 ```

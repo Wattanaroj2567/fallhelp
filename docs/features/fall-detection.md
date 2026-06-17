@@ -5,7 +5,7 @@
 - Audience: Hardware/Backend/Mobile Dev, QA
 - Source of Truth: [main_firmware/](../../firmware/esp32/src/main_firmware/), [fallHandler.ts](../../apps/backend-api/src/iot/handlers/fallHandler.ts), [eventService.ts](../../apps/backend-api/src/services/eventService.ts)
 - Status: Active
-- Last Updated: May 30, 2026
+- Last Updated: June 17, 2026
 
 ---
 
@@ -21,10 +21,10 @@
 
 - **Algorithm:** Threshold-based (วัดความแรงจาก SVM + การเปลี่ยนมุมจาก Complementary Filter)
 - **Logic:**
-  1. หากความแรง SVM (Signal Vector Magnitude) > Threshold High (เช่น 2.0g) → **Possible Fall (Impact Spike)**
+  1. หากความแรง SVM (Signal Vector Magnitude) > impact threshold ของระบบต้นแบบ (เช่น 2.0g) → **Possible Fall (Impact Spike)**
   2. รอตรวจสอบให้ผู้ใช้นิ่ง (Stabilization Window ประมาณ 1.5 วินาที)
   3. ตรวจสอบการเปลี่ยนมุม (Posture Delta) ที่คำนวณจากวงจร Complementary Filter
-  4. หากองศาการเอียงเข้าข่ายท่านอนราบ (> 45 องศา) → ส่ง MQTT msg
+  4. หากการเปลี่ยนมุมผ่าน posture delta threshold ของระบบต้นแบบ (> 45 องศา) → ส่ง MQTT msg
 
 ### MQTT Payload (`device/{id}/event`)
 
