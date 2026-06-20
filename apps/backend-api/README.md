@@ -2,6 +2,8 @@
 
 Express v5 + TypeScript API for FallHelp, including MQTT ingestion, Socket.io realtime events, and PostgreSQL persistence.
 
+**Last Updated:** June 20, 2026
+
 ## Scope
 
 - REST API for mobile/admin clients
@@ -80,8 +82,8 @@ docker compose exec backend npx prisma db seed
 - ยังรองรับ `docker compose exec backend npx prisma migrate deploy` ตามเดิม
 - ถ้าต้องการ Cloudflare named tunnel ให้เพิ่ม `--profile tunnel`
 
-Admin จะ build ด้วย `VITE_API_URL=http://localhost:3000/api` โดยอัตโนมัติ
-ถ้าต้องการ override ตอน build ให้ตั้ง `ADMIN_VITE_API_URL`
+Admin Docker image จะรับค่า `ADMIN_VITE_API_URL` จาก Compose แล้วส่งต่อเป็น build arg `VITE_API_URL` ให้ Vite
+ถ้าต้องการ override ตอน build ให้ตั้ง `ADMIN_VITE_API_URL` ก่อนรัน `docker compose up --build`
 
 คำสั่ง cleanup ที่ใช้บ่อย:
 

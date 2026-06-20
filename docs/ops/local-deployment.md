@@ -1,498 +1,501 @@
 # Local Deployment Guide
 
-# คู่มือการ Deploy ในสภาพแวดล้อมท้องถิ่น
-
 ## Doc Meta
 
 - Audience: Backend/DevOps, QA
-- Source of Truth: [apps/backend-api/](../../apps/backend-api) + infra config
+- Source of Truth: [apps/backend-api/](../../apps/backend-api), [docker-compose.yml](../../docker-compose.yml), [apps/backend-api/.env.example](../../apps/backend-api/.env.example)
 - Status: Active
-- Last Updated: May 10, 2026
+- Last Updated: June 20, 2026
 
 ---
 
 ## Overview
 
-คู่มือนี้อธิบายขั้นตอนการเตรียม Backend, Admin, MQTT broker, และ mobile config สำหรับ Production/UAT โดยยึดโครง monorepo ปัจจุบันเป็นหลัก
+This runbook explains how to run FallHelp locally or for UAT using the current monorepo structure. It covers Backend API, Admin panel, PostgreSQL, MQTT, optional Cloudflare Tunnel, and mobile API configuration.
+
+Use the root [README](../../README.md) for a short quick start. Use this file when you need the detailed step-by-step setup.
 
 ---
 
-## สถาปัตยกรรม Deployment (tawanlab.site)
+## Deployment Shape
 
-```
-                    Cloudflare (tawanlab.site)
-                    ┌─────────────────────────────────┐
-                    │  DNS + CDN + SSL (Free Plan)    │
-                    │                                 │
-  Mobile App ──────►│  api.fallhelp.tawanlab.site ────┼──► Cloudflare Tunnel ──► localhost:3000 (Backend)
-                    │                                 │
-  Browser ─────────►│  admin.fallhelp.tawanlab.site ──┼──► Cloudflare Tunnel ──► localhost:5173 (Admin)
-                    │                                 │           หรือ Cloudflare Pages (static)
-                    └─────────────────────────────────┘
+```text
+Mobile App / Admin Browser
+  -> Backend API (localhost:3000 or HTTPS tunnel hostname)
+      -> PostgreSQL
+      -> MQTT broker (local Mosquitto or HiveMQ Cloud)
+      -> Socket.io / Expo Push side effects
 
-  ESP32 ────────────► mqtt.fallhelp.tawanlab.site:8883 ──► HiveMQ Cloud (Free)
-                      (DNS Only, ไม่ผ่าน Cloudflare proxy)
+ESP32
+  -> MQTT broker directly
 ```
 
-> **หมายเหตุ:** MQTT ใช้ protocol เฉพาะ (ไม่ใช่ HTTP) จึงไม่สามารถ proxy ผ่าน Cloudflare ได้
-> ESP32 ต้องเชื่อมตรงไปที่ MQTT broker
+For Cloudflare Tunnel UAT:
+
+```text
+Mobile App / Browser
+  -> Cloudflare HTTPS hostname
+      -> cloudflared tunnel
+          -> backend container/service
+
+ESP32
+  -> MQTT broker directly (MQTT is not proxied through Cloudflare)
+```
+
+MQTT is not HTTP, so do not put ESP32 MQTT traffic behind the normal Cloudflare proxy. Use local Mosquitto on LAN, HiveMQ Cloud, or a self-hosted MQTT broker with TLS.
 
 ---
 
-## Checklist ก่อน Deploy
+## 1. Choose A Run Mode
 
-- [ ] ตั้งค่า Environment Variables
-- [ ] Setup MQTT Broker (HiveMQ Cloud หรือ self-hosted)
-- [ ] Setup Cloudflare Tunnel
-- [ ] Setup Database
-- [ ] Configure SSL/TLS (จัดการโดย Cloudflare อัตโนมัติ)
+| Mode | Use When | Main Command |
+| ---- | -------- | ------------ |
+| Local terminal | You want hot reload and direct local debugging | `npm run dev:all` |
+| Docker backend/admin | You want containerized backend + admin while PostgreSQL/MQTT run outside Docker | `docker compose up -d --build --pull always` |
+| Docker + Cloudflare Tunnel | You want an HTTPS public/UAT endpoint without opening router ports | `docker compose --env-file apps/backend-api/.env --profile tunnel up -d --build --pull always` |
+| Sensor Lab | You want Node-RED dashboard for sensor workflow testing and labeled data collection | `npm run sensor-lab -- node-red up` |
+
+The rest of this guide walks through the setup in the order you should perform it.
 
 ---
 
-## Quick Start — 2 วิธีรัน Backend
+## 2. Prerequisites
 
-### วิธีที่ 1: Terminal (ติดตั้งเอง)
+Required for all modes:
 
-ต้อง install PostgreSQL + Mosquitto service เองบนเครื่อง (ดู [MQTT Broker Setup](#3-mqtt-broker-setup))
+- Node.js 24.x
+- npm 11.x from the project package manager baseline
+- PostgreSQL 18.x
+- MQTT broker: local Mosquitto, HiveMQ Cloud, or self-hosted MQTT
+- Git
+
+Required only for specific modes:
+
+| Need | Requirement |
+| ---- | ----------- |
+| Docker mode | Docker Desktop or Docker Engine with Compose v2 |
+| Tunnel mode | Cloudflare account + Named Tunnel token |
+| Mobile builds | Expo account + project-local EAS CLI through `npm exec eas` |
+| Firmware upload | Arduino IDE or `arduino-cli` with ESP32 core and required libraries |
+
+---
+
+## 3. Prepare Environment Files
+
+From the repo root:
 
 ```bash
-cd apps/backend-api
-cp .env.example .env       # แก้ไข DATABASE_URL, JWT_SECRET ตามต้องการ
-npm install
-npm run prisma:migrate     # สร้าง tables
-npm run prisma:seed        # สร้าง admin account
-npm run dev                # เริ่ม server + MQTT
+npm run env:setup
 ```
 
-### วิธีที่ 2: Docker (Backend + Admin)
+This copies local templates and tries to link root `.env` to `apps/backend-api/.env` so Docker Compose can read backend values automatically. If the symlink cannot be created on your OS, run Docker commands with `--env-file apps/backend-api/.env`.
 
-ต้องการ Docker Desktop และ PostgreSQL ที่เข้าถึงได้จาก `DATABASE_URL_DOCKER`
-
-หมายเหตุ:
-
-- backend container ปัจจุบันรันจากไฟล์ build `dist/server.js`
-- runtime image จะติดตั้งเฉพาะ production dependencies ของ backend เพื่อลดขนาด image
-- ยังใช้ `npx prisma migrate deploy` ใน container ได้ตามปกติ
-
-```bash
-# รัน Docker build mode
-docker compose up -d --build --pull always    # รัน Backend + Admin (Mosquitto รันเป็น native service แยกต่างหาก)
-docker compose exec backend npx prisma migrate deploy  # สร้าง tables
-docker compose exec backend npx prisma db seed         # สร้าง admin
-
-# cleanup เมื่อ build cache/image เริ่มกินพื้นที่มาก
-docker builder prune -f
-docker image prune -f
-
-# ดู footprint ปัจจุบันของ Docker
-docker image ls fallhelp-backend fallhelp-admin
-docker system df
-```
-
-| คำสั่ง                            | ใช้ทำอะไร                                 |
-| --------------------------------- | ----------------------------------------- |
-| `docker compose up -d --build --pull always` | รัน `backend` + `admin` แบบ containerized พร้อม refresh base image |
-| `docker compose down`                        | หยุดทั้งหมด                                                  |
-| `docker compose down -v`                     | หยุดและลบ data ทั้งหมด                                       |
-| `docker compose logs -f backend`             | ดู logs                                                      |
-| `docker builder prune -f`                    | ล้าง build cache ที่ไม่ได้ใช้                                |
-| `docker image prune -f`                      | ล้าง dangling images                                         |
-
-ค่าเริ่มต้นของ Admin ใน Docker จะเรียก backend ผ่าน `http://localhost:3000/api`
-และเปิดหน้าเว็บที่ `http://localhost:5173`
-
-หลังปรับ image ให้ lean ขึ้นแล้ว ถ้าทดลอง build หลายรอบ
-พื้นที่ที่โตเร็วที่สุดมักเป็น build cache มากกว่า image ที่รันอยู่จริง
-ดังนั้น `docker builder prune -f` มักช่วยได้มากที่สุดในงานประจำวัน
-
----
-
-## ~~1. ลบ Simulator Code~~ (เสร็จแล้ว)
-
-> Simulator code ถูกลบออกจาก codebase แล้ว ไม่ต้องทำขั้นตอนนี้
->
-> ESP32 จริงใช้ MQTT topics โดยตรง: `device/{deviceId}/fall`, `device/{deviceId}/heartrate`, `device/{deviceId}/status`
-
----
-
-## 2. Environment Variables
-
-สร้างไฟล์ `.env.production`:
+Edit `apps/backend-api/.env` first. The most important values are:
 
 ```env
-# Database
-DATABASE_URL="postgresql://user:password@your-db-host:5432/fallhelp"
+# Backend on host machine
+DATABASE_URL="postgresql://username:password@localhost:5432/fallhelp_db?schema=public"
 
-# Server
-PORT=3000
-NODE_ENV=production
+# Backend inside Docker container
+DATABASE_URL_DOCKER="postgresql://username:password@host.docker.internal:5432/fallhelp_db?schema=public"
 
-# Authentication
-JWT_SECRET="your-very-long-secret-key-here-min-32-chars"
+JWT_SECRET="your-super-secret-jwt-key-change-in-production"
 JWT_EXPIRES_IN="7d"
+ENCRYPTION_KEY="0123456789abcdef0123456789abcdef"
 
-# CORS — ใส่ domain จริงที่ใช้
-FRONTEND_URL="https://fallhelp.tawanlab.site"
-ADMIN_URL="https://admin.fallhelp.tawanlab.site"
+PORT=3000
+NODE_ENV="development"
+FRONTEND_URL="http://localhost:8081"
+ADMIN_URL="http://localhost:5173"
+ADMIN_VITE_API_URL="http://localhost:3000/api"
 
-# MQTT (HiveMQ Cloud)
-MQTT_BROKER_URL="mqtts://your-cluster-id.hivemq.cloud:8883"
-MQTT_USERNAME="fallhelp-backend"
-MQTT_PASSWORD="your-mqtt-password"
+# Backend on host machine
+MQTT_BROKER_URL="mqtt://localhost:1883"
 
-# Email (Resend — ใช้ domain ที่ verify แล้ว)
-RESEND_API_KEY="re_xxxxxxxxxxxxxxxxxxxx"
-EMAIL_FROM="FallHelp <support@fallhelp.tawanlab.site>"
-DISABLE_EMAIL=false
+# Backend inside Docker container
+MQTT_BROKER_URL_DOCKER="mqtt://host.docker.internal:1883"
+MQTT_USERNAME=""
+MQTT_PASSWORD=""
+MQTT_DISABLED="false"
 
-# Admin Seed
-ADMIN_EMAIL="admin@fallhelp.com"
-ADMIN_PASSWORD="CHANGE_ME_STRONG_PASSWORD"
+# Optional Cloudflare named tunnel
+TUNNEL_TOKEN=""
+TUNNEL_PUBLIC_HOSTNAME="api.your-domain.com"
+TUNNEL_ORIGIN_URL="http://backend:3000"
 ```
+
+Do not commit real `.env` files or production credentials.
 
 ---
 
-## 3. MQTT Broker Setup
+## 4. Set Up PostgreSQL
 
-### ตัวเลือก A: Local Mosquitto Service (Dev/Lab)
+Create the database that matches `DATABASE_URL` and `DATABASE_URL_DOCKER`, then run:
 
-Mosquitto รันเป็น **native service** บน host machine
+```bash
+npm run backend:db:setup
+npm run backend:db:verify
+```
 
-**Windows:**
+For Docker mode, migrations and seed can also run inside the backend container after `docker compose up`:
+
+```bash
+docker compose exec backend npx prisma migrate deploy
+docker compose exec backend npx prisma db seed
+```
+
+Use the root scripts for day-to-day local setup because they include the workspace platform checks.
+
+---
+
+## 5. Set Up MQTT
+
+Choose one broker option.
+
+### Option A: Local Mosquitto (Dev/Lab)
+
+Mosquitto runs as a native service on the host machine.
+
+Windows PowerShell as Administrator:
 
 ```powershell
-# ติดตั้ง (ต้องการ Chocolatey)
 choco install mosquitto
-
-# copy dev config
 Copy-Item "config\mosquitto\mosquitto.conf" "C:\Program Files\mosquitto\mosquitto.conf"
-
-# start service
 net stop mosquitto; net start mosquitto
-
-# ตรวจสอบ
 npm run mqtt:check
 ```
 
-**Linux (Debian/Ubuntu):**
+Linux:
 
 ```bash
 sudo apt install mosquitto mosquitto-clients
 sudo cp config/mosquitto/mosquitto.conf /etc/mosquitto/conf.d/fallhelp.conf
 sudo systemctl enable --now mosquitto
-
-# ตรวจสอบ
 npm run mqtt:check
 ```
 
-**ตั้งค่าใน `.env`:**
+Use these env values:
 
 ```env
 MQTT_BROKER_URL="mqtt://localhost:1883"
+MQTT_BROKER_URL_DOCKER="mqtt://host.docker.internal:1883"
 MQTT_USERNAME=""
 MQTT_PASSWORD=""
 ```
 
-**ESP32:** ตั้ง `HIVEMQ_HOST` ใน `mqtt_secrets.h` เป็น **LAN IP จริงของเครื่อง** (ไม่ใช่ localhost)
-— Mosquitto bind `0.0.0.0` แล้ว ESP32 เชื่อมตรงได้เลย ไม่ต้องผ่าน proxy
+For ESP32 on LAN, set the firmware MQTT host to the host machine's LAN IP, not `localhost`.
 
-**Firewall (เปิด inbound 1883 สำหรับ LAN):**
+Open firewall for local MQTT if ESP32 connects over LAN:
 
 ```powershell
-# Windows (PowerShell as Admin)
 New-NetFirewallRule -DisplayName "Mosquitto MQTT" -Direction Inbound -Protocol TCP -LocalPort 1883 -RemoteAddress LocalSubnet -Action Allow
 ```
 
 ```bash
-# Linux
 sudo ufw allow from 192.168.0.0/16 to any port 1883
 ```
 
-### ตัวเลือก B: HiveMQ Cloud (UAT/Production)
+### Option B: HiveMQ Cloud (UAT)
 
-**ข้อดี:** ฟรี, มี TLS, ไม่ต้อง manage server, ESP32 เชื่อมได้เลย
+Use this when the ESP32 should connect over the internet with TLS.
 
-1. สมัครที่ [hivemq.com/cloud](https://www.hivemq.com/mqtt-cloud-broker/)
-2. สร้าง **Serverless Cluster** (Free tier: 100 connections, 10 GB/mo)
-3. สร้าง Credentials → จะได้ hostname, username, password
-4. ตั้งค่าใน `.env`:
+1. Create a Serverless Cluster at [HiveMQ Cloud](https://www.hivemq.com/mqtt-cloud-broker/).
+2. Create credentials for backend/ESP32 use.
+3. Set backend env values:
 
 ```env
 MQTT_BROKER_URL="mqtts://your-cluster-id.hivemq.cloud:8883"
+MQTT_BROKER_URL_DOCKER="mqtts://your-cluster-id.hivemq.cloud:8883"
 MQTT_USERNAME="fallhelp-backend"
 MQTT_PASSWORD="your-password"
 ```
 
-1. ตั้ง DNS ใน Cloudflare (optional, สำหรับ ESP32 ให้จำง่าย):
+Optional DNS record for readability:
 
-```
-mqtt.fallhelp.tawanlab.site → CNAME → your-cluster-id.hivemq.cloud
-(DNS Only — ปิด Proxy, ใช้ icon สีเทา)
+```text
+mqtt.your-domain.com -> CNAME -> your-cluster-id.hivemq.cloud
+Cloudflare proxy: DNS Only
 ```
 
-1. แก้ ESP32 firmware:
+Firmware example:
 
 ```cpp
-// mqtt_secrets.h
-#define HIVEMQ_HOST  "your-cluster-id.hivemq.cloud"  // หรือ mqtt.fallhelp.tawanlab.site
-#define HIVEMQ_PORT  8883  // TLS
+#define HIVEMQ_HOST "your-cluster-id.hivemq.cloud"
+#define HIVEMQ_PORT 8883
 ```
 
-> **สำคัญ:** Free tier มีข้อจำกัด — พอสำหรับ dev/UAT (อุปกรณ์ไม่กี่ตัว)
+### Option C: Self-Hosted Mosquitto + TLS
 
-### ตัวเลือก C: Self-hosted Mosquitto + TLS (Production VPS)
+Use this only when you have a VPS and need your own broker.
 
 ```bash
-# บน VPS (DigitalOcean/Vultr $4-6/mo)
 sudo apt install mosquitto mosquitto-clients
 sudo mosquitto_passwd -c /etc/mosquitto/passwd fallhelp-backend
 sudo mosquitto_passwd /etc/mosquitto/passwd fallhelp-esp32
+```
 
-# /etc/mosquitto/conf.d/fallhelp.conf
+Example Mosquitto TLS config:
+
+```text
 listener 8883
-certfile /etc/letsencrypt/live/mqtt.fallhelp.tawanlab.site/fullchain.pem
-keyfile /etc/letsencrypt/live/mqtt.fallhelp.tawanlab.site/privkey.pem
+certfile /etc/letsencrypt/live/mqtt.your-domain.com/fullchain.pem
+keyfile /etc/letsencrypt/live/mqtt.your-domain.com/privkey.pem
 allow_anonymous false
 password_file /etc/mosquitto/passwd
 ```
 
-### MQTT Topics
+---
 
-อุปกรณ์ IoT จะส่งข้อมูลผ่าน Topics เหล่านี้:
+## 6. Run Backend, Admin, And Mobile
 
-| Topic                         | Payload                                      | Description    |
-| ----------------------------- | -------------------------------------------- | -------------- |
-| `device/{deviceId}/event`     | Unified event payload (`suspected_fall`, `fall_confirmed`, `fall_cancelled`, `heart_rate`) | Canonical topic |
-| `device/{deviceId}/fall`      | Legacy fall payload (compatibility)                                                  | Backward compatibility |
-| `device/{deviceId}/heartrate` | Legacy heart-rate payload (compatibility)                                            | Backward compatibility |
-| `device/{deviceId}/status`    | `{ "timestamp": 1710000000000, "online": true }`                                     | Device Status |
+### Mode A: Local Terminal
+
+From repo root:
+
+```bash
+npm run install:all
+npm run platform:check
+npm run dev:all
+```
+
+This starts:
+
+| Service | URL |
+| ------- | --- |
+| Backend API | `http://localhost:3000` |
+| Mobile Expo | `http://localhost:8081` |
+| Admin panel | `http://localhost:5173` |
+
+Use narrower launchers when useful:
+
+```bash
+npm run dev:backend-mobile
+npm run dev:backend-admin
+npm run dev:stop
+```
+
+### Mode B: Docker Backend + Admin
+
+PostgreSQL and MQTT still run outside Docker unless you intentionally host them elsewhere.
+
+```bash
+docker compose up -d --build --pull always
+docker compose exec backend npx prisma migrate deploy
+docker compose exec backend npx prisma db seed
+```
+
+Admin defaults to `http://localhost:5173` and calls `http://localhost:3000/api` unless `ADMIN_VITE_API_URL` is overridden before build.
+
+Useful Docker commands:
+
+| Command | Purpose |
+| ------- | ------- |
+| `docker compose logs -f backend` | Follow backend logs |
+| `docker compose logs -f admin` | Follow admin logs |
+| `docker compose down` | Stop containers |
+| `docker compose down -v` | Stop containers and remove volumes |
+| `docker builder prune -f` | Clear unused build cache |
+| `docker image prune -f` | Clear dangling images |
+
+### Mode C: Docker + Cloudflare Named Tunnel
+
+Set these values in `apps/backend-api/.env`:
+
+```env
+TUNNEL_TOKEN="your-cloudflare-named-tunnel-token"
+TUNNEL_PUBLIC_HOSTNAME="api.your-domain.com"
+TUNNEL_ORIGIN_URL="http://backend:3000"
+ADMIN_VITE_API_URL="https://api.your-domain.com/api"
+FRONTEND_URL="https://your-mobile-or-web-origin.example"
+ADMIN_URL="https://admin.your-domain.com"
+```
+
+Start backend, admin, and tunnel profile:
+
+```bash
+docker compose --env-file apps/backend-api/.env --profile tunnel up -d --build --pull always
+docker compose logs -f tunnel
+```
+
+The tunnel container forwards to `http://backend:3000` inside the Docker network. Do not use `localhost` as the tunnel origin from inside the tunnel container.
 
 ---
 
-## 4. Cloudflare Tunnel Setup
+## 7. Optional: Cloudflared CLI Tunnel
 
-Cloudflare Tunnel ให้ expose local server ผ่าน HTTPS โดย**ไม่ต้องเปิด port** และได้ SSL ฟรี
+Use this only if you prefer installing `cloudflared` on the host instead of the Docker profile.
 
-### 4.1 ติดตั้ง cloudflared
-
-```bash
-# Linux (Debian/Ubuntu)
-curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb -o cloudflared.deb
-sudo dpkg -i cloudflared.deb
-
-# macOS
-brew install cloudflared
-
-# ตรวจสอบ
-cloudflared --version
-```
-
-### 4.2 Login & สร้าง Tunnel
+Install and authenticate:
 
 ```bash
-# Login — จะเปิด browser ให้ authorize
 cloudflared tunnel login
-
-# สร้าง tunnel ชื่อ fallhelp
 cloudflared tunnel create fallhelp
-
-# จะได้ Tunnel ID เช่น: a1b2c3d4-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 ```
 
-### 4.3 ตั้งค่า config
-
-สร้างไฟล์ `~/.cloudflared/config.yml`:
+Example `~/.cloudflared/config.yml`:
 
 ```yaml
-tunnel: a1b2c3d4-xxxx-xxxx-xxxx-xxxxxxxxxxxx # ← Tunnel ID
+tunnel: a1b2c3d4-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 credentials-file: /home/tawan/.cloudflared/a1b2c3d4-xxxx-xxxx-xxxx-xxxxxxxxxxxx.json
 
 ingress:
-  # Backend API
-  - hostname: api.fallhelp.tawanlab.site
+  - hostname: api.your-domain.com
     service: http://localhost:3000
-
-  # Admin Panel (dev server)
-  - hostname: admin.fallhelp.tawanlab.site
+  - hostname: admin.your-domain.com
     service: http://localhost:5173
-
-  # Catch-all (required)
   - service: http_status:404
 ```
 
-### 4.4 ตั้ง DNS
+Create DNS routes:
 
 ```bash
-# สร้าง CNAME records อัตโนมัติ
-cloudflared tunnel route dns fallhelp api.fallhelp.tawanlab.site
-cloudflared tunnel route dns fallhelp admin.fallhelp.tawanlab.site
+cloudflared tunnel route dns fallhelp api.your-domain.com
+cloudflared tunnel route dns fallhelp admin.your-domain.com
 ```
 
-หรือตั้งใน Cloudflare Dashboard:
-
-```
-api.fallhelp.tawanlab.site   → CNAME → a1b2c3d4-xxxx.cfargotunnel.com (Proxied)
-admin.fallhelp.tawanlab.site → CNAME → a1b2c3d4-xxxx.cfargotunnel.com (Proxied)
-```
-
-### 4.5 รัน Tunnel
+Run for testing:
 
 ```bash
-# รัน foreground (สำหรับ test)
 cloudflared tunnel run fallhelp
+```
 
-# รัน background (systemd)
+Install as a Linux service if needed:
+
+```bash
 sudo cloudflared service install
 sudo systemctl start cloudflared
 sudo systemctl enable cloudflared
 ```
 
-### 4.6 ทดสอบ
+---
+
+## 8. Verify The Deployment
+
+### Backend Health
 
 ```bash
-curl https://api.fallhelp.tawanlab.site/internal/health
-# ควรได้: { "status": "ok" }
+curl http://localhost:3000/internal/health
 ```
 
-> **Cloudflare Free Plan ให้:**
->
-> - SSL/TLS อัตโนมัติ (ไม่ต้อง Let's Encrypt)
-> - DDoS protection
-> - CDN caching (สำหรับ static assets)
-> - WebSocket support (Socket.io ทำงานได้)
+Tunnel mode:
+
+```bash
+curl https://api.your-domain.com/internal/health
+```
+
+Expected response includes `status: ok`.
+
+### MQTT
+
+```bash
+npm run mqtt:check
+```
+
+For verbose MQTT observation:
+
+```bash
+npm run mqtt:monitor:local
+```
+
+### Admin
+
+Open one of these:
+
+- Local terminal / Docker: `http://localhost:5173`
+- Tunnel: `https://admin.your-domain.com`
+
+### Simulator Helpers
+
+Simulator scripts are active QA/development helpers. They do not replace firmware validation.
+
+```bash
+npm run iot:sim-fall
+npm run iot:sim-fall -- --cancel
+npm run sim:events --prefix apps/backend-api
+npm run sim:push --prefix apps/backend-api
+```
+
+See [Simulator Guide](../testing/simulator-guide.md) for exact behavior and safety notes.
 
 ---
 
-## 5. Deploy Commands
+## 9. Optional: Sensor Lab Node-RED
 
-### Backend — Build และ Start
+The Fall Detection Sensor Lab is for sensor workflow testing and labeled activity data collection. It is independent from the active backend/admin/mobile runtime.
 
 ```bash
-cd apps/backend-api
-
-# Build
-npm run build
-
-# Start with PM2 (recommended)
-pm2 start dist/server.js --name fallhelp-api
-
-# หรือ Start ธรรมดา
-npm start
+npm run sensor-lab -- node-red up
 ```
 
-### Admin Panel — ตัวเลือก Deploy
+Dashboard UI: `http://localhost:1880/ui`
 
-#### ตัวเลือก A: Cloudflare Pages (แนะนำ - ฟรี, static hosting)
+To validate and summarize collected files:
+
+```bash
+npm run sensor-lab -- validate
+npm run sensor-lab -- summarize
+npm run sensor-lab -- chapters
+npm run sensor-lab -- all
+```
+
+---
+
+## 10. Mobile UAT Build
+
+Use EAS Build for Android APK/AAB generation.
+
+```bash
+cd apps/mobile
+npm exec eas login
+npm exec eas build --profile preview --platform android
+```
+
+For preview/UAT, point the mobile app to the reachable backend URL. Prefer environment configuration when available instead of hardcoding values.
+
+```bash
+npm exec eas env:create --name EXPO_PUBLIC_API_URL --value https://api.your-domain.com --environment preview
+```
+
+Use project-local Expo/EAS commands. Do not install global Expo tooling just for this project.
+
+---
+
+## 11. Production Notes
+
+These notes are not required for local development.
+
+### Admin Static Hosting
+
+Cloudflare Pages is suitable for the admin static build:
 
 ```bash
 cd apps/admin
-npm run build  # → dist/
-
-# Deploy ผ่าน CLI
+npm run build
 npx wrangler pages deploy dist --project-name=fallhelp-admin
-
-# หรือเชื่อม GitHub repo → auto deploy ทุก push
-# Cloudflare Dashboard → Pages → Create project → Connect GitHub
-# Build command: npm run build
-# Output directory: dist
 ```
 
-#### ตัวเลือก B: ผ่าน Cloudflare Tunnel (ใช้ dev server)
+### Backend Process Manager
 
-ใส่ใน `config.yml` ตามหัวข้อ 4.3 (เหมาะสำหรับ UAT ไม่ใช่ production)
-
-### ตรวจสอบ
+If you deploy backend directly on a server instead of Docker:
 
 ```bash
-# Backend Health Check
-curl https://api.fallhelp.tawanlab.site/internal/health
-
-# ดู Logs
+cd apps/backend-api
+npm run build
+pm2 start dist/server.js --name fallhelp-api
 pm2 logs fallhelp-api
-
-# Admin Panel
-# เปิด https://admin.fallhelp.tawanlab.site ใน browser
 ```
 
-### Mobile App — EAS Build (Expo Application Services)
+### Nginx Alternative
 
-ใช้ EAS Build สำหรับ build APK/AAB บน cloud ไม่ต้อง install Android Studio
-
-**Prerequisites:**
-
-```bash
-cd apps/mobile
-npm install
-npm exec eas login          # Login ด้วย Expo account
-```
-
-**Build Profiles:**
-
-| Profile       | ใช้ทำอะไร                                   | Output | คำสั่ง                                               |
-| ------------- | ------------------------------------------- | ------ | ---------------------------------------------------- |
-| `development` | Debug + Dev Client (ใช้กับ Expo dev server) | APK    | `npm exec eas build --profile development --platform android` |
-| `preview`     | Internal testing — **แจกทีม/อาจารย์ทดสอบ**  | APK    | `npm exec eas build --profile preview --platform android`     |
-| `production`  | Production release (Play Store)             | AAB    | `npm exec eas build --profile production --platform android`  |
-
-**สำหรับ UAT/Demo ใช้ `preview`:**
-
-```bash
-cd apps/mobile
-
-# Build APK สำหรับ Android
-npm exec eas build --profile preview --platform android
-# → รอ build เสร็จ (~10 นาที) → ได้ link ดาวน์โหลด APK
-
-# ดาวน์โหลด APK จาก link → ส่งให้ทีม/อาจารย์ติดตั้งบนมือถือ Android
-```
-
-**ตั้งค่า API URL ก่อน build:**
-
-แก้ไฟล์ `apps/mobile/constants/Config.ts` ให้ชี้ไป API จริง:
-
-```typescript
-// สำหรับ UAT/Production — ชี้ไป Cloudflare Tunnel
-const API_URL = "https://api.fallhelp.tawanlab.site";
-```
-
-หรือใช้ Environment Variable ใน EAS:
-
-```bash
-# ตั้ง env var ที่ EAS
-npm exec eas env:create --name EXPO_PUBLIC_API_URL --value https://api.fallhelp.tawanlab.site --environment preview
-```
-
-**Config ที่มีอยู่แล้ว (`eas.json`):**
-
-- `development` — developmentClient + internal distribution
-- `preview` — internal distribution (APK ติดตั้งตรง)
-- `production` — autoIncrement version
-- Google Services (`google-services.json`) — รองรับ Push Notification บน Android
-- BLE permissions — สำหรับ ESP32 WiFi setup
-- Camera permission — สำหรับ QR Code scanning
-
-> **หมายเหตุ:** iOS ยังไม่ต้อง build — โปรเจคนี้เน้น Android เป็นหลัก (ESP32 + BLE)
-
----
-
-## 6. SSL/TLS
-
-### ผ่าน Cloudflare (อัตโนมัติ)
-
-เมื่อใช้ Cloudflare Tunnel หรือ Pages ได้ SSL ฟรีโดยไม่ต้องตั้งค่าอะไร:
-
-- Client ↔ Cloudflare: SSL อัตโนมัติ
-- Cloudflare ↔ Origin: ผ่าน Tunnel (encrypted)
-
-### ผ่าน Nginx (ถ้าไม่ใช้ Cloudflare Tunnel)
+Use Nginx only when you are not using Cloudflare Tunnel.
 
 ```nginx
 server {
     listen 443 ssl;
-    server_name api.fallhelp.tawanlab.site;
+    server_name api.your-domain.com;
 
-    ssl_certificate /etc/letsencrypt/live/api.fallhelp.tawanlab.site/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/api.fallhelp.tawanlab.site/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/api.your-domain.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/api.your-domain.com/privkey.pem;
 
     location / {
         proxy_pass http://localhost:3000;
@@ -506,17 +509,15 @@ server {
 
 ---
 
-## คำเตือนสำคัญ
+## 12. Security Checklist
 
-> **อย่าลืม:**
->
-> - เปลี่ยน `JWT_SECRET` ใน Production (ยาวอย่างน้อย 32 ตัวอักษร)
-> - ตั้ง `JWT_EXPIRES_IN="7d"` (ไม่ใช่ 15d)
-> - ใช้ HTTPS สำหรับทุก endpoint
-> - ตั้งค่า Rate Limiting (มีอยู่แล้วใน codebase)
-> - Backup Database อย่างสม่ำเสมอ
-> - MQTT ต้องใช้ TLS (port 8883) เสมอ
-> - อย่า commit `.env.production` — ใช้ `.env` + `.gitignore`
+- Use a strong `JWT_SECRET` with at least 32 characters.
+- Keep `JWT_EXPIRES_IN="7d"` unless the product explicitly changes the auth policy.
+- Use HTTPS for public API/admin access.
+- Keep rate limiting enabled in the backend.
+- Do not commit `.env`, `.env.production`, firmware secrets, tunnel tokens, or database passwords.
+- MQTT must use TLS (`mqtts://`, port 8883) for internet-facing deployments.
+- Back up PostgreSQL before production-like demos or destructive database resets.
 
 ---
 
@@ -524,5 +525,6 @@ server {
 
 - [Cross-Platform Development](cross-platform-development.md)
 - [API Verification](api-verification.md)
+- [Simulator Guide](../testing/simulator-guide.md)
 - [Project Structure](../architecture/project-structure.md)
 - [Backend AI Context](../ai/backend.md)

@@ -5,7 +5,7 @@
 - Audience: AI agents, firmware developers, reviewers touching `firmware/esp32/`
 - Source of Truth: `firmware/esp32/`, firmware runbooks, and backend MQTT/runtime contracts that consume device payloads
 - Status: Active
-- Last Updated: June 17, 2026
+- Last Updated: June 20, 2026
 
 ---
 
@@ -28,7 +28,7 @@ Two firmware variants:
 | **sensor_tuning** | `firmware/esp32/src/sensor_tuning/` | Hardware calibration only (no backend), hardcoded WiFi, has SensorLogging |
 
 `firmware/esp32/fall_detection_sensor_lab/` is the **Fall Detection Sensor Lab** lab module.
-It is not required by the active FallHelp runtime, but it is used for thesis ch.3 & ch.5 data collection via Node-RED FlowFuse Dashboard 2.0.
+It is not required by the active FallHelp runtime; use it for controlled sensor workflow testing and labeled activity data collection via Node-RED FlowFuse Dashboard 2.0.
 Do not assume new firmware changes must be accompanied by fresh `sensor-lab` data unless the task explicitly asks for Fall Detection Sensor Lab work.
 
 ### Main Firmware Files (`main_firmware/`)
@@ -213,7 +213,7 @@ Runtime cadence: main firmware publishes device status every 5 seconds while WiF
 - Primary UI: Node-RED Dashboard at `/ui` (requires `@flowfuse/node-red-dashboard` devDependency). No manual inject nodes — Session ID input, 9 activity buttons, auto trial ID, 10s countdown, manual Stop, live values/chart/status
 - Output: 1 Trial = 1 CSV `{sessionId}_{trialId}_{activityLabel}.csv` under `fall_detection_sensor_lab/runs/Sxx/raw/`; Node-RED auto-fills metadata (sessionId from input, trialId auto-increment, activityLabel/expectedType from the pressed activity button, note optional)
 - Broker credentials set in Node-RED editor/env (`MQTT_USERNAME`/`MQTT_PASSWORD`), not committed in the flow JSON
-- Capture: `sensor_tuning` publishes periodic `imu_sample` (non-fall coverage) plus `imu_impact` / `imu_decision` snapshots for thesis ch.3 (calculation) and ch.5 (Basic Activity Collection results). Manual Stop only — raw CSV may include post-action movement; summarize/select scripts pick event values (impact/peak + imu_decision)
+- Capture: `sensor_tuning` publishes periodic `imu_sample` (non-fall coverage) plus `imu_impact` / `imu_decision` snapshots for controlled IMU calculation examples and Basic Activity Collection summaries. Manual Stop only — raw CSV may include post-action movement; summarize/select scripts pick event values (impact/peak + imu_decision)
 
 ---
 
@@ -345,7 +345,7 @@ fall_detection_sensor_lab/
 ├── trial_protocol.md    # Session/trial steps and 9 activities
 ├── csv_schema.md        # CSV column meaning and number formatting
 ├── selection_guide.md   # Criteria for AI agent to pick selected trials
-├── chapter_usage.md     # How data maps into thesis ch.3 & ch.5
+├── chapter_usage.md     # Report usage notes for exported lab examples
 ├── notes.md             # Issue log + post-collection checklist
 ├── examples/            # Mock CSV/MD format samples (NOT real results)
 ├── node-red/            # Node-RED flow source, Dockerfile, entrypoint, runtime/
@@ -353,12 +353,12 @@ fall_detection_sensor_lab/
 │   └── runtime/         # Node-RED userDir, ignored
 ├── scripts/             # validate_sensor_lab_log / summarize_selected / generate_chapter_examples (.mjs)
 ├── runs/Sxx/            # raw/ (Node-RED CSV), selected/ (AI-picked), session_notes.md
-└── exports/             # selected_values_table.csv + ch.3/ch.5 markdown (generated)
+└── exports/             # selected_values_table.csv + generated lab report markdown
 ```
 
 ### Scope
 
-- **Basic Activity Collection only** — illustrative/proof-of-concept data for thesis ch.3 (how `magnitude` & `postureDelta` are computed) and ch.5 (Basic Activity test results)
+- **Basic Activity Collection only** — illustrative/proof-of-concept data for explaining how `magnitude` and `postureDelta` are computed and summarizing basic activity test results
 - 9 activities, 24 trials, single session (`S01`), single subject; simulated falls onto padded surface
 - Data shape is fixed to IMU activity CSV: `imu_sample`, `imu_impact`, and `imu_decision` rows for the selected trial window
 - `sensor_tuning` adds `device/{serial}/lab/imu` publishing only; `main_firmware` and runtime event topics are untouched
@@ -370,7 +370,7 @@ sensor_tuning  → device/{serial}/lab/imu (imu_sample, imu_impact, imu_decision
   → Node-RED Dashboard /ui → auto metadata (button+countdown), 1 Trial = 1 CSV → runs/Sxx/raw/
   → AI agent   → pick representative trials → runs/Sxx/selected/
   → npm run sensor-lab -- summarize → exports/selected_values_table.csv
-  → npm run sensor-lab -- chapters  → exports/examples_for_fall_detection_sensor_lab.md + examples_for_chapter_5.md
+  → npm run sensor-lab -- chapters  → generated lab report examples under exports/
 ```
 
 Validate raw CSV anytime: `npm run sensor-lab -- validate`.

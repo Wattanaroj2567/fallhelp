@@ -1,5 +1,11 @@
 # FallHelp
 
+<!-- markdownlint-disable MD033 -->
+<p align="center">
+  <img src="./apps/mobile/assets/images/logoicon.png" alt="FallHelp app logo" width="320" />
+</p>
+<!-- markdownlint-enable MD033 -->
+
 > 🎓 Senior Project — Bachelor of Science in Data Science and Software Innovation  
 > Faculty of Science, Ubon Ratchathani University · Academic Year 2025
 >
@@ -13,8 +19,10 @@
 ## Table of Contents
 
 - [Overview](#overview)
+- [Project Status](#project-status)
 - [System Architecture](#system-architecture)
 - [Hardware Components](#hardware-components)
+- [Hardware Wiring Overview](#hardware-wiring-overview)
 - [Tech Stack](#tech-stack)
 - [Project Structure](#project-structure)
 - [Prerequisites](#prerequisites)
@@ -56,28 +64,45 @@ The system combines a wearable ESP32 device with a caregiver mobile app and an a
 
 ---
 
+## Project Status
+
+FallHelp is an academic senior-project prototype in active development. The current scope focuses on a local/development deployment of the wearable ESP32 device, backend API, caregiver mobile app, and admin dashboard.
+
+Important scope notes:
+
+- The fall-detection algorithm is a prototype threshold-based workflow for senior-project evaluation, not a certified medical device.
+- One caregiver account currently manages one elder profile and one paired device in the active product phase.
+- A false alarm can only be cancelled by the device wearer using the physical GPIO27 button within 15 seconds.
+- Caregivers acknowledge confirmed alerts in the app; acknowledgement resets the app view but does not rewrite the fall event.
+
+---
+
 ## System Architecture
 
-```
-IoT Device (ESP32)
-  → MQTT Broker (Mosquitto / HiveMQ Cloud)
-    → Backend API (Express v5)
-      ├── Socket.io → Mobile App (real-time events)
-      ├── Expo Push → Mobile App (push notifications)
-      └── PostgreSQL (event storage)
+<!-- markdownlint-disable MD033 -->
+<p align="center">
+  <img src="./docs/assets/readme/system-architecture.png" alt="FallHelp system architecture diagram" width="920" />
+</p>
+<!-- markdownlint-enable MD033 -->
 
-Admin Panel → Backend API → PostgreSQL
-```
+FallHelp connects the wearable ESP32 device, MQTT broker, Express backend, PostgreSQL database, caregiver mobile app, push notifications, and admin dashboard into one event pipeline.
+
+**Runtime flow:**
+
+1. ESP32 publishes device status and fall lifecycle events through MQTT.
+2. Backend validates incoming payloads, stores fall lifecycle data in PostgreSQL, and emits realtime Socket.io updates when a fall is confirmed.
+3. Mobile caregivers receive realtime in-app alerts and Expo Push notifications.
+4. Admin dashboard manages device records and operational pairing state through the backend API.
 
 **Fall Detection Pipeline:**
 
-```
+```text
 MPU6050 (Accelerometer + Gyroscope)
-  → Threshold-Based Analysis
-    → suspected_fall
-      → 15s cancel timeout
-        ├── Button pressed (GPIO27, device wearer only) → fall_cancelled
-        └── Timeout → fall_confirmed → MQTT publish → Backend → Alert caregivers
+  -> Threshold-Based Analysis
+    -> suspected_fall
+      -> 15s cancel timeout
+        |-- Button pressed (GPIO27, device wearer only) -> fall_cancelled
+        `-- Timeout -> fall_confirmed -> MQTT publish -> Backend -> Alert caregivers
 ```
 
 ---
@@ -133,131 +158,61 @@ MPU6050 (Accelerometer + Gyroscope)
 
 ---
 
+## Hardware Wiring Overview
+
+<!-- markdownlint-disable MD033 -->
+<p align="center">
+  <img src="./docs/assets/readme/iot-device-wiring.png" alt="FallHelp IoT device wiring diagram" width="860" />
+</p>
+<!-- markdownlint-enable MD033 -->
+
+The prototype device wiring combines the ESP32, MPU6050 IMU, XD-58C pulse sensor, Grove speaker module, wearer-only cancel button, LiPo battery, charging module, step-up converter, and stabilization/protection components.
+
+---
+
 ## Tech Stack
 
-| Layer              | Technology                                                                             |
-| ------------------ | -------------------------------------------------------------------------------------- |
-| **Backend**        | Node.js 24, Express v5, TypeScript 6.x                                                 |
-| **Database**       | PostgreSQL 18, Prisma ORM 7                                                            |
-| **Real-time**      | MQTT (Mosquitto 2.x / HiveMQ Cloud), Socket.io 4                                       |
-| **Mobile**         | React Native 0.83.6, Expo SDK 55, Expo Router, NativeWind                                |
-| **Admin**          | React 19, Vite, TailwindCSS v4, Heroicons, sonner                                      |
-| **Firmware**       | C++ on Arduino IDE 2.x, ESP32-DevKitC V4                                               |
-| **Fall Algorithm** | Threshold-Based Analysis (Accelerometer + Gyroscope)                                   |
-| **Auth**           | JWT, login via email/phone identifier, OTP via email for Forgot Password (Resend only) |
-| **Push**           | Expo Push Notifications                                                                |
-| **CI/CD**          | GitHub Actions, Nx Cloud (remote cache + self-healing)                                 |
-| **Testing**        | Jest, React Native Testing Library, Supertest                                          |
-| **Design**         | Figma (UI/UX mockups)                                                                  |
+| Layer              | Technology                                                                                 |
+| ------------------ | ------------------------------------------------------------------------------------------ |
+| **Backend**        | Node.js 24, Express v5.2, TypeScript 6.x                                                   |
+| **Database**       | PostgreSQL 18, Prisma ORM 7.8                                                              |
+| **Real-time**      | MQTT (Mosquitto 2.x / HiveMQ Cloud), Socket.io 4.8                                         |
+| **Mobile**         | React Native 0.83.6, Expo SDK 55, Expo Router 55, NativeWind 4, TypeScript 5.9 via Expo    |
+| **Admin**          | React 19, Vite 7, TailwindCSS v4, Heroicons, sonner                                        |
+| **Firmware**       | C++ on Arduino IDE 2.x, ESP32-DevKitC V4                                                   |
+| **Fall Algorithm** | Threshold-Based Analysis (Accelerometer + Gyroscope)                                       |
+| **Auth**           | JWT, login via email/phone identifier, OTP via email for Forgot Password (Resend only)     |
+| **Push**           | Expo Push Notifications                                                                    |
+| **CI/CD**          | GitHub Actions, Nx Cloud (remote cache + self-healing)                                     |
+| **Testing**        | Jest, React Native Testing Library, Supertest                                              |
+| **Design**         | Figma (UI/UX mockups)                                                                      |
 
 ---
 
 ## Project Structure
 
-```
+```text
 fallhelp/
-├── scripts/                  # Shared repo automation grouped by role
-│   ├── audit/                # audit:instructions, audit:comments:strict, infra:scan
-│   ├── dev/                  # install, platform check, dev launcher, postinstall
-│   ├── docker/               # Docker build/runtime helper scripts
-│   ├── env/                  # .env setup helpers
-│   ├── iot/                  # Firmware monitor, MQTT monitor, Node-RED, sim fall
-│   └── lib/                  # Shared script helpers
-│
-├── config/                   # Shared infra config (Mosquitto broker, ...)
-│
 ├── apps/
-│   ├── backend-api/          # Express v5 + TypeScript REST API
-│   │   ├── src/
-│   │   │   ├── app.ts
-│   │   │   ├── server.ts
-│   │   │   ├── prisma.ts
-│   │   │   ├── controllers/  # Route handlers (auth, user, elder, device, event, ...)
-│   │   │   ├── services/     # Business logic
-│   │   │   ├── routes/       # API route definitions
-│   │   │   ├── middlewares/  # Auth, validation, error handler, rate limiting
-│   │   │   ├── config/       # Env boundary + shared origin policy
-│   │   │   ├── constants/    # Shared constants for backend domain
-│   │   │   ├── iot/          # MQTT client, topics, validators, normalizer, handlers/
-│   │   │   ├── realtime/     # socketServer and real-time event broadcasting
-│   │   │   ├── schedulers/   # Background jobs (OTP cleanup)
-│   │   │   ├── types/        # Shared TypeScript types
-│   │   │   ├── generated/    # Auto-generated Prisma client
-│   │   │   ├── utils/        # JWT, email, encryption, push, logger, ...
-│   │   │   └── __tests__/
-│   │   ├── prisma/           # Schema, migrations, seed
-│   │   ├── scripts/          # DB verification and utility scripts
-│   │   └── docs/             # Postman collection
-│   │
-│   ├── mobile/               # React Native app (Expo SDK 55)
-│   │   ├── app/
-│   │   │   ├── (auth)/       # Login, Register, OTP, Forgot/Reset Password
-│   │   │   ├── (setup)/      # 3-step onboarding wizard + empty-state
-│   │   │   ├── (tabs)/       # Dashboard, History
-│   │   │   └── (features)/
-│   │   │       ├── (device)/ # Device pairing, WiFi setup smart route, device info
-│   │   │       ├── (elder)/  # Elder info view & edit
-│   │   │       ├── (emergency)/ # Emergency contacts list, add, edit, call
-│   │   │       ├── (notification)/ # Notification history
-│   │   │       ├── (report)/       # Monthly report summary
-│   │   │       └── (profile)/      # Profile info, edit info, change email/password/phone
-│   │   ├── components/       # Shared UI components + skeletons/
-│   │   ├── services/         # API clients (authService, deviceService, bleService, ...)
-│   │   ├── hooks/            # Custom React hooks
-│   │   ├── context/          # Auth, Dialog contexts
-│   │   ├── constants/        # Config, env boundary, theme
-│   │   ├── store/            # Shared client stores
-│   │   ├── utils/            # safeRouter, searchParams, dialogService, passwordPolicy, ...
-│   │   └── assets/           # Fonts (Kanit), images, thailand-address.json
-│   │
-│   └── admin/                # React 19 + Vite device management panel
-│       └── src/
-│           ├── pages/        # Devices, Login
-│           ├── components/   # Shared UI components
-│           ├── config/       # Env boundary helpers
-│           ├── constants/    # Shared admin constants
-│           ├── layouts/      # AdminLayout
-│           ├── hooks/        # TanStack Query hooks for cache/state
-│           ├── context/      # Auth, Theme contexts
-│           ├── services/     # API client + Admin service layer
-│           ├── types/        # Shared TypeScript types
-│           └── utils/        # configValidator, deviceSerial, logger
-│
-├── firmware/esp32/           # ESP32 firmware
-│   ├── src/
-│   │   ├── main_firmware/    # MAIN firmware: BLE + WiFi + MQTT + Sensors + Alert
-│   │   │   ├── main_firmware.ino         # Orchestration & boot
-│   │   │   ├── BLEProvisioning.ino       # BLE setup & callbacks
-│   │   │   ├── WiFiConnectionManager.ino # WiFi loop & config
-│   │   │   └── DeviceMqttClient.ino      # MQTT client & payloads
-│   │   └── sensor_tuning/    # Hardware-only calibration firmware (no backend)
-│   ├── fall_detection_sensor_lab/       # Fall Detection Sensor Lab
-│   │   ├── *.md          # Thai lab docs (trial protocol, CSV schema, selection, usage)
-│   │   ├── examples/     # Mock CSV/MD format samples (not real results)
-│   │   ├── node-red/     # Node-RED flow source, Dockerfile, entrypoint
-│   │   │   ├── flows/    # fall-detection-sensor-lab-flow.v2.json
-│   │   │   ├── runtime/  # Node-RED runtime data & deployed flows
-│   │   │   └── legacy-runtime/  # Archived previous runtime
-│   │   ├── scripts/      # validate / summarize / generate (.mjs)
-│   │   ├── tests/        # Node-RED flow tests (structure, behavior, CSV, docs)
-│   │   ├── runs/         # Collected CSV per session (Sxx/raw, Sxx/selected)
-│   │   └── exports/      # Generated tables for thesis ch.3 & ch.5
-│   └── docs/
-│       ├── guides/           # Practical operation guides (runbook)
-│       ├── components/       # Per-device guides (MPU6050, XD-58C, Speaker, Button)
-│       └── references/       # Sensor theory & reference sources
-│
-├── docs/                     # Project-wide documentation
-│   ├── ai/                   # AI Context Memory (deep schemas)
-│   ├── architecture/         # System design, IoT/MQTT architecture, data model
-│   ├── features/             # Feature docs, specs & user flows (fall detection, auth, ...)
-│   ├── api/                  # API reference
-│   ├── ops/                  # Deployment, troubleshooting, security audit
-│   ├── planning/             # Functional requirements, development plan
-│   ├── testing/              # Testing glossary & verification reports
-│   └── backlog/              # Future feature backlog and product notes
-└── .agent/                   # Shared AI skills and local agent tooling
+│   ├── backend-api/   # Express v5 + Prisma backend, MQTT, Socket.io, push notifications
+│   ├── mobile/        # Expo caregiver mobile app, BLE provisioning, realtime dashboard
+│   └── admin/         # Vite + React admin dashboard for device operations
+├── firmware/esp32/    # ESP32 production firmware, sensor tuning, and sensor-lab workflow
+├── docs/              # Architecture, feature docs, API docs, ops guides, AI context
+├── scripts/           # Repo automation for dev, env, audit, Docker, IoT helpers
+├── config/            # Shared infrastructure configuration
+└── .agent/            # FallHelp-owned AI workflow skills and references
 ```
+
+Detailed module runbooks live in:
+
+| Area     | Link                                      |
+| -------- | ----------------------------------------- |
+| Backend  | [apps/backend-api/README.md](./apps/backend-api/README.md) |
+| Mobile   | [apps/mobile/README.md](./apps/mobile/README.md)           |
+| Admin    | [apps/admin/README.md](./apps/admin/README.md)             |
+| Firmware | [firmware/esp32/README.md](./firmware/esp32/README.md)     |
+| Docs map | [docs/README.md](./docs/README.md)                         |
 
 ---
 
@@ -278,43 +233,18 @@ fallhelp/
 
 ## Getting Started
 
-### 1. Clone & Install
+### Quick Start
 
 ```bash
 git clone https://github.com/Wattanaroj2567/fallhelp.git
 cd fallhelp
 npm run install:all
-npm run platform:check
-```
-
-> Cross-platform note:
-> If you switch between Windows, WSL/Ubuntu, macOS, or Linux, reinstall dependencies on that OS first.
-> Do not reuse `node_modules` across different operating systems (WSL counts as Linux, separate from Windows).
-> Prefer repo launchers: `npm run install:all`, `npm run platform:check`, and `npm run dev:all`.
-> If `platform:check` fails after switching OS, run `npm run install:all` again from the project root.
-
-### 2. Configure Environment
-
-```bash
 npm run env:setup
-# Edit each .env file for your local machine.
-# This also links root .env -> apps/backend-api/.env so Docker Compose can read it automatically.
-```
-
-### 3. Set Up the Database
-
-```bash
-npm run backend:db:setup
-npm run backend:db:verify
-```
-
-### 4. Start All Services
-
-```bash
-# From project root — verifies apps/backend-api, apps/mobile, and apps/admin installs for the current OS,
-# then starts Backend + Mobile + Admin concurrently
+npm run platform:check
 npm run dev:all
 ```
+
+`npm run dev:all` verifies the current OS install stamp, then starts Backend + Mobile + Admin together.
 
 | Service       | URL                     |
 | ------------- | ----------------------- |
@@ -323,9 +253,27 @@ npm run dev:all
 | Admin Panel   | `http://localhost:5173` |
 | MQTT Broker   | `mqtt://localhost:1883` |
 
-### 5. Docker Quick Path (Optional)
+### Database Setup
 
-If you want the containerized backend/admin stack instead of running everything on the host:
+Run the backend database setup after environment files are configured:
+
+```bash
+npm run backend:db:setup
+npm run backend:db:verify
+```
+
+### Cross-Platform Note
+
+If you switch between Windows, WSL/Ubuntu, macOS, or Linux, reinstall dependencies on that OS first. Do not reuse `node_modules` across operating systems.
+
+```bash
+npm run install:all
+npm run platform:check
+```
+
+### Docker Quick Path (Optional)
+
+Use this path when you want the containerized backend/admin stack instead of running everything on the host:
 
 ```bash
 docker compose up -d --build --pull always
@@ -333,36 +281,25 @@ docker compose exec backend npx prisma migrate deploy
 docker compose exec backend npx prisma db seed
 ```
 
-This starts:
+To include the Cloudflare named tunnel, set `TUNNEL_TOKEN`, `TUNNEL_PUBLIC_HOSTNAME`, and `TUNNEL_ORIGIN_URL` in `apps/backend-api/.env`, then run:
 
-| Service             | URL / Port                 |
-| ------------------- | -------------------------- |
-| Backend API         | `http://localhost:3000`    |
-| Admin Panel         | `http://localhost:5173`    |
+```bash
+docker compose --env-file apps/backend-api/.env --profile tunnel up -d --build --pull always
+docker compose logs -f tunnel
+```
 
-> **Note:** Mosquitto MQTT broker must be running as a native service before starting Docker containers. See [MQTT Broker Setup](docs/ops/local-deployment.md#3-mqtt-broker-setup).
+Mosquitto MQTT should be running as a native service before starting Docker containers. See [Local Deployment](docs/ops/local-deployment.md) for full setup details.
 
-To include the Fall Detection Sensor Lab Node-RED Dashboard lab service:
+### Sensor Lab (Optional)
+
+The Fall Detection Sensor Lab is used to test the sensor workflow and collect labeled activity data. It is separate from the active app runtime:
 
 ```bash
 npm run sensor-lab -- node-red up
+npm run sensor-lab -- all
 ```
 
-This starts FlowFuse Dashboard 2.0 at `http://localhost:1880/ui` and writes lab CSV
-files under `firmware/esp32/fall_detection_sensor_lab/runs/`. Node-RED runtime
-state lives under `firmware/esp32/fall_detection_sensor_lab/node-red/runtime/`
-and is ignored by Git.
-
-To include the Cloudflare named tunnel service:
-
-```bash
-docker compose --env-file apps/backend-api/.env --profile tunnel up -d
-```
-
-See:
-
-- [apps/backend-api/README.md](./apps/backend-api/README.md)
-- [docs/ops/local-deployment.md](./docs/ops/local-deployment.md)
+Dashboard UI: `http://localhost:1880/ui`.
 
 ---
 
@@ -469,7 +406,7 @@ reports an install-stamp mismatch after switching between Windows and WSL/Ubuntu
 
 ### Fall Detection Sensor Lab (Optional)
 
-Sensor Lab module for thesis ch.3 & ch.5. It collects labeled MPU6050 IMU activity
+Sensor Lab module for testing the sensor workflow and collecting labeled MPU6050 IMU activity
 CSV files from the `sensor_tuning` firmware via Node-RED FlowFuse Dashboard 2.0.
 The root README only maps the module; detailed lab workflow, CSV schema, and dashboard
 operation steps live in `firmware/esp32/fall_detection_sensor_lab/`.
@@ -502,7 +439,7 @@ npm run sensor-lab -- validate
 # Summarize selected trials into exports/selected_values_table.csv
 npm run sensor-lab -- summarize
 
-# Generate ch.3 / ch.5 markdown from the summarized table
+# Generate Markdown summaries from the selected trial table
 npm run sensor-lab -- chapters
 
 # Run all three in order
@@ -617,7 +554,7 @@ npm run infra:scan:strict:no-integration
 
 `firmware/esp32/fall_detection_sensor_lab/` is the **Fall Detection Sensor Lab Basic Activity
 Collection** lab module — not required for the active FallHelp runtime to function,
-but used for thesis ch.3 & ch.5 data collection.
+but used for sensor workflow testing and labeled data collection.
 
 It is independent from `main_firmware` (production) and `sensor_tuning` (hardware
 calibration). The lab runs Node-RED with FlowFuse Dashboard 2.0 to record labeled
@@ -681,4 +618,4 @@ Copyright © 2025-present Wattanaroj Butdee. All rights reserved.
 
 ---
 
-**Status:** 🧪 Active Development &nbsp;|&nbsp; **Last Updated:** June 10, 2026
+**Status:** 🧪 Active Development &nbsp;|&nbsp; **Last Updated:** June 20, 2026

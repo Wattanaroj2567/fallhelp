@@ -4,7 +4,7 @@
 >
 > **Audience:** Developers, QA, PM  
 > **Language:** English (technical terms) / Thai (where noted)  
-> **Status:** Active — Last Updated: June 8, 2026
+> **Status:** Active — Last Updated: June 20, 2026
 
 ---
 
@@ -32,7 +32,6 @@ Start here depending on your role:
 | โครงสร้าง repo                | [architecture/project-structure.md](architecture/project-structure.md) | ต้องการ tree ปัจจุบัน, entry points, package scope            | `ai/backend.md`, `ai/mobile.md`, `ai/admin.md`, `ai/firmware.md`    |
 | REST API                      | [api/api-reference.md](api/api-reference.md)                           | ต้องการ endpoint, request/response, realtime payloads         | `architecture/data-model.md`                                        |
 | Data model                    | [architecture/data-model.md](architecture/data-model.md)               | ต้องการภาพรวม schema, relation, และ event lifecycle           | `ai/backend.md`                                                     |
-
 | Event/Fall flow               | [features/fall-detection.md](features/fall-detection.md)               | ต้องการ behavior ของ suspected/confirmed/cancelled            | `architecture/iot-mqtt.md`, `architecture/data-model.md`            |
 | MQTT/IoT protocol             | [architecture/iot-mqtt.md](architecture/iot-mqtt.md)                   | ต้องการ topic, payload, dedup, RESET_WIFI flow                | `features/device-pairing.md`, `ai/firmware.md`                      |
 | Mobile navigation/app shell   | [ai/mobile.md](ai/mobile.md)                                           | ต้องการรู้ entry files, route groups, provider stack          | `features/*.md`, `features/dashboard.md#uiux-guidelines`            |

@@ -5,7 +5,7 @@
 - Audience: AI agents, developers needing quick repo orientation
 - Source of Truth: current repo structure, common commands, and firmware operator workflow
 - Status: Active
-- Last Updated: June 17, 2026
+- Last Updated: June 20, 2026
 
 ---
 
@@ -165,11 +165,11 @@ Always prefer these root-level `npm run` commands over manual `cd` and local com
 | `npm run audit:comments:strict`     | Check Thai-first comment compliance.                                              |
 | `npm run docs:lint`                 | Ensure documentation follows Markdown standards.                                  |
 
-### Sensor Lab (Thesis/Research)
+### Sensor Lab (Sensor Workflow Testing)
 
 | Command                       | Characteristic / Purpose                                |
 | :---------------------------- | :------------------------------------------------------ |
-| `npm run sensor-lab:all`      | Run full validation, summarization, and chapter export. |
+| `npm run sensor-lab:all`      | Run full validation, summarization, and lab report export. |
 | `npm run sensor-lab:validate` | Check collected raw CSV vs schema.                      |
 | `npm run sensor-lab:node-red` | Rebuild and launch the Node-RED lab service.            |
 
@@ -218,7 +218,7 @@ Use this when the user is actively testing with hardware and needs short command
 4. After the session: fill `runs/Sxx/session_notes.md`; log issues in `notes.md`
 5. `npm run sensor-lab -- validate` to check raw CSV vs schema
 6. Pick representative trials into `runs/Sxx/selected/` per `selection_guide.md`
-7. `npm run sensor-lab -- summarize` then `npm run sensor-lab -- chapters`
+7. `npm run sensor-lab -- summarize` then `npm run sensor-lab -- chapters` to generate lab report examples
 
 ### Ground Rules
 
@@ -232,7 +232,7 @@ Use this when the user is actively testing with hardware and needs short command
 Note:
 
 - `fall_detection_sensor_lab` is not part of the active system runtime
-- Do not assume lab work is mandatory unless the user explicitly asks for data collection or thesis ch.3/ch.5 material
+- Do not assume lab work is mandatory unless the user explicitly asks for sensor data collection or lab report material
 - `sensor_tuning` publishes `device/{serial}/lab/imu` only; `main_firmware` and runtime event topics are untouched
 
 ---
@@ -243,13 +243,13 @@ These notes are reference-only. Repository policy still lives in `AGENTS.md`.
 
 ### Current Status (May 2026)
 
-Infrastructure and functional prototype flows are the main delivery focus. The `fall_detection_sensor_lab` lab (Basic Activity Collection for thesis ch.3/ch.5) is optional unless explicitly requested.
+Infrastructure and functional prototype flows are the main delivery focus. The `fall_detection_sensor_lab` lab (Basic Activity Collection for controlled sensor workflow testing) is optional unless explicitly requested.
 
 ### Current Technical Focus
 
 - Verify end-to-end fall flow on final hardware
-- Keep mobile/backend/admin flows stable for demo and thesis delivery
-- Keep `fall_detection_sensor_lab` lab infra ready for optional thesis ch.3/ch.5 data collection
+- Keep mobile/backend/admin flows stable for demo and project delivery
+- Keep `fall_detection_sensor_lab` lab infra ready for optional sensor workflow testing and labeled data collection
 - Keep backend Docker runtime lean (`dist/server.js` + backend-only production deps)
 
 ### Roadmap Pointers
