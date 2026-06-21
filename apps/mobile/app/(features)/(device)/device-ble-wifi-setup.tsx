@@ -1130,6 +1130,9 @@ export default function DeviceBleWifiSetupScreen() {
     }
   };
 
+  const isWifiCredentialStep =
+    currentStep === 'wifi-password' || currentStep === 'wifi-manual-input';
+
   // Render helpers
   const renderBluetoothCheck = () => (
     <View className="flex-1 justify-center items-center px-6">
@@ -1329,10 +1332,11 @@ export default function DeviceBleWifiSetupScreen() {
       contentContainerStyle={{
         flexGrow: 1,
         paddingHorizontal: 24,
-        paddingBottom: formBottomPadding,
+        paddingBottom: isWifiCredentialStep ? formBottomPadding : 24,
       }}
       edges={['top', 'left', 'right']}
-      useScrollView={true}
+      useScrollView={isWifiCredentialStep}
+      keyboardAvoiding={isWifiCredentialStep}
       scrollViewProps={{
         bounces: false,
         overScrollMode: 'never',

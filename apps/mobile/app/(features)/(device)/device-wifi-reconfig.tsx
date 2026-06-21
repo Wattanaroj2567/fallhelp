@@ -472,11 +472,14 @@ export default function DeviceWifiReconfigScreen() {
   // ใช้ suppress unused warning เพราะ verifyStatus ถูกอัปเดตไว้สำหรับ polling/status ภายใน
   void verifyStatus;
 
+  const isWifiCredentialStep = step === 'password' || step === 'manual';
+
   // Render ตาม step ปัจจุบัน
   return (
     <ScreenWrapper
-      reserveBottomInset={step === 'password' || step === 'manual'}
-      useScrollView={step === 'password' || step === 'manual'}
+      reserveBottomInset
+      useScrollView={isWifiCredentialStep}
+      keyboardAvoiding={isWifiCredentialStep}
       header={
         <ScreenHeader
           title="เปลี่ยน WiFi อุปกรณ์"
@@ -486,7 +489,7 @@ export default function DeviceWifiReconfigScreen() {
       contentContainerStyle={{
         flexGrow: 1,
         paddingHorizontal: 24,
-        paddingBottom: step === 'password' || step === 'manual' ? formBottomPadding : 0,
+        paddingBottom: isWifiCredentialStep ? formBottomPadding : 24,
       }}
       edges={['top', 'left', 'right']}
       scrollViewProps={{

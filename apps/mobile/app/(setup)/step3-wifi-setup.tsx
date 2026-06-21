@@ -1205,6 +1205,8 @@ export default function Step3WifiSetupScreen() {
 
   // ระหว่าง provisioning และ success ไม่ให้กดย้อนกลับ
   const canNavigateBack = currentStep !== 'provisioning' && currentStep !== 'success';
+  const isWifiCredentialStep =
+    currentStep === 'wifi-password' || currentStep === 'wifi-manual-input';
 
   // Render ตาม SetupStep ปัจจุบัน
   const renderContent = () => {
@@ -1409,7 +1411,8 @@ export default function Step3WifiSetupScreen() {
         currentStep={3}
         title="ตั้งค่า WiFi"
         onBack={canNavigateBack ? handleBack : undefined}
-        useScrollView={true}
+        useScrollView={isWifiCredentialStep}
+        keyboardAvoiding={isWifiCredentialStep}
         contentContainerStyle={{
           paddingHorizontal: 24,
           paddingBottom: 24,
