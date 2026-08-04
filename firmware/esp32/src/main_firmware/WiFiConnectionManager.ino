@@ -168,37 +168,25 @@ void startStationMode()
     if (hasPendingWiFiConfig)
     {
       if (isRuntimeSerialOutputEnabled())
-        runtimeLogPrintln("\n❌ WiFi ใหม่ต่อไม่สำเร็จ (ให้โอกาสครั้งเดียว) กำลัง rollback ไปค่าเดิม...");
+        runtimeLogPrintln("\n❌ WiFi ใหม่ต่อไม่สำเร็จ กำลังยกเลิกค่าใหม่...");
 
       // ล้างค่าที่เพิ่งรับมาทิ้งไป
       clearPendingWiFiConfig();
       delay(500);
 
-      // รีสตาร์ตเพื่อให้เครื่องกลับไปใช้ค่า savedSSID (ตัวเดิม) ทันที
-      ESP.restart();
+      // เปิด BLE Provisioning ให้ผู้ใช้ตั้งค่าใหม่ โดยไม่ต้องกด restart ฮาร์ดแวร์
+      setupBLE();
+      startBLEAdvertising();
       return;
     }
 
     // ไม่มี pending (ต่อ WiFi ตัวเดิมไม่ติด)
     if (isRuntimeSerialOutputEnabled())
-      runtimeLogPrintln(" เชื่อมต่อไม่สำเร็จ!");
-
-    if (wifiFailCount < 1)
     {
-       // ลองครั้งแรกไม่ติด ให้โอกาสฮาร์ดแวร์ Restart ตัวเอง 1 รอบ
-       wifiFailCount++;
-       if (isRuntimeSerialOutputEnabled())
-         runtimeLogPrintln("🔄 ลองรีสตาร์ตตัวเอง 1 ครั้ง เพื่อพยายามเชื่อมต่อ WiFi เดิมใหม่...");
-       delay(500);
-       ESP.restart();
-       return;
+      runtimeLogPrintln(" เชื่อมต่อไม่สำเร็จ!");
+      runtimeLogPrintln("❌ ไม่สามารถเชื่อมต่อ WiFi เดิมได้ เริ่ม BLE Provisioning...");
     }
 
-    // ถ้ารอบ 2 ก็ยังไม่ติดอีก ยอมแพ้ แล้วเปิด BLE
-    if (isRuntimeSerialOutputEnabled())
-      runtimeLogPrintln("❌ ไม่สามารถเชื่อมต่อ WiFi เดิมได้ เริ่ม BLE Provisioning...");
-
-    wifiFailCount = 0; // ล้างเผื่อไว้สำหรับการต่อรอบหน้า
     setupBLE();
     startBLEAdvertising();
   }
