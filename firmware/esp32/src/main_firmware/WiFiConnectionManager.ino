@@ -103,6 +103,8 @@ void connectToWiFi()
     updateBLEStatus(0x03);
 
     // ล้าง credentials และเปิด BLE ใหม่ให้ผู้ใช้ลองอีกครั้ง
+    wifiFailCount = 0;
+    preferences.putInt("wifi_fail", 0);
     savedSSID = "";
     savedPassword = "";
     isConnecting = false;
@@ -152,6 +154,7 @@ void startStationMode()
       runtimeLogPrintf("IP: %s\n", WiFi.localIP().toString().c_str());
     }
     wifiFailCount = 0;
+    preferences.putInt("wifi_fail", 0);
 
     if (hasPendingWiFiConfig)
     {
@@ -186,8 +189,9 @@ void startStationMode()
 
     if (wifiFailCount < 1)
     {
-       // ลองครั้งแรกไม่ติด ให้โอกาสฮาร์ดแวร์ Restart ตัวเอง 1 รอบ (wifiFailCount เก็บใน RTC memory จะไม่ถูกล้าง)
+       // ลองครั้งแรกไม่ติด บันทึก wifiFailCount ลง NVS แล้วสั่ง restart ตัวเอง 1 รอบ
        wifiFailCount++;
+       preferences.putInt("wifi_fail", wifiFailCount);
        if (isRuntimeSerialOutputEnabled())
          runtimeLogPrintln("🔄 ลองรีสตาร์ตตัวเอง 1 ครั้ง เพื่อพยายามเชื่อมต่อ WiFi เดิมใหม่...");
        delay(500);
@@ -200,6 +204,7 @@ void startStationMode()
       runtimeLogPrintln("❌ ไม่สามารถเชื่อมต่อ WiFi เดิมได้ เริ่ม BLE Provisioning...");
 
     wifiFailCount = 0; // ล้างเผื่อไว้สำหรับการต่อรอบหน้า
+    preferences.putInt("wifi_fail", 0);
     setupBLE();
     startBLEAdvertising();
   }
@@ -213,8 +218,9 @@ void loadWiFiConfig()
 {
   savedSSID = preferences.getString("ssid", "");
   savedPassword = preferences.getString("password", "");
+  wifiFailCount = preferences.getInt("wifi_fail", 0);
   if (isRuntimeSerialOutputEnabled())
-    runtimeLogPrintf("📂 โหลด config แล้ว: SSID='%s'\n", savedSSID.c_str());
+    runtimeLogPrintf("📂 โหลด config แล้ว: SSID='%s' (wifiFailCount=%d)\n", savedSSID.c_str(), wifiFailCount);
 }
 
 bool saveWiFiConfig(String ssid, String password)
