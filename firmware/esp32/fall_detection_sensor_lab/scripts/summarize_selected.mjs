@@ -56,7 +56,7 @@ function toNum(v) {
 }
 
 /**
- * ฟังก์ชันจำกัดจุดทศนิยมสำหรับการแสดงผลในรายงานบทที่ 5
+ * ฟังก์ชันจำกัดจุดทศนิยมสำหรับการแสดงผลในรายงานสรุปผล
  * หากเป็นค่าว่าง จะส่งกลับเป็นสตริงว่าง ("")
  */
 function fixed(v, dp) {
@@ -177,7 +177,7 @@ export function summarizeSelected(selectedDir, outputCsv, output = console.log, 
       continue;
     }
     const s = summarizeTrial(header, rows);
-    // Chapter 5 export precision: magnitude_g 2dp, posture_delta_deg 2dp
+    // Analysis export precision: magnitude_g 2dp, posture_delta_deg 2dp
     s.magnitude_g = fixed(s.magnitude_g, 2);
     s.posture_delta_deg = fixed(s.posture_delta_deg, 2);
     outRows.push(s);

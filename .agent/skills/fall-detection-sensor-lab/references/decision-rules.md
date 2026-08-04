@@ -1,6 +1,6 @@
 # Fall Detection Sensor Lab Selection & Reporting Rules
 
-Use this reference when turning collected trials into selected data and ch.3/ch.5 tables.
+Use this reference when turning collected trials into selected data and analysis tables.
 
 ## Evidence First
 
@@ -20,9 +20,9 @@ Use this reference when turning collected trials into selected data and ch.3/ch.
 
 ## Reporting Rules
 
-- ch.3 (`examples_for_fall_detection_sensor_lab.md`): show one fall case + magnitude/postureDelta
+- Algorithm Analysis (`examples_for_fall_detection_sensor_lab.md`): show one fall case + magnitude/postureDelta
   calculation templates + decision logic
-- ch.5 (`examples_for_chapter_5.md`): Thai table — Trial / ท่าพื้นฐานที่ทดสอบ /
+- Experiment Summary (`examples_for_chapter_5.md`): Thai table — Trial / ท่าพื้นฐานที่ทดสอบ /
   ประเภท / Magnitude / Posture Delta / ผลที่ระบบตรวจจับ / สรุป
 - Translate `activity_label`, `expected_type`, `decision` to Thai per
   `chapter_usage.md`

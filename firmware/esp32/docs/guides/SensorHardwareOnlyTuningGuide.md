@@ -30,7 +30,7 @@
 
 1. ต้องเก็บ 24 trials
 2. ต้องใช้ Node-RED Dashboard เป็นหลัก
-3. ต้อง validate/summarize/generate chapter exports
+3. ต้อง validate/summarize/generate analysis exports
 
 ---
 

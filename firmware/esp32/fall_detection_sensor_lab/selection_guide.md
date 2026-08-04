@@ -6,8 +6,8 @@
 
 | ใช้กับ | ต้องการข้อมูลแบบไหน |
 |---|---|
-| บทที่ 3 | ตัวอย่างที่อธิบายการคำนวณได้ชัด |
-| บทที่ 5 | ตัวอย่างผลทดสอบแต่ละท่า |
+| อัลกอริทึมและการตัดสิน | ตัวอย่างที่อธิบายการคำนวณได้ชัด |
+| สรุปผลการทดลอง | ตัวอย่างผลทดสอบแต่ละท่า |
 
 ## Input
 
@@ -22,9 +22,9 @@
 | Output | รายละเอียด |
 |---|---|
 | `runs/Sxx/selected/*.csv` | CSV ที่เลือกแล้ว |
-| `exports/selected_values_table.csv` | ตารางรวมค่าที่ใช้ในบทที่ 5 |
-| `exports/examples_for_fall_detection_sensor_lab.md` | ตัวอย่างคำนวณสำหรับบทที่ 3 |
-| `exports/examples_for_chapter_5.md` | ตารางผลสำหรับบทที่ 5 |
+| `exports/selected_values_table.csv` | ตารางรวมค่าสรุปการทดสอบ |
+| `exports/examples_for_fall_detection_sensor_lab.md` | ตัวอย่างคำนวณทางอัลกอริทึม |
+| `exports/examples_for_chapter_5.md` | ตารางรายงานผลสรุปการทดลอง |
 
 ## เกณฑ์คัดเลือก Trial
 
@@ -46,12 +46,11 @@
 | Running case | 1 ตัวอย่าง |
 | Normal activity | 1 ตัวอย่าง |
 
-## ตัวอย่างการคัด
+## ตัวอย่างการคัดเลือก
 
-| Activity | เลือกเมื่อ |
+| ท่า | เหตุผลที่ควรเลือก |
 |---|---|
-| `side_fall_left` | มี impact สูง, postureDelta สูง, decision เป็น `suspected_fall` |
-| `forward_fall` | pitchDelta หรือ postureDelta สูงชัดเจน |
+| `side_fall_left` | เห็น peak impact ชัด และมี postureDelta เกิน threshold |
 | `sit_hard` | magnitude สูง แต่ postureDelta ต่ำกว่า threshold |
 | `running_light` | magnitude แกว่ง แต่ decision ไม่ใช่ fall |
 | `standing_still` | ค่า magnitude ใกล้ baseline และไม่มี fall event |
@@ -60,7 +59,7 @@
 
 raw CSV รอบนี้ใช้ Manual Stop จึงมีหลาย row ต่อ trial (`imu_sample` ระหว่างทาง,
 `imu_impact`, `imu_decision`) และอาจมี movement ช่วงลุก/เดินกลับมากด Stop
-**ห้ามใช้ค่า late post-action เป็นค่าหลักของบทที่ 5**
+**ห้ามใช้ค่า late post-action เป็นค่าหลักของตารางสรุปผล**
 
 | Field | กฎเลือกค่า |
 |---|---|

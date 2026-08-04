@@ -3,15 +3,15 @@ name: fall-detection-sensor-lab
 description: >
   Fall Detection Sensor Lab specialist for FallHelp. Use when running or reviewing
   IMU data-collection trials under firmware/esp32/fall_detection_sensor_lab/,
-  validating raw CSV, selecting representative trials, and generating thesis ch.3/ch.5
-  support tables. This is lab data collection only.
+  validating raw CSV, selecting representative trials, and generating algorithm calibration
+  and analysis tables. This is lab data collection only.
 ---
 
 # Fall Detection Sensor Lab
 
 Use this skill when a task touches `firmware/esp32/fall_detection_sensor_lab/**`,
 `firmware/esp32/START_HERE.md`, collected CSVs, `session_notes.md`, `notes.md`,
-or the exports for thesis ch.3 / ch.5.
+or the exports for sensor analysis reports.
 
 ## Core Workflow
 
@@ -45,7 +45,7 @@ or the exports for thesis ch.3 / ch.5.
 
 - `references/phase-order.md` for the collection sequence and stop/go gates
 - `references/file-contract.md` for required files, naming rules, and script entrypoints
-- `references/decision-rules.md` for selection criteria and ch.3/ch.5 reporting language
+- `references/decision-rules.md` for selection criteria and analysis reporting language
 
 ## Cross-Stack Reminder
 

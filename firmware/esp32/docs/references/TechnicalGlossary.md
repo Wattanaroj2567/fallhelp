@@ -66,7 +66,7 @@
 
 | Term | Meaning |
 | --- | --- |
-| Basic Activity Collection | เก็บตัวอย่าง IMU activity เพื่อบทที่ 3/5 ไม่ใช่ sensor log collection |
+| Basic Activity Collection | เก็บตัวอย่าง IMU activity เพื่อสอบเทียบเกณฑ์และบันทึกรายงานผล ไม่ใช่ sensor log collection |
 | Trial | 1 activity attempt = 1 CSV |
 | `imu_sample` | periodic IMU sample ใน lab flow |
 | `imu_impact` | snapshot ตอน impact |

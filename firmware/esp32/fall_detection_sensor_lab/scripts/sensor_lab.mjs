@@ -10,7 +10,7 @@ import { spawnSync } from "node:child_process";
  * สคริปต์นี้เป็นตัวกลาง (Wrapper) ในการเรียกใช้ฟังก์ชันย่อยต่างๆ ของ Lab:
  * - validate: ตรวจสอบความสมบูรณ์ของไฟล์ CSV
  * - summarize: สรุปผลจากไฟล์ CSV หลายไฟล์
- * - chapters: สร้างเอกสาร Markdown บทที่ 3 และ 5
+ * - chapters: สร้างเอกสาร Markdown รายงานสรุปผลการประมวลผลและการทดลอง
  * - node-red: จัดการ Docker Container ของ Node-RED
  * - test: รันเทสต์ตรวจสอบระบบ
  */

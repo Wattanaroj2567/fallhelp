@@ -1,14 +1,14 @@
 # Fall Detection Sensor Lab
 
-โฟลเดอร์นี้ใช้สำหรับเก็บ Log จากเซ็นเซอร์ MPU6050 เพื่อใช้ประกอบการเขียนบทที่ 3 และบทที่ 5 ของโครงการ FallHelp
+โฟลเดอร์นี้ใช้สำหรับเก็บ Log และวิเคราะห์ค่าจากเซ็นเซอร์ MPU6050 เพื่อสอบเทียบและปรับจูนเกณฑ์การตรวจจับการหกล้ม (Sensor Calibration & Threshold Tuning)
 
 ## เป้าหมาย
 
 | เรื่อง | รายละเอียด |
 |---|---|
-| ใช้ทำอะไร | เก็บข้อมูลจากอุปกรณ์สวมใส่เพื่ออธิบายการตรวจจับการหกล้ม |
-| ใช้กับบทที่ 3 | อธิบายที่มาของ `magnitude` และ `postureDelta` |
-| ใช้กับบทที่ 5 | สรุปผลการทดสอบจากท่าจำลองและกิจกรรมพื้นฐาน |
+| ใช้ทำอะไร | เก็บข้อมูลจากอุปกรณ์สวมใส่เพื่อวิเคราะห์และจูนเกณฑ์การตรวจจับการหกล้ม |
+| อัลกอริทึมและการตัดสิน | อธิบายที่มาของ `magnitude` และ `postureDelta` |
+| ผลการทดลองและการเปรียบเทียบ | สรุปผลการทดสอบจากท่าจำลองและกิจกรรมพื้นฐาน |
 | Firmware ที่ใช้ | `firmware/esp32/src/sensor_tuning/` |
 | MQTT Topic | `device/{deviceSerial}/lab/imu` |
 | Output | CSV แยกตามรอบทดลอง |
@@ -44,6 +44,8 @@ npm run sensor-lab -- node-red up
 ```bash
 npm run sensor-lab -- node-red build
 npm run sensor-lab -- node-red rebuild
+npm run sensor-lab -- node-red down       # ปิดบริการ Node-RED เมื่อไม่ได้ใช้งานแล็ป
+npm run sensor-lab -- node-red clean      # ล้างไฟล์ runtime เก่าเพื่อเริ่มระบบแบบ Fresh Start
 npm run sensor-lab -- node-red logs
 npm run sensor-lab -- node-red sync-flow
 ```
@@ -119,7 +121,7 @@ validate / summarize / generate + ตรวจ contract firmware↔flow↔schema
 | Firmware | ส่งเฉพาะค่า sensor และผลคำนวณ |
 | Raw Data | เก็บไว้ใน `runs/Sxx/raw/` |
 | Selected Data | ให้ AI Agent คัดไปไว้ใน `runs/Sxx/selected/` |
-| Export | ใช้เตรียมตารางสำหรับบทที่ 3 และบทที่ 5 |
+| Export | ใช้เตรียมตารางและสรุปผลการวิเคราะห์ |
 
 ## โครงสร้างข้อมูล
 
@@ -128,14 +130,14 @@ validate / summarize / generate + ตรวจ contract firmware↔flow↔schema
 | `trial_protocol.md` | ขั้นตอน session/trial และรายการท่าที่ต้องเก็บ |
 | `csv_schema.md` | ความหมายของ column ใน CSV และรูปแบบตัวเลข |
 | `selection_guide.md` | วิธีให้ AI Agent คัดข้อมูล |
-| `chapter_usage.md` | วิธีนำข้อมูลไปใช้ในบทที่ 3 และบทที่ 5 |
+| `chapter_usage.md` | วิธีนำข้อมูลไปใช้สรุปรายงานผล |
 | `session_notes.md` | จดปัญหาและข้อสังเกตของแต่ละเซสชัน |
 | `node-red/` | Flow source, Dockerfile, entrypoint, และ runtime ของ Node-RED |
 | `node-red/flows/` | Source flow ที่ commit ลง Git |
 | `node-red/runtime/` | Runtime userDir ของ Node-RED, ถูก ignore ไม่ใช่ source |
 | `runs/Sxx/raw/` | CSV ดิบ |
 | `runs/Sxx/selected/` | CSV ที่คัดแล้ว |
-| `exports/` | ตาราง/ตัวอย่างที่พร้อมนำไปใช้ในเล่ม |
+| `exports/` | ตาราง/ตัวอย่างรายงานผลสรุปวิเคราะห์ |
 
 ## หมายเหตุสำคัญ
 

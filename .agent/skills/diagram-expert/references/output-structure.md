@@ -141,7 +141,7 @@ Use whenever at least one of the following applies:
 Keep this short and actionable. Examples:
 - Paste the Mermaid code into Draw.io or mermaid.live to render
 - Use the tables to review with the team
-- Incorporate into Chapter 3/4/5 of the report
+- Incorporate into system design or architecture documentation
 - Split into additional diagrams if the current one is too dense
 
 ---

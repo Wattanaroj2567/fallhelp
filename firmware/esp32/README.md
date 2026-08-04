@@ -107,7 +107,7 @@ firmware/esp32/
 │   │   └── runtime/                   ← Node-RED userDir (ignored)
 │   ├── scripts/                       ← validate / summarize / generate (.mjs)
 │   ├── runs/Sxx/                      ← raw/ + selected/ + session_notes.md
-│   └── exports/                       ← ตารางบทที่ 3 / บทที่ 5 (generated)
+│   └── exports/                       ← ตารางสรุปผลการทดลองวิเคราะห์อัลกอริทึม (generated)
 └── README.md                              ← หน้าเริ่มต้น (ไฟล์นี้)
 ```
 

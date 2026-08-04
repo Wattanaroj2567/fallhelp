@@ -164,9 +164,9 @@ export function run() {
     generateChapterExamples(svt, tmp, () => {}, () => {});
     const ch3 = fs.readFileSync(path.join(tmp, "examples_for_fall_detection_sensor_lab.md"), "utf8");
     const ch5 = fs.readFileSync(path.join(tmp, "examples_for_chapter_5.md"), "utf8");
-    check("ch.3 markdown has Fall Case", ch3.includes("ตัวอย่าง Fall Case"));
+    check("algorithm report markdown has Fall Case", ch3.includes("ตัวอย่าง Fall Case"));
     check(
-      "ch.5 markdown Thai table + translation",
+      "experiment summary markdown Thai table + translation",
       ch5.includes("ท่าพื้นฐานที่ทดสอบ") &&
       ch5.includes("ล้มด้านซ้าย") &&
       ch5.includes("ตรวจพบการล้ม"),

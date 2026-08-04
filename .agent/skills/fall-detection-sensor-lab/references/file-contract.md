@@ -29,7 +29,7 @@ a row of `type=imu_decision` with `svm_filtered_g` and `posture_delta_deg` is re
 
 - `npm run sensor-lab -- validate` — validate raw CSV vs schema
 - `npm run sensor-lab -- summarize` — selected/ → `exports/selected_values_table.csv`
-- `npm run sensor-lab -- chapters` — table → ch.3 / ch.5 markdown
+- `npm run sensor-lab -- chapters` — table → sensor analysis & experiment markdown reports
 - `npm run sensor-lab -- all` — all three in order
 - `npm run sensor-lab -- node-red rebuild` — rebuild + recreate Node-RED lab service
 

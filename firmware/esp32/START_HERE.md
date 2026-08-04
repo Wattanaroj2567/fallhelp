@@ -28,7 +28,7 @@
 Step 1: เตรียมเครื่อง + Node-RED Dashboard (/ui)
 Step 2: กดปุ่มท่าใน Dashboard → Countdown 10s → Stop เอง (1 Trial = 1 CSV)
 Step 3: validate raw CSV
-Step 4: คัด selected → summarize → generate ch.3/ch.5
+Step 4: คัด selected → summarize → generate analysis reports
 ```
 
 ชุดท่า: standing_still, walking_normal, running_light, sit_normal, sit_hard,
@@ -62,6 +62,12 @@ sensor status ← เช็กว่า MPU6050 พร้อม
 
 ```bash
 npm run sensor-lab -- node-red up
+```
+
+เมื่อทดสอบเสร็จแล้ว หรือหากต้องการปิดบริการ Node-RED:
+
+```bash
+npm run sensor-lab -- node-red down
 ```
 
 ถ้าต้องเปิดแบบ host fallback สำหรับ developer:
@@ -100,7 +106,7 @@ node scripts/iot/node-red-launch.mjs
 5. กด **Stop Trial** เอง (manual, ไม่มี auto-stop)
 6. ตรวจว่าไฟล์ `Sxx_Txx_activity.csv` ถูกสร้างใน `fall_detection_sensor_lab/runs/Sxx/raw/`
    และ Dashboard เลื่อน Next Trial อัตโนมัติ
-7. จด `note` ถ้ามีเหตุผิดปกติ; ถ่ายภาพท่าทดสอบสำหรับบทที่ 5
+7. จด `note` ถ้ามีเหตุผิดปกติ; ถ่ายภาพท่าทดสอบสำหรับบันทึกรายงานผล
 8. ทำครบ 24 trials ตาม `trial_protocol.md`
 
 > raw CSV อาจมี movement ช่วงลุก/เดินกลับมากด Stop — ยอมรับได้ scripts คัด
@@ -130,7 +136,7 @@ npm run sensor-lab -- validate
 npm run sensor-lab -- summarize
 ```
 
-3. สร้าง markdown บทที่ 3 / บทที่ 5:
+3. สร้าง markdown รายงานสรุปผลการวิเคราะห์:
 
 ```bash
 npm run sensor-lab -- chapters
@@ -164,6 +170,6 @@ npm run sensor-lab -- chapters
 | ขั้นตอน session/trial   | `fall_detection_sensor_lab/trial_protocol.md`                  |
 | ความหมาย column CSV     | `fall_detection_sensor_lab/csv_schema.md`                    |
 | เกณฑ์คัด selected       | `fall_detection_sensor_lab/selection_guide.md`           |
-| นำไปใช้บทที่ 3/5        | `fall_detection_sensor_lab/chapter_usage.md`             |
+| การนำข้อมูลไปใช้รายงาน  | `fall_detection_sensor_lab/chapter_usage.md`             |
 | วิธีล้มแต่ละท่าละเอียด | `docs/components/FallDetectionGuide.md` → Section 6.3    |
 | แก้ปัญหา MQTT/sensor    | `docs/guides/Esp32SystemOperationGuide.md` → Section 7   |

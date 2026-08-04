@@ -3,7 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 /**
- * สร้างไฟล์ Markdown สำหรับบทที่ 3 และบทที่ 5 เพื่อใช้ประกอบรายงานโครงงาน/ปริญญานิพนธ์
+ * สร้างไฟล์ Markdown สรุปรายงานการวิเคราะห์และผลการทดลอง
  * โดยดึงข้อมูลตัวแทน (Representative Data) จากไฟล์ selected_values_table.csv
  *
  * Usage:
@@ -12,7 +12,7 @@ import { fileURLToPath } from "node:url";
  *
  * Output:
  *   <out_dir>/examples_for_fall_detection_sensor_lab.md
- *   <out_dir>/examples_for_chapter_5.md
+ *   <out_dir>/examples_for_experiment_summary.md
  *
  * หมายเหตุ: สคริปต์นี้เป็นเพียงการอ่านข้อมูลเพื่อแปลงฟอร์แมต จะไม่มีการแก้ไขไฟล์ CSV ต้นฉบับ
  */
@@ -63,11 +63,11 @@ function parseCsv(text) {
   return { header, rows };
 }
 
-// ฟังก์ชันสร้างเนื้อหา Markdown สำหรับบทที่ 3 (โครงสร้างระบบและตัวอย่างการคำนวณ)
-function buildChapter3(rows) {
+// ฟังก์ชันสร้างเนื้อหา Markdown สำหรับสรุปอัลกอริทึมและการคำนวณเซนเซอร์
+function buildAlgorithmReport(rows) {
   const fall = rows.find((r) => r.decision === "suspected_fall") || rows[0];
   const lines = [];
-  lines.push("# ตัวอย่างสำหรับ Fall Detection Sensor Lab");
+  lines.push("# รายงานวิเคราะห์อัลกอริทึมและการคำนวณเซนเซอร์");
   lines.push("");
   lines.push("> สร้างอัตโนมัติจาก selected_values_table.csv");
   lines.push("");
@@ -107,10 +107,10 @@ function buildChapter3(rows) {
   return lines.join("\n") + "\n";
 }
 
-// ฟังก์ชันสร้างเนื้อหา Markdown สำหรับบทที่ 5 (สรุปผลการทดลองตารางรวม)
-function buildChapter5(rows) {
+// ฟังก์ชันสร้างเนื้อหา Markdown สรุปผลการทดลองการเคลื่อนไหว
+function buildExperimentSummary(rows) {
   const lines = [];
-  lines.push("# ตัวอย่างสำหรับบทที่ 5");
+  lines.push("# รายงานสรุปผลการทดลองการเคลื่อนไหว");
   lines.push("");
   lines.push("> สร้างอัตโนมัติจาก selected_values_table.csv");
   lines.push("");
@@ -153,8 +153,8 @@ export function generateChapterExamples(inputCsv, outDir, output = console.log, 
   fs.mkdirSync(resolvedOutDir, { recursive: true });
   const ch3 = path.join(resolvedOutDir, "examples_for_fall_detection_sensor_lab.md");
   const ch5 = path.join(resolvedOutDir, "examples_for_chapter_5.md");
-  fs.writeFileSync(ch3, buildChapter3(rows), "utf8");
-  fs.writeFileSync(ch5, buildChapter5(rows), "utf8");
+  fs.writeFileSync(ch3, buildAlgorithmReport(rows), "utf8");
+  fs.writeFileSync(ch5, buildExperimentSummary(rows), "utf8");
 
   output(`Wrote ${ch3}`);
   output(`Wrote ${ch5}`);
