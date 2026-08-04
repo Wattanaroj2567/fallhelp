@@ -182,11 +182,24 @@ void startStationMode()
 
     // ไม่มี pending (ต่อ WiFi ตัวเดิมไม่ติด)
     if (isRuntimeSerialOutputEnabled())
-    {
       runtimeLogPrintln(" เชื่อมต่อไม่สำเร็จ!");
-      runtimeLogPrintln("❌ ไม่สามารถเชื่อมต่อ WiFi เดิมได้ เริ่ม BLE Provisioning...");
+
+    if (wifiFailCount < 1)
+    {
+       // ลองครั้งแรกไม่ติด ให้โอกาสฮาร์ดแวร์ Restart ตัวเอง 1 รอบ (wifiFailCount เก็บใน RTC memory จะไม่ถูกล้าง)
+       wifiFailCount++;
+       if (isRuntimeSerialOutputEnabled())
+         runtimeLogPrintln("🔄 ลองรีสตาร์ตตัวเอง 1 ครั้ง เพื่อพยายามเชื่อมต่อ WiFi เดิมใหม่...");
+       delay(500);
+       ESP.restart();
+       return;
     }
 
+    // ถ้ารอบ 2 ก็ยังไม่ติดอีก ยอมแพ้ ไม่รีสตาร์ตซ้ำแล้วเปิด BLE + Serial CLI
+    if (isRuntimeSerialOutputEnabled())
+      runtimeLogPrintln("❌ ไม่สามารถเชื่อมต่อ WiFi เดิมได้ เริ่ม BLE Provisioning...");
+
+    wifiFailCount = 0; // ล้างเผื่อไว้สำหรับการต่อรอบหน้า
     setupBLE();
     startBLEAdvertising();
   }

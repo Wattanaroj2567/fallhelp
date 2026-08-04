@@ -154,7 +154,7 @@ unsigned long lastAutoRestartAt = 0;
 unsigned long lastBleReopenTime = 0;
 unsigned long pendingStatusRetryAt = 0; // ส่ง status ซ้ำหลัง MQTT ต่อสำเร็จ (กัน QoS 0 หลุด)
 
-int wifiFailCount = 0;
+RTC_DATA_ATTR int wifiFailCount = 0;
 int mqttFailCount = 0;
 
 // Pending WiFi config state — commit-after-success flow (ไม่เขียนทับ credential เดิมจนกว่า connect สำเร็จ)
