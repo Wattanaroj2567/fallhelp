@@ -5,7 +5,7 @@
 - Audience: AI agents, firmware developers, reviewers touching `firmware/esp32/`
 - Source of Truth: `firmware/esp32/`, firmware runbooks, and backend MQTT/runtime contracts that consume device payloads
 - Status: Active
-- Last Updated: June 20, 2026
+- Last Updated: August 5, 2026
 
 ---
 
@@ -237,22 +237,31 @@ Runtime cadence: main firmware publishes device status every 5 seconds while WiF
    → Stops BLE advertising
    → Attempts WiFi connection
 
-4. WiFi result:
+4. Boot WiFi Connection & Retry Budget:
+   ├── Boot with saved WiFi credentials in NVS:
+   │   ├── Attempt 1: Tries to connect to saved SSID
+   │   │   ├── Success: Reset wifi_fail=0 in NVS, proceed to MQTT setup
+   │   │   └── Failed: Increment wifi_fail=1 in NVS, soft-restart once (ESP.restart())
+   │   │
+   │   └── Attempt 2 (after SW_CPU_RESET): Reads wifi_fail=1 from NVS
+   │       ├── Success: Reset wifi_fail=0 in NVS, proceed to MQTT setup
+   │       └── Failed: Reset wifi_fail=0 in NVS, print failure message, fall back to BLE Provisioning & Serial CLI mode (NO further restarts)
+   │
+5. Provisioning WiFi result (from Mobile App BLE):
    ├── Success: Status → CONNECTED (0x02)
    │   → Save credentials to NVS
    │   → Notify CONNECTED, deinit BLE (free memory), then start MQTT connection
    │
-   ├── Failed: Status → FAILED (0x03) or INVALID (0x04)
-   │   → Resume BLE advertising
-   │   → Allow retry
-   │
-   └── MQTT unavailable has no active BLE terminal status in current firmware
+   └── Failed: Status → FAILED (0x03) or INVALID (0x04)
+       → Clear pending credentials
+       → Resume BLE advertising & Serial CLI mode
+       → Allow user retry via BLE or Serial CLI
 
-5. On RESET_WIFI command (from backend MQTT or manual):
+6. On RESET_WIFI command (from backend MQTT or manual):
    → Clear NVS WiFi credentials
    → Restart into BLE mode
 
-6. On RESET_NVS / CLEAR_NVS command (from backend MQTT or manual):
+7. On RESET_NVS / CLEAR_NVS command (from backend MQTT or manual):
    → Clear all NVS Preferences (WiFi credentials and runtime state)
    → Clear internal WiFi flash
    → Restart into BLE mode

@@ -384,7 +384,7 @@ AI Agents are prone to hardcoding values for convenience. This is strictly forbi
 - Keep one owner doc per feature in `docs/features/`
 - Other docs summarize and link back to the owner doc
 - Use relative links and do not leave stale references to deleted code, routes, or screens
-- **When starting to edit a doc file, update its `Last Updated` field first — before changing any content.**
+- **Update `Last Updated` field ONLY when meaningful content changes are made to that specific doc file. Do NOT update `Last Updated` if no content inside the file was modified.**
 - If code, schema, API, MQTT contracts, or cross-stack behavior changes, update the related docs in the same change
 - If package dependencies change, sync `docs/features/libraries.md` with the package files in the same change
 - If canonical AI workflow changes, update `AGENTS.md` first and then sync thin adapters
