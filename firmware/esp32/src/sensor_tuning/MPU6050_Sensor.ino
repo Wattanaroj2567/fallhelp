@@ -69,14 +69,14 @@
 // (sensor_tuning.ino ถูก compile ก่อนไฟล์นี้ จึงใช้ #if ตรงๆ ไม่ได้)
 bool isSoftwareCalibrationMode() { return SOFTWARE_CALIBRATION_MODE; }
 
-// ค่าคาลิเบรตจากท่าคล้องคอยืนนิ่ง (neck-mounted standing neutral pose) — 400 samples, 2026-03-30
-// accel avg=(0.578, 1.106, -0.019)g |mag|=1.248g → offset ชดเชยให้ resting SVM → 1g
-#define MPU_CAL_ACCEL_OFFSET_X_MS2  1.127f
-#define MPU_CAL_ACCEL_OFFSET_Y_MS2  2.158f
-#define MPU_CAL_ACCEL_OFFSET_Z_MS2 -0.036f
-#define MPU_CAL_GYRO_OFFSET_X_RAD  -0.061f
-#define MPU_CAL_GYRO_OFFSET_Y_RAD   0.011f
-#define MPU_CAL_GYRO_OFFSET_Z_RAD  -0.020f
+// ค่าคาลิเบรตจากท่าคล้องคอยืนนิ่ง (neck-mounted standing neutral pose) — 400 samples, 2026-08-05
+// accel avg=(0.574, 1.127, -0.077)g |mag|=1.267g → offset ชดเชยให้ resting SVM → 1g
+#define MPU_CAL_ACCEL_OFFSET_X_MS2  1.185f
+#define MPU_CAL_ACCEL_OFFSET_Y_MS2  2.329f
+#define MPU_CAL_ACCEL_OFFSET_Z_MS2 -0.159f
+#define MPU_CAL_GYRO_OFFSET_X_RAD  -0.059f
+#define MPU_CAL_GYRO_OFFSET_Y_RAD   0.029f
+#define MPU_CAL_GYRO_OFFSET_Z_RAD  -0.017f
 
 #define IMU_POSTURE_DELTA_THRESHOLD_DEG 45.0f
 

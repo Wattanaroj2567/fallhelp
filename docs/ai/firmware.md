@@ -115,16 +115,16 @@ Calibrate with device worn in actual use position (neck-mount, standing still). 
 - Choose the round where `|mag| (accel magnitude)` is closest to `1.0g`
 - Copy `MPU_CAL_*` values back into code, set `SOFTWARE_CALIBRATION_MODE false`
 
-### Locked Values (2026-03-30)
+### Locked Values (2026-08-05)
 
 ```cpp
-// pose: คล้องคอยืนนิ่ง | 400 samples | 2026-03-30 | |mag|=1.248g
-#define MPU_CAL_ACCEL_OFFSET_X_MS2  1.127f
-#define MPU_CAL_ACCEL_OFFSET_Y_MS2  2.158f
-#define MPU_CAL_ACCEL_OFFSET_Z_MS2 -0.036f
-#define MPU_CAL_GYRO_OFFSET_X_RAD  -0.061f
-#define MPU_CAL_GYRO_OFFSET_Y_RAD   0.011f
-#define MPU_CAL_GYRO_OFFSET_Z_RAD  -0.020f
+// pose: คล้องคอยืนนิ่ง | 400 samples | 2026-08-05 | |mag|=1.267g
+#define MPU_CAL_ACCEL_OFFSET_X_MS2  1.185f
+#define MPU_CAL_ACCEL_OFFSET_Y_MS2  2.329f
+#define MPU_CAL_ACCEL_OFFSET_Z_MS2 -0.159f
+#define MPU_CAL_GYRO_OFFSET_X_RAD  -0.059f
+#define MPU_CAL_GYRO_OFFSET_Y_RAD   0.029f
+#define MPU_CAL_GYRO_OFFSET_Z_RAD  -0.017f
 ```
 
 These values are locked in both `sensor_tuning` and `main_firmware`. Do not change unless the mounting position changes.
