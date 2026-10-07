@@ -86,7 +86,7 @@ S01_T05_side_fall_left.csv
 | forward_fall | Forward fall | fall | 3 |
 | backward_fall | Backward fall | fall | 3 |
 
-**24 Trials in total**
+In total: **24 trials**
 
 ## Test Activity Descriptions
 

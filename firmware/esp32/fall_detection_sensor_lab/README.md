@@ -97,7 +97,7 @@ Names used at each data layer:
 
 > The raw CSV may contain post-action movement (getting up/walking back to press Stop).
 > That is why this workflow stores the raw log first, then uses `selection_guide.md` to pick the main event window afterwards
-
+>
 > The `sensor_tuning` firmware sends `imu_sample` periodically (every ~300ms) so that non-fall activities
 > with no impact still have sensor data; Node-RED controls the recording window.
 > It publishes only on the lab topic, does not affect the production event flow, and does not modify `main_firmware`

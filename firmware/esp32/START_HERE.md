@@ -134,15 +134,15 @@ FAIL files: check the cause, fix/re-collect before selecting
 1. Copy representative trials into `runs/Sxx/selected/` following the criteria in `selection_guide.md`
 2. Combine them into tables:
 
-```bash
-npm run sensor-lab -- summarize
-```
+   ```bash
+   npm run sensor-lab -- summarize
+   ```
 
 3. Generate the markdown analysis summary reports:
 
-```bash
-npm run sensor-lab -- chapters
-```
+   ```bash
+   npm run sensor-lab -- chapters
+   ```
 
 The output is in `fall_detection_sensor_lab/exports/`
 

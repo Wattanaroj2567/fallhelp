@@ -27,7 +27,7 @@
 | `npm run mobile:start`                     | เฉพาะ Mobile                                                        |
 | `npm run admin:dev`                        | เฉพาะ Admin                                                         |
 | `npm run env:setup`                        | คัดลอก .env.example → .env (ใช้ได้ทุกแพลตฟอร์ม)                     |
-| `npm run docs:lint`                        | lint Markdown ของ root/docs ด้วย markdownlint configuration กลาง     |
+| `npm run docs:lint`                        | lint Markdown ทั้งโปรเจกต์ (root, docs, apps, firmware) และตรวจว่าเอกสาร EN/TH ทุกคู่ตรงกัน |
 | `npm run docs:lint:fix`                    | แก้ปัญหา Markdown ที่แก้อัตโนมัติได้อย่างปลอดภัย                      |
 | `npm run audit:comments:strict`            | บังคับมาตรฐาน comment ของ repo ในโหมด strict                        |
 | `npm run infra:scan`                       | ตรวจความสอดคล้องพื้นฐานของ runtime/docs/env                         |

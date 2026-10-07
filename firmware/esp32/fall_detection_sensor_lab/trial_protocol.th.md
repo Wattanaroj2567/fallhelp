@@ -86,7 +86,7 @@ S01_T05_side_fall_left.csv
 | forward_fall | ล้มไปข้างหน้า | fall | 3 |
 | backward_fall | ล้มไปข้างหลัง | fall | 3 |
 
-**รวมทั้งหมด 24 Trials**
+รวมทั้งหมด **24 Trials**
 
 ## คำอธิบายท่าทดสอบ
 

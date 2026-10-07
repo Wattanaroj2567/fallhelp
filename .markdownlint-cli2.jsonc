@@ -3,13 +3,16 @@
   "globs": [
     "README.md",
     "README.th.md",
-    "apps/device-simulator/README.md",
     "AGENTS.md",
     "CLAUDE.md",
     "docs/**/*.md",
-    "apps/backend-api/docs/README.md",
-    "apps/mobile/README.md",
-    "apps/admin/README.md"
+    "!docs/superpowers/**",
+    "apps/*/README.md",
+    "apps/*/README.th.md",
+    "apps/backend-api/docs/*.md",
+    "firmware/esp32/*.md",
+    "firmware/esp32/docs/**/*.md",
+    "firmware/esp32/fall_detection_sensor_lab/*.md"
   ],
   "config": {
     "default": true,

@@ -134,15 +134,15 @@ npm run sensor-lab -- validate
 1. คัด trial ตัวแทนเข้า `runs/Sxx/selected/` ตามเกณฑ์ใน `selection_guide.md`
 2. รวมเป็นตาราง:
 
-```bash
-npm run sensor-lab -- summarize
-```
+   ```bash
+   npm run sensor-lab -- summarize
+   ```
 
 3. สร้าง markdown รายงานสรุปผลการวิเคราะห์:
 
-```bash
-npm run sensor-lab -- chapters
-```
+   ```bash
+   npm run sensor-lab -- chapters
+   ```
 
 ผลอยู่ใน `fall_detection_sensor_lab/exports/`
 

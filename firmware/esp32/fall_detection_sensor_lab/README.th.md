@@ -97,7 +97,7 @@ Offline = ไม่มี/ > 10s; Sensor Receiving = `imu_sample` ≤ 3s
 
 > raw CSV อาจมี movement ช่วง post-action (ลุก/เดินกลับมากด Stop) ได้
 > workflow นี้จึงเก็บ raw log ก่อน แล้วใช้ `selection_guide.md` คัดช่วง event หลักภายหลัง
-
+>
 > firmware `sensor_tuning` ส่ง `imu_sample` เป็นระยะ (ทุก ~300ms) เพื่อให้ท่า non-fall
 > ที่ไม่เกิด impact ยังมีข้อมูล sensor; Node-RED เป็นตัวคุมช่วงบันทึก (recording window)
 > ส่งเฉพาะ lab topic ไม่กระทบ production event flow และไม่แก้ `main_firmware`

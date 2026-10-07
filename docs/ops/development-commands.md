@@ -27,7 +27,7 @@
 | `npm run mobile:start`                     | Mobile only                                                         |
 | `npm run admin:dev`                        | Admin only                                                          |
 | `npm run env:setup`                        | Copy .env.example → .env (cross-platform)                           |
-| `npm run docs:lint`                        | Lint root/docs Markdown using the shared markdownlint configuration |
+| `npm run docs:lint`                        | Lint all project Markdown (root, docs, apps, firmware) and check that every EN/TH doc pair is in sync |
 | `npm run docs:lint:fix`                    | Auto-fix Markdown issues that can be fixed safely                   |
 | `npm run audit:comments:strict`            | Enforce repo comment standard in strict mode                        |
 | `npm run infra:scan`                       | Baseline runtime/docs/env consistency checks                        |
