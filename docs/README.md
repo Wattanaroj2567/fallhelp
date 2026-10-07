@@ -4,7 +4,7 @@
 >
 > **Audience:** Developers, QA, PM  
 > **Language:** English (technical terms) / Thai (where noted)  
-> **Status:** Active — Last Updated: June 20, 2026
+> **Status:** Active — Last Updated: October 7, 2026
 
 ---
 
@@ -183,6 +183,7 @@ docs/
 | ------------------------------------------------------------------ | ---------------------------------------------------- |
 | [api-verification.md](ops/api-verification.md)                     | Local/API smoke test runbook with Postman collection |
 | [cross-platform-development.md](ops/cross-platform-development.md) | Windows/Ubuntu/WSL local development rules           |
+| [development-commands.md](ops/development-commands.md) | Full development command reference (root, apps, firmware, sensor lab) |
 | [local-deployment.md](ops/local-deployment.md)                     | Step-by-step local deployment guide                  |
 
 ---
