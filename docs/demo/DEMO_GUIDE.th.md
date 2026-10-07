@@ -15,12 +15,11 @@
 
 ## 2. ก่อนนำเสนอทุกครั้ง
 
-1. หยุด Mosquitto service ของ Windows (PowerShell แบบ admin): `net stop mosquitto`
-2. รีเซ็ตข้อมูล demo: `npm run backend:db:seed:demo`
-3. Terminal 1: `cloudflared tunnel run fallhelp-demo`
-4. Terminal 2: `npm run demo:up`
-5. เปิด simulator: <http://127.0.0.1:5175> จุดสถานะต้องเป็นสีเขียว
-6. บนมือถือ: login ด้วย `demo@fallhelp.app` และ `DEMO_PASSWORD` ที่ตั้งไว้ → เข้า dashboard
+1. รีเซ็ตข้อมูล demo: `npm run backend:db:seed:demo`
+2. Terminal 1: `cloudflared tunnel run fallhelp-demo`
+3. Terminal 2: `npm run demo:up`
+4. เปิด simulator: <http://127.0.0.1:5175> จุดสถานะต้องเป็นสีเขียว
+5. บนมือถือ: login ด้วย `demo@fallhelp.app` และ `DEMO_PASSWORD` ที่ตั้งไว้ → เข้า dashboard
 
 ## 3. ลำดับการนำเสนอ
 
@@ -34,7 +33,7 @@
 
 | อาการ | วิธีแก้ |
 |---|---|
-| `demo:up` แจ้งว่า port 1883 ถูกใช้อยู่ | `net stop mosquitto` (PowerShell แบบ admin) |
+| `demo:up` แจ้งว่า port 1884 ถูกใช้อยู่ | `demo:up` รอบก่อนยังรันอยู่ ปิดก่อน (Mosquitto service ที่ 1883 เปิดไว้ได้) |
 | จุดสถานะใน simulator ไม่เป็นสีเขียว | Mosquitto ไม่ได้เปิดด้วย demo config ดูบรรทัด `[MQTT]` ของ `demo:up` |
 | มือถือเชื่อมต่อไม่ได้ หรือ login ไม่ผ่าน | Tunnel ไม่ได้รัน ลองเปิด `https://api.tawanlab.site/internal/health` บนมือถือ |
 | Login ได้แต่ไปค้างที่หน้า setup | รัน `npm run backend:db:seed:demo` ใหม่ แล้ว logout และ login อีกครั้ง |

@@ -15,12 +15,11 @@ Show the full fall-alert flow without the ESP32: the web simulator plays the dev
 
 ## 2. Before each presentation
 
-1. Stop the Windows Mosquitto service (admin PowerShell): `net stop mosquitto`
-2. Reset demo data: `npm run backend:db:seed:demo`
-3. Terminal 1: `cloudflared tunnel run fallhelp-demo`
-4. Terminal 2: `npm run demo:up`
-5. Open the simulator: <http://127.0.0.1:5175>. The dot must be green.
-6. On the phone: log in with `demo@fallhelp.app` and your `DEMO_PASSWORD` → dashboard.
+1. Reset demo data: `npm run backend:db:seed:demo`
+2. Terminal 1: `cloudflared tunnel run fallhelp-demo`
+3. Terminal 2: `npm run demo:up`
+4. Open the simulator: <http://127.0.0.1:5175>. The dot must be green.
+5. On the phone: log in with `demo@fallhelp.app` and your `DEMO_PASSWORD` → dashboard.
 
 ## 3. Presentation script
 
@@ -34,7 +33,7 @@ Show the full fall-alert flow without the ESP32: the web simulator plays the dev
 
 | Symptom | Fix |
 |---|---|
-| `demo:up`: port 1883 in use | `net stop mosquitto` (admin PowerShell). |
+| `demo:up`: port 1884 in use | An earlier `demo:up` is still running; close it. The Mosquitto service on 1883 can stay on. |
 | Simulator dot not green | Mosquitto not started with the demo config; check the `[MQTT]` lines of `demo:up`. |
 | Phone: cannot connect / login fails | Tunnel not running; open `https://api.tawanlab.site/internal/health` on the phone. |
 | Login works but lands on setup screens | Re-run `npm run backend:db:seed:demo`, log out and in again. |

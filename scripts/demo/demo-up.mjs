@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 /**
  * Demo launcher — เปิด Mosquitto (demo config), backend-api และ device-simulator พร้อมกัน
- * - ตรวจ port ว่างก่อน (1883, 9001, 3000, 5175) และบอกวิธีแก้เมื่อชน
+ * - broker ของ demo ใช้ port 1884 จึงรันคู่กับ Mosquitto service (1883) ได้ ไม่ต้องหยุด service
+ * - backend ถูกชี้ไปที่ broker ของ demo ผ่าน env (dotenv ไม่ทับค่า env ที่ส่งมา)
+ * - ตรวจ port ว่างก่อน (1884, 9001, 3000, 5175) และบอกวิธีแก้เมื่อชน
  * - ถ้า process ใดจบด้วย error จะหยุดทุกตัว; Ctrl+C หยุดทั้งหมด
  * - cloudflared ต้องเปิดแยกเอง (ดู docs/demo/cloudflare-tunnel.md)
  */
@@ -12,13 +14,19 @@ import readline from "node:readline";
 import { ROOT, getNpmInvocation } from "../lib/process-helpers.mjs";
 
 const MOSQUITTO_CONF = path.join(ROOT, "config", "mosquitto", "mosquitto.demo.conf");
+const DEMO_MQTT_PORT = 1884;
+
+// Point backend-api at the demo broker without touching apps/backend-api/.env.
+const BACKEND_ENV = {
+  ...process.env,
+  MQTT_BROKER_URL: `mqtt://127.0.0.1:${DEMO_MQTT_PORT}`,
+  MQTT_USERNAME: "",
+  MQTT_PASSWORD: "",
+  MQTT_DISABLED: "false",
+};
 
 const PORTS = [
-  {
-    port: 1883,
-    owner: "Mosquitto (MQTT)",
-    hint: "The Windows 'mosquitto' service is probably running. Stop it from an admin PowerShell: net stop mosquitto",
-  },
+  { port: DEMO_MQTT_PORT, owner: "Mosquitto (MQTT)", hint: "Another demo broker is probably still running. Close it first." },
   { port: 9001, owner: "Mosquitto (WebSocket)", hint: "Another broker is already using 9001. Stop it first." },
   { port: 3000, owner: "backend-api", hint: "Run: npm run dev:stop" },
   { port: 5175, owner: "device-simulator", hint: "Close the other simulator dev server." },
@@ -51,7 +59,12 @@ for (const { port, owner, hint } of PORTS) {
 
 const services = [
   { name: "MQTT", color: "\x1b[35m", command: "mosquitto", args: ["-c", MOSQUITTO_CONF, "-v"], cwd: ROOT },
-  { name: "API", color: "\x1b[36m", ...getNpmInvocation(["run", "debug", "--prefix", "apps/backend-api"]) },
+  {
+    name: "API",
+    color: "\x1b[36m",
+    env: BACKEND_ENV,
+    ...getNpmInvocation(["run", "debug", "--prefix", "apps/backend-api"]),
+  },
   { name: "SIM", color: "\x1b[33m", ...getNpmInvocation(["run", "dev", "--prefix", "apps/device-simulator"]) },
 ];
 
@@ -74,6 +87,7 @@ const killAll = () => {
 for (const service of services) {
   const child = spawn(service.command, service.args, {
     cwd: service.cwd,
+    env: service.env ?? process.env,
     stdio: ["ignore", "pipe", "pipe"],
     shell: false,
   });
