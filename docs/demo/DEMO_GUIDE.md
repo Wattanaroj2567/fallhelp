@@ -7,7 +7,7 @@ Show the full fall-alert flow without the ESP32: the web simulator plays the dev
 ## 1. One-time setup
 
 1. PostgreSQL running locally and `apps/backend-api/.env` configured (`npm run env:setup`).
-2. Add `DEMO_PASSWORD=<at least 8 characters>` to `apps/backend-api/.env` yourself.
+2. Set `DEMO_PASSWORD` (at least 8 characters) in `apps/backend-api/.env`; the template line is in `apps/backend-api/.env.example` under `DEMO SEED`.
 3. Mosquitto installed with its folder on PATH (`mosquitto -h` works).
 4. Cloudflare Tunnel set up: [cloudflare-tunnel.md](cloudflare-tunnel.md).
 5. `npm install` and `npm run backend:db:setup`.

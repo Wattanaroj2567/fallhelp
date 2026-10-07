@@ -369,6 +369,19 @@ Create environment files from the provided templates:
 npm run env:setup
 ```
 
+Every secret file has a committed template with placeholder values. Copy the template, fill in real values, and never commit the real file:
+
+| Template | Copy to | Used by |
+| -------- | ------- | ------- |
+| `apps/backend-api/.env.example` | `apps/backend-api/.env` | Backend API, Prisma seeds (`ADMIN_*`, `DEMO_PASSWORD`) |
+| `apps/mobile/.env.example` | `apps/mobile/.env` | Mobile app (`EXPO_PUBLIC_*`) |
+| `apps/admin/.env.example` | `apps/admin/.env` | Admin panel (`VITE_API_URL`) |
+| `apps/device-simulator/.env.example` | `apps/device-simulator/.env` | Device simulator (optional, `VITE_MQTT_WS_URL`) |
+| `firmware/esp32/src/main_firmware/mqtt_secrets.h.example` | `mqtt_secrets.h` (same folder) | Main firmware MQTT broker (HiveMQ Cloud or local Mosquitto) |
+| `firmware/esp32/src/sensor_tuning/wifi_secrets.h.example` | `wifi_secrets.h` (same folder) | Sensor tuning firmware Wi-Fi + local MQTT |
+
+`npm run env:setup` creates the backend, mobile and admin `.env` files; copy the others by hand.
+
 Key backend variables:
 
 ```env
@@ -401,7 +414,7 @@ RESEND_API_KEY="re_xxxxxxxxxxxxx"
 EMAIL_FROM="FallHelp <noreply@your-domain.com>"
 ```
 
-> ⚠️ Never commit `.env` files. Use `.env.example` as a template only.
+> ⚠️ Never commit `.env`, `mqtt_secrets.h` or `wifi_secrets.h` (all are gitignored). Templates (`*.example`) hold placeholders only.
 
 ---
 

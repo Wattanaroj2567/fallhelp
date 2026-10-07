@@ -7,7 +7,7 @@
 ## 1. ติดตั้งครั้งแรก
 
 1. รัน PostgreSQL บนเครื่อง และตั้งค่า `apps/backend-api/.env` แล้ว (`npm run env:setup`)
-2. เพิ่ม `DEMO_PASSWORD=<อย่างน้อย 8 ตัวอักษร>` ใน `apps/backend-api/.env` ด้วยตัวเอง
+2. ตั้ง `DEMO_PASSWORD` (อย่างน้อย 8 ตัวอักษร) ใน `apps/backend-api/.env` ดูตัวอย่างได้ที่ `apps/backend-api/.env.example` หัวข้อ `DEMO SEED`
 3. ติดตั้ง Mosquitto และเพิ่มโฟลเดอร์ลง PATH (คำสั่ง `mosquitto -h` ต้องทำงานได้)
 4. ตั้งค่า Cloudflare Tunnel: [cloudflare-tunnel.md](cloudflare-tunnel.md)
 5. `npm install` และ `npm run backend:db:setup`
