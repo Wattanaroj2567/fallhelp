@@ -44,21 +44,25 @@ More detail: [project overview](docs/PROJECT_OVERVIEW.md).
 <details>
 <summary>📸 Screenshots</summary>
 
-| Login | Dashboard | Fall alert |
-|---|---|---|
-| ![Login](docs/screenshots/01-login.png) | ![Dashboard](docs/screenshots/03-dashboard.png) | ![Fall alert](docs/screenshots/11-fall-alert.png) |
+<table>
+  <tr>
+    <td align="center" valign="top"><img src="docs/screenshots/mobile/m_01_auth_login.jpg" width="220" alt="Login" /><br /><sub>Login</sub></td>
+    <td align="center" valign="top"><img src="docs/screenshots/mobile/m_22_dashboard_online_normal_bpm.jpg" width="220" alt="Dashboard" /><br /><sub>Dashboard</sub></td>
+    <td align="center" valign="top"><img src="docs/screenshots/mobile/m_23_dashboard_fall_alert.jpg" width="220" alt="Fall alert" /><br /><sub>Fall alert</sub></td>
+  </tr>
+  <tr>
+    <td align="center" valign="top"><img src="docs/screenshots/mobile/m_24_dashboard_fall_detail_modal.jpg" width="220" alt="Fall details" /><br /><sub>Fall details</sub></td>
+    <td align="center" valign="top"><img src="docs/screenshots/mobile/m_26_history_event_list.jpg" width="220" alt="History" /><br /><sub>History</sub></td>
+    <td align="center" valign="top"><img src="docs/screenshots/mobile/m_27_report_summary_with_data.jpg" width="220" alt="Monthly report" /><br /><sub>Monthly report</sub></td>
+  </tr>
+  <tr>
+    <td align="center" valign="top"><img src="docs/screenshots/mobile/m_11_setup_pairing_qr_scan.jpg" width="220" alt="Pair device (QR)" /><br /><sub>Pair device (QR)</sub></td>
+    <td align="center" valign="top"><img src="docs/screenshots/mobile/m_36_device_info_online.jpg" width="220" alt="Device" /><br /><sub>Device</sub></td>
+    <td align="center" valign="top"><img src="docs/screenshots/mobile/m_53_emergency_call_with_contacts.jpg" width="220" alt="Emergency call" /><br /><sub>Emergency call</sub></td>
+  </tr>
+</table>
 
-| History | Notifications | Device |
-|---|---|---|
-| ![History](docs/screenshots/04-history.png) | ![Notifications](docs/screenshots/05-notifications.png) | ![Device](docs/screenshots/06-device-info.png) |
-
-| Elder | Emergency contacts | Report |
-|---|---|---|
-| ![Elder](docs/screenshots/07-elder-info.png) | ![Contacts](docs/screenshots/08-emergency-contacts.png) | ![Report](docs/screenshots/09-report-summary.png) |
-
-| Register | Profile | |
-|---|---|---|
-| ![Register](docs/screenshots/02-register.png) | ![Profile](docs/screenshots/10-profile.png) | |
+All 58 app screens and the admin panel: [docs/SCREENSHOTS.md](docs/SCREENSHOTS.md)
 
 </details>
 <!-- markdownlint-enable MD033 -->

@@ -44,21 +44,25 @@ flowchart LR
 <details>
 <summary>📸 ภาพหน้าจอ</summary>
 
-| เข้าสู่ระบบ | Dashboard | แจ้งเตือนการหกล้ม |
-|---|---|---|
-| ![เข้าสู่ระบบ](docs/screenshots/01-login.png) | ![Dashboard](docs/screenshots/03-dashboard.png) | ![แจ้งเตือนการหกล้ม](docs/screenshots/11-fall-alert.png) |
+<table>
+  <tr>
+    <td align="center" valign="top"><img src="docs/screenshots/mobile/m_01_auth_login.jpg" width="220" alt="เข้าสู่ระบบ" /><br /><sub>เข้าสู่ระบบ</sub></td>
+    <td align="center" valign="top"><img src="docs/screenshots/mobile/m_22_dashboard_online_normal_bpm.jpg" width="220" alt="Dashboard" /><br /><sub>Dashboard</sub></td>
+    <td align="center" valign="top"><img src="docs/screenshots/mobile/m_23_dashboard_fall_alert.jpg" width="220" alt="แจ้งเตือนการหกล้ม" /><br /><sub>แจ้งเตือนการหกล้ม</sub></td>
+  </tr>
+  <tr>
+    <td align="center" valign="top"><img src="docs/screenshots/mobile/m_24_dashboard_fall_detail_modal.jpg" width="220" alt="รายละเอียดการหกล้ม" /><br /><sub>รายละเอียดการหกล้ม</sub></td>
+    <td align="center" valign="top"><img src="docs/screenshots/mobile/m_26_history_event_list.jpg" width="220" alt="ประวัติ" /><br /><sub>ประวัติ</sub></td>
+    <td align="center" valign="top"><img src="docs/screenshots/mobile/m_27_report_summary_with_data.jpg" width="220" alt="รายงานรายเดือน" /><br /><sub>รายงานรายเดือน</sub></td>
+  </tr>
+  <tr>
+    <td align="center" valign="top"><img src="docs/screenshots/mobile/m_11_setup_pairing_qr_scan.jpg" width="220" alt="จับคู่อุปกรณ์ (QR)" /><br /><sub>จับคู่อุปกรณ์ (QR)</sub></td>
+    <td align="center" valign="top"><img src="docs/screenshots/mobile/m_36_device_info_online.jpg" width="220" alt="อุปกรณ์" /><br /><sub>อุปกรณ์</sub></td>
+    <td align="center" valign="top"><img src="docs/screenshots/mobile/m_53_emergency_call_with_contacts.jpg" width="220" alt="โทรฉุกเฉิน" /><br /><sub>โทรฉุกเฉิน</sub></td>
+  </tr>
+</table>
 
-| ประวัติ | การแจ้งเตือน | อุปกรณ์ |
-|---|---|---|
-| ![ประวัติ](docs/screenshots/04-history.png) | ![การแจ้งเตือน](docs/screenshots/05-notifications.png) | ![อุปกรณ์](docs/screenshots/06-device-info.png) |
-
-| ผู้สูงอายุ | ผู้ติดต่อฉุกเฉิน | รายงาน |
-|---|---|---|
-| ![ผู้สูงอายุ](docs/screenshots/07-elder-info.png) | ![ผู้ติดต่อฉุกเฉิน](docs/screenshots/08-emergency-contacts.png) | ![รายงาน](docs/screenshots/09-report-summary.png) |
-
-| สมัครสมาชิก | โปรไฟล์ | |
-|---|---|---|
-| ![สมัครสมาชิก](docs/screenshots/02-register.png) | ![โปรไฟล์](docs/screenshots/10-profile.png) | |
+ภาพทุกหน้าของแอป (58 หน้า) และ admin panel: [docs/SCREENSHOTS.md](docs/SCREENSHOTS.md)
 
 </details>
 <!-- markdownlint-enable MD033 -->
