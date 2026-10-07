@@ -13,13 +13,27 @@
     "signalStrength": -55,
     "wifiSSID": "FallHelp-Demo"
   },
-  "heartRate": { "timestamp": 1760000000000, "heartRate": 88, "confidence": "high" },
-  "fall": {
-    "type": "fall",
+  "heartRate": {
+    "timestamp": 1760000000000,
+    "heartRate": 88,
+    "confidence": "high"
+  },
+  "suspectedFall": {
+    "type": "suspected_fall",
     "timestamp": 1760000000000,
     "magnitude": 3.4,
     "postureDelta": 82,
     "bpm": 88
   },
-  "fallCancelled": { "type": "fall_cancelled", "timestamp": 1760000000000 }
+  "fallConfirmed": {
+    "type": "fall_confirmed",
+    "timestamp": 1760000000000,
+    "magnitude": 3.4,
+    "postureDelta": 82,
+    "bpm": 88
+  },
+  "fallCancelled": {
+    "type": "fall_cancelled",
+    "timestamp": 1760000000000
+  }
 }

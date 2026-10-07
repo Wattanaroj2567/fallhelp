@@ -2,13 +2,15 @@ import { describe, expect, it } from "vitest";
 import fixtures from "../../contract/fixtures.json";
 import {
   DEFAULT_SERIAL,
-  buildFall,
   buildFallCancelled,
+  buildFallConfirmed,
   buildHeartRate,
   buildStatus,
+  buildSuspectedFall,
   clampHeartRate,
   deviceTopics,
   isValidSerial,
+  serialWarning,
 } from "../payloads";
 
 describe("contract fixtures", () => {
@@ -16,7 +18,8 @@ describe("contract fixtures", () => {
     expect(buildStatus(true, fixtures.now)).toEqual(fixtures.statusOnline);
     expect(buildStatus(false, fixtures.now)).toEqual(fixtures.statusOffline);
     expect(buildHeartRate(fixtures.bpm, fixtures.now)).toEqual(fixtures.heartRate);
-    expect(buildFall(fixtures.bpm, fixtures.now)).toEqual(fixtures.fall);
+    expect(buildSuspectedFall(fixtures.bpm, fixtures.now)).toEqual(fixtures.suspectedFall);
+    expect(buildFallConfirmed(fixtures.bpm, fixtures.now)).toEqual(fixtures.fallConfirmed);
     expect(buildFallCancelled(fixtures.now)).toEqual(fixtures.fallCancelled);
   });
 });
@@ -45,6 +48,18 @@ describe("isValidSerial", () => {
   });
 });
 
+describe("serialWarning", () => {
+  it("is null for the seeded demo serial", () => {
+    expect(serialWarning(DEFAULT_SERIAL)).toBeNull();
+  });
+  it("warns for another well-formed serial", () => {
+    expect(serialWarning("ESP32-DE5000000002")).toMatch(/not the seeded demo device/);
+  });
+  it("is null for a malformed serial (format error is shown instead)", () => {
+    expect(serialWarning("ESP32-x")).toBeNull();
+  });
+});
+
 describe("clampHeartRate", () => {
   it("clamps and rounds into 0..180", () => {
     expect(clampHeartRate(200)).toBe(180);
@@ -53,11 +68,12 @@ describe("clampHeartRate", () => {
   });
 });
 
-describe("buildFall", () => {
-  it("keeps a null bpm", () => {
-    expect(buildFall(null, 1).bpm).toBeNull();
+describe("fall builders", () => {
+  it("keep a null bpm", () => {
+    expect(buildSuspectedFall(null, 1).bpm).toBeNull();
+    expect(buildFallConfirmed(null, 1).bpm).toBeNull();
   });
-  it("clamps an out-of-range bpm", () => {
-    expect(buildFall(250, 1).bpm).toBe(180);
+  it("clamp an out-of-range bpm", () => {
+    expect(buildSuspectedFall(250, 1).bpm).toBe(180);
   });
 });

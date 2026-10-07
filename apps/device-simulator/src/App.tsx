@@ -1,35 +1,44 @@
 /**
  * หน้าเดียวของ device-simulator: จำลองอุปกรณ์คล้องคอสำหรับการนำเสนอ
- * - เลือก serial, ส่ง status / heart rate / fall / fall_cancelled ไปยัง MQTT topic จริง
+ * - Online ส่ง status ซ้ำทุก 5 วินาทีเหมือน firmware (มือถือถือว่า offline ถ้าเงียบเกิน 15 วินาที)
+ * - Simulate Fall: suspected_fall → ช่วงยกเลิก 15 วินาที → fall_confirmed อัตโนมัติ
+ *   หรือกด "Cancel on device" ภายในช่วงนั้นเพื่อส่ง fall_cancelled (ผู้สวมใส่ยกเลิกเอง)
  * - ปุ่มทั้งหมดปิดเมื่อ serial ไม่ถูกต้องหรือยังไม่เชื่อมต่อ broker
- * - ปุ่ม Fall มี countdown 30 วินาทีตาม de-dup ของ backend
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import MessageLog from "./components/MessageLog";
 import { MQTT_WS_URL } from "./config";
-import { remainingCooldownMs } from "./lib/cooldown";
+import { describeConnection, type ConnectionTone } from "./lib/connectionStatus";
+import {
+  CANCEL_WINDOW_MS,
+  blockedUntilAfter,
+  cancelWindowRemainingMs,
+  type FallOutcome,
+} from "./lib/fallSequence";
 import { appendLog, type LogEntry } from "./lib/messageLog";
 import {
   DEFAULT_SERIAL,
   HEART_RATE_MAX,
   HEART_RATE_MIN,
-  buildFall,
   buildFallCancelled,
+  buildFallConfirmed,
   buildHeartRate,
   buildStatus,
+  buildSuspectedFall,
   deviceTopics,
   isValidSerial,
+  serialWarning,
   type DevicePayload,
 } from "./lib/payloads";
-import { useMqttClient, type ConnectionState } from "./mqtt/useMqttClient";
+import { useMqttClient } from "./mqtt/useMqttClient";
 
 const AUTO_HEART_RATE_INTERVAL_MS = 5_000;
+const STATUS_HEARTBEAT_INTERVAL_MS = 5_000;
+const TICK_MS = 500;
 
-const STATE_STYLES: Record<ConnectionState, string> = {
-  connected: "bg-emerald-500",
-  connecting: "bg-amber-400",
-  reconnecting: "bg-amber-400",
-  offline: "bg-slate-500",
+const TONE_STYLES: Record<ConnectionTone, string> = {
+  ok: "bg-emerald-500",
+  pending: "bg-amber-400",
   error: "bg-red-500",
 };
 
@@ -40,15 +49,22 @@ export default function App() {
   const { state, lastError, publish } = useMqttClient(MQTT_WS_URL);
   const [serial, setSerial] = useState(DEFAULT_SERIAL);
   const [bpm, setBpm] = useState(78);
+  const [deviceOnline, setDeviceOnline] = useState(false);
   const [autoHeartRate, setAutoHeartRate] = useState(false);
-  const [lastFallAt, setLastFallAt] = useState<number | null>(null);
+  const [suspectedAt, setSuspectedAt] = useState<number | null>(null);
+  const [blockedUntil, setBlockedUntil] = useState<number | null>(null);
   const [now, setNow] = useState(() => Date.now());
   const [log, setLog] = useState<LogEntry[]>([]);
   const nextId = useRef(1);
+  const resolvingFall = useRef(false);
 
+  const connection = describeConnection(state);
   const serialValid = isValidSerial(serial);
+  const warning = serialWarning(serial);
   const canSend = serialValid && state === "connected";
-  const cooldownMs = remainingCooldownMs(lastFallAt, now);
+  const cancelRemainingMs = cancelWindowRemainingMs(suspectedAt, now);
+  const blockedRemainingMs = blockedUntil === null ? 0 : Math.max(0, blockedUntil - now);
+  const timersActive = suspectedAt !== null || blockedRemainingMs > 0;
 
   const send = useCallback(
     async (topic: string, payload: DevicePayload): Promise<boolean> => {
@@ -77,11 +93,47 @@ export default function App() {
     [publish]
   );
 
+  const resolveFall = useCallback(
+    async (outcome: FallOutcome) => {
+      if (suspectedAt === null || resolvingFall.current) return;
+      resolvingFall.current = true;
+      const resolvedAt = Date.now();
+      const payload =
+        outcome === "confirmed"
+          ? buildFallConfirmed(bpm, resolvedAt)
+          : buildFallCancelled(resolvedAt);
+      await send(deviceTopics.event(serial), payload);
+      setBlockedUntil(blockedUntilAfter(outcome, suspectedAt, resolvedAt));
+      setSuspectedAt(null);
+      setNow(resolvedAt);
+      resolvingFall.current = false;
+    },
+    [bpm, send, serial, suspectedAt]
+  );
+
+  // Countdown ticker: only runs while a cancel window or a de-dup block is active.
   useEffect(() => {
-    if (lastFallAt === null) return;
-    const timer = window.setInterval(() => setNow(Date.now()), 500);
+    if (!timersActive) return;
+    const timer = window.setInterval(() => setNow(Date.now()), TICK_MS);
     return () => window.clearInterval(timer);
-  }, [lastFallAt]);
+  }, [timersActive]);
+
+  // Auto-confirm when the device cancel window ends without a cancel.
+  useEffect(() => {
+    if (suspectedAt === null) return;
+    const delay = Math.max(0, suspectedAt + CANCEL_WINDOW_MS - Date.now());
+    const timer = window.setTimeout(() => void resolveFall("confirmed"), delay);
+    return () => window.clearTimeout(timer);
+  }, [suspectedAt, resolveFall]);
+
+  // Status heartbeat like the firmware, so the app keeps the device online.
+  useEffect(() => {
+    if (!deviceOnline || !canSend) return;
+    const timer = window.setInterval(() => {
+      void send(deviceTopics.status(serial), buildStatus(true, Date.now()));
+    }, STATUS_HEARTBEAT_INTERVAL_MS);
+    return () => window.clearInterval(timer);
+  }, [deviceOnline, canSend, send, serial]);
 
   useEffect(() => {
     if (!autoHeartRate || !canSend) return;
@@ -91,14 +143,31 @@ export default function App() {
     return () => window.clearInterval(timer);
   }, [autoHeartRate, canSend, send, serial, bpm]);
 
-  const sendFall = async () => {
-    const sentAt = Date.now();
-    const ok = await send(deviceTopics.event(serial), buildFall(bpm, sentAt));
-    if (ok) {
-      setLastFallAt(sentAt);
-      setNow(sentAt);
+  const goOnline = async () => {
+    if (await send(deviceTopics.status(serial), buildStatus(true, Date.now()))) {
+      setDeviceOnline(true);
     }
   };
+
+  const goOffline = async () => {
+    setDeviceOnline(false);
+    await send(deviceTopics.status(serial), buildStatus(false, Date.now()));
+  };
+
+  const simulateFall = async () => {
+    const at = Date.now();
+    if (await send(deviceTopics.event(serial), buildSuspectedFall(bpm, at))) {
+      setSuspectedAt(at);
+      setNow(at);
+    }
+  };
+
+  const fallLabel =
+    suspectedAt !== null
+      ? `Confirming in ${Math.ceil(cancelRemainingMs / 1000)}s…`
+      : blockedRemainingMs > 0
+        ? `Simulate Fall (${Math.ceil(blockedRemainingMs / 1000)}s)`
+        : "Simulate Fall";
 
   return (
     <main className="mx-auto grid max-w-5xl gap-6 p-6 md:grid-cols-2">
@@ -111,9 +180,9 @@ export default function App() {
         </header>
 
         <div className="flex items-center gap-2 text-sm">
-          <span className={`h-3 w-3 rounded-full ${STATE_STYLES[state]}`} />
+          <span className={`h-3 w-3 rounded-full ${TONE_STYLES[connection.tone]}`} />
           <span>
-            Broker {state} — <code>{MQTT_WS_URL}</code>
+            Broker: {connection.label} — <code>{MQTT_WS_URL}</code>
           </span>
         </div>
         {lastError ? <p className="text-sm text-red-300">{lastError}</p> : null}
@@ -130,23 +199,31 @@ export default function App() {
               Expected format ESP32-XXXXXXXXXXXX (uppercase hex)
             </span>
           ) : null}
+          {warning ? <span className="text-xs text-amber-300">{warning}</span> : null}
         </label>
 
-        <div className="flex gap-3">
-          <button
-            className={`${buttonClass} bg-emerald-600 hover:bg-emerald-500`}
-            disabled={!canSend}
-            onClick={() => void send(deviceTopics.status(serial), buildStatus(true, Date.now()))}
-          >
-            Online
-          </button>
-          <button
-            className={`${buttonClass} bg-slate-600 hover:bg-slate-500`}
-            disabled={!canSend}
-            onClick={() => void send(deviceTopics.status(serial), buildStatus(false, Date.now()))}
-          >
-            Offline
-          </button>
+        <div className="space-y-2">
+          <div className="flex gap-3">
+            <button
+              className={`${buttonClass} bg-emerald-600 hover:bg-emerald-500`}
+              disabled={!canSend || deviceOnline}
+              onClick={() => void goOnline()}
+            >
+              Online
+            </button>
+            <button
+              className={`${buttonClass} bg-slate-600 hover:bg-slate-500`}
+              disabled={!canSend || !deviceOnline}
+              onClick={() => void goOffline()}
+            >
+              Offline
+            </button>
+          </div>
+          <p className="text-xs text-slate-400">
+            {deviceOnline
+              ? "Device online: sending status every 5 s."
+              : "Device offline: the app ignores heart rate until the device is online."}
+          </p>
         </div>
 
         <div className="space-y-2">
@@ -181,25 +258,28 @@ export default function App() {
           </div>
         </div>
 
-        <div className="flex gap-3">
-          <button
-            className={`${buttonClass} bg-red-600 text-lg hover:bg-red-500`}
-            disabled={!canSend || cooldownMs > 0}
-            onClick={() => void sendFall()}
-          >
-            {cooldownMs > 0 ? `Simulate Fall (${Math.ceil(cooldownMs / 1000)}s)` : "Simulate Fall"}
-          </button>
-          <button
-            className={`${buttonClass} bg-amber-600 hover:bg-amber-500`}
-            disabled={!canSend}
-            onClick={() => void send(deviceTopics.event(serial), buildFallCancelled(Date.now()))}
-          >
-            Acknowledge on device
-          </button>
+        <div className="space-y-2">
+          <div className="flex gap-3">
+            <button
+              className={`${buttonClass} bg-red-600 text-lg hover:bg-red-500`}
+              disabled={!canSend || suspectedAt !== null || blockedRemainingMs > 0}
+              onClick={() => void simulateFall()}
+            >
+              {fallLabel}
+            </button>
+            <button
+              className={`${buttonClass} bg-amber-600 hover:bg-amber-500`}
+              disabled={!canSend || suspectedAt === null}
+              onClick={() => void resolveFall("cancelled")}
+            >
+              Cancel on device (false alarm)
+            </button>
+          </div>
+          <p className="text-xs text-slate-400">
+            Like the real device: a fall is confirmed 15 s after detection unless the wearer cancels
+            it. The backend ignores repeated falls for a short time afterwards.
+          </p>
         </div>
-        <p className="text-xs text-slate-400">
-          The backend ignores repeated falls from the same device within 30 seconds.
-        </p>
       </section>
 
       <section className="max-h-[85vh] overflow-y-auto">

@@ -24,11 +24,11 @@ Show the full fall-alert flow without the ESP32: the web simulator plays the dev
 
 ## 3. Presentation script
 
-1. **Online** → dashboard shows the device online.
+1. **Online** → dashboard shows the device online (the simulator keeps sending status every 5 s, like the device).
 2. Tick **Auto-send every 5 s**, move the BPM slider → heart rate updates live.
-3. **Simulate Fall** → the phone shows the emergency alert and push notification.
-4. Either acknowledge the alert on the phone (caregiver), **or** press **Acknowledge on device** within 15 s (wearer's false-alarm cancel) → event shows as cancelled.
-5. Wait for the 30 s countdown before the next fall (the backend ignores repeats within 30 s).
+3. **Simulate Fall** → the device reports a suspected fall and starts its 15 s cancel window. After 15 s the fall is confirmed and the phone shows the emergency alert and push notification. The caregiver taps **Acknowledge** in the app.
+4. To show a false alarm: press **Simulate Fall**, then **Cancel on device (false alarm)** within 15 s → no alert; history shows a cancelled event.
+5. Wait for the countdown on the Fall button before the next fall (the backend ignores repeats for a short time).
 
 ## 4. Troubleshooting
 

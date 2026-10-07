@@ -26,8 +26,17 @@ const fixture = (name: string): Record<string, unknown> => {
 };
 
 describe('device-simulator MQTT contract', () => {
-  it('fall fixture normalizes to a confirmed fall that passes validation', () => {
-    const result = normalizeUnifiedEvent(fixture('fall'));
+  it('suspectedFall fixture normalizes to a suspected fall that passes validation', () => {
+    const result = normalizeUnifiedEvent(fixture('suspectedFall'));
+    expect(result.kind).toBe('fall');
+    if (result.kind !== 'fall') return;
+    expect(result.mode).toBe('suspected');
+    expect(result.payload.bpm).toBe(88);
+    expect(validateFallPayload(result.payload)).not.toBeNull();
+  });
+
+  it('fallConfirmed fixture normalizes to a confirmed fall that passes validation', () => {
+    const result = normalizeUnifiedEvent(fixture('fallConfirmed'));
     expect(result.kind).toBe('fall');
     if (result.kind !== 'fall') return;
     expect(result.mode).toBe('confirmed');

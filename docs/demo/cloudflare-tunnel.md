@@ -1,6 +1,6 @@
 # Cloudflare Tunnel for the demo API
 
-Exposes the backend on your laptop (`http://localhost:3000`) as `https://api.tawanlab.site`, which is the API URL baked into the preview APK. Works on any network the phone uses (Wi-Fi or 4G). The MQTT broker is **not** exposed.
+Exposes the backend on your laptop (`http://localhost:3000`) as `https://api.tawanlab.site`, which is the API URL baked into the preview APK. Works on any network the phone uses (Wi-Fi or 4G). The MQTT broker is **not** exposed (the demo broker only listens on `127.0.0.1`).
 
 ## One-time setup
 
