@@ -16,6 +16,7 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
     "prisma:seed": "tsx prisma/seed.ts",
+    "seed:demo": "tsx prisma/seed-demo.ts",
     "db:setup": "npm run prisma:generate && prisma migrate dev && npm run prisma:seed",
     "db:reset": "npm run prisma:generate && prisma migrate reset --force && npm run prisma:seed",
     "db:verify": "npm run prisma:generate && tsx scripts/verify-db.ts",

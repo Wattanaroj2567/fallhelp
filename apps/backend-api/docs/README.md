@@ -1,10 +1,10 @@
 # Backend Documentation
 
-# เอกสาร Backend
+[English](README.md) · [ภาษาไทย](README.th.md)
 
-> **หมายเหตุ:** เอกสารถูกรวมไว้ที่ส่วนกลางแล้ว
+> **Note:** The documentation has been consolidated in a central location.
 
-เอกสารทั้งหมดอยู่ที่: **[docs/README.md](../../../docs/README.md)**
+All documentation lives at: **[docs/README.md](../../../docs/README.md)**
 
 ---
 

@@ -1,118 +1,120 @@
 # START HERE — Fall Detection Sensor Lab Data-Collection Quickstart
 
-> ไฟล์นี้ใช้สำหรับเก็บข้อมูล **Fall Detection Sensor Lab**
-> ไม่ใช่ runbook บังคับของระบบ FallHelp หลัก ถ้าไม่ได้เก็บ dataset ข้ามไฟล์นี้ได้
+[English](START_HERE.md) · [ภาษาไทย](START_HERE.th.md)
+
+> This file is for collecting **Fall Detection Sensor Lab** data.
+> It is not a mandatory runbook for the main FallHelp system; skip it if you are not collecting a dataset.
 >
-> เอกสารเต็ม: `fall_detection_sensor_lab/README.md` + `trial_protocol.md`
+> Full documentation: `fall_detection_sensor_lab/README.md` + `trial_protocol.md`
 
 ---
 
-## ใช้ไฟล์นี้เพื่ออะไร
+## What This File Is For
 
-ใช้เพื่อ:
+Use it when you:
 
-- ต้องการเก็บข้อมูลท่าพื้นฐาน (9 activity, 24 trials) สำหรับบันทึกที่ 3 และบันทึกที่ 5
-- ต้องการ log จาก `sensor_tuning` เข้า `fall_detection_sensor_lab/runs/`
+- Need to collect baseline activity data (9 activities, 24 trials) for Record 3 and Record 5
+- Need logs from `sensor_tuning` written into `fall_detection_sensor_lab/runs/`
 
-ไม่จำเป็นเมื่อต้องการ:
+Not needed when you want to:
 
-- ทดสอบ functional prototype แบบ end-to-end
-- สาธิต fall detection / BPM / notification pipeline
-- พัฒนา mobile / backend / admin / main firmware ตาม flow ปกติ
+- Test the functional prototype end-to-end
+- Demo the fall detection / BPM / notification pipeline
+- Develop mobile / backend / admin / main firmware following the normal flow
 
 ---
 
-## ภาพรวม: ทำอะไรก่อน-หลัง
+## Overview: What to Do, in Order
 
 ```
-Step 1: เตรียมเครื่อง + Node-RED Dashboard (/ui)
-Step 2: กดปุ่มท่าใน Dashboard → Countdown 10s → Stop เอง (1 Trial = 1 CSV)
+Step 1: Prepare the device + Node-RED Dashboard (/ui)
+Step 2: Press an activity button in the Dashboard → Countdown 10s → Stop manually (1 Trial = 1 CSV)
 Step 3: validate raw CSV
-Step 4: คัด selected → summarize → generate analysis reports
+Step 4: pick selected → summarize → generate analysis reports
 ```
 
-ชุดท่า: standing_still, walking_normal, running_light, sit_normal, sit_hard,
-side_fall_left, side_fall_right, forward_fall, backward_fall — รวม 24 trials
-(ดูจำนวนต่อท่าใน `trial_protocol.md`)
+Activity set: standing_still, walking_normal, running_light, sit_normal, sit_hard,
+side_fall_left, side_fall_right, forward_fall, backward_fall — 24 trials in total
+(see the count per activity in `trial_protocol.md`)
 
 ---
 
-## Step 1 — เตรียมเครื่องก่อนเริ่มทุกครั้ง
+## Step 1 — Prepare the Device Before Every Session
 
-### 1.1 ตั้งค่า firmware
+### 1.1 Configure the firmware
 
-เปิด `sensor_tuning/build_profile.h`:
+Open `sensor_tuning/build_profile.h`:
 
 ```cpp
 #define FALLHELP_SINGLE_SENSOR FALLHELP_SINGLE_SENSOR_MPU6050
 ```
 
-Upload firmware → เปิด Serial Monitor (115200 baud)
+Upload the firmware → open Serial Monitor (115200 baud)
 
-### 1.2 ตรวจสอบก่อนเริ่มเสมอ
+### 1.2 Always check before starting
 
 ```
-info          ← เช็ก WiFi และ MQTT เชื่อมต่อได้
-profile       ← ยืนยัน cancel timeout = 15000ms
-fall config   ← จด threshold ปัจจุบัน
-sensor status ← เช็กว่า MPU6050 พร้อม
+info          ← check that WiFi and MQTT are connected
+profile       ← confirm cancel timeout = 15000ms
+fall config   ← note the current thresholds
+sensor status ← check that MPU6050 is ready
 ```
 
-### 1.3 เปิด Node-RED Dashboard (เปิดค้างไว้ตลอด session)
+### 1.3 Open the Node-RED Dashboard (keep it open for the whole session)
 
 ```bash
 npm run sensor-lab -- node-red up
 ```
 
-เมื่อทดสอบเสร็จแล้ว หรือหากต้องการปิดบริการ Node-RED:
+When testing is done, or if you want to stop the Node-RED service:
 
 ```bash
 npm run sensor-lab -- node-red down
 ```
 
-ถ้าต้องเปิดแบบ host fallback สำหรับ developer:
+If you need the host fallback for developers:
 
 ```bash
 npm install
 node scripts/iot/node-red-launch.mjs
 ```
 
-เปิด `http://localhost:1880`, source flow อยู่ที่
-`fall_detection_sensor_lab/node-red/flows/fall-detection-sensor-lab-flow.v2.json`
-แล้วเปิด Dashboard ที่ `http://localhost:1880/ui` (workflow หลักคือ Dashboard
-ไม่มี manual inject แล้ว)
+Open `http://localhost:1880`; the source flow is at
+`fall_detection_sensor_lab/node-red/flows/fall-detection-sensor-lab-flow.v2.json`.
+Then open the Dashboard at `http://localhost:1880/ui` (the main workflow is the Dashboard;
+there is no manual inject anymore)
 
-> ตั้ง broker credential ใน Node-RED editor/env (`MQTT_USERNAME`/`MQTT_PASSWORD`) — ไม่ commit ลง flow JSON
-> `mosquitto_sub` ดูสดได้ แต่ไม่ใช้แทนไฟล์หลัก
+> Set the broker credentials in the Node-RED editor/env (`MQTT_USERNAME`/`MQTT_PASSWORD`) — do not commit them into the flow JSON
+> `mosquitto_sub` can be used for live viewing, but it does not replace the main files
 
-### 1.4 ติด ESP32 คล้องคอ
+### 1.4 Wear the ESP32 around the neck
 
-- ตำแหน่งกลางคอ สายรัดไม่หลวมไม่แน่นเกิน ตำแหน่งเดิมทุก trial
-- ไม่ให้ห้อยแกว่งอิสระ
-- ท่าล้มต้องทำบนเบาะ/ฟูก เคลียร์พื้นที่ ≥ 2×2 เมตร
+- Center of the neck, strap neither too loose nor too tight, same position every trial
+- Do not let it swing freely
+- Fall activities must be done on a cushion/mattress, with a clear area of ≥ 2×2 meters
 
 ---
 
-## Step 2 — เก็บข้อมูลทีละ Trial
+## Step 2 — Collect Data One Trial at a Time
 
-ใช้ Dashboard ที่ `/ui` เป็น workflow เดียว (ผู้ทดลองคนเดียว กดน้อยสุด)
-ต่อ 1 Trial = 1 ท่า = 1 CSV:
+Use the Dashboard at `/ui` as the single workflow (one tester, minimal clicks).
+1 Trial = 1 activity = 1 CSV:
 
-1. กรอก **Session ID** ใน Dashboard เช่น `S01` (ตั้งครั้งเดียวต่อรอบ)
-2. กดปุ่มท่าที่จะเก็บ (1 ใน 9 ปุ่ม) — `activityLabel`, `expectedType`, `trialId`
-   ถูกตั้งอัตโนมัติ (อย่าเดา activity — กดปุ่มที่ตรงท่าที่ทำจริง)
-3. รอ **Countdown 10 วินาที** (เดินไปตำแหน่งทดสอบ/เตรียมตัวบนเบาะ)
-4. Countdown จบ → สถานะ "Recording: action" → ทำท่า → ค้าง 3–5 วินาที
-5. กด **Stop Trial** เอง (manual, ไม่มี auto-stop)
-6. ตรวจว่าไฟล์ `Sxx_Txx_activity.csv` ถูกสร้างใน `fall_detection_sensor_lab/runs/Sxx/raw/`
-   และ Dashboard เลื่อน Next Trial อัตโนมัติ
-7. จด `note` ถ้ามีเหตุผิดปกติ; ถ่ายภาพท่าทดสอบสำหรับบันทึกรายงานผล
-8. ทำครบ 24 trials ตาม `trial_protocol.md`
+1. Enter the **Session ID** in the Dashboard, e.g. `S01` (set once per round)
+2. Press the button for the activity to record (1 of 9 buttons) — `activityLabel`, `expectedType`, `trialId`
+   are set automatically (do not guess the activity — press the button that matches the activity actually performed)
+3. Wait for the **10-second Countdown** (walk to the test position/get ready on the cushion)
+4. Countdown ends → status "Recording: action" → perform the activity → hold for 3–5 seconds
+5. Press **Stop Trial** yourself (manual, no auto-stop)
+6. Check that the file `Sxx_Txx_activity.csv` was created in `fall_detection_sensor_lab/runs/Sxx/raw/`
+   and that the Dashboard advances to the Next Trial automatically
+7. Write a `note` if anything abnormal happens; take a photo of the test activity for the results report
+8. Complete all 24 trials following `trial_protocol.md`
 
-> raw CSV อาจมี movement ช่วงลุก/เดินกลับมากด Stop — ยอมรับได้ scripts คัด
-> เฉพาะค่าช่วง event หลัก (impact/peak + imu_decision) ดู `selection_guide.md`
+> The raw CSV may contain movement from getting up/walking back to press Stop — this is acceptable; the scripts select
+> only the values around the main event (impact/peak + imu_decision). See `selection_guide.md`
 
-หลังจบ session: กรอก `runs/Sxx/session_notes.md` และ `notes.md` ทันที
+After the session ends: fill in `runs/Sxx/session_notes.md` and `notes.md` right away
 
 ---
 
@@ -122,54 +124,54 @@ node scripts/iot/node-red-launch.mjs
 npm run sensor-lab -- validate
 ```
 
-ตรวจ required columns / metadata / มี `imu_decision` row — print PASS/FAIL ต่อไฟล์
-ไฟล์ FAIL: ดูสาเหตุ แก้/เก็บซ้ำก่อนนำไปคัด
+Checks required columns / metadata / presence of an `imu_decision` row — prints PASS/FAIL per file.
+FAIL files: check the cause, fix/re-collect before selecting
 
 ---
 
-## Step 4 — คัด selected และสร้าง export
+## Step 4 — Pick Selected Trials and Generate Exports
 
-1. คัด trial ตัวแทนเข้า `runs/Sxx/selected/` ตามเกณฑ์ใน `selection_guide.md`
-2. รวมเป็นตาราง:
+1. Copy representative trials into `runs/Sxx/selected/` following the criteria in `selection_guide.md`
+2. Combine them into tables:
 
-```bash
-npm run sensor-lab -- summarize
-```
+   ```bash
+   npm run sensor-lab -- summarize
+   ```
 
-3. สร้าง markdown รายงานสรุปผลการวิเคราะห์:
+3. Generate the markdown analysis summary reports:
 
-```bash
-npm run sensor-lab -- chapters
-```
+   ```bash
+   npm run sensor-lab -- chapters
+   ```
 
-ผลอยู่ใน `fall_detection_sensor_lab/exports/`
+The output is in `fall_detection_sensor_lab/exports/`
 
-> example/export = format สำหรับจัดวางข้อมูลเท่านั้น ห้าม claim ผลจริงจนกว่าจะมี CSV จริงจากการเก็บ log
+> example/export = layout format only. Do not claim real results until there are real CSVs from log collection
 
 ---
 
-## Quick Reference — คำสั่งที่ใช้บ่อย
+## Quick Reference — Common Commands
 
-| คำสั่ง                    | ใช้เมื่อ                 |
+| Command                   | Use when                 |
 | ------------------------- | ------------------------ |
-| `info`                    | เช็กสถานะรวม             |
-| `fall config`             | ดู threshold ปัจจุบัน    |
-| `sensor status`           | เช็ก MPU6050 พร้อม       |
-| `mpu test`                | เปิด/ปิดโหมดทดสอบ        |
-| `sim fall`                | ทดสอบ flow โดยไม่ล้มจริง |
-| `npm run sensor-lab -- validate` | ตรวจ raw CSV             |
+| `info`                    | Check overall status     |
+| `fall config`             | View current thresholds  |
+| `sensor status`           | Check MPU6050 is ready   |
+| `mpu test`                | Toggle test mode         |
+| `sim fall`                | Test the flow without actually falling |
+| `npm run sensor-lab -- validate` | Check raw CSV            |
 | `npm run sensor-lab -- all`    | validate+summarize+chapters |
 
 ---
 
-## ลำดับไฟล์เอกสาร (ถ้าต้องการอ่านเพิ่มเติม)
+## Document Order (For Further Reading)
 
-| ต้องการอะไร            | เปิดไฟล์นี้                                              |
-| ---------------------- | -------------------------------------------------------- |
-| workflow + กฎเก็บข้อมูล | `fall_detection_sensor_lab/README.md`                    |
-| ขั้นตอน session/trial   | `fall_detection_sensor_lab/trial_protocol.md`                  |
-| ความหมาย column CSV     | `fall_detection_sensor_lab/csv_schema.md`                    |
-| เกณฑ์คัด selected       | `fall_detection_sensor_lab/selection_guide.md`           |
-| การนำข้อมูลไปใช้รายงาน  | `fall_detection_sensor_lab/chapter_usage.md`             |
-| วิธีล้มแต่ละท่าละเอียด | `docs/components/FallDetectionGuide.md` → Section 6.3    |
-| แก้ปัญหา MQTT/sensor    | `docs/guides/Esp32SystemOperationGuide.md` → Section 7   |
+| What you need                | Open this file                                           |
+| ---------------------------- | -------------------------------------------------------- |
+| workflow + data-collection rules | `fall_detection_sensor_lab/README.md`                |
+| session/trial procedure      | `fall_detection_sensor_lab/trial_protocol.md`            |
+| CSV column meanings          | `fall_detection_sensor_lab/csv_schema.md`                |
+| selected-trial criteria      | `fall_detection_sensor_lab/selection_guide.md`           |
+| using the data in reports    | `fall_detection_sensor_lab/chapter_usage.md`             |
+| detailed fall method per activity | `docs/components/FallDetectionGuide.md` → Section 6.3 |
+| MQTT/sensor troubleshooting  | `docs/guides/Esp32SystemOperationGuide.md` → Section 7   |

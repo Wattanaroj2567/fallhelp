@@ -1,8 +1,10 @@
 # Firmware References Index
 
+[English](README.md) · [ภาษาไทย](README.th.md)
+
 ## Doc Meta
 
-- Audience: Hardware Dev, QA, AI Agents, ผู้วิจัย
+- Audience: Hardware Dev, QA, AI Agents, researchers
 - Source of Truth: component owner docs, firmware source, cited references
 - Status: Active
 - Last Updated: May 18, 2026
@@ -11,9 +13,9 @@
 
 ## Overview
 
-`references/` คือชั้นอธิบายเหตุผล ทฤษฎี คำศัพท์ และแหล่งอ้างอิง ไม่ใช่ runbook สำหรับลงมือทดสอบหน้างาน
+`references/` is the layer for rationale, theory, terminology, and cited sources. It is not a runbook for hands-on field testing.
 
-ถ้าต้องลงมือทำ ให้กลับไป:
+If you need to do the work, go back to:
 
 1. [../guides/README.md](../guides/README.md)
 2. [../components/mpu6050.md](../components/mpu6050.md)
@@ -23,20 +25,20 @@
 
 ## Included References
 
-| ไฟล์ | ใช้เมื่อ |
+| File | Use when |
 | --- | --- |
-| [SensorTheoryReference.md](SensorTheoryReference.md) | ต้องอธิบายสูตร, threshold rationale, signal processing, หรือข้อจำกัดการตีความ |
-| [TechnicalGlossary.md](TechnicalGlossary.md) | ต้องนิยามคำศัพท์ที่ใช้ใน firmware/backend/research docs |
-| [ProjectAlignedResearch.md](ProjectAlignedResearch.md) | ต้องอ้าง paper หรือ implementation reference |
+| [SensorTheoryReference.md](SensorTheoryReference.md) | You need to explain formulas, threshold rationale, signal processing, or interpretation limits |
+| [TechnicalGlossary.md](TechnicalGlossary.md) | You need to define terms used in firmware/backend/research docs |
+| [ProjectAlignedResearch.md](ProjectAlignedResearch.md) | You need to cite a paper or implementation reference |
 
 ---
 
 ## Boundaries
 
-1. Reference docs ไม่ประกาศผลเชิงสถิติปัจจุบัน
-2. Fall Detection Sensor Lab เป็น Basic Activity Collection เท่านั้น
-3. ค่าจาก firmware source เป็น source of truth สำหรับค่าที่ระบบใช้จริง
-4. Paper ใช้เป็น rationale หรือ limitation ไม่ใช่ข้ออ้างให้เปลี่ยน threshold โดยไม่มีรอบทดสอบ
+1. Reference docs do not declare current statistical results
+2. The Fall Detection Sensor Lab is Basic Activity Collection only
+3. Values from the firmware source are the source of truth for the values the system actually uses
+4. Papers are used as rationale or limitation, not as justification for changing a threshold without a test round
 
 ---
 

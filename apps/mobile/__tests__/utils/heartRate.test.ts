@@ -2,7 +2,12 @@
  * heartRate Utility Tests
  * Tests: threshold constants, HR status labeling, color mapping
  */
-import { HR_HIGH_THRESHOLD, HR_LOW_THRESHOLD, getHrStatus } from '../../utils/heartRate';
+import {
+  HR_HIGH_THRESHOLD,
+  HR_LOW_THRESHOLD,
+  filterHeartRateSpike,
+  getHrStatus,
+} from '../../utils/heartRate';
 
 describe('heartRate utils', () => {
   describe('constants', () => {
@@ -41,6 +46,32 @@ describe('heartRate utils', () => {
 
       const status100 = getHrStatus(100);
       expect(status100.label).toBe('ปกติ');
+    });
+  });
+
+  describe('filterHeartRateSpike', () => {
+    it('accepts the first reading when there is no current value', () => {
+      expect(filterHeartRateSpike(null, null, 140)).toEqual({ accept: true, pending: null });
+    });
+
+    it('accepts small changes', () => {
+      expect(filterHeartRateSpike(78, null, 120)).toEqual({ accept: true, pending: null });
+    });
+
+    it('rejects a single jump over 50 BPM and remembers it', () => {
+      expect(filterHeartRateSpike(78, null, 140)).toEqual({ accept: false, pending: 140 });
+    });
+
+    it('accepts a jump that is confirmed by the next reading', () => {
+      expect(filterHeartRateSpike(78, 140, 138)).toEqual({ accept: true, pending: null });
+    });
+
+    it('keeps rejecting readings that do not agree with each other', () => {
+      expect(filterHeartRateSpike(78, 140, 10)).toEqual({ accept: false, pending: 10 });
+    });
+
+    it('clears a remembered spike when readings return near the current value', () => {
+      expect(filterHeartRateSpike(78, 140, 80)).toEqual({ accept: true, pending: null });
     });
   });
 });

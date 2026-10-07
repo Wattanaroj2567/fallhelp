@@ -1,6 +1,6 @@
 # Device Pairing & WiFi Configuration
 
-# ขั้นตอนการจับคู่อุปกรณ์และตั้งค่า WiFi
+[English](device-pairing.md) · [ภาษาไทย](device-pairing.th.md)
 
 ## Doc Meta
 
@@ -11,16 +11,16 @@
 
 ---
 
-คู่มือนี้อธิบาย Flow การจับคู่อุปกรณ์ ESP32 กับแอป (อัปเดต: พฤษภาคม 2026)
+This guide describes the flow for pairing an ESP32 device with the app (updated: May 2026).
 
 ---
 
 ## Overview
 
-การจับคู่อุปกรณ์มี 2 ขั้นตอนหลัก:
+Device pairing has 2 main stages:
 
-1. **Device Pairing** - ผูกอุปกรณ์กับผู้สูงอายุ
-2. **WiFi Configuration** - ตั้งค่า WiFi ให้อุปกรณ์ผ่าน BLE (Bluetooth Low Energy)
+1. **Device Pairing** - bind the device to the elder
+2. **WiFi Configuration** - set up WiFi for the device via BLE (Bluetooth Low Energy)
 
 FallHelp now uses **Bluetooth Low Energy (BLE)** for first-time WiFi provisioning instead of AP Mode. This provides a better user experience with all setup happening within the mobile app.
 
@@ -33,22 +33,22 @@ For device management after setup, mobile enters `device-wifi-setup.tsx` first a
 
 ## Feature Requirements
 
-### Phase 1: Device Pairing (ผูกอุปกรณ์)
+### Phase 1: Device Pairing (Bind the Device)
 
 **Flow Diagram:**
 
 ```
-Admin สร้างอุปกรณ์ → QR Code บนกล่อง → ผู้ใช้สแกน → อุปกรณ์ถูกผูก
+Admin creates device → QR Code on the box → user scans → device is paired
 ```
 
-**ขั้นตอน:**
+**Steps:**
 
-| Step | Action                      | API                                                        |
-| :--: | --------------------------- | ---------------------------------------------------------- |
-|  1   | Admin สร้างอุปกรณ์ในระบบ    | `POST /api/admin/devices`                                  |
-|  2   | ผู้ใช้สร้างข้อมูลผู้สูงอายุ | `POST /api/elders`                                         |
-|  3   | ผู้ใช้สแกน QR Code จากกล่อง | `GET /api/devices/by-code/:code` เพื่อตรวจสอบข้อมูลอุปกรณ์ |
-|  4   | แอปเรียก API ผูกอุปกรณ์     | `POST /api/device-pairings`                                |
+| Step | Action                                  | API                                                          |
+| :--: | --------------------------------------- | ------------------------------------------------------------ |
+|  1   | Admin creates the device in the system  | `POST /api/admin/devices`                                    |
+|  2   | User creates the elder record           | `POST /api/elders`                                           |
+|  3   | User scans the QR Code from the box     | `GET /api/devices/by-code/:code` to check the device details |
+|  4   | App calls the pairing API               | `POST /api/device-pairings`                                  |
 
 #### QR Code Format
 
@@ -59,31 +59,31 @@ Admin สร้างอุปกรณ์ → QR Code บนกล่อง →
 }
 ```
 
-### Phase 2: WiFi Configuration (ตั้งค่า WiFi ผ่าน BLE)
+### Phase 2: WiFi Configuration (WiFi Setup via BLE)
 
-#### วิธีปัจจุบัน: BLE Provisioning
+#### Current Method: BLE Provisioning
 
 ```
-ผู้ใช้เปิด Step 3 → แอปสแกน BLE → เลือกอุปกรณ์ → เลือก WiFi → ส่งรหัสผ่าน → สำเร็จ
+User opens Step 3 → app scans BLE → selects device → selects WiFi → sends password → success
 ```
 
-**ขั้นตอน:**
+**Steps:**
 
-| Step | Action                                 | รายละเอียด                     |
-| :--: | -------------------------------------- | ------------------------------ |
-|  1   | ESP32 เริ่ม BLE advertising            | ชื่ออุปกรณ์: `FallHelp-XXXXXX` |
-|  2   | ผู้ใช้เปิด Step 3 ในแอป                | แอปสแกนหา BLE อัตโนมัติ        |
-|  3   | ผู้ใช้เลือกอุปกรณ์ที่ตรงกับรหัส        | ตรวจสอบจาก Device Code         |
-|  4   | ผู้ใช้เลือก WiFi จากรายการ หรือกรอกเอง | รองรับสแกน WiFi ในแอป          |
-|  5   | ผู้ใช้กรอกรหัสผ่าน WiFi                | ส่งผ่าน BLE ไปยัง ESP32        |
-|  6   | ESP32 ทดสอบเชื่อมต่อจริง               | ใช้เวลา ~10 วินาที             |
-|  7   | สำเร็จ → ESP32 Restart + Online        | ส่งสถานะไป Backend             |
+| Step | Action                                             | Details                             |
+| :--: | -------------------------------------------------- | ----------------------------------- |
+|  1   | ESP32 starts BLE advertising                       | Device name: `FallHelp-XXXXXX`      |
+|  2   | User opens Step 3 in the app                       | App scans for BLE automatically     |
+|  3   | User selects the device matching the code          | Checked against the Device Code     |
+|  4   | User selects WiFi from the list or enters it manually | In-app WiFi scanning supported   |
+|  5   | User enters the WiFi password                      | Sent via BLE to the ESP32           |
+|  6   | ESP32 tests the real connection                    | Takes ~10 seconds                   |
+|  7   | Success → ESP32 Restart + Online                   | Sends status to the Backend         |
 
-**เงื่อนไขที่ต้องมี:**
+**Prerequisites:**
 
-- เปิด Bluetooth บนมือถือ
-- Android ต้องเปิด Location เพื่อสแกน WiFi
-- ESP32 อยู่ในระยะ BLE (ประมาณ 10-30 เมตร)
+- Bluetooth enabled on the phone
+- Android requires Location to be enabled to scan WiFi
+- ESP32 within BLE range (about 10-30 meters)
 
 ### Device Status Flow
 
@@ -91,26 +91,26 @@ Admin สร้างอุปกรณ์ → QR Code บนกล่อง →
 UNPAIRED → PAIRED
 ```
 
-> สถานะ **ออนไลน์/ออฟไลน์ของอุปกรณ์** ไม่ได้เก็บใน `Device.status` — คำนวณจาก `device.lastOnline` timestamp ใน backend เสมอ
+> The device's **online/offline status** is not stored in `Device.status` — it is always computed from the `device.lastOnline` timestamp in the backend
 
-| Status   | Description               |
-| -------- | ------------------------- |
-| UNPAIRED | ยังไม่ได้ผูกกับผู้สูงอายุ |
-| PAIRED   | ผูกกับผู้สูงอายุแล้ว      |
+| Status   | Description                   |
+| -------- | ----------------------------- |
+| UNPAIRED | Not yet paired with an elder  |
+| PAIRED   | Paired with an elder          |
 
-**ความต่างระหว่าง `wifiStatus` และ `lastOnline`:**
+**Difference between `wifiStatus` and `lastOnline`:**
 
-- `wifiStatus` ใช้ตอบคำถามเรื่องการเชื่อม WiFi และ provisioning
-  - `CONNECTED` = อุปกรณ์รายงานว่าเชื่อม WiFi ได้แล้ว
-  - `DISCONNECTED` = อุปกรณ์ยังไม่เชื่อม WiFi หรือหลุดออกจาก WiFi
-  - `CONFIGURING` = กำลังอยู่ใน flow ตั้งค่า WiFi
-  - `ERROR` = flow ตั้งค่า WiFi ล้มเหลวหรือไม่ได้ ACK ตามที่คาด
-- `lastOnline` ใช้ตอบคำถามเรื่อง presence
-  - backend เห็นอุปกรณ์มีชีวิตล่าสุดเมื่อไร
-  - ตอนนี้ UI ควรตีความว่า online หรือ offline
-- สรุป:
-  - ใช้ `wifiStatus` สำหรับข้อความแนว "กำลังตั้งค่า", "เชื่อม WiFi สำเร็จ", "ตั้งค่าไม่สำเร็จ"
-  - ใช้ `lastOnline` สำหรับ badge หรือสถานะ `ออนไลน์ / ออฟไลน์`
+- `wifiStatus` answers questions about the WiFi connection and provisioning
+  - `CONNECTED` = the device reports that it has connected to WiFi
+  - `DISCONNECTED` = the device has not connected to WiFi yet, or has dropped off WiFi
+  - `CONFIGURING` = currently in the WiFi setup flow
+  - `ERROR` = the WiFi setup flow failed or did not receive the expected ACK
+- `lastOnline` answers questions about presence
+  - when the backend last saw the device alive
+  - whether the UI should currently interpret it as online or offline
+- Summary:
+  - use `wifiStatus` for messages like "กำลังตั้งค่า" (Configuring), "เชื่อม WiFi สำเร็จ" (WiFi connected), "ตั้งค่าไม่สำเร็จ" (Setup failed)
+  - use `lastOnline` for the badge or the `ออนไลน์ / ออฟไลน์` (Online / Offline) status
 
 ---
 
@@ -200,9 +200,9 @@ In current mobile implementation, device details should route caregivers to the 
 
 ### Offline Detection (MQTT Last Will)
 
-- ESP32 ตั้ง Last Will Testament เมื่อเชื่อมต่อ MQTT
-- ถ้า ESP32 disconnect โดยไม่ graceful → MQTT broker ส่ง offline message
-- Backend อัปเดต `lastOnline`/realtime state เพื่อให้ระบบคำนวณเป็น Offline อัตโนมัติ
+- The ESP32 sets a Last Will Testament when it connects to MQTT
+- If the ESP32 disconnects ungracefully → the MQTT broker sends an offline message
+- The Backend updates `lastOnline`/realtime state so the system automatically computes the device as Offline
 
 ### Mobile App Features
 
@@ -236,15 +236,15 @@ In current mobile implementation, device details should route caregivers to the 
 Admin creates device → caregiver scans QR → backend validates deviceCode → pair to elder
 ```
 
-- device lookup ใช้ `GET /api/devices/by-code/:deviceCode` และคืนข้อมูลอุปกรณ์สำหรับ pairing
-- การผูกจริงใช้ `POST /api/device-pairings`
-- การยกเลิกการผูกใช้ `DELETE /api/device-pairings/:deviceId`
-- เมื่อ pair สำเร็จ backend ต้อง clear retained config command ของ serial นั้นแบบ best-effort
-  เพื่อกันคำสั่ง `RESET_WIFI` ที่ค้างจากรอบ unpair ก่อนหน้าถูกส่งหลัง provisioning รอบใหม่
-- เมื่อ unpair แล้ว backend ต้องส่ง `RESET_WIFI` ไปที่ `device/{serial}/config` แบบ retained พร้อม `requestId`
-  เพื่อให้อุปกรณ์ที่ offline ตอนกด unpair ได้รับคำสั่งล้าง WiFi/NVS ทันทีเมื่อกลับมา online
-- เมื่อ firmware ตอบ `config/ack` ด้วย `reason: "RESET_WIFI_ACCEPTED"` backend ต้อง clear retained config command
-  เพื่อไม่ให้คำสั่ง reset ค้างไปกระทบการผูกครั้งถัดไป
+- Device lookup uses `GET /api/devices/by-code/:deviceCode` and returns the device data for pairing
+- The actual pairing uses `POST /api/device-pairings`
+- Unpairing uses `DELETE /api/device-pairings/:deviceId`
+- When pairing succeeds, the backend must clear the retained config command for that serial on a best-effort basis
+  to prevent a leftover `RESET_WIFI` command from a previous unpair from being delivered after the new provisioning round
+- After unpairing, the backend must send `RESET_WIFI` to `device/{serial}/config` as retained, with a `requestId`,
+  so that a device that was offline at unpair time receives the command to wipe WiFi/NVS as soon as it comes back online
+- When the firmware replies on `config/ack` with `reason: "RESET_WIFI_ACCEPTED"`, the backend must clear the retained config command
+  so the reset command does not linger and affect the next pairing
 
 ### Provisioning Layer Contract
 
@@ -252,9 +252,9 @@ Admin creates device → caregiver scans QR → backend validates deviceCode →
 BLE scan → connect → send WiFi credentials → device joins WiFi/MQTT → backend observes online status
 ```
 
-- provisioning transport คือ BLE
-- การตั้งค่า WiFi สำเร็จจริงเมื่อ device เชื่อม WiFi/MQTT ได้ ไม่ใช่แค่ส่ง credential สำเร็จ
-- ฝั่ง backend ใช้ MQTT `config` และ `config/ack` สำหรับบางคำสั่งควบคุม เช่น `RESET_WIFI`
+- The provisioning transport is BLE
+- WiFi setup is truly successful only when the device can connect to WiFi/MQTT, not merely when the credentials are sent successfully
+- The backend uses MQTT `config` and `config/ack` for some control commands, such as `RESET_WIFI`
 
 ### MQTT Config ACK Protocol
 
@@ -299,26 +299,26 @@ Notes:
 
 ### Device State Semantics
 
-`Device.status` หมายถึง pairing state เท่านั้น:
+`Device.status` refers to pairing state only:
 
-| Field      | Meaning            |
-| ---------- | ------------------ |
-| `UNPAIRED` | ยังไม่ผูกกับ elder |
-| `PAIRED`   | ผูกกับ elder แล้ว  |
+| Field      | Meaning                    |
+| ---------- | -------------------------- |
+| `UNPAIRED` | Not yet paired with elder  |
+| `PAIRED`   | Paired with elder          |
 
-สิ่งที่ไม่ควรสับสน:
+Things not to confuse:
 
-- online/offline ไม่ได้เก็บใน `Device.status`
-- สถานะ online คำนวณจาก `lastOnline` freshness เท่านั้น ส่วน `wifiStatus` ใช้อธิบาย WiFi/provisioning state
-- offline แบบกะทันหันอาจมาจาก MQTT Last Will (`device/+/lwt`)
+- online/offline is not stored in `Device.status`
+- Online status is computed only from `lastOnline` freshness, while `wifiStatus` describes the WiFi/provisioning state
+- A sudden offline may come from the MQTT Last Will (`device/+/lwt`)
 
 ### Cross-Module Constraints
 
-- Mobile ต้องจัดการ BLE permission และ cleanup ของ connection/scan ให้ครบทุกครั้ง
-- Backend ต้อง reject event จากอุปกรณ์ที่ `UNPAIRED` และส่ง retained `RESET_WIFI` กลับไปได้
-- Firmware ต้องรักษา flow BLE provisioning และ MQTT reconnect ให้สอดคล้องกับ topic contract ปัจจุบัน
-- Firmware ต้องล้างทั้ง confirmed WiFi credentials (`ssid/password`) และ pending credentials (`pending_ssid/pending_pass`)
-  เมื่อรับ `RESET_WIFI`
+- Mobile must handle BLE permissions and clean up connections/scans fully every time
+- Backend must reject events from `UNPAIRED` devices and be able to send a retained `RESET_WIFI` back
+- Firmware must keep the BLE provisioning flow and MQTT reconnect consistent with the current topic contract
+- Firmware must clear both the confirmed WiFi credentials (`ssid/password`) and the pending credentials (`pending_ssid/pending_pass`)
+  when it receives `RESET_WIFI`
 
 ### Permissions Required
 
@@ -346,6 +346,8 @@ Notes:
 <key>NSLocationWhenInUseUsageDescription</key>
 <string>FallHelp ต้องการตำแหน่งเพื่อสแกนหา WiFi networks</string>
 ```
+
+(The iOS permission strings are the Thai text shown to users: "FallHelp needs Bluetooth to set up WiFi for the device" and "FallHelp needs location to scan for WiFi networks".)
 
 ### Security Considerations
 
@@ -378,8 +380,8 @@ If QA needs simulated events, enable mock triggers manually in firmware by setti
 ### Mobile App Implementation
 
 ```typescript
-// หน้าจอตั้งค่า WiFi ผ่าน BLE
-// เมื่อ BLE ส่งสถานะ CONNECTED แล้ว
+// WiFi setup screen via BLE
+// Once BLE has reported the CONNECTED status
 const handleComplete = () => {
   router.replace("/(tabs)");
 };
@@ -389,56 +391,56 @@ const handleComplete = () => {
 
 ## Troubleshooting
 
-| ปัญหา                    | วิธีแก้ไข                                       |
-| ------------------------ | ----------------------------------------------- |
-| ไม่พบอุปกรณ์ BLE         | เปิด Bluetooth, เข้าใกล้อุปกรณ์, รีสตาร์ท ESP32 |
-| เชื่อมต่อ BLE ไม่ได้     | ตรวจสอบ permission, ปิด/เปิด Bluetooth ใหม่     |
-| ไม่พบ WiFi ในรายการ      | เปิด Location (Android), เปิด WiFi แล้วสแกนใหม่ |
-| เชื่อมต่อ WiFi ไม่สำเร็จ | ตรวจสอบรหัสผ่านและระยะสัญญาณ WiFi               |
-| อุปกรณ์ Offline อยู่ตลอด | ตรวจสอบ MQTT Server ทำงาน                       |
+| Problem                       | Solution                                                    |
+| ----------------------------- | ----------------------------------------------------------- |
+| BLE device not found          | Turn on Bluetooth, move closer to the device, restart ESP32 |
+| Cannot connect via BLE        | Check permissions, turn Bluetooth off and on again          |
+| WiFi not shown in the list    | Turn on Location (Android), turn on WiFi and scan again     |
+| WiFi connection unsuccessful  | Check the password and WiFi signal range                    |
+| Device stays Offline          | Check that the MQTT Server is running                       |
 
-### ESP32 ไม่แสดงใน BLE Scan
+### ESP32 Not Showing in BLE Scan
 
-**สาเหตุ:**
+**Causes:**
 
-- ESP32 ไม่ได้เปิด BLE advertising
-- อยู่นอกระยะ Bluetooth (>30m)
-- Bluetooth ปิดอยู่บนมือถือ
+- The ESP32 has not started BLE advertising
+- Out of Bluetooth range (>30m)
+- Bluetooth is off on the phone
 
-**วิธีแก้:**
+**Solution:**
 
-1. ตรวจสอบ Serial Monitor ว่า BLE advertising เริ่มแล้ว
-2. เข้าใกล้ ESP32 (ภายใน 10m)
-3. เปิด Bluetooth บนมือถือ
-4. Restart ESP32 และลองใหม่
+1. Check the Serial Monitor that BLE advertising has started
+2. Move closer to the ESP32 (within 10m)
+3. Turn on Bluetooth on the phone
+4. Restart the ESP32 and try again
 
-### ไม่สามารถเชื่อมต่อ BLE
+### Cannot Connect via BLE
 
-**วิธีแก้:**
+**Solution:**
 
-1. ตรวจสอบ BLE permissions ใน Settings
-2. ปิด Bluetooth แล้วเปิดใหม่
+1. Check BLE permissions in Settings
+2. Turn Bluetooth off and on again
 3. Restart ESP32
 4. Restart Mobile App
 
 ### WiFi Connection Failed
 
-**วิธีแก้:**
+**Solution:**
 
-1. ตรวจสอบรหัสผ่าน WiFi และลองกด **ลองใหม่** — อุปกรณ์จะรีเซ็ต BLE session อัตโนมัติหลัง WiFi fail
-2. ตรวจสอบว่า ESP32 อยู่ในระยะ WiFi
-3. ลองใช้ WiFi network อื่น
-4. ตรวจสอบ Serial Monitor เพื่อดู error
-5. หากลองใหม่หลายครั้งแล้วยังไม่สำเร็จ ให้ปิด-เปิดอุปกรณ์แล้วเริ่ม setup ใหม่
+1. Check the WiFi password and tap **ลองใหม่** (Retry) — the device automatically resets the BLE session after a WiFi failure
+2. Check that the ESP32 is within WiFi range
+3. Try a different WiFi network
+4. Check the Serial Monitor to see the error
+5. If several retries still fail, power-cycle the device and start setup again
 
-### WiFi Scanner ไม่แสดง Networks
+### WiFi Scanner Not Showing Networks
 
-**วิธีแก้:**
+**Solution:**
 
-1. เปิด Location Services (Android)
-2. อนุญาต Location Permission
-3. เปิด WiFi
-4. กด "Scan Again"
+1. Turn on Location Services (Android)
+2. Allow the Location Permission
+3. Turn on WiFi
+4. Tap "Scan Again"
 
 ---
 
@@ -483,9 +485,9 @@ const handleComplete = () => {
 ### End-to-End
 
 - [ ] Fresh ESP32 → Setup → Online
-- [ ] Wrong password → Retry dialog (กรอกรหัสใหม่ได้ทันที ไม่ต้องรีเซ็ตอุปกรณ์)
-- [ ] Retry reconnects BLE silently (ไม่กระพริบไปหน้าสแกน BLE)
-- [ ] Provisioning timeout 20s → dialog ขึ้น, background ขาว
+- [ ] Wrong password → Retry dialog (password can be re-entered immediately, no device reset needed)
+- [ ] Retry reconnects BLE silently (does not flash back to the BLE scan screen)
+- [ ] Provisioning timeout 20s → dialog appears, background stays white
 - [ ] Out of range → Timeout error
 - [ ] Multiple devices → Correct selection
 - [ ] Online device enters backend/MQTT reconfiguration path successfully

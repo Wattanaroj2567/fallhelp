@@ -1,0 +1,9 @@
+# Demo override: run only the Cloudflare tunnel container against backend-api on the host.
+# The tunnel's origin is http://backend:3000; here "backend" resolves to the host machine,
+# so `npm run demo:up` (backend on localhost:3000) is reachable without the Docker backend.
+# Usage: npm run demo:tunnel
+services:
+  tunnel:
+    extra_hosts:
+      - "backend:host-gateway"
+    depends_on: !reset []

@@ -1,83 +1,85 @@
-# หน้าแดชบอร์ด (Dashboard)
+# Dashboard
+
+[English](dashboard.md) · [ภาษาไทย](dashboard.th.md)
 
 ## Doc Meta
 
-- **Audience**: Dev / QA / Stakeholder / ผู้วิจัย
+- **Audience**: Dev / QA / Stakeholder / Researcher
 - **Source of Truth**: `apps/mobile/app/(tabs)/dashboard.tsx`
-- **Status**: **Active** — ฟีเจอร์ที่พัฒนาแล้วและใช้งานจริง
+- **Status**: **Active** — implemented feature in real use
 - Last Updated: May 31, 2026
 
 ## Overview
 
-หน้าจอหลักที่ผู้ดูแลเปิดใช้งานทุกวัน แสดงสถานะผู้สูงอายุแบบ Real-time ทั้งสถานะอุปกรณ์ (Online/Offline) สถานะการหกล้ม และค่าชีพจร พร้อมปุ่มโทรฉุกเฉินลัด ข้อมูลอัปเดตผ่าน Socket.io แบบ Real-time และดึง API เป็น Fallback เมื่อยังไม่ได้รับสัญญาณ
+The main screen caregivers open every day. It shows the elder's status in real time — device status (Online/Offline), fall status, and pulse — together with a shortcut emergency call button. Data is updated in real time via Socket.io, with an API fetch as a fallback when no signal has been received yet.
 
 ## Users
 
-- **ญาติผู้ดูแล (Caregiver)** — ติดตามสถานะและตอบสนองเหตุฉุกเฉิน
+- **Caregiver (family member)** — monitors status and responds to emergencies
 
 ## Features
 
-### 1. การแสดงสถานะแบบ Real-time
+### 1. Real-time Status Display
 
-**ข้อมูลที่อัปเดตแบบ Real-time:**
+**Data updated in real time:**
 
-- **สถานะอุปกรณ์** — Online (เขียว) / Offline (แดง) / กำลังเชื่อมต่อ (เหลือง)
-- **สถานะการหกล้ม** — ปกติ / กำลังตรวจสอบ / ตรวจพบการหกล้ม / เหตุการณ์ก่อนหน้า
-- **อัตราการเต้นหัวใจ** — ค่า BPM แบบ Real-time พร้อมการแจ้งเตือนค่าผิดปกติ
+- **Device status** — Online (green) / Offline (red) / Connecting (yellow)
+- **Fall status** — Normal / Checking / Fall detected / Previous event
+- **Heart rate** — real-time BPM value with abnormal-value alerts
 
-### 2. การดำเนินการของผู้ใช้
+### 2. User Actions
 
-**ปุ่มและการกระทำ:**
+**Buttons and actions:**
 
-- **การ์ดผู้สูงอายุ** — กดเข้าดูข้อมูลเพิ่มเติม
-- **การ์ดอุปกรณ์** — กดเข้าดูรายละเอียดอุปกรณ์
-- **ปุ่มรับทราบแล้ว** — รับทราบเหตุการณ์และคืนหน้าจอเป็นปกติ (UI เท่านั้น)
-- **ปุ่มโทรฉุกเฉิน** — กดเข้าหน้าโทรฉุกเฉินทันที
-- **ไอคอนกระดิ่งแจ้งเตือน** — เปิด Notification Modal
+- **Elder card** — tap to view more information
+- **Device card** — tap to view device details
+- **"รับทราบแล้ว" (Acknowledged) button** — acknowledges the event and returns the screen to normal (UI only)
+- **Emergency call button** — opens the emergency call screen immediately
+- **Notification bell icon** — opens the Notification Modal
 
 ## Related Screens
 
-### หน้าแดชบอร์ดหลัก (Home Tab)
+### Main Dashboard (Home Tab)
 
-**ไฟล์:** `(tabs)/dashboard.tsx`
-**สิ่งที่ผู้ใช้เห็น:**
+**File:** `(tabs)/dashboard.tsx`
+**What the user sees:**
 
-- **Header** — รูปโปรไฟล์ผู้ใช้ + ชื่อผู้ใช้ + ไอคอนกระดิ่งแจ้งเตือน (Badge จำนวนที่ยังไม่อ่าน)
-- **การ์ดผู้สูงอายุ** — ชื่อ, อายุ, เพศ พร้อม Shortcut กดเข้าดูข้อมูลเพิ่มเติม
-- **การ์ดสถานะอุปกรณ์** — Online/Offline/กำลังเชื่อมต่อ พร้อมชื่ออุปกรณ์
-- **การ์ดสถานะการหกล้ม** — ปกติ/กำลังตรวจสอบ/ตรวจพบการหกล้ม/เหตุการณ์ก่อนหน้า
-- **การ์ดอัตราการเต้นหัวใจ** — ค่า BPM แบบ Real-time พร้อม Badge ค่าผิดปกติ
-- **ปุ่มโทรฉุกเฉิน** — ปุ่มลอยด้านล่าง
-  **สิ่งที่ผู้ใช้ทำได้:**
-- กดการ์ดผู้สูงอายุ → ไปหน้า Elder Profile
-- กดการ์ดอุปกรณ์ → ไปหน้า Device Details
-- กดไอคอนกระดิ่ง → เปิด Notification Modal
-- กดปุ่ม "รับทราบแล้ว" → รับทราบเหตุการณ์และคืนหน้าจอเป็นปกติ (UI เท่านั้น)
-- กดปุ่มโทรฉุกเฉิน → ไปหน้า Emergency Call
+- **Header** — user profile picture + user name + notification bell icon (Badge with unread count)
+- **Elder card** — name, age, gender, with a shortcut to view more information
+- **Device status card** — Online/Offline/Connecting, with the device name
+- **Fall status card** — Normal/Checking/Fall detected/Previous event
+- **Heart rate card** — real-time BPM value with an abnormal-value Badge
+- **Emergency call button** — floating button at the bottom
+  **What the user can do:**
+- Tap the elder card → go to Elder Profile
+- Tap the device card → go to Device Details
+- Tap the bell icon → open the Notification Modal
+- Tap the "รับทราบแล้ว" (Acknowledged) button → acknowledge the event and return the screen to normal (UI only)
+- Tap the emergency call button → go to Emergency Call
 
 ## Business Rules
 
-| หัวข้อ              | รายละเอียด                                                                 |
-| ------------------- | -------------------------------------------------------------------------- |
-| ค่า HR ปกติ         | 60–100 BPM                                                                 |
-| HR สูงผิดปกติ       | > 100 BPM (Tachycardia)                                                    |
-| HR ต่ำผิดปกติ       | < 60 BPM (Bradycardia)                                                     |
-| HR หมดอายุ          | ไม่มีข้อมูลใหม่เกิน 60 วินาที → แสดง "--"                                  |
-| สถานะการล้มหมดอายุ  | ไม่มีข้อมูลใหม่เกิน 10 นาที → ถือว่าเก่า                                   |
-| สถานะอุปกรณ์ออนไลน์ | คำนวณจาก `lastOnline` และ realtime signal (backend threshold 15 วินาที) |
-| Grace Period สัญญาณ | ช่วงเริ่มต้นใช้ startup grace ประมาณ 8 วินาที ก่อนตัดสินว่า Offline       |
-| รับทราบแล้ว         | เปลี่ยนเฉพาะ UI — ไม่แก้ไขข้อมูล Event ใน Backend                          |
-| Badge กระดิ่ง        | แสดงจาก unread notification จริงหลัง backend สร้าง record แล้ว ไม่ขึ้นล่วงหน้าจาก card realtime |
+| Topic                 | Details                                                                                                              |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Normal HR             | 60–100 BPM                                                                                                           |
+| Abnormally high HR    | > 100 BPM (Tachycardia)                                                                                              |
+| Abnormally low HR     | < 60 BPM (Bradycardia)                                                                                               |
+| HR expiry             | No new data for more than 60 seconds → show "--"                                                                     |
+| Fall status expiry    | No new data for more than 10 minutes → treated as stale                                                              |
+| Device online status  | Computed from `lastOnline` and the realtime signal (backend threshold 15 seconds)                                    |
+| Signal Grace Period   | At startup a startup grace of about 8 seconds applies before deciding Offline                                        |
+| "รับทราบแล้ว" (Acknowledged) | Changes the UI only — does not modify Event data in the Backend                                               |
+| Bell Badge            | Shown from real unread notifications after the backend has created the record; it does not appear early from the realtime card |
 
 ## Related Docs
 
-- [elder-profile.md](elder-profile.md) — ข้อมูลผู้สูงอายุ
-- [emergency-contact.md](emergency-contact.md) — หน้าโทรฉุกเฉิน
-- [event-history.md](event-history.md) — ประวัติเหตุการณ์
+- [elder-profile.md](elder-profile.md) — elder information
+- [emergency-contact.md](emergency-contact.md) — emergency call screen
+- [event-history.md](event-history.md) — event history
 
 ---
 
-**หมายเหตุ:** เอกสารนี้อธิบายฟีเจอร์ที่พัฒนาแล้วและใช้งานจริงในระบบ FallHelp
+**Note:** This document describes a feature that has been implemented and is in real use in the FallHelp system.
 
 ---
 
@@ -96,39 +98,39 @@
 
 ## Overview
 
-เอกสารนี้เป็น owner doc ของ UX/UI ฝั่ง mobile โดยถอดจาก implementation จริงใน `apps/mobile/` เพื่ออธิบายว่าแต่ละหน้าจอควรทำงานอย่างไร ไม่ใช่แค่หน้าตาเป็นอย่างไร
+This document is the owner doc for mobile UX/UI. It is derived from the actual implementation in `apps/mobile/` to explain how each screen should behave, not just how it looks.
 
-เป้าหมายของเอกสารนี้คือ:
+The goals of this document are:
 
-- ใช้เป็นจุดอ้างอิงร่วมระหว่าง Dev, PM, QA เวลาเช็กว่า flow ของหน้าจอตรงกับ intent หรือไม่
-- สรุป shell, interaction pattern, และ state behavior ที่ใช้ซ้ำกันทั้งแอป
-- ระบุความต่างระหว่าง setup flow, auth flow, monitoring flow, และ settings/profile flow ให้ชัด
+- To serve as a shared reference between Dev, PM, and QA when checking whether a screen flow matches its intent
+- To summarise the shell, interaction patterns, and state behavior reused across the whole app
+- To clearly distinguish the setup flow, auth flow, monitoring flow, and settings/profile flow
 
 ---
 
 ## 1. Mobile Experience Principles
 
-### 1.1 หลักการออกแบบหลัก
+### 1.1 Core Design Principles
 
-- แอปนี้เป็น caregiver app จึงเน้น `อ่านเร็ว`, `ตอบสนองเร็ว`, และ `ลดการตัดสินใจผิด` มากกว่าความหวือหวา
-- หน้าจอส่วนใหญ่ใช้พื้นหลังขาว, การ์ดมุมโค้ง, และ hierarchy ของข้อความแบบนิ่งเพื่อให้อ่านภาษาไทยได้ง่าย
-- Critical state เช่น fall alert ต้องเด่นด้วยสีและถ้อยคำ แต่ต้องไม่ทำให้ caregiver เข้าใจว่า "กดยกเลิกเหตุการณ์จากแอปได้"
-- Setup flow ต้องพา user ไปทีละขั้น ลด branching และลดความจำเป็นต้องจำบริบทเอง
+- This is a caregiver app, so it prioritises `fast reading`, `fast response`, and `reducing wrong decisions` over flashiness
+- Most screens use a white background, rounded cards, and a calm text hierarchy so Thai text is easy to read
+- Critical states such as a fall alert must stand out through color and wording, but must not make the caregiver think they can "cancel the event from the app"
+- The setup flow must guide the user one step at a time, reduce branching, and reduce the need to remember context on their own
 
-### 1.2 Terminology ที่ UI ต้องรักษา
+### 1.2 Terminology the UI Must Preserve
 
-- `Cancel` สงวนให้ฝั่งอุปกรณ์เท่านั้น
-- ฝั่งแอปของ caregiver ใช้คำว่า `รับทราบแล้ว` เป็นหลัก และหลีกเลี่ยงคำที่สื่อว่าเปลี่ยนสถานะจริงของเหตุการณ์
-- Fall flow ใน UI ต้องสะท้อน 3 ช่วงหลัก:
+- `Cancel` is reserved for the device side only
+- The caregiver app uses `รับทราบแล้ว` (Acknowledged) as the primary term and avoids wording that implies changing the real state of the event
+- The fall flow in the UI must reflect 3 main phases:
   - `SUSPECTED`
   - `FALL`
-  - `NORMAL` หลัง resolve/cancelled
+  - `NORMAL` after resolve/cancelled
 
 ### 1.3 Layout Direction
 
-- ทุกหน้าหลักใช้ padding ด้านข้าง `24px` เป็นฐานผ่าน [ScreenWrapper.tsx](../../apps/mobile/components/ScreenWrapper.tsx)
-- Header กลางของแอปใช้ [AppScreenHeader.tsx](../../apps/mobile/components/AppScreenHeader.tsx)
-- Onboarding setup ใช้ [WizardLayout.tsx](../../apps/mobile/components/WizardLayout.tsx) เพื่อให้ progress bar, header, และ spacing คงที่ทั้ง 3 ขั้น
+- Every main screen uses a base horizontal padding of `24px` via [ScreenWrapper.tsx](../../apps/mobile/components/ScreenWrapper.tsx)
+- The app's shared header uses [AppScreenHeader.tsx](../../apps/mobile/components/AppScreenHeader.tsx)
+- Onboarding setup uses [WizardLayout.tsx](../../apps/mobile/components/WizardLayout.tsx) so the progress bar, header, and spacing stay consistent across all 3 steps
 
 ---
 
@@ -136,55 +138,55 @@
 
 ### 2.1 Screen Wrapper
 
-หน้าจอหลักทั้งหมดในแอปวางอยู่บน [ScreenWrapper.tsx](../../apps/mobile/components/ScreenWrapper.tsx) ซึ่งกำหนด behavior ร่วมดังนี้:
+All main screens in the app sit on [ScreenWrapper.tsx](../../apps/mobile/components/ScreenWrapper.tsx), which defines the following shared behavior:
 
-- Safe area เป็นค่าเริ่มต้น
-- สีพื้นหลังหลักเป็น `white`
-- ใช้ `KeyboardAwareScrollView` เป็นค่าเริ่มต้นกับหน้าฟอร์ม
-- มี 3 mode:
-  - `useScrollView=true` สำหรับฟอร์มหรือหน้า content ยาว
-  - `useScrollView=false + keyboardAvoiding=true` สำหรับ fixed layout ที่แตะพื้นหลังเพื่อปิด keyboard ได้
-  - `useScrollView=false + keyboardAvoiding=false` สำหรับหน้า interaction เฉพาะทาง เช่น list หรือ fullscreen content
+- Safe area by default
+- Main background color is `white`
+- Uses `KeyboardAwareScrollView` by default for form screens
+- Has 3 modes:
+  - `useScrollView=true` for forms or long-content screens
+  - `useScrollView=false + keyboardAvoiding=true` for fixed layouts where tapping the background dismisses the keyboard
+  - `useScrollView=false + keyboardAvoiding=false` for specialised interaction screens such as lists or fullscreen content
 
-ผลคือ user จะรู้สึกว่าหน้าต่าง ๆ "เป็นแอปเดียวกัน" แม้จะเป็นคนละ flow
+As a result, users feel the screens "belong to the same app" even across different flows.
 
 ### 2.2 App Screen Header
 
-Header กลางอยู่ที่ [AppScreenHeader.tsx](../../apps/mobile/components/AppScreenHeader.tsx)
+The shared header lives in [AppScreenHeader.tsx](../../apps/mobile/components/AppScreenHeader.tsx)
 
-behavior หลัก:
+Main behavior:
 
-- ชื่อหน้าอยู่กึ่งกลาง
-- ปุ่มกลับอยู่ซ้าย และใช้ `Bounceable`
-- slot ด้านขวาเปิดให้ใส่ action เพิ่มได้
-- มี 2 mode:
-  - ปกติ: พื้นหลังขาว + rounded bottom
-  - transparent: ใช้กับ wizard/camera/background พิเศษ
+- Screen title is centered
+- Back button is on the left and uses `Bounceable`
+- The right slot is open for additional actions
+- Has 2 modes:
+  - normal: white background + rounded bottom
+  - transparent: used with wizard/camera/special backgrounds
 
-กติกาสำคัญ:
+Key rules:
 
-- ทุกหน้าที่ไม่ใช่ tab root ควรใช้ header กลางเดียวกัน เพื่อไม่ให้ระยะ padding และ touch target drift
-- ชื่อหน้าควรสั้น อ่านได้ใน 1 บรรทัด
+- Every screen that is not a tab root should use the same shared header so padding and touch targets do not drift
+- Screen titles should be short and fit on 1 line
 
 ### 2.3 Wizard Layout
 
-[WizardLayout.tsx](../../apps/mobile/components/WizardLayout.tsx) เป็น shell เฉพาะ onboarding setup
+[WizardLayout.tsx](../../apps/mobile/components/WizardLayout.tsx) is the shell dedicated to onboarding setup
 
-มันบังคับสิ่งต่อไปนี้ให้เหมือนกันทุกขั้น:
+It enforces the following to be identical across every step:
 
-- header รูปแบบเดียวกัน
-- progress bar 3 ขั้น
-- label ของแต่ละ step:
-  - `กรอกข้อมูลผู้สูงอายุ`
-  - `ติดตั้งอุปกรณ์`
-  - `ตั้งค่าอินเทอร์เน็ต`
-- spacing ระหว่าง header/progress/content
+- the same header style
+- a 3-step progress bar
+- the label of each step:
+  - `กรอกข้อมูลผู้สูงอายุ` (Enter elder information)
+  - `ติดตั้งอุปกรณ์` (Install device)
+  - `ตั้งค่าอินเทอร์เน็ต` (Set up internet)
+- spacing between header/progress/content
 
 UX intent:
 
-- ลดความรู้สึกว่าผู้ใช้ "หลง"
-- ทำให้ back navigation ยังเห็นบริบทเดิม
-- สื่อชัดว่าขั้นไหนเสร็จแล้ว ขั้นไหนกำลังทำอยู่
+- Reduce the feeling of being "lost"
+- Keep the original context visible during back navigation
+- Make it clear which steps are done and which step is in progress
 
 ---
 
@@ -192,53 +194,53 @@ UX intent:
 
 ### 3.1 Color Roles
 
-สีที่ใช้ใน mobile ไม่ได้เป็น design token เชิง abstract ล้วน ๆ แต่มีบทบาทค่อนข้างตายตัวจาก implementation:
+Colors used in mobile are not purely abstract design tokens; they have fairly fixed roles derived from the implementation:
 
 | Role                  | Color               | Usage                                                        |
 | --------------------- | ------------------- | ------------------------------------------------------------ |
-| Primary action        | `#16AD78`           | ปุ่มหลัก, active state, success emphasis                     |
+| Primary action        | `#16AD78`           | primary buttons, active state, success emphasis              |
 | Critical / fall       | Red family          | fall confirmed, destructive confirmation, emergency emphasis |
 | Warning / suspected   | Yellow/Amber family | suspected fall, transitional warning state                   |
 | Info / low heart rate | Blue family         | informational monitoring state, low alert                    |
 | Neutral surface       | White + Gray scale  | card, text hierarchy, border                                 |
 
-กติกา UX:
+UX rules:
 
-- สีเขียว = action ที่ไปต่อหรือสำเร็จ
-- สีแดง = เหตุการณ์ฉุกเฉินหรือ destructive decision
-- สีเหลือง = สถานะรอการยืนยันหรือมีความเสี่ยง แต่ยังไม่ใช่เหตุยืนยันแล้ว
-- ห้ามใช้สีม่วงเป็น accent หลักของระบบ
+- Green = an action that proceeds or succeeds
+- Red = an emergency event or a destructive decision
+- Yellow = a state awaiting confirmation or at risk, but not yet a confirmed event
+- Purple must not be used as the system's main accent
 
 ### 3.2 Typography
 
-ฟอนต์หลักคือ `Kanit` ผ่าน [KanitText.tsx](../../apps/mobile/components/KanitText.tsx)
+The main font is `Kanit` via [KanitText.tsx](../../apps/mobile/components/KanitText.tsx)
 
-หลักการใช้งาน:
+Usage principles:
 
-- ใช้ Kanit ทุกจุดที่เป็นข้อความหลักของระบบ
-- ต้องอ่านภาษาไทยได้ชัด โดยเฉพาะบรรทัดที่มีวรรณยุกต์
-- แบ่งชั้นความสำคัญผ่านขนาด/weight มากกว่าการใช้สีจำนวนมาก
+- Use Kanit for all main system text
+- Thai must be clearly readable, especially lines with tone marks
+- Express importance through size/weight rather than many colors
 
-hierarchy ที่พบจริงในแอป:
+Hierarchy actually found in the app:
 
-- `text-3xl` ถึง `text-2xl` สำหรับ title สำคัญและค่าหลัก
-- `text-xl` ถึง `text-lg` สำหรับ section title และข้อมูลเด่น
-- `text-base` สำหรับ body ปกติ
-- `text-sm` และ `text-xs` สำหรับ secondary/helper/meta text
+- `text-3xl` to `text-2xl` for important titles and key values
+- `text-xl` to `text-lg` for section titles and highlighted information
+- `text-base` for normal body text
+- `text-sm` and `text-xs` for secondary/helper/meta text
 
 ### 3.3 Shape & Spacing
 
-รูปแบบโดยรวมของ mobile ใช้การ์ดมุมโค้งค่อนข้างมาก:
+The overall mobile style uses fairly rounded cards:
 
-- card หลัก: radius ใหญ่ระดับ `24px` ถึง `28px`
-- button/input: radius เล็กลง แต่ยังคงความโค้งชัด
-- พื้นที่ว่างด้านข้างมาตรฐาน: `24px`
-- spacing ระหว่าง block มักอยู่ในช่วง `12px`, `16px`, `24px`
+- main cards: large radius of `24px` to `28px`
+- button/input: smaller radius, but still clearly rounded
+- standard horizontal whitespace: `24px`
+- spacing between blocks is usually `12px`, `16px`, or `24px`
 
-ผลเชิง UX:
+UX effect:
 
-- ให้ความรู้สึก soft/safe เหมาะกับแอปดูแลสุขภาพ
-- ช่วยแยก block ข้อมูลโดยไม่ต้องใช้เส้นเยอะ
+- Gives a soft/safe feel suitable for a health care app
+- Helps separate information blocks without many lines
 
 ---
 
@@ -246,60 +248,60 @@ hierarchy ที่พบจริงในแอป:
 
 ### 4.1 Buttons
 
-ปุ่มหลักในแอปใช้ [PrimaryButton.tsx](../../apps/mobile/components/PrimaryButton.tsx)
+Primary buttons in the app use [PrimaryButton.tsx](../../apps/mobile/components/PrimaryButton.tsx)
 
-behavior ที่ผู้ใช้ควรได้รับสม่ำเสมอ:
+Behavior users should get consistently:
 
-- disabled/loading state ต้องเห็นชัด
-- ปุ่มหลักใช้สีเขียว
-- ปุ่ม destructive ใช้สีแดง
-- ปุ่ม secondary ใช้ outline หรือพื้นขาว
+- disabled/loading state must be clearly visible
+- primary buttons are green
+- destructive buttons are red
+- secondary buttons use an outline or white background
 
 ### 4.2 Press Feedback
 
-touch target ที่เป็น action สำคัญจำนวนมากใช้ `Bounceable`
+Many touch targets for important actions use `Bounceable`
 
 UX intent:
 
-- ให้ feedback ทันทีเมื่อแตะ
-- ลดการกดซ้ำเร็วเกินไป
-- ทำให้ card/action ในมือถือรู้สึก responsive โดยไม่กระโดดแรงเกิน
+- Give immediate feedback on tap
+- Reduce overly fast repeated taps
+- Make cards/actions on mobile feel responsive without jumping too hard
 
 ### 4.3 Dialog vs Toast
 
-แอปแยก feedback ออกเป็น 2 ระดับ:
+The app separates feedback into 2 levels:
 
 - `showDialog(...)`
-  - ใช้กับ validation error
-  - ใช้กับ confirmation
-  - ใช้กับกรณีที่ user ต้อง "หยุดอ่านก่อน"
+  - used for validation errors
+  - used for confirmations
+  - used when the user must "stop and read first"
 - `showSuccessToast(...)` / `showErrorToast(...)`
-  - ใช้กับงานสั้น ๆ ที่ไม่ต้องหยุด flow
-  - เช่น บันทึกสำเร็จ, รีเซ็ตมุมมองสำเร็จ
+  - used for short tasks that should not interrupt the flow
+  - e.g. saved successfully, view reset successfully
 
-กติกา:
+Rules:
 
-- ถ้าต้องการการตัดสินใจจาก user ใช้ dialog
-- ถ้าเป็น feedback หลัง action ใช้ toast ได้
+- If a decision from the user is required, use a dialog
+- If it is feedback after an action, a toast is fine
 
 ### 4.4 Form Behavior
 
-ฟอร์มใน mobile ใช้ pattern ใกล้กันมาก:
+Forms in mobile follow very similar patterns:
 
-- ใช้ `FloatingLabelInput`
-- validation เกิดก่อนยิง mutation
-- ถ้าข้อมูลไม่ครบหรือ format ไม่ถูกต้อง ใช้ dialog อธิบายตรง ๆ
-- ค่าที่กรอกค้างไว้ได้ใน setup flow บางขั้นผ่าน storage
+- use `FloatingLabelInput`
+- validation happens before firing the mutation
+- if data is incomplete or incorrectly formatted, use a dialog that explains it directly
+- entered values can persist in some setup steps via storage
 
 ### 4.5 Navigation Safety
 
-navigation ผ่าน [safeRouter.ts](../../apps/mobile/utils/safeRouter.ts)
+Navigation goes through [safeRouter.ts](../../apps/mobile/utils/safeRouter.ts)
 
 UX intent:
 
-- กัน double navigation
-- ลด race condition ระหว่าง auth/setup transitions
-- ป้องกัน user เจอหน้าเด้งไปมาเมื่อ state ยัง resolve ไม่เสร็จ
+- Prevent double navigation
+- Reduce race conditions between auth/setup transitions
+- Prevent users from seeing screens bounce back and forth while state has not finished resolving
 
 ---
 
@@ -318,22 +320,22 @@ Owner screens:
 
 UX characteristics:
 
-- เป็น form-first flow
-- ใช้ spacing กว้างกว่า tab screens เล็กน้อย
-- ลดสิ่งรบกวนเพื่อให้ user โฟกัสงานเดียวต่อหน้า
+- A form-first flow
+- Uses slightly wider spacing than the tab screens
+- Minimises distractions so the user focuses on one task per screen
 
-รายละเอียดสำคัญ:
+Important details:
 
 - `login`
-  - ข้อผิดพลาดจาก credential หรือ validation ใช้ dialog
-  - ต้องนำทางไป flow ถัดไปอย่างเสถียรผ่าน safe router
+  - credential or validation errors use a dialog
+  - must navigate to the next flow reliably via the safe router
 - `verify-otp`
-  - ใช้ hidden input + OTP boxes 6 ช่อง
-  - มี countdown ทั้ง expiry และ resend cooldown
-  - เน้นลดความงงของผู้ใช้เวลา OTP ไม่ผ่าน
+  - uses a hidden input + 6 OTP boxes
+  - has countdowns for both expiry and resend cooldown
+  - focuses on reducing user confusion when the OTP fails
 - `success`
-  - เป็นหน้าปิดจบ flow
-  - ใช้ visual positive feedback และ CTA เดียวให้ไปต่อ
+  - is the closing screen of the flow
+  - uses positive visual feedback and a single CTA to continue
 
 ### 5.2 Setup Entry
 
@@ -341,17 +343,17 @@ Owner screen:
 
 - `apps/mobile/app/(setup)/empty-state.tsx`
 
-บทบาท:
+Role:
 
-- เป็นจุดเริ่ม wizard เมื่อ user ยังไม่มี elder/device setup
-- อธิบายขั้นตอนล่วงหน้าแบบเข้าใจง่าย
-- ถ้ามี elder อยู่แล้วจากระบบ ให้ข้ามออกจาก setup อัตโนมัติ
+- The starting point of the wizard when the user has no elder/device setup yet
+- Explains the steps ahead in an easy-to-understand way
+- If an elder already exists in the system, skip out of setup automatically
 
 UX patterns:
 
-- ใช้ step cards 4 ใบสรุป flow
-- ปุ่มหลักเดียว `เริ่มลงทะเบียน`
-- มี `ออกจากระบบ` เป็น secondary action
+- Uses 4 step cards to summarise the flow
+- A single primary button `เริ่มลงทะเบียน` (Start registration)
+- `ออกจากระบบ` (Log out) as a secondary action
 
 ### 5.3 Setup Step 1 — Elder Information
 
@@ -359,25 +361,25 @@ Owner screen:
 
 - `apps/mobile/app/(setup)/step1-elder-info.tsx`
 
-บทบาท:
+Role:
 
-- เก็บข้อมูลผู้สูงอายุที่จำเป็นสำหรับระบบ
-- รองรับทั้ง create ใหม่และ resume/edit ข้อมูลเดิม
+- Collects the elder information the system requires
+- Supports both creating new data and resuming/editing existing data
 
 UX rules:
 
-- form ยาว ต้อง scroll ได้ดีและ keyboard ไม่บัง
-- validation ต้องสั้น ชัด และบอก field ที่ต้องแก้
-- ข้อมูลที่กรอกไว้ต้องไม่หายง่าย ถ้าผู้ใช้ย้อนกลับหรือแอปสลับสถานะ
+- The form is long, so it must scroll well and the keyboard must not cover it
+- Validation must be short, clear, and say which field to fix
+- Entered data must not be lost easily if the user goes back or the app changes state
 
-field groups ที่ชัดเจนจาก implementation:
+Field groups clearly visible in the implementation:
 
-- ชื่อ / นามสกุล
-- เพศ
-- วันเกิด
-- ส่วนสูง / น้ำหนัก
-- โรคประจำตัว
-- บ้านเลขที่ / หมู่ที่ / หมู่บ้าน / ที่อยู่แบบ picker
+- First name / last name
+- Gender
+- Date of birth
+- Height / weight
+- Medical conditions
+- House number / village number (moo) / village / address via picker
 
 ### 5.4 Setup Step 2 — Device Pairing
 
@@ -385,24 +387,24 @@ Owner screen:
 
 - `apps/mobile/app/(setup)/step2-device-pairing.tsx`
 
-บทบาท:
+Role:
 
-- จับคู่อุปกรณ์ผ่าน QR scan หรือ manual code
-- เป็นจุดเชื่อมโลก physical device เข้ากับ user/elder
+- Pairs the device via QR scan or manual code
+- The point that connects the physical device world to the user/elder
 
 UX rules:
 
-- camera scan เป็น happy path หลัก
-- manual entry เป็น fallback
-- ถ้าพบว่ามีอุปกรณ์ผูกแล้ว ต้องบอก user ชัดว่า:
-  - ไปขั้นตอนต่อไปได้
-  - หรือเปลี่ยนอุปกรณ์ใหม่ได้
+- Camera scan is the main happy path
+- Manual entry is the fallback
+- If a device is found to be already paired, the user must be told clearly that they can:
+  - continue to the next step
+  - or replace it with a new device
 
-behavior สำคัญ:
+Important behavior:
 
-- ป้องกันสแกนซ้ำหลายครั้ง
-- ถ้าสแกน QR ได้ `deviceCode` + `serialNumber` ต้องเก็บพอสำหรับ step ถัดไป
-- back จาก step 2 ต้องกลับ step 1 ได้จริง
+- Prevent scanning repeatedly
+- If the QR scan yields `deviceCode` + `serialNumber`, keep enough of it for the next step
+- Back from step 2 must actually return to step 1
 
 ### 5.5 Setup Step 3 — WiFi Setup via BLE
 
@@ -410,12 +412,12 @@ Owner screen:
 
 - `apps/mobile/app/(setup)/step3-wifi-setup.tsx`
 
-บทบาท:
+Role:
 
-- ตั้งค่า WiFi ให้ ESP32 ผ่าน BLE provisioning
-- เป็นขั้นที่ซับซ้อนที่สุดใน setup flow
+- Sets up WiFi for the ESP32 via BLE provisioning
+- The most complex step in the setup flow
 
-sub-steps จริงในหน้าจอ:
+Actual sub-steps in the screen:
 
 - `initializing`
 - `bluetooth-check`
@@ -428,15 +430,15 @@ sub-steps จริงในหน้าจอ:
 
 UX rules:
 
-- ต้องอธิบายสถานะที่กำลังทำอยู่เสมอ
-- ถ้า Bluetooth หรือ WiFi ปิดอยู่ ต้องบอกวิธีไปต่อชัด
-- provisioning ต้องมี progress message ตามเวลาที่ผ่านไป
-- ถ้า socket ยังไม่กลับมา สามารถ fallback เป็น polling ได้โดย user ไม่ต้องรู้ implementation detail
+- Always explain what is currently happening
+- If Bluetooth or WiFi is off, clearly tell the user how to proceed
+- Provisioning must show progress messages as time passes
+- If the socket has not come back yet, it can fall back to polling without the user needing to know implementation details
 
-หลักคิด:
+Principles:
 
-- user ต้องรู้ว่า "ระบบยังทำงานอยู่" แม้ provisioning จะนาน
-- error message ต้อง actionable มากกว่าแค่ "ล้มเหลว"
+- The user must know that "the system is still working" even if provisioning takes a long time
+- Error messages must be actionable rather than just "failed"
 
 ### 5.6 Setup Success
 
@@ -444,17 +446,17 @@ Owner screen:
 
 - `apps/mobile/app/(setup)/saved-success.tsx`
 
-บทบาท:
+Role:
 
-- ปิด setup flow
-- ยืนยันว่า setup เสร็จสมบูรณ์แล้ว
-- พาผู้ใช้เข้าแท็บหลักแบบ state พร้อมใช้งาน
+- Closes the setup flow
+- Confirms that setup is complete
+- Takes the user into the main tabs in a ready-to-use state
 
 UX rules:
 
-- ใช้ positive confirmation เต็มหน้า
-- มี CTA เดียว `ไปที่หน้าหลัก`
-- ไม่ควรมี action รองที่ทำให้ user สับสน
+- Use a full-screen positive confirmation
+- A single CTA `ไปที่หน้าหลัก` (Go to home)
+- There should be no secondary actions that confuse the user
 
 ### 5.7 Dashboard / Home
 
@@ -462,31 +464,31 @@ Owner screen:
 
 - `apps/mobile/app/(tabs)/dashboard.tsx`
 
-บทบาท:
+Role:
 
-- เป็นศูนย์รวมข้อมูล realtime ของ caregiver
-- ต้องอ่านสถานะผู้สูงอายุได้เร็วที่สุด
+- The hub of realtime information for the caregiver
+- Must let the caregiver read the elder's status as fast as possible
 
-information priority:
+Information priority:
 
 1. fall status
 2. heart rate / abnormality
 3. device connectivity
-4. elder summary / navigation ไป feature อื่น
+4. elder summary / navigation to other features
 
 UX rules:
 
-- critical card ของ fall ต้องเด่นที่สุด
-- suspected กับ confirmed ต้องต่างกันชัด
-- ปุ่ม `รับทราบแล้ว` ในหน้า home ใช้เพื่อคืนมุมมองในแอปเป็นปกติเท่านั้น
-- emergency-related action ต้องแยกจาก normal monitoring state
+- The fall critical card must be the most prominent
+- Suspected and confirmed must look clearly different
+- The `รับทราบแล้ว` (Acknowledged) button on the home screen only returns the in-app view to normal
+- Emergency-related actions must be separate from the normal monitoring state
 
-state intent:
+State intent:
 
-- `NORMAL` = มั่นคง/สงบ
-- `SUSPECTED` = ต้องเฝ้าดู
-- `FALL` = ฉุกเฉิน
-- stale state ต้องไม่ทำให้เข้าใจว่าเป็น realtime สดเสมอ
+- `NORMAL` = stable/calm
+- `SUSPECTED` = needs watching
+- `FALL` = emergency
+- A stale state must not be mistaken for always-fresh realtime data
 
 ### 5.8 History
 
@@ -494,17 +496,17 @@ Owner screen:
 
 - `apps/mobile/app/(tabs)/history.tsx`
 
-บทบาท:
+Role:
 
-- ให้ caregiver ดู event ย้อนหลัง
-- เน้นอ่าน timeline และเข้าใจสถานะล่าสุด
+- Lets the caregiver view past events
+- Focuses on reading the timeline and understanding the latest status
 
 UX rules:
 
-- รายการต้องอ่านง่ายและกดดูต่อได้
-- รายการล่าสุดควรถูก highlight
-- มีทางลัดไป monthly summary
-- ไม่ควรแสดง fall ที่ยังไม่ยืนยันเหมือนเป็นเหตุการณ์เต็มรูปแบบ
+- Items must be easy to read and tappable for more detail
+- The latest item should be highlighted
+- There is a shortcut to the monthly summary
+- An unconfirmed fall should not be shown as if it were a full event
 
 ### 5.9 Device Feature Flow
 
@@ -516,17 +518,17 @@ Owner screens:
 - `apps/mobile/app/(features)/(device)/device-ble-wifi-setup.tsx`
 - `apps/mobile/app/(features)/(device)/device-info.tsx`
 
-บทบาท:
+Role:
 
-- ดูสถานะอุปกรณ์
-- ผูกอุปกรณ์ใหม่
-- ตั้งค่า/เปลี่ยน WiFi ผ่าน smart entrypoint ที่เลือก BLE หรือ backend reconfig ตามสถานะ online
-- จัดการกรณีซ่อม/เปลี่ยนอุปกรณ์
+- View device status
+- Pair a new device
+- Set up/change WiFi via a smart entrypoint that chooses BLE or backend reconfig based on online status
+- Handle repair/replacement cases
 
 UX rules:
 
-- flow นี้ต้องชัดเจนเรื่อง "อุปกรณ์ปัจจุบัน" กับ "อุปกรณ์ใหม่"
-- BLE/WiFi flow ใน feature mode ต้องมีภาษาคล้าย setup step 3 เพื่อลด cognitive load
+- This flow must be clear about the "current device" versus the "new device"
+- The BLE/WiFi flow in feature mode must use wording similar to setup step 3 to reduce cognitive load
 
 ### 5.10 Elder & Emergency Contacts
 
@@ -541,9 +543,9 @@ Owner screens:
 
 UX intent:
 
-- เป็นข้อมูลประกอบการดูแล ไม่ใช่จอ monitoring หลัก
-- ต้องอ่านง่ายและแก้ไขได้ตรงไปตรงมา
-- emergency contact flow ต้องลดความผิดพลาดเวลาเพิ่ม/แก้/เรียงลำดับ
+- This is supporting care information, not the main monitoring screen
+- Must be easy to read and straightforward to edit
+- The emergency contact flow must reduce mistakes when adding/editing/reordering
 
 ### 5.11 Notification & Report Supporting Screens
 
@@ -554,9 +556,9 @@ Owner screens:
 
 UX rules:
 
-- notifications = log ที่อ่านย้อนหลังได้
-- report summary = ภาพรวมเชิงสรุป ไม่ใช่จอ realtime
-- ต้องแยก "สรุป" ออกจาก "เหตุการณ์สด" ให้ผู้ใช้เข้าใจ
+- notifications = a log that can be read retrospectively
+- report summary = a summarised overview, not a realtime screen
+- Users must be able to tell "summary" apart from "live events"
 
 ### 5.12 User Profile & Feedback
 
@@ -570,8 +572,8 @@ Owner screens:
 
 UX rules:
 
-- profile screens ต้องเป็น settings-style flow ที่ตรงไปตรงมา
-- success feedback หลังบันทึกควรสั้นและชัด
+- Profile screens must be a straightforward settings-style flow
+- Success feedback after saving should be short and clear
 
 ---
 
@@ -579,48 +581,48 @@ UX rules:
 
 ### 6.1 Socket-Driven Monitoring
 
-ข้อมูล realtime หลักมาจาก `useSocketConnection` และ Zustand stores (`useSensorStore`, `useFallAlertStore`)
+The main realtime data comes from `useSocketConnection` and the Zustand stores (`useSensorStore`, `useFallAlertStore`)
 
-สิ่งที่ UI ต้องรักษา:
+What the UI must preserve:
 
-- เมื่อสถานะเปลี่ยน ต้องอัปเดตเร็วแต่ไม่กระพริบมั่ว
-- stale thresholds ต้องช่วย "ล้างค่าที่ไม่สด" ออกจาก UI
-- fallback จาก realtime ไป cached/query state ต้องไม่ทำให้หน้าเด้ง
+- When status changes, update quickly but without random flickering
+- Stale thresholds must help "clear non-fresh values" from the UI
+- Falling back from realtime to cached/query state must not make the screen jump
 
 ### 6.2 Offline / Stale Handling
 
-mobile implementation มี threshold หลักสำหรับ data freshness
+The mobile implementation has core thresholds for data freshness
 
 UX meaning:
 
-- ถ้า status ไม่สด → อย่าแสดงเหมือนอุปกรณ์ยัง online แน่นอน
-- ถ้า heart rate ไม่สด → อย่าแสดงค่าค้างแบบเหมือนเพิ่งวัด
-- ถ้า fall เป็นเหตุการณ์เก่า → ควรทำให้ผู้ใช้รู้ว่าเป็น historical state ไม่ใช่ active emergency
+- If status is not fresh → do not show it as if the device is definitely still online
+- If heart rate is not fresh → do not show a stale value as if it was just measured
+- If a fall is an old event → make it clear to the user that it is a historical state, not an active emergency
 
-### 6.3 พฤติกรรมของปุ่มรับทราบแล้ว
+### 6.3 Acknowledged Button Behavior
 
-บน mobile การกด `รับทราบแล้ว` มีผลเฉพาะในแอป
+On mobile, pressing `รับทราบแล้ว` (Acknowledged) only has an effect within the app
 
-ห้ามตีความเป็น:
+It must not be interpreted as:
 
-- cancel event ใน backend
+- cancel event in the backend
 - retract push notification
-- เปลี่ยน `cancelledAt` ใน DB
+- change `cancelledAt` in the DB
 
 ---
 
 ## 7. QA Checklist for UI Review
 
-เมื่อตรวจหน้าจอ mobile ให้เช็กอย่างน้อย:
+When reviewing mobile screens, check at least:
 
-- shell ของหน้าตรงกับ role ของมันหรือไม่ (`ScreenWrapper`, `AppScreenHeader`, `WizardLayout`)
-- spacing/padding ยังอยู่ในมาตรฐานเดียวกันหรือไม่
-- action หลักเด่นกว่ารองหรือไม่
-- error/success feedback ใช้ dialog/toast ถูกระดับหรือไม่
-- wording เรื่องปุ่มยกเลิกจากอุปกรณ์และปุ่ม `รับทราบแล้ว` ถูกต้องหรือไม่
-- step flow และ back navigation ไม่ทำให้ user หลงหรือไม่
-- realtime state แสดงสถานะสด/ค้างอย่างซื่อสัตย์หรือไม่
-- หน้า setup และ device flow อธิบาย hardware permission / BLE / WiFi failure ได้ actionable หรือไม่
+- whether the screen shell matches its role (`ScreenWrapper`, `AppScreenHeader`, `WizardLayout`)
+- whether spacing/padding still follows the same standard
+- whether the primary action stands out more than secondary ones
+- whether error/success feedback uses dialog/toast at the right level
+- whether the wording for the device cancel button and the `รับทราบแล้ว` (Acknowledged) button is correct
+- whether the step flow and back navigation avoid getting the user lost
+- whether realtime state honestly shows fresh/stale status
+- whether the setup and device flows explain hardware permission / BLE / WiFi failures in an actionable way
 
 ---
 

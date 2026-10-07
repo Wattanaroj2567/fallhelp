@@ -1,103 +1,105 @@
-# ข้อมูลผู้สูงอายุ (Elder Profile)
+# Elder Profile
+
+[English](elder-profile.md) · [ภาษาไทย](elder-profile.th.md)
 
 ## Doc Meta
 
-- **Audience**: Dev / QA / Stakeholder / ผู้วิจัย
+- **Audience**: Dev / QA / Stakeholder / Researcher
 - **Source of Truth**: `apps/mobile/app/(features)/(elder)/`, `apps/mobile/app/(setup)/step1-elder-info.tsx`
-- **Status**: **Active** — ฟีเจอร์ที่พัฒนาแล้วและใช้งานจริง
+- **Status**: **Active** — implemented feature in real use
 - Last Updated: May 10, 2026
 
 ## Overview
 
-ฟังก์ชันจัดการข้อมูลผู้สูงอายุภายในระบบ FallHelp ระบบใช้โมเดล **1 ผู้ดูแล : 1 ผู้สูงอายุ** — ผู้ใช้หนึ่งคนมีผู้สูงอายุในความดูแลได้หนึ่งคน การเพิ่มข้อมูลผู้สูงอายุเกิดขึ้นครั้งเดียวในขั้นตอนตั้งค่าเริ่มต้น (Setup Flow) หลังจากนั้นผู้ใช้สามารถดูและแก้ไขข้อมูลได้
+Functions for managing elder information in the FallHelp system. The system uses a **1 caregiver : 1 elder** model — one user can have one elder in their care. Elder information is added only once during the initial setup (Setup Flow); after that the user can view and edit it.
 
 ## Users
 
-- **ญาติผู้ดูแล (Caregiver)** — เพิ่ม ดู และแก้ไขข้อมูลผู้สูงอายุ
+- **Caregiver (family member)** — adds, views, and edits elder information
 
 ## Features
 
-### 1. การสร้างข้อมูลผู้สูงอายุครั้งแรก
+### 1. Creating the Elder Record for the First Time
 
-**จุดประสงค์:**
+**Purpose:**
 
-- เกิดขึ้นครั้งเดียวใน Setup Flow หลังจากการลงทะเบียน
-- บังคับให้ผู้ใช้กรอกข้อมูลพื้นฐานก่อนไปต่อ
-- ตรวจสอบความถูกต้องของข้อมูลก่อนบันทึก
+- Happens only once in the Setup Flow after registration
+- Requires the user to fill in basic information before continuing
+- Validates the data before saving
 
-### 2. การจัดการข้อมูลผู้สูงอายุ
+### 2. Managing Elder Information
 
-**ความสามารถ:**
+**Capabilities:**
 
-- **ดูข้อมูล** — แสดงข้อมูลทั้งหมดในหน้าเดียว
-- **แก้ไขข้อมูล** — แก้ไขทุกฟิลด์ยกเว้น ID
-- **รีเฟรชข้อมูล** — ดึงข้อมูลล่าสุดจาก Backend
-- **ตรวจสอบความถูกต้อง** — Validation ก่อนบันทึก
+- **View information** — shows all information on a single screen
+- **Edit information** — edit every field except the ID
+- **Refresh information** — fetch the latest data from the Backend
+- **Validation** — validation before saving
 
-### 3. การจัดการที่อยู่
+### 3. Address Management
 
-**ความสามารถพิเศษ:**
+**Special capabilities:**
 
-- **Thai Address Autocomplete** — พิมพ์ตำบล/อำเภอ/จังหวัดแล้วเลือกจากรายการ
-- **รูปแบบที่อยู่มาตรฐาน** — ตำบล อำเภอ จังหวัด รหัสไปรษณีย์
-- **การแปลงปี** — รองรับทั้ง ค.ศ. และ พ.ศ. แปลงอัตโนมัติ
+- **Thai Address Autocomplete** — type a subdistrict/district/province and pick from the list
+- **Standard address format** — subdistrict, district, province, postal code
+- **Year conversion** — supports both the Gregorian (CE) and Buddhist (BE) calendars with automatic conversion
 
 ## Related Screens
 
-### หน้าตั้งค่าเริ่มต้น: กรอกข้อมูลผู้สูงอายุ (Setup Step 1)
+### Initial Setup Screen: Enter Elder Information (Setup Step 1)
 
-**ไฟล์:** `(setup)/step1-elder-info.tsx`
-**สิ่งที่ผู้ใช้เห็น:**
+**File:** `(setup)/step1-elder-info.tsx`
+**What the user sees:**
 
-- ฟอร์มกรอกข้อมูลพื้นฐานของผู้สูงอายุ
-- ปุ่ม "ถัดไป" เพื่อไปขั้นตอนจับคู่อุปกรณ์
-  **สิ่งที่ผู้ใช้ทำได้:**
-- กรอกข้อมูลพื้นฐานและไปต่อขั้นตอนถัดไป
+- A form for the elder's basic information
+- A "ถัดไป" (Next) button to go to the device pairing step
+  **What the user can do:**
+- Fill in basic information and continue to the next step
 
-### หน้าดูข้อมูลผู้สูงอายุ (Elder Info)
+### Elder Information Screen (Elder Info)
 
-**ไฟล์:** `(features)/(elder)/elder-info.tsx`
-**สิ่งที่ผู้ใช้เห็น:**
+**File:** `(features)/(elder)/elder-info.tsx`
+**What the user sees:**
 
-- ชื่อ-นามสกุล
-- เพศ (ชาย / หญิง / อื่นๆ)
-- วัน/เดือน/ปีเกิด (แสดงเป็น พ.ศ.) พร้อมอายุที่คำนวณอัตโนมัติ
-- ส่วนสูง (cm) และน้ำหนัก (kg)
-- โรคประจำตัว (แสดงเป็นรายการ คั่นด้วยคอมม่า)
-- ที่อยู่ (แสดงบ้านเลขที่แบบตรง ๆ ตามด้วย หมู่ที่ / หมู่บ้าน / ตำบล / อำเภอ / จังหวัด / รหัสไปรษณีย์)
-  **สิ่งที่ผู้ใช้ทำได้:**
-- ดึงลงเพื่อรีเฟรชข้อมูล (Pull-to-Refresh)
-- กดปุ่ม "แก้ไขข้อมูล" เพื่อเข้าหน้าแก้ไข
+- First and last name
+- Gender (male / female / other)
+- Date of birth (shown in the Buddhist calendar, BE) with automatically calculated age
+- Height (cm) and weight (kg)
+- Medical conditions (shown as a comma-separated list)
+- Address (house number shown as-is, followed by village number (moo) / village / subdistrict / district / province / postal code)
+  **What the user can do:**
+- Pull down to refresh the data (Pull-to-Refresh)
+- Tap the "แก้ไขข้อมูล" (Edit information) button to open the edit screen
 
-### หน้าแก้ไขข้อมูลผู้สูงอายุ (Edit Elder)
+### Edit Elder Information Screen (Edit Elder)
 
-**ไฟล์:** `(features)/(elder)/edit.tsx`
-**สิ่งที่ผู้ใช้เห็น:**
+**File:** `(features)/(elder)/edit.tsx`
+**What the user sees:**
 
-- ฟอร์มแก้ไขข้อมูลทุกฟิลด์
-- Thai Address Autocomplete สำหรับที่อยู่
-- ปุ่ม "บันทึก" และ "ยกเลิก"
-  **สิ่งที่ผู้ใช้ทำได้:**
-- แก้ไขทุกฟิลด์และบันทึกข้อมูล
-- ใช้ระบบ Auto-complete สำหรับที่อยู่
+- A form to edit every field
+- Thai Address Autocomplete for the address
+- "บันทึก" (Save) and "ยกเลิก" (Cancel) buttons
+  **What the user can do:**
+- Edit every field and save the data
+- Use Auto-complete for the address
 
 ## Business Rules
 
-| หัวข้อ         | รายละเอียด                                                                  |
-| -------------- | --------------------------------------------------------------------------- |
-| ฟิลด์ที่จำเป็น | ชื่อ, นามสกุล, เพศ, วันเกิด, ส่วนสูง, น้ำหนัก, บ้านเลขที่, หมู่ที่, ที่อยู่ |
-| ฟิลด์ไม่จำเป็น | โรคประจำตัว                                                                 |
-| การแจ้งเตือน   | แสดงเตือนเมื่อมีการเปลี่ยนแปลงที่ยังไม่ได้บันทึก                            |
-| การแปลงปี      | รองรับทั้ง ค.ศ. และ พ.ศ. แปลงอัตโนมัติ                                      |
-| การตรวจสอบ     | Validation ข้อมูลก่อนบันทึก                                                 |
-| การแสดงอายุ    | คำนวณอัตโนมัติจากวันเกิด                                                    |
+| Topic             | Details                                                                                         |
+| ----------------- | ----------------------------------------------------------------------------------------------- |
+| Required fields   | First name, last name, gender, date of birth, height, weight, house number, village number (moo), address |
+| Optional fields   | Medical conditions                                                                              |
+| Warning           | Shows a warning when there are unsaved changes                                                  |
+| Year conversion   | Supports both CE and BE with automatic conversion                                               |
+| Validation        | Data validation before saving                                                                   |
+| Age display       | Calculated automatically from the date of birth                                                 |
 
 ## Related Docs
 
-- [dashboard.md](dashboard.md) — หน้าแดชบอร์ดที่แสดงข้อมูลผู้สูงอายุ
-- [emergency-contact.md](emergency-contact.md) — ผู้ติดต่อฉุกเฉินของผู้สูงอายุ
-- [event-history.md](event-history.md) — ประวัติเหตุการณ์ของผู้สูงอายุ
+- [dashboard.md](dashboard.md) — dashboard screen that shows elder information
+- [emergency-contact.md](emergency-contact.md) — the elder's emergency contacts
+- [event-history.md](event-history.md) — the elder's event history
 
 ---
 
-**หมายเหตุ:** เอกสารนี้อธิบายฟีเจอร์ที่พัฒนาแล้วและใช้งานจริงในระบบ FallHelp
+**Note:** This document describes a feature that has been implemented and is in real use in the FallHelp system.

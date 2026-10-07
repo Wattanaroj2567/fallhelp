@@ -1,90 +1,92 @@
-# การลบบัญชีผู้ใช้ (Account Deletion)
+# Account Deletion
+
+[English](account-deletion.md) · [ภาษาไทย](account-deletion.th.md)
 
 ## Doc Meta
 
-- **Audience**: Dev / QA / Stakeholder / ผู้วิจัย
-- **Source of Truth**: ยังไม่พัฒนา (Planned Feature)
-- **Status**: **Planned** — ฟีเจอร์ที่วางแผนพัฒนาในอนาคต
+- **Audience**: Dev / QA / Stakeholder / Researcher
+- **Source of Truth**: Not yet developed (Planned Feature)
+- **Status**: **Planned** — a feature planned for future development
 - Last Updated: May 31, 2026
 
 ## Overview
 
-ฟีเจอร์การลบบัญชีผู้ใช้เป็นฟังก์ชันที่จำเป็นสำหรับคุ้มครองข้อมูลส่วนบุคคลของผู้ใช้งาน โดยอนุญาตให้ผู้ใช้สามารถลบข้อมูลส่วนตัวและบัญชีของตนเองได้จากภายในแอปพลิเคชัน ซึ่งสอดคล้องกับหลักการคุ้มครองข้อมูลส่วนบุคคลสมัยใหม่
+Account deletion is a necessary feature for protecting users' personal data. It lets users delete their own personal data and account from within the application, in line with modern personal data protection principles.
 
-**หมายเหตุ**: ฟีเจอร์นี้ยังไม่ได้พัฒนาจริง แต่เป็นส่วนหนึ่งของแผนการพัฒนาระบบในอนาคต
+**Note**: This feature has not been developed yet; it is part of the system's future development plan.
 
 ## Current System Constraint
 
-ระบบปัจจุบันยังไม่มี `deletedAt` หรือ soft-delete lifecycle ใน `User`/`Elder` schema
-และ relation หลักใช้ cascade delete (`User -> Elder -> Event/Notification`) เป็นพฤติกรรมฐาน
-ดังนั้นฟีเจอร์นี้ต้องเริ่มจาก migration/retention design แยกต่างหากก่อน implement
+The current system has no `deletedAt` or soft-delete lifecycle in the `User`/`Elder` schema,
+and the main relations use cascade delete (`User -> Elder -> Event/Notification`) as the baseline behavior.
+This feature therefore has to start with a separate migration/retention design before implementation.
 
 ## Users
 
-- **ญาติผู้ดูแล (Caregiver)** — ผู้ต้องการลบบัญชีและข้อมูลส่วนตัว
-- **ผู้ดูแลระบบ (Admin)** — ผู้ตรวจสอบและจัดการการลบข้อมูล
+- **Caregiver (family member)** — wants to delete their account and personal data
+- **Admin** — reviews and manages data deletion
 
 ## Features
 
-### 1. การลบบัญชีแบบ Soft Delete
+### 1. Soft Delete Account Deletion
 
-**Flow การดำเนินการ:**
+**Process flow:**
 
-1. ผู้ใช้เข้า **ตั้งค่า** → กดปุ่ม "ลบบัญชี"
-2. แสดง **ข้อความเตือน** อธิบายสิ่งที่จะเกิดขึ้น
-3. ผู้ใช้ยืนยันด้วย **รหัสผ่านปัจจุบัน** (ป้องกันการลบโดยไม่ตั้งใจ)
-4. ระบบดำเนินการ **Soft Delete** (ต้องเพิ่ม schema รองรับก่อน):
-   - ตั้ง `deletedAt` timestamp
-   - ยกเลิก JWT Token ที่ใช้งานอยู่
-   - ล้าง Push Token (หยุดแจ้งเตือน)
-5. **Grace Period 30 วัน** — ผู้ใช้สามารถกู้คืนบัญชีได้โดยติดต่อ Admin
-6. หลัง 30 วัน → **Hard Delete** ลบข้อมูลถาวร
+1. The user goes to **Settings** → taps the "Delete Account" button
+2. A **warning message** explains what will happen
+3. The user confirms with their **current password** (prevents accidental deletion)
+4. The system performs a **Soft Delete** (schema support must be added first):
+   - Sets the `deletedAt` timestamp
+   - Revokes the active JWT Token
+   - Clears the Push Token (stops notifications)
+5. **30-day Grace Period** — the user can restore the account by contacting an Admin
+6. After 30 days → **Hard Delete** removes the data permanently
 
-### 2. การจัดการข้อมูลที่ถูกลบ
+### 2. Handling Deleted Data
 
-| ประเภทข้อมูล                         | วิธีการจัดการ        | หมายเหตุ                     |
-| ------------------------------------ | -------------------- | ---------------------------- |
-| ข้อมูลผู้ใช้ (ชื่อ, อีเมล, เบอร์โทร) | ลบถาวร (Hard Delete) | ไม่สามารถกู้คืนได้           |
-| ข้อมูลผู้สูงอายุ                     | ลบถาวร (Cascade)     | ลบข้อมูลที่เกี่ยวข้องทั้งหมด |
-| ผู้ติดต่อฉุกเฉิน                     | ลบถาวร (Cascade)     | ลบข้อมูลที่เกี่ยวข้องทั้งหมด |
-| ประวัติเหตุการณ์                     | Anonymize            | เก็บสถิติ ลบข้อมูลระบุตัวตน  |
-| การจับคู่อุปกรณ์                     | Unpair อุปกรณ์       | กลับสถานะ UNPAIRED           |
-| Push Token                           | ลบทันที              | หยุดการแจ้งเตือนทันที        |
+| Data type                            | Handling method          | Note                                      |
+| ------------------------------------ | ------------------------ | ----------------------------------------- |
+| User data (name, email, phone)       | Permanent (Hard Delete)  | Cannot be restored                        |
+| Elder data                           | Permanent (Cascade)      | Deletes all related data                  |
+| Emergency contacts                   | Permanent (Cascade)      | Deletes all related data                  |
+| Event history                        | Anonymize                | Keeps statistics, removes identifying data |
+| Device pairing                       | Unpair the device        | Returns to UNPAIRED status                |
+| Push Token                           | Deleted immediately      | Stops notifications immediately           |
 
 ## Related Screens
 
-### หน้าโปรไฟล์ (Profile)
+### Profile Screen
 
-**ไฟล์:** `(features)/(profile)/profile-info.tsx`
-**สิ่งที่ผู้ใช้เห็น:**
+**File:** `(features)/(profile)/profile-info.tsx`
+**What the user sees:**
 
-- ปุ่ม "ลบบัญชี" อยู่ในส่วนที่ต้องการความปลอดภัยสูง
-- ข้อความเตือนสีแดงเมื่อกดปุ่ม
-  **สิ่งที่ผู้ใช้ทำได้:**
-- กดปุ่มเพื่อเริ่มกระบวนการลบบัญชี
+- A "Delete Account" button in the high-security section
+- A red warning message when the button is tapped
+  **What the user can do:**
+- Tap the button to start the account deletion process
 
-### หน้ายืนยันการลบบัญชี
+### Account Deletion Confirmation Screen
 
-**ไฟล์:** `(features)/(profile)/delete-account.tsx` (จะสร้างในอนาคต)
-**สิ่งที่ผู้ใช้เห็น:**
+**File:** `(features)/(profile)/delete-account.tsx` (to be created in the future)
+**What the user sees:**
 
-- ข้อความเตือนรายละเอียดเกี่ยวกับข้อมูลที่จะถูกลบ
-- ช่องกรอกรหัสผ่าน
-- ปุ่มยืนยันและยกเลิก
-  **สิ่งที่ผู้ใช้ทำได้:**
-- กรอกรหัสผ่านเพื่อยืนยันตัวตน
-- กดยืนยันเพื่อดำเนินการลบบัญชี
+- A detailed warning about the data that will be deleted
+- A password field
+- Confirm and cancel buttons
+  **What the user can do:**
+- Enter their password to verify identity
+- Tap confirm to proceed with account deletion
 
 ## Business Rules
 
-| หัวข้อ                | รายละเอียด                                     |
-| --------------------- | ---------------------------------------------- |
-| ระยะเวลา Grace Period | 30 วันนับจากวันที่ลบบัญชี                      |
-| การกู้คืนบัญชี        | ต้องติดต่อ Admin โดยตรง                        |
-| การลบข้อมูล           | Soft Delete ก่อน ค่อย Hard Delete              |
-| การแจ้งเตือน          | ส่งอีเมลยืนยันการลบบัญชี                       |
-| ข้อมูลที่เก็บไว้      | ประวัติเหตุการณ์จะถูก Anonymize เพื่อวิเคราะห์ |
+| Topic                 | Details                                                  |
+| --------------------- | -------------------------------------------------------- |
+| Grace Period          | 30 days from the date the account is deleted             |
+| Account recovery      | Must contact an Admin directly                           |
+| Data deletion         | Soft Delete first, then Hard Delete                      |
+| Notification          | Sends an account deletion confirmation email             |
+| Retained data         | Event history is Anonymized for analysis                 |
 
 ---
 
-**หมายเหตุสำคัญ:** เอกสารนี้เป็นส่วนหนึ่งของแผนการพัฒนาระบบในอนาคต (Future Roadmap) ยังไม่ได้ดำเนินการพัฒนาจริง แต่เป็นแนวทางสำหรับการพัฒนาต่อไป
+**Important note:** This document is part of the system's future development plan (Future Roadmap). It has not been implemented yet, but serves as guidance for further development.

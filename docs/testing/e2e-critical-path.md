@@ -1,5 +1,7 @@
 # E2E Critical Path Strategy
 
+[English](e2e-critical-path.md) · [ภาษาไทย](e2e-critical-path.th.md)
+
 ## Doc Meta
 
 - Audience: Developers, QA, reviewers

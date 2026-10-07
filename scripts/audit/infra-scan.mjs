@@ -21,6 +21,9 @@ const IGNORE_DIRS = new Set([
   ".expo",
   ".next",
   "coverage",
+  // local AI agent workspaces (git-ignored, not project docs)
+  ".superpowers",
+  "superpowers",
 ]);
 const IGNORED_ENV_KEYS = {
   backend: new Set([

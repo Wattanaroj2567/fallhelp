@@ -1,0 +1,39 @@
+{
+  "now": 1760000000000,
+  "bpm": 88,
+  "statusOnline": {
+    "timestamp": 1760000000000,
+    "online": true,
+    "signalStrength": -55,
+    "wifiSSID": "FallHelp-Demo"
+  },
+  "statusOffline": {
+    "timestamp": 1760000000000,
+    "online": false,
+    "signalStrength": -55,
+    "wifiSSID": "FallHelp-Demo"
+  },
+  "heartRate": {
+    "timestamp": 1760000000000,
+    "heartRate": 88,
+    "confidence": "high"
+  },
+  "suspectedFall": {
+    "type": "suspected_fall",
+    "timestamp": 1760000000000,
+    "magnitude": 3.4,
+    "postureDelta": 82,
+    "bpm": 88
+  },
+  "fallConfirmed": {
+    "type": "fall_confirmed",
+    "timestamp": 1760000000000,
+    "magnitude": 3.4,
+    "postureDelta": 82,
+    "bpm": 88
+  },
+  "fallCancelled": {
+    "type": "fall_cancelled",
+    "timestamp": 1760000000000
+  }
+}

@@ -1,28 +1,30 @@
 # Notes
 
-ใช้จดปัญหาและข้อสังเกตระหว่างการเก็บข้อมูล
+[English](notes.md) · [ภาษาไทย](notes.th.md)
 
-## ตารางบันทึกปัญหา
+Use this to record problems and observations during data collection.
+
+## Problem Log
 
 | Date | Trial | Activity | Note | Action |
 |---|---|---|---|---|
 | - | - | - | - | - |
 
-## ตัวอย่างการจด
+## Example Entries
 
 | Date | Trial | Activity | Note | Action |
 |---|---|---|---|---|
-| 2026-05-16 | S01_T03 | `sit_hard` | เก้าอี้ขยับตอนนั่ง | ใช้ได้ แต่ใส่ note |
-| 2026-05-16 | S01_T07 | `side_fall_left` | อุปกรณ์เอียงหลังล้ม | ให้ AI ตรวจค่าก่อนคัด |
-| 2026-05-16 | S01_T10 | `running_light` | MQTT delay ช่วงท้าย | ตรวจว่า CSV ครบหรือไม่ |
+| 2026-05-16 | S01_T03 | `sit_hard` | Chair moved while sitting | Usable, but add a note |
+| 2026-05-16 | S01_T07 | `side_fall_left` | Device tilted after the fall | Have the AI check the values before selecting |
+| 2026-05-16 | S01_T10 | `running_light` | MQTT delay near the end | Check whether the CSV is complete |
 
-## Checklist หลังเก็บข้อมูล
+## Post-Collection Checklist
 
-| รายการ | สถานะ |
+| Item | Status |
 |---|---|
-| CSV ถูกสร้าง | ☐ |
-| ชื่อไฟล์ถูกต้อง | ☐ |
-| activity label ถูกต้อง | ☐ |
-| มี decision log | ☐ |
-| มี note ถ้าพบปัญหา | ☐ |
-| ถ่ายภาพท่าทดสอบแล้ว | ☐ |
+| CSV created | ☐ |
+| File name correct | ☐ |
+| activity label correct | ☐ |
+| decision log present | ☐ |
+| note added if a problem was found | ☐ |
+| Test activity photo taken | ☐ |

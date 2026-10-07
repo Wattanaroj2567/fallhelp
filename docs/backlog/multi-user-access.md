@@ -1,101 +1,103 @@
-# การเข้าถึงหลายผู้ดูแล (Multi-User Access)
+# Multi-User Access
+
+[English](multi-user-access.md) · [ภาษาไทย](multi-user-access.th.md)
 
 ## Doc Meta
 
-- **Audience**: Dev / QA / Stakeholder / ผู้วิจัย
-- **Source of Truth**: ยังไม่พัฒนา (Planned Feature)
-- **Status**: **Planned** — ฟีเจอร์ที่วางแผนพัฒนาในอนาคต
+- **Audience**: Dev / QA / Stakeholder / Researcher
+- **Source of Truth**: Not yet developed (Planned Feature)
+- **Status**: **Planned** — a feature planned for future development
 - Last Updated: May 10, 2026
 
 ## Overview
 
-ฟีเจอร์การเข้าถึงหลายผู้ดูแลเป็นการขยายระบบให้รองรับผู้ดูแลหลายคน (Family Members) ที่สามารถดูแลผู้สูงอายุคนเดียวกันได้ ปัจจุบันระบบใช้โมเดล **1 ผู้ดูแล : 1 ผู้สูงอายุ** แต่ในทางปฏิบัติ ครอบครัวมักมีสมาชิกหลายคนที่ต้องการติดตามสถานะผู้สูงอายุพร้อมกัน
+Multi-user access extends the system to support multiple caregivers (Family Members) who can care for the same elder. The system currently uses a **1 caregiver : 1 elder** model, but in practice families often have several members who want to follow the elder's status at the same time.
 
-**หมายเหตุ**: ฟีเจอร์นี้ยังไม่ได้พัฒนาจริง แต่เป็นส่วนหนึ่งของแผนการพัฒนาระบบในอนาคต
+**Note**: This feature has not been developed yet; it is part of the system's future development plan.
 
 ## Current System Constraint
 
-schema ปัจจุบันเป็น single-caregiver model: `Elder.userId` เป็น required + unique และไม่มี join table สำหรับสมาชิกครอบครัว
-หากจะทำฟีเจอร์นี้ต้องมี schema/API migration ก่อน เช่น relation สำหรับ `ElderMember`/permission และต้องปรับ ownership checks, Socket rooms, Push notification fan-out, และ admin UI พร้อมกัน
+The current schema is a single-caregiver model: `Elder.userId` is required + unique, and there is no join table for family members.
+Building this feature requires a schema/API migration first, e.g. a relation for `ElderMember`/permissions, along with simultaneous changes to ownership checks, Socket rooms, Push notification fan-out, and the admin UI.
 
 ## Users
 
-- **ผู้ดูแลหลัก (Owner)** — ผู้สร้างบัญชีและเชิญสมาชิกครอบครัว
-- **ผู้ดูแลรอง (Family Member)** — สมาชิกครอบครัวที่ได้รับเชิญ
-- **ผู้ดูแลระบบ (Admin)** — ผู้จัดการระบบและตรวจสอบการเข้าถึง
+- **Primary caregiver (Owner)** — creates the account and invites family members
+- **Secondary caregiver (Family Member)** — an invited family member
+- **Admin** — manages the system and audits access
 
 ## Features
 
-### 1. การจัดการสมาชิกครอบครัว (สำหรับ Owner)
+### 1. Family Member Management (for the Owner)
 
-**ความสามารถ:**
+**Capabilities:**
 
-- **เชิญสมาชิก** — ส่งลิงก์หรือรหัสเชิญผ่านอีเมล/แอป
-- **กำหนดสิทธิ์** — มอบบทบาท Owner หรือ Viewer
-- **ลบสมาชิก** — ถอดสิทธิ์การเข้าถึง
-- **ดูประวัติ** — ตรวจสอบการเข้าถึงของสมาชิก
+- **Invite members** — send an invite link or code via email/app
+- **Assign permissions** — grant the Owner or Viewer role
+- **Remove members** — revoke access
+- **View history** — review members' access
 
-### 2. การเข้าถึงของสมาชิก (สำหรับ Family Member)
+### 2. Member Access (for Family Members)
 
-**ความสามารถ:**
+**Capabilities:**
 
-- **ดูแดชบอร์ด** — ติดตามสถานะผู้สูงอายุแบบ Real-time
-- **รับแจ้งเตือน** — รับ Push Notification เมื่อเกิดเหตุฉุกเฉิน
-- **ดูประวัติ** — ดูประวัติเหตุการณ์และรายงานสรุป
-- **จำกัดสิทธิ์** — ไม่สามารถแก้ไขข้อมูลหลักได้
+- **View dashboard** — follow the elder's status in Real-time
+- **Receive alerts** — get a Push Notification when an emergency occurs
+- **View history** — see event history and summary reports
+- **Restricted permissions** — cannot edit core data
 
-### 3. ระบบสิทธิ์และบทบาท
+### 3. Permissions and Roles
 
-| การกระทำ               | Owner | Viewer |
-| ---------------------- | ----- | ------ |
-| ดู Dashboard           | ✅    | ✅     |
-| รับแจ้งเตือน           | ✅    | ✅     |
-| ดูประวัติเหตุการณ์     | ✅    | ✅     |
-| แก้ไขข้อมูลผู้สูงอายุ  | ✅    | ❌     |
-| จัดการอุปกรณ์          | ✅    | ❌     |
-| จัดการผู้ติดต่อฉุกเฉิน | ✅    | ❌     |
-| เชิญ/ลบสมาชิก          | ✅    | ❌     |
-| ดูรายงานสรุป           | ✅    | ✅     |
-| ส่งออกข้อมูล           | ✅    | ❌     |
+| Action                      | Owner | Viewer |
+| --------------------------- | ----- | ------ |
+| View Dashboard              | ✅    | ✅     |
+| Receive alerts              | ✅    | ✅     |
+| View event history          | ✅    | ✅     |
+| Edit elder information      | ✅    | ❌     |
+| Manage devices              | ✅    | ❌     |
+| Manage emergency contacts   | ✅    | ❌     |
+| Invite/remove members       | ✅    | ❌     |
+| View summary reports        | ✅    | ✅     |
+| Export data                 | ✅    | ❌     |
 
 ## Related Screens
 
-### หน้าจัดการสมาชิครอบครัว
+### Family Member Management Screen
 
-**ไฟล์:** `(features)/(profile)/family-members.tsx` (จะสร้างในอนาคต)
-**สิ่งที่ผู้ใช้เห็น:**
+**File:** `(features)/(profile)/family-members.tsx` (to be created in the future)
+**What the user sees:**
 
-- รายชื่อสมาชิกปัจจุบันพร้อมบทบาท
-- ปุ่ม "เชิญสมาชิกใหม่"
-- ปุ่มจัดการสิทธิ์สำหรับแต่ละคน
-  **สิ่งที่ผู้ใช้ทำได้:**
-- เชิญสมาชิกใหม่ผ่านอีเมลหรือรหัสเชิญ
-- เปลี่ยนบทบาทระหว่าง Owner/Viewer
-- ลบสมาชิกออกจากทีม
+- The current member list with roles
+- An "Invite new member" button
+- A permission management button for each person
+  **What the user can do:**
+- Invite new members via email or invite code
+- Change roles between Owner/Viewer
+- Remove members from the team
 
-### หน้ารับเชิญสมาชิก
+### Accept Invitation Screen
 
-**ไฟล์:** `(features)/(profile)/accept-invite.tsx` (จะสร้างในอนาคต)
-**สิ่งที่ผู้ใช้เห็น:**
+**File:** `(features)/(profile)/accept-invite.tsx` (to be created in the future)
+**What the user sees:**
 
-- ข้อมูลผู้สูงอายุที่จะดูแล
-- ชื่อผู้เชิญและความสัมพันธ์
-- ปุ่ม "ยอมรับ" และ "ปฏิเสธ"
-  **สิ่งที่ผู้ใช้ทำได้:**
-- ยอมรับเชิญเพื่อเข้าร่วมทีม
-- ปฏิเสธเชิญหากไม่สะดวก
+- Information about the elder they will care for
+- The inviter's name and relationship
+- "Accept" and "Decline" buttons
+  **What the user can do:**
+- Accept the invitation to join the team
+- Decline the invitation if it is not convenient
 
 ## Business Rules
 
-| หัวข้อ        | รายละเอียด                      |
-| ------------- | ------------------------------- |
-| จำนวนสมาชิก   | สูงสุด 10 คนต่อ 1 ผู้สูงอายุ    |
-| บทบาท Owner   | มีได้เพียง 1 คน (ผู้สร้างบัญชี) |
-| การเชิญสมาชิก | ต้องได้รับอนุมัติจาก Owner      |
-| การแจ้งเตือน  | ส่งให้สมาชิกทุกคนที่มีสิทธิ์    |
-| ความปลอดภัย   | ต้องยืนยันตัวตนก่อนเข้าร่วม     |
-| การออกจากระบบ | Owner สามารถถอดสิทธิ์สมาชิกได้  |
+| Topic             | Details                                     |
+| ----------------- | ------------------------------------------- |
+| Member count      | Up to 10 people per elder                   |
+| Owner role        | Only 1 person (the account creator)         |
+| Inviting members  | Must be approved by the Owner               |
+| Notifications     | Sent to every member with permission        |
+| Security          | Identity must be verified before joining    |
+| Removal           | The Owner can revoke a member's access      |
 
 ---
 
-**หมายเหตุสำคัญ:** เอกสารนี้เป็นส่วนหนึ่งของแผนการพัฒนาระบบในอนาคต (Future Roadmap) ยังไม่ได้ดำเนินการพัฒนาจริง แต่เป็นแนวทางสำหรับการพัฒนาต่อไป
+**Important note:** This document is part of the system's future development plan (Future Roadmap). It has not been implemented yet, but serves as guidance for further development.

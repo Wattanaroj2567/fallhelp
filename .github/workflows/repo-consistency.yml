@@ -21,6 +21,23 @@ on:
       - ".agents/skills/**"
       - "docs/ai/**"
       - "scripts/audit/audit-instruction-drift.mjs"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "AGENTS.md"
+      - "CLAUDE.md"
+      - "GEMINI.md"
+      - ".github/copilot-instructions.md"
+      - ".github/PULL_REQUEST_TEMPLATE.md"
+      - ".github/agents/**"
+      - ".github/skills/**"
+      - ".github/workflows/repo-consistency.yml"
+      - ".claude/commands/**"
+      - ".agent/skills/**"
+      - ".agents/skills/**"
+      - "docs/ai/**"
+      - "scripts/audit/audit-instruction-drift.mjs"
 
 jobs:
   audit:

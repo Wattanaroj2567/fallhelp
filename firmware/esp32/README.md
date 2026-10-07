@@ -1,5 +1,7 @@
 # FallHelp ESP32 Firmware
 
+[English](README.md) · [ภาษาไทย](README.th.md)
+
 ## Doc Meta
 
 - Audience: Hardware Dev, Backend Dev, Mobile Dev, QA
@@ -11,72 +13,72 @@
 
 **Firmware Scope:** WiFi + MQTT + BLE Provisioning + Sensor Runtime
 
-เอกสารนี้เป็นหน้าเริ่มต้นของฝั่ง Arduino
-เน้น 3 อย่างเท่านั้น:
+This document is the landing page for the Arduino side.
+It focuses on only 3 things:
 
-1. เริ่มใช้งานให้ได้เร็ว
-2. รู้ว่าเรื่องไหนต้องไปอ่านไฟล์ไหน
-3. เห็นโครงสร้างไฟล์โค้ด Arduino แบบรวม
+1. Getting started quickly
+2. Knowing which file to read for each topic
+3. Seeing the overall Arduino code file structure
 
 ---
 
 ## 1) Start Here
 
-กรณีใช้งานมี 2 ทาง:
+There are 2 ways to use it:
 
-ก่อนเริ่มรอบทดสอบจริง ให้ยึดเฟสจาก
+Before starting a real test round, follow the phases in
 [START_HERE.md](START_HERE.md)
 
-1. เชื่อมระบบเต็ม (Backend + Mobile):
-   - เปิด `firmware/esp32/src/main_firmware/main_firmware.ino`
-   - Arduino IDE จะ compile `.ino` ทุกไฟล์ใน `main_firmware/` รวมกันเป็น sketch เดียว
-   - ไปต่อที่ [ESP32 System Operation Guide](docs/guides/Esp32SystemOperationGuide.md)
-2. เทส/จูนเซนเซอร์ก่อนเชื่อมระบบ:
-   - เปิด `firmware/esp32/src/sensor_tuning/sensor_tuning.ino`
-   - ไปต่อที่ [Sensor Hardware-Only Tuning Guide](docs/guides/SensorHardwareOnlyTuningGuide.md)
+1. Full system integration (Backend + Mobile):
+   - Open `firmware/esp32/src/main_firmware/main_firmware.ino`
+   - Arduino IDE compiles every `.ino` file in `main_firmware/` together into a single sketch
+   - Continue at [ESP32 System Operation Guide](docs/guides/Esp32SystemOperationGuide.md)
+2. Test/tune the sensors before integrating with the system:
+   - Open `firmware/esp32/src/sensor_tuning/sensor_tuning.ino`
+   - Continue at [Sensor Hardware-Only Tuning Guide](docs/guides/SensorHardwareOnlyTuningGuide.md)
 
 ---
 
-## 2) ถ้าจะทำอะไร ให้ไปไฟล์ไหน
+## 2) Which File to Read for Each Task
 
-| งานที่ต้องทำ                                  | ไฟล์เอกสารหลัก (Owner Doc)                                                        |
-| --------------------------------------------- | --------------------------------------------------------------------------------- |
-| Runtime/BLE/WiFi/MQTT/NVS/คำสั่งระบบ          | [ESP32 System Operation Guide](docs/guides/Esp32SystemOperationGuide.md)          |
-| จูนฮาร์ดแวร์ล้วน (ยังไม่คุย backend)          | [Sensor Hardware-Only Tuning Guide](docs/guides/SensorHardwareOnlyTuningGuide.md) |
-| จูนตรวจจับการล้ม (MPU6050)                    | [MPU6050 Fall Guide](docs/components/mpu6050.md)                                  |
-| จูนชีพจร (XD-58C / PPG)                       | [XD-58C Pulse Guide](docs/components/pulse-sensor.md)                             |
-| ปุ่มยกเลิกการแจ้งเตือน                        | [False Alarm Cancel Button Guide](docs/components/cancel-button.md)               |
-| ลำโพง/เสียงแจ้งเตือน                          | [Grove - Speaker Alert Guide](docs/components/speaker-alert.md)                     |
-| เก็บข้อมูล Fall Detection Sensor Lab (optional) | [Fall Detection Sensor Lab](fall_detection_sensor_lab/README.md)                 |
-| Quickstart ตรวจระบบ ESP32                       | [START_HERE](START_HERE.md)                                                      |
-| คู่มือการใช้งานจริง (Guide)                   | [Practical Operation Guide](docs/guides/PracticalOperationGuide.md)               |
+| Task                                                 | Owner Doc                                                                         |
+| ---------------------------------------------------- | --------------------------------------------------------------------------------- |
+| Runtime/BLE/WiFi/MQTT/NVS/system commands            | [ESP32 System Operation Guide](docs/guides/Esp32SystemOperationGuide.md)          |
+| Hardware-only tuning (no backend yet)                | [Sensor Hardware-Only Tuning Guide](docs/guides/SensorHardwareOnlyTuningGuide.md) |
+| Fall detection tuning (MPU6050)                      | [MPU6050 Fall Guide](docs/components/mpu6050.md)                                  |
+| Pulse tuning (XD-58C / PPG)                          | [XD-58C Pulse Guide](docs/components/pulse-sensor.md)                             |
+| Alert cancel button                                  | [False Alarm Cancel Button Guide](docs/components/cancel-button.md)               |
+| Speaker/alert sound                                  | [Grove - Speaker Alert Guide](docs/components/speaker-alert.md)                   |
+| Fall Detection Sensor Lab data collection (optional) | [Fall Detection Sensor Lab](fall_detection_sensor_lab/README.md)                  |
+| ESP32 system check quickstart                        | [START_HERE](START_HERE.md)                                                       |
+| Practical operation guide                            | [Practical Operation Guide](docs/guides/PracticalOperationGuide.md)               |
 
-หมายเหตุ:
+Notes:
 
-- รายละเอียด runtime constants, serial commands, troubleshooting ฝั่งระบบ ให้ยึด `Esp32SystemOperationGuide.md` เป็นหลัก
-- README นี้ไม่ลงรายละเอียดเชิงลึกซ้ำ
+- For runtime constants, serial commands, and system-side troubleshooting, treat `Esp32SystemOperationGuide.md` as the primary reference
+- This README does not repeat the in-depth details
 
 ---
 
-## 3) โครงสร้างไฟล์โค้ด Arduino
+## 3) Arduino Code File Structure
 
 ```
 firmware/esp32/
-├── README.md                              ← หน้าเริ่มต้น (ไฟล์นี้)
-├── START_HERE.md                          ← ลำดับ phase การทดสอบ (ADL/Fall/Pulse)
+├── README.md                              ← Landing page (this file)
+├── START_HERE.md                          ← Test phase order (ADL/Fall/Pulse)
 ├── docs/
-│   ├── README.md                          ← สารบัญเอกสาร
-│   ├── guides/                           ← คู่มือการทำงาน (runbook)
+│   ├── README.md                          ← Docs index
+│   ├── guides/                           ← Operation guides (runbooks)
 │   │   ├── Esp32SystemOperationGuide.md
 │   │   ├── SensorHardwareOnlyTuningGuide.md
 │   │   ├── PracticalOperationGuide.md
 │   │   └── README.md
-│   ├── devices/                           ← คู่มือรายอุปกรณ์
+│   ├── devices/                           ← Per-device guides
 │   │   ├── mpu6050.md
 │   │   ├── pulse-sensor.md
 │   │   ├── cancel-button.md
 │   │   └── speaker-alert.md
-│   └── references/                        ← เอกสารทฤษฎี/แหล่งอ้างอิง
+│   └── references/                        ← Theory/reference documents
 
 ├── src/
 │   ├── main_firmware/
@@ -101,14 +103,14 @@ firmware/esp32/
 ├── fall_detection_sensor_lab/          ← Fall Detection Sensor Lab
 │   ├── README.md / trial_protocol.md / csv_schema.md / selection_guide.md
 │   ├── chapter_usage.md / notes.md
-│   ├── examples/                      ← mock CSV/MD (format เท่านั้น)
+│   ├── examples/                      ← mock CSV/MD (format only)
 │   ├── node-red/                      ← flow source + Dockerfile + runtime/
 │   │   ├── flows/                     ← fall-detection-sensor-lab-flow.v2.json
 │   │   └── runtime/                   ← Node-RED userDir (ignored)
 │   ├── scripts/                       ← validate / summarize / generate (.mjs)
 │   ├── runs/Sxx/                      ← raw/ + selected/ + session_notes.md
-│   └── exports/                       ← ตารางสรุปผลการทดลองวิเคราะห์อัลกอริทึม (generated)
-└── README.md                              ← หน้าเริ่มต้น (ไฟล์นี้)
+│   └── exports/                       ← Algorithm analysis experiment summary tables (generated)
+└── README.md                              ← Landing page (this file)
 ```
 
 ---
@@ -136,48 +138,48 @@ firmware/esp32/
 
 ---
 
-## 6) Build Verify (ก่อนใช้จริง)
+## 6) Build Verify (Before Real Use)
 
-รันจาก root โปรเจกต์:
+Run from the project root:
 
 ```bash
-# เช็กสภาพแวดล้อมก่อน (ช่วยดู arduino-cli, core, libraries, และ serial port)
+# Check the environment first (arduino-cli, core, libraries, and serial port)
 node scripts/iot/firmware-doctor.mjs
 
-# ติดตั้ง Arduino libraries ที่ firmware ใช้ (ทำครั้งแรกหรือหลังย้ายเครื่อง)
+# Install the Arduino libraries the firmware uses (first time or after moving to a new machine)
 node scripts/iot/firmware-arduino-cli.mjs deps
 
-# Main firmware (firmware หลัก)
+# Main firmware
 node scripts/iot/firmware-arduino-cli.mjs compile main
 
 # Hardware-only tuning firmware
 node scripts/iot/firmware-arduino-cli.mjs compile tuning
 ```
 
-หมายเหตุ:
+Notes:
 
-- `main_firmware` จะเกินขนาดถ้าใช้ `PartitionScheme=default` (1.2MB APP)
-- สำหรับงานจริงให้ใช้ `PartitionScheme=huge_app` (3MB APP)
-- default FQBN ของ repo ใช้ `esp32:esp32:esp32`
-- helper จะพยายามหา `arduino-cli` จาก `PATH` ก่อน แล้ว fallback ไปยัง path มาตรฐานของแต่ละ OS
-- ถ้าไม่กำหนดพอร์ตเอง helper จะลอง auto-detect จาก `arduino-cli board list` ก่อน แล้วค่อย fallback เป็น `/dev/ttyUSB0` บน Unix หรือ `COM3` บน Windows
-- ถ้า monitor/upload/compile ติดเพราะเครื่องยังไม่พร้อม ให้เริ่มจาก `node scripts/iot/firmware-doctor.mjs`
-- ถ้าจะ upload ให้ใช้ `node scripts/iot/firmware-arduino-cli.mjs upload main` หรือ `node scripts/iot/firmware-arduino-cli.mjs upload tuning`
-- ถ้าพอร์ตไม่ใช่ค่า default ให้ override ด้วย `FIRMWARE_PORT=/dev/ttyUSB0` หรือ `FIRMWARE_PORT=COM5`
-- PowerShell ใช้ `$env:FIRMWARE_PORT='COM5'; node scripts/iot/firmware-arduino-cli.mjs upload main`
-- PowerShell สำหรับ monitor ใช้ `$env:MONITOR_PORT='COM5'; node scripts/iot/firmware-monitor.mjs`
+- `main_firmware` exceeds the size limit with `PartitionScheme=default` (1.2MB APP)
+- For real use, use `PartitionScheme=huge_app` (3MB APP)
+- The repo's default FQBN is `esp32:esp32:esp32`
+- The helper looks for `arduino-cli` on `PATH` first, then falls back to each OS's standard path
+- If you do not set the port yourself, the helper first tries to auto-detect it from `arduino-cli board list`, then falls back to `/dev/ttyUSB0` on Unix or `COM3` on Windows
+- If monitor/upload/compile gets stuck because the machine is not ready yet, start with `node scripts/iot/firmware-doctor.mjs`
+- To upload, use `node scripts/iot/firmware-arduino-cli.mjs upload main` or `node scripts/iot/firmware-arduino-cli.mjs upload tuning`
+- If the port is not the default, override it with `FIRMWARE_PORT=/dev/ttyUSB0` or `FIRMWARE_PORT=COM5`
+- In PowerShell use `$env:FIRMWARE_PORT='COM5'; node scripts/iot/firmware-arduino-cli.mjs upload main`
+- In PowerShell, for the monitor use `$env:MONITOR_PORT='COM5'; node scripts/iot/firmware-monitor.mjs`
 
 ---
 
 ## 7) Quick End-to-End Flow
 
 1. Upload firmware to ESP32
-2. Admin สร้าง device จาก serial ของ ESP32
-3. Mobile ทำ BLE provisioning (ส่ง SSID/Password)
-4. ESP32 ต่อ WiFi และ MQTT
-5. ทดสอบ flow เซนเซอร์/แจ้งเตือนตามคู่มืออุปกรณ์แต่ละตัว
+2. Admin creates the device from the ESP32 serial
+3. Mobile performs BLE provisioning (sends SSID/Password)
+4. ESP32 connects to WiFi and MQTT
+5. Test the sensor/alert flows following each device guide
 
-สำหรับรายละเอียดทีละขั้น:
+For step-by-step details:
 
 - [ESP32 System Operation Guide](docs/guides/Esp32SystemOperationGuide.md)
 - [Practical Operation Guide](docs/guides/PracticalOperationGuide.md)
@@ -197,18 +199,18 @@ node scripts/iot/firmware-arduino-cli.mjs compile tuning
 
 ---
 
-## 9) คำศัพท์ที่ใช้ (Glossary)
+## 9) Glossary
 
-| คำศัพท์            | ความหมายในโปรเจกต์นี้                               |
-| ------------------ | --------------------------------------------------- |
-| `ESP32 Firmware`   | โค้ดที่ทำงานบนบอร์ด ESP32 ของ FallHelp              |
-| `BLE Provisioning` | การตั้งค่า WiFi ผ่าน Bluetooth จากมือถือ            |
-| `MQTT`             | โปรโตคอลส่งข้อความระหว่างอุปกรณ์กับ backend         |
-| `Runtime Constants` | ค่าคงที่ของ runtime เช่น cancel window และ retry budget |
-| `Sensor Runtime`   | การทำงานร่วมกันของเซนเซอร์ตอนระบบกำลังรัน           |
-| `Owner Doc`        | ไฟล์เอกสารหลักของแต่ละหัวข้อที่ต้องยึดเป็นแหล่งจริง |
-| `Sensor Lab`       | ชุดงานเก็บค่าเซนเซอร์และตรวจ log เพื่อช่วยจูนระบบ    |
-| `NVS`              | หน่วยเก็บค่าถาวรบน ESP32 ที่คงอยู่หลังรีบูต         |
+| Term                | Meaning in this project                                                         |
+| ------------------- | ------------------------------------------------------------------------------- |
+| `ESP32 Firmware`    | Code that runs on the FallHelp ESP32 board                                      |
+| `BLE Provisioning`  | Configuring WiFi over Bluetooth from the phone                                  |
+| `MQTT`              | Messaging protocol between the device and the backend                           |
+| `Runtime Constants` | Runtime constants such as the cancel window and retry budget                    |
+| `Sensor Runtime`    | How the sensors work together while the system is running                      |
+| `Owner Doc`         | The primary document for each topic, treated as the source of truth             |
+| `Sensor Lab`        | Workflow for collecting sensor values and checking logs to help tune the system |
+| `NVS`               | Persistent storage on the ESP32 that survives reboots                           |
 
 ---
 

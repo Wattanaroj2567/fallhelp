@@ -1,5 +1,7 @@
 # ESP32 Guides Index
 
+[English](README.md) · [ภาษาไทย](README.th.md)
+
 ## Doc Meta
 
 - Audience: Hardware Dev, QA, AI Agents
@@ -11,31 +13,31 @@
 
 ## Overview
 
-`guides/` คือ runbook layer สำหรับลงมือทำงานกับ ESP32 ให้ถูกโหมด
+`guides/` is the runbook layer for working with the ESP32 in the correct mode.
 
-อ่านตามลำดับนี้:
+Read in this order:
 
-1. เริ่มที่ [PracticalOperationGuide.md](PracticalOperationGuide.md) เพื่อเลือกงานและหลักฐาน
-2. ถ้าเป็นระบบเต็ม ให้ไป [Esp32SystemOperationGuide.md](Esp32SystemOperationGuide.md)
-3. ถ้าเป็น sensor tuning ให้ไป [SensorHardwareOnlyTuningGuide.md](SensorHardwareOnlyTuningGuide.md)
-4. ถ้าต้องรู้รายละเอียดรายอุปกรณ์ ให้เปิด component guide ที่เกี่ยวข้อง
+1. Start at [PracticalOperationGuide.md](PracticalOperationGuide.md) to choose the task and evidence
+2. For the full system, go to [Esp32SystemOperationGuide.md](Esp32SystemOperationGuide.md)
+3. For sensor tuning, go to [SensorHardwareOnlyTuningGuide.md](SensorHardwareOnlyTuningGuide.md)
+4. If you need per-device details, open the relevant component guide
 
 ---
 
 ## Choose Your Guide
 
-| สถานการณ์ | เอกสารที่ต้องเปิด | ผลลัพธ์ที่ควรได้ |
+| Situation | Document to open | Expected outcome |
 | --- | --- | --- |
-| ยังไม่แน่ใจว่างานนี้คืออะไร | [PracticalOperationGuide.md](PracticalOperationGuide.md) | เลือก firmware, evidence, และ definition of done ได้ |
-| เช็ก BLE, WiFi, MQTT, fall flow กับ backend/mobile | [Esp32SystemOperationGuide.md](Esp32SystemOperationGuide.md) | system integration checklist |
-| จูน MPU หรือ Pulse โดยลดตัวแปรจาก backend/mobile | [SensorHardwareOnlyTuningGuide.md](SensorHardwareOnlyTuningGuide.md) | hardware-only tuning workflow |
-| เก็บข้อมูล Fall Detection Sensor Lab | [../../fall_detection_sensor_lab/README.md](../../fall_detection_sensor_lab/README.md) | lab workflow, protocol, CSV pipeline |
+| Not sure what this task is yet | [PracticalOperationGuide.md](PracticalOperationGuide.md) | Able to choose firmware, evidence, and definition of done |
+| Check BLE, WiFi, MQTT, fall flow with backend/mobile | [Esp32SystemOperationGuide.md](Esp32SystemOperationGuide.md) | system integration checklist |
+| Tune MPU or Pulse while reducing variables from backend/mobile | [SensorHardwareOnlyTuningGuide.md](SensorHardwareOnlyTuningGuide.md) | hardware-only tuning workflow |
+| Collect Fall Detection Sensor Lab data | [../../fall_detection_sensor_lab/README.md](../../fall_detection_sensor_lab/README.md) | lab workflow, protocol, CSV pipeline |
 
 ---
 
 ## Component Follow-Up
 
-หลังเลือก guide แล้ว ให้เปิด owner doc รายอุปกรณ์เมื่อจำเป็น:
+After choosing a guide, open the per-device owner doc when needed:
 
 - [../components/mpu6050.md](../components/mpu6050.md)
 - [../components/pulse-sensor.md](../components/pulse-sensor.md)
@@ -46,10 +48,10 @@
 
 ## Boundaries
 
-1. `main_firmware` ใช้สำหรับ system integration และ runtime prototype flow
-2. `sensor_tuning` ใช้สำหรับ hardware tuning และ lab collection
-3. Fall Detection Sensor Lab เป็น Basic Activity Collection ไม่ใช่ sensor log collection
-4. Node-RED CSV เป็นหลักฐานหลักเฉพาะ Sensor Lab หรือรอบที่ตั้งใจเก็บ CSV
+1. `main_firmware` is used for system integration and the runtime prototype flow
+2. `sensor_tuning` is used for hardware tuning and lab collection
+3. The Fall Detection Sensor Lab is Basic Activity Collection, not sensor log collection
+4. Node-RED CSV is the primary evidence only for the Sensor Lab or rounds that intentionally collect CSV
 
 ---
 

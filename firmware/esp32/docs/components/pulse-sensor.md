@@ -1,5 +1,7 @@
 # XD-58C Pulse Sensor Guide
 
+[English](pulse-sensor.md) · [ภาษาไทย](pulse-sensor.th.md)
+
 ## Doc Meta
 
 - Audience: Hardware Dev, QA
@@ -11,33 +13,33 @@
 
 ## Overview
 
-XD-58C ใช้วัด heart rate จากสัญญาณ PPG ที่ตำแหน่ง ear clip ของอุปกรณ์ FallHelp
+The XD-58C measures heart rate from the PPG signal at the ear clip position of the FallHelp device.
 
-เอกสารนี้เป็น owner doc ของ pulse sensor และ PPG signal quality ไม่ใช่เอกสาร Fall Detection Sensor Lab เพราะ Fall Detection Sensor Lab เก็บเฉพาะ IMU Basic Activity Collection
+This document is the owner doc for the pulse sensor and PPG signal quality. It is not a Fall Detection Sensor Lab document, because the Fall Detection Sensor Lab collects only IMU Basic Activity Collection data.
 
 ---
 
 ## Scope
 
-ไฟล์นี้ครอบคลุม:
+This file covers:
 
-1. ข้อเท็จจริงของ XD-58C และ GPIO/ADC
-2. ค่า runtime ที่ใช้คัดกรอง beat
-3. วิธีแยก Rest, Motion, และ signal quality issue
-4. checklist สำหรับทดสอบ hardware readiness
+1. Facts about the XD-58C and GPIO/ADC
+2. Runtime values used to filter beats
+3. How to separate Rest, Motion, and signal quality issues
+4. A checklist for testing hardware readiness
 
-ไฟล์นี้ไม่ครอบคลุม:
+This file does not cover:
 
-1. การสรุปผล pulse เชิงสถิติ
-2. การเปลี่ยน backend event contract
-3. การใช้ pulse data เป็น metric ของ Fall Detection Sensor Lab
-4. การปรับ fall detection threshold
+1. Statistical summaries of pulse results
+2. Changing the backend event contract
+3. Using pulse data as a Fall Detection Sensor Lab metric
+4. Tuning the fall detection threshold
 
 ---
 
 ## Hardware Facts
 
-| รายการ | ค่า |
+| Item | Value |
 | --- | --- |
 | Component | XD-58C Pulse Sensor + Easy Earclip Mount |
 | Input pin | `GPIO34` (`ADC1_CH6`) |
@@ -45,56 +47,56 @@ XD-58C ใช้วัด heart rate จากสัญญาณ PPG ที่�
 | ADC attenuation | `ADC_11db` |
 | Library | `PulseSensorPlayground` |
 
-GPIO34 เป็น input-only pin เหมาะกับ analog sensor แต่ต้องระวังสายหลวมและ noise จากการขยับตัว
+GPIO34 is an input-only pin, suitable for an analog sensor, but watch out for loose wires and noise from body movement.
 
 ---
 
 ## Firmware Ownership
 
-| Firmware | บทบาทของ pulse sensor |
+| Firmware | Role of the pulse sensor |
 | --- | --- |
-| `main_firmware` | อ่าน heart rate สำหรับ runtime device state และ snapshot ประกอบ fall event |
-| `sensor_tuning` | แยกทดสอบ Rest/Motion และดู reject reason โดยลดตัวแปรจาก backend/mobile |
+| `main_firmware` | Reads heart rate for the runtime device state and the snapshot attached to fall events |
+| `sensor_tuning` | Tests Rest/Motion separately and shows reject reasons, reducing variables from backend/mobile |
 
-ค่าหลักที่ตรงกันใน firmware ปัจจุบัน:
+Main values shared in the current firmware:
 
-| ค่า | ปัจจุบัน | ใช้ทำอะไร |
+| Value | Current | Purpose |
 | --- | --- | --- |
-| `PULSE_THRESHOLD_10BIT` | `480` | threshold พื้นฐานของ waveform |
-| `VALID_BPM_MIN` | `40` | BPM ต่ำสุดที่รับได้ |
-| BPM max | `180` | BPM สูงสุดที่รับได้ (`HR_VALID_BPM_MAX` หรือ `VALID_BPM_MAX` ตาม variant) |
-| `SIGNAL_AMP_MIN` | `15` | amplitude ต่ำสุดที่รับ beat |
-| `SIGNAL_AMP_MAX` | `400` | amplitude สูงสุดก่อนถือว่า noise/invalid |
-| `HEART_RATE_STALE_TIMEOUT_MS` | `1500 ms` | reset heart rate เมื่อไม่มี beat ใหม่ |
+| `PULSE_THRESHOLD_10BIT` | `480` | Base threshold of the waveform |
+| `VALID_BPM_MIN` | `40` | Lowest accepted BPM |
+| BPM max | `180` | Highest accepted BPM (`HR_VALID_BPM_MAX` or `VALID_BPM_MAX` depending on variant) |
+| `SIGNAL_AMP_MIN` | `15` | Lowest amplitude to accept a beat |
+| `SIGNAL_AMP_MAX` | `400` | Highest amplitude before it is treated as noise/invalid |
+| `HEART_RATE_STALE_TIMEOUT_MS` | `1500 ms` | Reset heart rate when there is no new beat |
 
 ---
 
 ## Runtime Behavior
 
-PPG pipeline โดยย่อ:
+PPG pipeline in brief:
 
 ```text
 raw ADC sample
   -> smoothing / library sample path
   -> PulseSensorPlayground beat detection
   -> amplitude / IBI / BPM gates
-  -> accepted beat หรือ rejected beat
+  -> accepted beat or rejected beat
   -> heartRate + confidence / abnormal state
 ```
 
-สาเหตุ reject ที่ควรดู:
+Reject reasons to watch:
 
-1. `signal_quality` — amplitude ต่ำ/สูงเกินช่วง
-2. `ibi` — interval ระหว่าง beat ไม่สมเหตุสมผล
-3. `bpm_range` — BPM นอกช่วงที่รับได้
-4. `bpm_jump` — ค่าเปลี่ยนเร็วผิดปกติ
+1. `signal_quality` — amplitude too low/high
+2. `ibi` — interval between beats is not plausible
+3. `bpm_range` — BPM outside the accepted range
+4. `bpm_jump` — value changes abnormally fast
 
-ข้อควรตีความ:
+Interpretation notes:
 
-1. Rest session ใช้ดู baseline ของ sensor และตำแหน่งหนีบ
-2. Motion session ใช้ดู motion artifact
-3. Pulse data เป็น monitoring signal ไม่ใช่เครื่องมือวินิจฉัยทางการแพทย์
-4. งาน pulse เชิงปริมาณเป็นงานแยกในอนาคต ไม่ใช่ผลของ Fall Detection Sensor Lab
+1. Rest sessions are used to look at the sensor baseline and clip position
+2. Motion sessions are used to look at motion artifact
+3. Pulse data is a monitoring signal, not a medical diagnostic tool
+4. Quantitative pulse work is a separate future task, not a result of the Fall Detection Sensor Lab
 
 ---
 
@@ -102,78 +104,78 @@ raw ADC sample
 
 ### Basic Readiness
 
-1. ตั้ง `sensor_tuning` เป็น `FALLHELP_SINGLE_SENSOR_PULSE`
+1. Set `sensor_tuning` to `FALLHELP_SINGLE_SENSOR_PULSE`
 2. Upload `sensor_tuning.ino`
-3. เปิด Serial Monitor `115200`
-4. หนีบ ear clip ให้แน่นและอยู่ตำแหน่งใช้งานจริง
-5. รอให้สัญญาณนิ่งก่อนอ่านผล
+3. Open Serial Monitor at `115200`
+4. Clip the ear clip firmly in the real usage position
+5. Wait for the signal to settle before reading results
 
 ### Rest Check
 
-1. ให้ผู้สวมใส่อยู่นิ่ง 1-2 นาที
-2. ดู raw, smoothed value, BPM, confidence, และ reject reason จาก Serial
-3. ยืนยันว่า BPM ไม่ค้างและไม่แกว่งผิดปกติ
-4. ถ้าต้องเทียบเป็นตาราง ให้เก็บ CSV เพิ่มตาม runbook ของรอบนั้น
+1. Have the wearer stay still for 1-2 minutes
+2. Look at raw, smoothed value, BPM, confidence, and reject reason in Serial
+3. Confirm that BPM is not stuck and does not swing abnormally
+4. If you need a tabular comparison, also collect CSV per that round's runbook
 
 ### Motion Check
 
-1. เริ่มจาก motion เบา ๆ ไม่ใช่กิจกรรมรุนแรงทันที
-2. ดูว่า motion artifact ทำให้ reject เพิ่มขึ้นแค่ไหน
-3. เทียบกับ Rest ก่อนตัดสินว่าปัญหาอยู่ที่ sensor, clip, หรือ threshold
+1. Start with light motion, not intense activity right away
+2. See how much motion artifact increases rejects
+3. Compare with Rest before deciding whether the problem lies with the sensor, clip, or threshold
 
 ---
 
 ## Evidence To Collect
 
-| งาน | หลักฐาน |
+| Task | Evidence |
 | --- | --- |
-| Hardware readiness | Serial log ที่แสดง init success, raw, voltage, threshold |
-| Rest check | Serial log ช่วงอยู่นิ่ง 1-2 นาที |
-| Motion check | Serial log ที่เห็น reject reason ระหว่างขยับ |
-| Tuning decision | ค่าเดิม, ค่าที่เสนอปรับ, และเหตุผลจาก log |
+| Hardware readiness | Serial log showing init success, raw, voltage, threshold |
+| Rest check | Serial log during 1-2 minutes of staying still |
+| Motion check | Serial log showing reject reasons during movement |
+| Tuning decision | Original value, proposed value, and rationale from the log |
 
-CSV เป็นหลักฐานเสริมเฉพาะรอบที่ตั้งใจเก็บข้อมูลเป็นตาราง ไม่ใช่ default ของ pulse ทุก session
+CSV is supplementary evidence only for rounds that intentionally collect tabular data. It is not the default for every pulse session.
 
 ---
 
 ## Troubleshooting
 
-### No Beat หรือ BPM เป็น 0 นานเกินไป
+### No Beat or BPM stays at 0 too long
 
-ตรวจ:
+Check:
 
-1. Ear clip แน่นและอยู่ตำแหน่งเดิมหรือไม่
-2. raw ADC เปลี่ยนตามชีพจรจริงหรือไม่
-3. `PULSE_THRESHOLD_10BIT` สูง/ต่ำเกินไปหรือไม่
-4. sensor หลุดจากผิวหรือมีแสงรบกวนหรือไม่
+1. Is the ear clip firm and in the same position?
+2. Does raw ADC change with the actual pulse?
+3. Is `PULSE_THRESHOLD_10BIT` too high/low?
+4. Has the sensor come off the skin, or is there light interference?
 
-### Reject เพราะ Signal Quality
+### Rejected Due To Signal Quality
 
-ตรวจ:
+Check:
 
-1. amplitude ต่ำกว่า `SIGNAL_AMP_MIN` หรือสูงกว่า `SIGNAL_AMP_MAX`
-2. สาย ADC หลวมหรือโดนดึงหรือไม่
-3. motion artifact มากกว่าที่ session ตั้งใจทดสอบหรือไม่
-4. clip กดแน่นเกินหรือตื้นเกินไปหรือไม่
+1. Is the amplitude below `SIGNAL_AMP_MIN` or above `SIGNAL_AMP_MAX`?
+2. Is the ADC wire loose or being pulled?
+3. Is there more motion artifact than the session intends to test?
+4. Is the clip pressing too tight or too shallow?
 
-### BPM ไม่สมเหตุสมผล
+### Implausible BPM
 
-ตรวจ:
+Check:
 
-1. BPM หลุดช่วง `40..180` หรือไม่
-2. IBI ผิดช่วงหรือไม่
-3. มี sudden jump จาก motion หรือ noise หรือไม่
-4. stale timeout reset ค่าเร็วตาม `1500 ms` หรือไม่
+1. Is BPM outside the `40..180` range?
+2. Is IBI out of range?
+3. Is there a sudden jump from motion or noise?
+4. Does the stale timeout reset the value quickly per `1500 ms`?
 
-### Rest ผ่าน แต่ Motion พัง
+### Rest Passes, But Motion Fails
 
-แปลว่าปัญหาหลักมีแนวโน้มเป็น motion artifact ไม่ใช่ baseline sensor failure
+This means the main problem is likely motion artifact, not baseline sensor failure.
 
-แนวทาง:
+Approach:
 
-1. ปรับตำแหน่ง clip ก่อนปรับ threshold
-2. ลดการขยับที่ไม่อยู่ใน scope ของรอบนั้น
-3. เก็บ log เปรียบเทียบก่อน-หลังแบบหนึ่งตัวแปรต่อรอบ
+1. Adjust the clip position before adjusting the threshold
+2. Reduce movement that is outside the scope of that round
+3. Collect before/after comparison logs with one variable per round
 
 ---
 

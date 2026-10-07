@@ -1,5 +1,7 @@
 # False Alarm Cancel Button Guide
 
+[English](cancel-button.md) · [ภาษาไทย](cancel-button.th.md)
+
 ## Doc Meta
 
 - Audience: Hardware Dev, Backend Dev, QA
@@ -11,89 +13,89 @@
 
 ## Overview
 
-ปุ่ม cancel มีหน้าที่เดียว: ให้ผู้สวมใส่ยกเลิก `suspected_fall` ภายใน cancel window ของอุปกรณ์
+The cancel button has a single job: let the wearer cancel a `suspected_fall` within the device's cancel window.
 
-เอกสารนี้เป็น owner doc ของปุ่ม GPIO27 ไม่ใช่เอกสาร backend, mobile UI, หรือ Sensor Lab
+This document is the owner doc for the GPIO27 button. It is not a backend, mobile UI, or Sensor Lab document.
 
 ---
 
 ## Scope
 
-ไฟล์นี้ครอบคลุม:
+This file covers:
 
-1. ข้อเท็จจริงของปุ่มและ pin
-2. กติกา cancel vs acknowledge
-3. runtime behavior ของปุ่มใน fall flow
-4. checklist สำหรับทดสอบปุ่มและหลักฐานที่ควรเก็บ
+1. Facts about the button and pin
+2. The cancel vs acknowledge rule
+3. Runtime behavior of the button in the fall flow
+4. A checklist for testing the button and the evidence to collect
 
-ไฟล์นี้ไม่ครอบคลุม:
+This file does not cover:
 
-1. การเปลี่ยน cancel timeout
-2. การแก้ payload หรือ DB schema
-3. การทำให้ caregiver app เป็นผู้ cancel เหตุล้ม
-4. การวิเคราะห์ Fall Detection Sensor Lab CSV
+1. Changing the cancel timeout
+2. Changing the payload or DB schema
+3. Making the caregiver app the one that cancels a fall event
+4. Analysis of Fall Detection Sensor Lab CSV
 
 ---
 
 ## Hardware Facts
 
-| รายการ | ค่า |
+| Item | Value |
 | --- | --- |
 | Component | Large Push Button Module |
 | Pin | `GPIO27` |
 | Input mode | `INPUT_PULLUP` |
-| Press logic | กด = `LOW`, ปล่อย = `HIGH` |
+| Press logic | pressed = `LOW`, released = `HIGH` |
 | Debounce | `50 ms` |
 | Cancel window | `15000 ms` |
 
-`GPIO27` ต้องต่อให้ปุ่มกดลง GND ได้จริง เพราะ firmware ใช้ pull-up ภายใน
+`GPIO27` must be wired so the button actually pulls it down to GND, because the firmware uses the internal pull-up.
 
 ---
 
 ## Firmware Ownership
 
-| Firmware | หน้าที่ของปุ่ม |
+| Firmware | Role of the button |
 | --- | --- |
-| `main_firmware` | ใช้ใน flow ระบบหลัก: `suspected_fall -> fall_cancelled / fall_confirmed` |
-| `sensor_tuning` | ใช้ทดสอบ fall flow ฝั่ง MPU และ simulation โดยไม่พึ่ง backend/mobile เต็มระบบ |
+| `main_firmware` | Used in the main system flow: `suspected_fall -> fall_cancelled / fall_confirmed` |
+| `sensor_tuning` | Used to test the MPU-side fall flow and simulation without relying on the full backend/mobile system |
 
-ค่าที่ต้องไม่เปลี่ยนโดยไม่ทำ cross-stack review:
+Values that must not change without a cross-stack review:
 
 1. `GPIO27`
 2. `50 ms` debounce
 3. `15000 ms` cancel timeout
-4. ความหมายของ `fall_cancelled`
+4. The meaning of `fall_cancelled`
 
 ---
 
 ## Runtime Behavior
 
-ลำดับการทำงาน:
+Sequence:
 
 ```text
 suspected_fall
-  -> เปิด cancel window 15 วินาที
-  -> ผู้สวมใส่กด GPIO27 ทันเวลา
-  -> local alert sound หยุด
-  -> firmware publish fall_cancelled ถ้า MQTT พร้อม
+  -> open a 15-second cancel window
+  -> wearer presses GPIO27 in time
+  -> local alert sound stops
+  -> firmware publishes fall_cancelled if MQTT is ready
   -> reset pending fall state
 ```
 
-ถ้ากดหลัง cancel window:
+If pressed after the cancel window:
 
 ```text
 suspected_fall
-  -> cancel window หมดเวลา
+  -> cancel window times out
   -> fall_confirmed
-  -> การกดปุ่มหลังจากนั้นไม่ใช่ fall_cancelled ของเหตุนี้
+  -> pressing the button after that is not fall_cancelled for this event
 ```
 
-กติกาธุรกิจ:
+Business rules:
 
-1. `Cancel` มาจากผู้สวมใส่ผ่านปุ่ม GPIO27 เท่านั้น
-2. caregiver app ทำได้แค่ acknowledge/reset view ฝั่ง UI
-3. cancel ไม่ retract push notification ที่ส่งไปแล้ว
-4. `fall_cancelled`, `fallStage = CANCELLED`, และ `cancelledAt` ต้องมาจาก device button flow เท่านั้น
+1. `Cancel` comes only from the wearer via the GPIO27 button
+2. The caregiver app can only acknowledge/reset the view on the UI side
+3. Cancel does not retract a push notification that has already been sent
+4. `fall_cancelled`, `fallStage = CANCELLED`, and `cancelledAt` must come only from the device button flow
 
 ---
 
@@ -101,75 +103,75 @@ suspected_fall
 
 ### Basic Hardware Check
 
-1. Upload firmware ที่รองรับ fall flow
-2. เปิด Serial Monitor `115200`
-3. รัน `info`
-4. ยืนยันว่า cancel button พร้อมใช้งาน และ timeout คือ `15000 ms`
+1. Upload firmware that supports the fall flow
+2. Open Serial Monitor at `115200`
+3. Run `info`
+4. Confirm that the cancel button is ready and the timeout is `15000 ms`
 
 ### Cancel-In-Window Check
 
-1. เริ่ม simulated fall ด้วย `sim fall`
-2. รอให้เข้า `suspected_fall`
-3. กดปุ่ม GPIO27 ภายใน 15 วินาที
-4. ยืนยันว่า local alert sound หยุด
-5. ถ้า MQTT พร้อม ให้ยืนยันว่ามี `fall_cancelled`
+1. Start a simulated fall with `sim fall`
+2. Wait until it enters `suspected_fall`
+3. Press the GPIO27 button within 15 seconds
+4. Confirm that the local alert sound stops
+5. If MQTT is ready, confirm that `fall_cancelled` is present
 
 ### Timeout Check
 
-1. เริ่ม simulated fall ด้วย `sim fall`
-2. ไม่กดปุ่มจนเกิน 15 วินาที
-3. ยืนยันว่า flow ไป `fall_confirmed`
-4. กดปุ่มหลัง timeout แล้วต้องไม่เปลี่ยนเหตุเดิมกลับเป็น cancel
+1. Start a simulated fall with `sim fall`
+2. Do not press the button until more than 15 seconds have passed
+3. Confirm that the flow goes to `fall_confirmed`
+4. Pressing the button after the timeout must not turn the same event back into a cancel
 
 ---
 
 ## Evidence To Collect
 
-| งาน | หลักฐาน |
+| Task | Evidence |
 | --- | --- |
-| Hardware check | Serial log ที่แสดงปุ่มพร้อมใช้งาน |
-| Cancel-in-window | Serial log ลำดับ `suspected_fall -> fall_cancelled` |
-| Backend path | MQTT/backend monitor ที่เห็น `fall_cancelled` |
-| Timeout path | Serial log ลำดับ `suspected_fall -> fall_confirmed` |
+| Hardware check | Serial log showing the button is ready |
+| Cancel-in-window | Serial log with the sequence `suspected_fall -> fall_cancelled` |
+| Backend path | MQTT/backend monitor showing `fall_cancelled` |
+| Timeout path | Serial log with the sequence `suspected_fall -> fall_confirmed` |
 
-ถ้าเป็น system integration ให้เก็บ observation จาก backend/mobile เพิ่มด้วย แต่ไม่ต้องใช้ Node-RED Sensor Lab CSV
+For system integration, also collect observations from backend/mobile, but Node-RED Sensor Lab CSV is not needed.
 
 ---
 
 ## Troubleshooting
 
-### กดแล้วไม่มีผล
+### Pressing has no effect
 
-ตรวจ:
+Check:
 
-1. ปุ่มต่อกับ `GPIO27` และ GND ถูกต้องหรือไม่
-2. อยู่ในสถานะ `suspected_fall` จริงหรือไม่
-3. กดภายใน 15 วินาทีหรือไม่
-4. firmware ที่ upload รองรับ fall flow หรือไม่
+1. Is the button correctly wired to `GPIO27` and GND?
+2. Is the device actually in the `suspected_fall` state?
+3. Was it pressed within 15 seconds?
+4. Does the uploaded firmware support the fall flow?
 
-### กดครั้งเดียวแต่ระบบนับหลายครั้ง
+### One press is counted multiple times
 
-ตรวจ:
+Check:
 
-1. สภาพปุ่มและสายสัญญาณ
-2. debounce ยังเป็น `50 ms` หรือไม่
-3. มี noise หรือสายหลวมที่ทำให้ state กระพริบหรือไม่
+1. The condition of the button and signal wiring
+2. Whether debounce is still `50 ms`
+3. Whether there is noise or a loose wire causing the state to flicker
 
-### Local Cancel ได้ แต่ Backend ไม่เห็น
+### Local Cancel works, but the Backend does not see it
 
-ตรวจ:
+Check:
 
-1. MQTT connected อยู่หรือไม่
-2. topic publish path ของ firmware ทำงานหรือไม่
-3. backend MQTT consumer online อยู่หรือไม่
-4. log ฝั่ง backend มี validation error หรือไม่
+1. Is MQTT connected?
+2. Is the firmware's topic publish path working?
+3. Is the backend MQTT consumer online?
+4. Does the backend log show a validation error?
 
-### Timeout ไม่ตรง 15 วินาที
+### Timeout is not exactly 15 seconds
 
-ตรวจ:
+Check:
 
-1. `getFallCancelTimeoutMs()` ใน firmware variant ที่ใช้
-2. มีการแก้ cancel timeout โดยไม่ได้ sync docs/tests หรือไม่
+1. `getFallCancelTimeoutMs()` in the firmware variant in use
+2. Whether the cancel timeout was changed without syncing docs/tests
 
 ---
 

@@ -1,5 +1,7 @@
 # FallHelp Project Structure
 
+[English](project-structure.md) · [ภาษาไทย](project-structure.th.md)
+
 ## Doc Meta
 
 - Audience: Dev/QA/PM
@@ -11,13 +13,13 @@
 
 ## Overview
 
-โครงสร้างโปรเจค FallHelp แบ่งตาม domain หลัก: Backend, Mobile, Admin, Firmware (ESP32) และ Docs
+The FallHelp project structure is organised by main domain: Backend, Mobile, Admin, Firmware (ESP32), and Docs
 
 ---
 
 ## Tech Stack
 
-| ส่วน            | เทคโนโลยี                                                             |
+| Part            | Technology                                                            |
 | --------------- | --------------------------------------------------------------------- |
 | **Mobile App**  | Expo SDK 55 (React Native), TypeScript, Expo Router, React Query, NativeWind |
 | **Backend**     | Node.js 24, Express v5, Prisma 7.8.0, PostgreSQL                                   |
@@ -66,7 +68,7 @@ fallhelp/
 │   │   ├── scripts/          # Backend-local DB setup/verify scripts
 │   │   ├── dist/             # TypeScript build output
 │   │   ├── docs/             # Backend-local docs / notes
-│   │   └── (ใช้ MQTT Broker ภายนอก) # ตั้งค่า broker ผ่าน OS service / infra ภายนอก repo
+│   │   └── (uses an external MQTT Broker) # broker configured via OS service / infra outside the repo
 │
 │   ├── mobile/               # React Native/Expo App
 │   │   ├── app/              # Expo Router screens
@@ -131,19 +133,19 @@ fallhelp/
 
 ## Background Schedulers (`apps/backend-api/src/schedulers/otpScheduler.ts`)
 
-Scheduled tasks ปัจจุบันถูก bootstrap ผ่าน `initSchedulers()` ใน `apps/backend-api/src/schedulers/otpScheduler.ts` และถูกเรียกครั้งเดียวใน `server.ts` หลัง HTTP server เริ่มทำงาน
+Current scheduled tasks are bootstrapped via `initSchedulers()` in `apps/backend-api/src/schedulers/otpScheduler.ts`, which is called once in `server.ts` after the HTTP server starts
 
 | File              | Schedule               | Purpose                             |
 | ----------------- | ---------------------- | ----------------------------------- |
-| `otpScheduler.ts` | Every 1 hour + startup | ลบ OTP ที่หมดอายุออกจาก `auth_otps` |
+| `otpScheduler.ts` | Every 1 hour + startup | Deletes expired OTPs from `auth_otps` |
 
 ---
 
 ## API Surface (Summary)
 
-> รายละเอียดเต็ม: [`api-reference.md`](../api/api-reference.md)
+> Full details: [`api-reference.md`](../api/api-reference.md)
 
-| หมวด              | Endpoints                                                            |
+| Category          | Endpoints                                                            |
 | ----------------- | -------------------------------------------------------------------- |
 | Auth              | register, login, request-otp, verify-otp, reset-password, logout, me |
 | User              | profile, password, push-token, elders                                |

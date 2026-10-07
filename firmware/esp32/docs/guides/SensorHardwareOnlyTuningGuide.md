@@ -1,5 +1,7 @@
 # Sensor Hardware-Only Tuning Guide
 
+[English](SensorHardwareOnlyTuningGuide.md) · [ภาษาไทย](SensorHardwareOnlyTuningGuide.th.md)
+
 ## Doc Meta
 
 - Audience: Hardware Dev, QA
@@ -11,77 +13,77 @@
 
 ## Overview
 
-ไฟล์นี้เป็น runbook สำหรับ `sensor_tuning` ใช้จูน MPU6050 หรือ XD-58C โดยลดตัวแปรจาก backend/mobile
+This file is the runbook for `sensor_tuning`, used to tune the MPU6050 or XD-58C while reducing variables from backend/mobile.
 
-ไม่ใช่ runbook ของ `main_firmware` และไม่ใช่ lab manual รายละเอียดของ Fall Detection Sensor Lab
+It is not the runbook for `main_firmware`, and it is not the detailed lab manual of the Fall Detection Sensor Lab.
 
 ---
 
 ## Scope
 
-ใช้ไฟล์นี้เมื่อ:
+Use this file when:
 
-1. ต้อง calibrate MPU6050
-2. ต้องดู SVM, postureDelta, หรือ threshold ใน `sensor_tuning`
-3. ต้องดู PPG rest/motion และ reject reason
-4. ต้องเตรียมค่าที่จะย้ายกลับไป `main_firmware`
+1. You need to calibrate the MPU6050
+2. You need to look at SVM, postureDelta, or threshold in `sensor_tuning`
+3. You need to look at PPG rest/motion and reject reasons
+4. You need to prepare values to move back to `main_firmware`
 
-ให้ไป Sensor Lab โดยตรงเมื่อ:
+Go directly to the Sensor Lab when:
 
-1. ต้องเก็บ 24 trials
-2. ต้องใช้ Node-RED Dashboard เป็นหลัก
-3. ต้อง validate/summarize/generate analysis exports
+1. You need to collect 24 trials
+2. You need to use the Node-RED Dashboard as the main tool
+3. You need to validate/summarize/generate analysis exports
 
 ---
 
 ## Step 1 - Select Sensor Build
 
-เปิด `firmware/esp32/src/sensor_tuning/build_profile.h`
+Open `firmware/esp32/src/sensor_tuning/build_profile.h`
 
-เลือกอย่างใดอย่างหนึ่ง:
+Choose one:
 
 ```cpp
 #define FALLHELP_SINGLE_SENSOR FALLHELP_SINGLE_SENSOR_MPU6050
-// หรือ
+// or
 #define FALLHELP_SINGLE_SENSOR FALLHELP_SINGLE_SENSOR_PULSE
 ```
 
-กติกา:
+Rules:
 
-1. ห้ามจูน MPU และ Pulse พร้อมกันในรอบเดียว
-2. ถ้าจะเปลี่ยน sensor ให้ปิดรอบเดิมก่อน
-3. บันทึก build profile ที่ใช้ใน notes ของรอบนั้น
+1. Do not tune MPU and Pulse together in the same round
+2. If you are switching sensors, close the current round first
+3. Record the build profile used in that round's notes
 
 ---
 
 ## Step 2 - MPU Calibration Path
 
-ใช้เมื่อยังไม่มีค่า `MPU_CAL_*` ที่ตรงกับตำแหน่งติดตั้งปัจจุบัน
+Use when there are no `MPU_CAL_*` values yet that match the current mounting position.
 
-1. ตั้ง `SOFTWARE_CALIBRATION_MODE true`
+1. Set `SOFTWARE_CALIBRATION_MODE true`
 2. Upload `sensor_tuning.ino`
-3. สวมอุปกรณ์ตำแหน่งจริง
-4. ยืนนิ่งระหว่าง warmup และ sample collection
-5. เก็บ 400 samples
-6. เลือกรอบที่ magnitude ใกล้ `1.0g` ที่สุด
-7. copy ค่า `MPU_CAL_*` ลง `sensor_tuning`
-8. เปลี่ยน `SOFTWARE_CALIBRATION_MODE false`
-9. copy ค่าเดียวกันไป `main_firmware` เฉพาะเมื่อมีหลักฐานครบ
+3. Wear the device in the real position
+4. Stand still during warmup and sample collection
+5. Collect 400 samples
+6. Pick the round whose magnitude is closest to `1.0g`
+7. Copy the `MPU_CAL_*` values into `sensor_tuning`
+8. Set `SOFTWARE_CALIBRATION_MODE false`
+9. Copy the same values to `main_firmware` only when the evidence is complete
 
-รายละเอียด sensor ให้ดู [../components/mpu6050.md](../components/mpu6050.md)
+For sensor details, see [../components/mpu6050.md](../components/mpu6050.md)
 
 ---
 
 ## Step 3 - Tuning Evidence
 
-เลือก evidence ตามงาน:
+Choose evidence according to the task:
 
-| งาน | หลักฐานหลัก | หลักฐานเสริม |
+| Task | Primary evidence | Supplementary evidence |
 | --- | --- | --- |
-| MPU calibration | Serial output ของ `MPU_CAL_*` | notes ของ pose/sample count |
-| MPU threshold tuning | Serial log ของ SVM/postureDelta/gate | CSV เฉพาะรอบที่ต้องเทียบเป็นตาราง |
-| Pulse rest/motion | Serial log ของ BPM/reject reason | CSV เฉพาะรอบที่ต้องเทียบเป็นตาราง |
-| Fall Detection Sensor Lab | Node-RED CSV | Serial log และ session notes |
+| MPU calibration | Serial output of `MPU_CAL_*` | notes on pose/sample count |
+| MPU threshold tuning | Serial log of SVM/postureDelta/gate | CSV only for rounds that need a tabular comparison |
+| Pulse rest/motion | Serial log of BPM/reject reason | CSV only for rounds that need a tabular comparison |
+| Fall Detection Sensor Lab | Node-RED CSV | Serial log and session notes |
 
 ---
 
@@ -89,76 +91,76 @@
 
 ### MPU Tuning
 
-1. ยืนยัน `FALLHELP_SINGLE_SENSOR_MPU6050`
-2. ยืนยัน `SOFTWARE_CALIBRATION_MODE false`
+1. Confirm `FALLHELP_SINGLE_SENSOR_MPU6050`
+2. Confirm `SOFTWARE_CALIBRATION_MODE false`
 3. Upload `sensor_tuning.ino`
-4. เปิด Serial Monitor `115200`
-5. รัน `info`
-6. ดู gate จาก log: SVM, duration, postureDelta
-7. ปรับทีละ 1 ค่าเท่านั้น
+4. Open Serial Monitor at `115200`
+5. Run `info`
+6. Look at the gates in the log: SVM, duration, postureDelta
+7. Change only 1 value at a time
 
 ### Pulse Rest / Motion
 
-1. ยืนยัน `FALLHELP_SINGLE_SENSOR_PULSE`
+1. Confirm `FALLHELP_SINGLE_SENSOR_PULSE`
 2. Upload `sensor_tuning.ino`
-3. หนีบ ear clip ในตำแหน่งใช้งานจริง
-4. เก็บ Rest ก่อน Motion
-5. ดู BPM, confidence, amplitude, IBI, และ reject reason
-6. ปรับทีละ 1 ค่าเท่านั้น
+3. Clip the ear clip in the real usage position
+4. Collect Rest before Motion
+5. Look at BPM, confidence, amplitude, IBI, and reject reason
+6. Change only 1 value at a time
 
 ### Fall Detection Sensor Lab
 
-1. ใช้ workflow ใน [../../fall_detection_sensor_lab/README.md](../../fall_detection_sensor_lab/README.md)
-2. เปิด Node-RED Dashboard ที่ `/ui`
-3. เก็บ 1 trial = 1 CSV
-4. รัน `npm run sensor-lab -- validate`
+1. Use the workflow in [../../fall_detection_sensor_lab/README.md](../../fall_detection_sensor_lab/README.md)
+2. Open the Node-RED Dashboard at `/ui`
+3. Collect 1 trial = 1 CSV
+4. Run `npm run sensor-lab -- validate`
 
-Fall Detection Sensor Lab เป็น Basic Activity Collection ไม่ใช่ sensor log collection
+The Fall Detection Sensor Lab is Basic Activity Collection, not sensor log collection.
 
 ---
 
 ## Step 5 - Move Values Back To main_firmware
 
-ค่อยย้ายค่ากลับไป `main_firmware` เมื่อ:
+Only move values back to `main_firmware` when:
 
-1. มี log ดิบของรอบล่าสุด
-2. รู้ว่าปรับค่าใดเพียงค่าเดียว
-3. อธิบายผลก่อน/หลังได้
-4. สำหรับ MPU ต้องไม่ทำให้ cancel/confirm flow เปลี่ยนความหมาย
-5. สำหรับ Pulse ต้องไม่ทำให้ runtime UI ตีความ heart rate ผิดจาก contract เดิม
+1. You have the raw logs of the latest round
+2. You know which single value was changed
+3. You can explain the before/after results
+4. For MPU, it must not change the meaning of the cancel/confirm flow
+5. For Pulse, it must not make the runtime UI interpret heart rate differently from the existing contract
 
-`main_firmware` ไม่ใช่พื้นที่ลองค่าระหว่างจูน
+`main_firmware` is not a place to try out values during tuning.
 
 ---
 
 ## Troubleshooting
 
-### MQTT / Node-RED ไม่มา
+### MQTT / Node-RED Not Arriving
 
-ใช้เฉพาะงานที่ตั้งใจเก็บผ่าน Node-RED เช่น Fall Detection Sensor Lab
+Applies only to tasks that intentionally collect through Node-RED, such as the Fall Detection Sensor Lab.
 
-ตรวจ:
+Check:
 
-1. Node-RED ทำงานอยู่หรือไม่
-2. broker/env config ถูกหรือไม่
-3. firmware build profile ตรงกับ sensor หรือไม่
-4. calibration mode ปิดอยู่หรือไม่
+1. Is Node-RED running?
+2. Is the broker/env config correct?
+3. Does the firmware build profile match the sensor?
+4. Is calibration mode turned off?
 
-### MPU ไม่ Detect
+### MPU Not Detecting
 
-ตรวจ:
+Check:
 
-1. อยู่ใน `sensor_tuning` และเลือก MPU build หรือไม่
-2. เปิด `mpu on` diagnostic mode ค้างอยู่หรือไม่
-3. SVM หรือ postureDelta gate ไหน block อยู่
-4. calibration ตรงกับตำแหน่งสวมใส่จริงหรือไม่
+1. Are you in `sensor_tuning` with the MPU build selected?
+2. Is `mpu on` diagnostic mode left enabled?
+3. Which SVM or postureDelta gate is blocking?
+4. Does the calibration match the real worn position?
 
-### Pulse Reject เยอะ
+### Many Pulse Rejects
 
-ตรวจ:
+Check:
 
 1. ear clip
-2. สาย ADC
+2. ADC wire
 3. amplitude range
 4. motion artifact
 

@@ -1,5 +1,7 @@
 # Technical Glossary
 
+[English](TechnicalGlossary.md) · [ภาษาไทย](TechnicalGlossary.th.md)
+
 ## Doc Meta
 
 - Audience: Hardware Dev, Backend Dev, QA, AI Agents
@@ -13,15 +15,15 @@
 
 | Term | Meaning |
 | --- | --- |
-| `MPU6050` | IMU ที่มี accelerometer และ gyroscope |
-| `SVM` | Signal Vector Magnitude, magnitude รวมของ acceleration |
-| `Posture Delta` | การเปลี่ยนมุมร่างกาย/อุปกรณ์รอบช่วง impact |
-| `Impact Threshold` | gate แรงกระแทกจาก SVM |
-| `Duration Threshold` | gate เวลา/ช่วง stabilization |
-| `Posture Threshold` | gate องศา posture change |
-| `suspected_fall` | firmware พบเหตุเข้าข่ายล้มเบื้องต้น |
-| `fall_confirmed` | ไม่มี cancel ภายในเวลา จึงยืนยันเหตุล้ม |
-| `fall_cancelled` | ผู้สวมใส่กด GPIO27 ภายใน cancel window |
+| `MPU6050` | IMU with an accelerometer and gyroscope |
+| `SVM` | Signal Vector Magnitude, the combined magnitude of acceleration |
+| `Posture Delta` | Change in body/device angle around the impact window |
+| `Impact Threshold` | Impact gate based on SVM |
+| `Duration Threshold` | Time/stabilization window gate |
+| `Posture Threshold` | Gate on degrees of posture change |
+| `suspected_fall` | Firmware has detected a preliminary fall-like event |
+| `fall_confirmed` | No cancel within the time limit, so the fall is confirmed |
+| `fall_cancelled` | The wearer pressed GPIO27 within the cancel window |
 
 ---
 
@@ -29,9 +31,9 @@
 
 | Term | Actor | Effect |
 | --- | --- | --- |
-| `Cancel` | ผู้สวมใส่ผ่าน GPIO27 | เปลี่ยนเหตุเป็น `fall_cancelled` / `CANCELLED` |
-| `Acknowledge` | caregiver ใน app | รับทราบหรือ reset view ฝั่ง UI ไม่เปลี่ยน DB fall stage |
-| `Cancel Timeout` | firmware runtime | `15000 ms` ใน prototype ปัจจุบัน |
+| `Cancel` | The wearer via GPIO27 | Changes the event to `fall_cancelled` / `CANCELLED` |
+| `Acknowledge` | caregiver in the app | Acknowledges or resets the UI-side view; does not change the DB fall stage |
+| `Cancel Timeout` | firmware runtime | `15000 ms` in the current prototype |
 
 ---
 
@@ -39,13 +41,13 @@
 
 | Term | Meaning |
 | --- | --- |
-| `PPG` | Photoplethysmography, วัดชีพจรจากสัญญาณแสง |
+| `PPG` | Photoplethysmography, measuring pulse from a light signal |
 | `BPM` | beats per minute |
 | `IBI` | inter-beat interval |
-| `Signal Amplitude` | peak-to-trough amplitude ที่ใช้ quality gate |
-| `Beat accepted` | beat ที่ผ่าน gate และใช้คำนวณได้ |
-| `Beat rejected` | beat ที่ไม่ผ่าน gate เช่น amplitude, IBI, BPM range |
-| `Stale Timeout` | เวลาที่ไม่มี beat ใหม่จน firmware reset heart rate |
+| `Signal Amplitude` | peak-to-trough amplitude used by the quality gate |
+| `Beat accepted` | A beat that passes the gates and can be used in calculation |
+| `Beat rejected` | A beat that fails a gate, such as amplitude, IBI, BPM range |
+| `Stale Timeout` | The time without a new beat after which the firmware resets heart rate |
 
 ---
 
@@ -53,12 +55,12 @@
 
 | Topic / Term | Meaning |
 | --- | --- |
-| `device/+/event` | MQTT event หลักของ runtime device flow |
+| `device/+/event` | Main MQTT event of the runtime device flow |
 | `device/<serial>/heartrate` | heart rate runtime publish path |
 | `device/<serial>/status` | device online/status publish path |
-| `device/<serial>/config` | backend ส่ง config ให้ device |
-| `device/<serial>/config/ack` | device ตอบรับ config |
-| `device/<serial>/lab/imu` | lab IMU topic จาก `sensor_tuning` สำหรับ Fall Detection Sensor Lab |
+| `device/<serial>/config` | backend sends config to the device |
+| `device/<serial>/config/ack` | device acknowledges the config |
+| `device/<serial>/lab/imu` | lab IMU topic from `sensor_tuning` for the Fall Detection Sensor Lab |
 
 ---
 
@@ -66,14 +68,14 @@
 
 | Term | Meaning |
 | --- | --- |
-| Basic Activity Collection | เก็บตัวอย่าง IMU activity เพื่อสอบเทียบเกณฑ์และบันทึกรายงานผล ไม่ใช่ sensor log collection |
+| Basic Activity Collection | Collecting IMU activity samples to calibrate criteria and record reported results; not sensor log collection |
 | Trial | 1 activity attempt = 1 CSV |
-| `imu_sample` | periodic IMU sample ใน lab flow |
-| `imu_impact` | snapshot ตอน impact |
-| `imu_decision` | snapshot ตอน decision หลัง posture check |
-| `selected_values_table.csv` | ตาราง selected rows จาก `npm run sensor-lab -- summarize` |
+| `imu_sample` | periodic IMU sample in the lab flow |
+| `imu_impact` | snapshot at impact |
+| `imu_decision` | snapshot at the decision after the posture check |
+| `selected_values_table.csv` | Table of selected rows from `npm run sensor-lab -- summarize` |
 
-ห้ามตีความ Fall Detection Sensor Lab เป็นผลเชิงสถิติปัจจุบัน
+Do not interpret the Fall Detection Sensor Lab as current statistical results.
 
 ---
 
@@ -81,12 +83,12 @@
 
 | Term | Meaning |
 | --- | --- |
-| `fallStage` | DB stage เช่น `PENDING_CONFIRMATION`, `CONFIRMED`, `CANCELLED` |
-| `cancelledAt` | เวลาที่ device cancel สำเร็จ |
-| `fall_detected` | socket event หลัง fall ถูก confirmed |
-| `Dedup` | การกัน event ซ้ำจาก MQTT retransmission |
-| `Pending Fall Event` | event ล้มที่รอยืนยัน |
-| `Confirmed Fall Event` | event ล้มที่ยืนยันแล้ว |
+| `fallStage` | DB stage such as `PENDING_CONFIRMATION`, `CONFIRMED`, `CANCELLED` |
+| `cancelledAt` | Time at which the device cancel succeeded |
+| `fall_detected` | socket event after a fall is confirmed |
+| `Dedup` | Preventing duplicate events from MQTT retransmission |
+| `Pending Fall Event` | A fall event awaiting confirmation |
+| `Confirmed Fall Event` | A fall event that has been confirmed |
 
 ---
 

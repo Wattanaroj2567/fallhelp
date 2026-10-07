@@ -1,6 +1,8 @@
 # Notification System
 
-# คู่มือระบบแจ้งเตือน
+[English](notifications.md) · [ภาษาไทย](notifications.th.md)
+
+# Notification System Guide
 
 ## Doc Meta
 
@@ -13,13 +15,13 @@
 
 ## Overview
 
-ระบบแจ้งเตือนของ FallHelp ออกแบบมาเพื่อให้ผู้ดูแลได้รับข้อมูลสำคัญทันที (Real-time) ผ่านหลายช่องทาง โดยแยกกติกาชัดว่า:
+The FallHelp notification system is designed so caregivers receive important information immediately (Real-time) through multiple channels, with clearly separated rules:
 
 - `fall_confirmed` = Socket + Push + Notification history
-- สถานะอุปกรณ์ online/offline = แสดงแบบ real-time บน Dashboard ไม่สร้าง notification ปกติ
-- BPM ณ ขณะหกล้มถูกเก็บใน `Event.bpm` ของ `FALL` event และใช้ประกอบข้อความแจ้งเตือนเมื่อมีข้อมูล
+- Device online/offline status = shown in real time on the Dashboard; does not create a normal notification
+- The BPM at the moment of the fall is stored in `Event.bpm` of the `FALL` event and is included in the alert message when available
 
-คู่มือนี้อธิบาย boundary ของ Expo Push Notification ใน FallHelp ตั้งแต่การขอ permission, การเก็บ token, การส่งผ่าน backend, และข้อจำกัดระหว่าง push กับ in-app alerts
+This guide describes the boundaries of Expo Push Notification in FallHelp, from requesting permission, storing the token, and sending via the backend, to the limits between push and in-app alerts.
 
 ---
 
@@ -33,23 +35,23 @@
 
 | Source Event                 | Channel       | Title                | Body                                                            |
 | ---------------------------- | ------------- | -------------------- | --------------------------------------------------------------- |
-| Fall event (`eventId`)       | Push + In-App | ตรวจพบการหกล้ม!     | {elderName} อาจล้ม ชีพจร: {bpm} BPM (หากมีข้อมูล)             |
+| Fall event (`eventId`)       | Push + In-App | ตรวจพบการหกล้ม! (Fall detected!) | {elderName} อาจล้ม ชีพจร: {bpm} BPM ({elderName} may have fallen, heart rate: {bpm} BPM) (if data is available) |
 
-> **Push notification ใน phase ปัจจุบันมาจาก fall event เท่านั้น** — ไม่มี standalone HR notification
-> BPM ณ ขณะล้มแนบไปกับ fall notification โดยตรง (ถ้า sensor อ่านค่าได้ภายใน 5 นาที)
-> Dashboard card มาจาก Socket.io realtime ส่วน badge กระดิ่งและ notification list จะ sync หลัง backend สร้าง notification record จริง
+> **Push notifications in the current phase come only from fall events** — there is no standalone HR notification
+> The BPM at fall time is attached directly to the fall notification (if the sensor read a value within 5 minutes)
+> The Dashboard card comes from Socket.io realtime, while the bell badge and the notification list sync after the backend actually creates the notification record
 
 ---
 
 ## Notification Channels
 
-เราใช้ 3 ช่องทางหลักในการแจ้งเตือน:
+We use 3 main channels for alerts:
 
 | Channel               | Tech Stack    | Use Case                                            | Speed         |
 | :-------------------- | :------------ | :-------------------------------------------------- | :------------ |
-| **Real-time Alert**   | Socket.io     | หน้าจอแจ้งเตือนสีแดง (Full Screen Alert) ขณะเปิดแอป | ทันที (<1s)   |
-| **Push Notification** | Expo Push API | แจ้งเตือนเมื่อล็อกหน้าจอ หรือปิดแอปอยู่             | เร็ว (1-5s)   |
-| **In-App History**    | PostgreSQL    | ประวัติการแจ้งเตือนย้อนหลัง + badge กระดิ่ง          | หลัง backend สร้าง record แล้ว mobile refetch |
+| **Real-time Alert**   | Socket.io     | Red Full Screen Alert while the app is open         | Instant (<1s) |
+| **Push Notification** | Expo Push API | Alerts while the screen is locked or the app is closed | Fast (1-5s) |
+| **In-App History**    | PostgreSQL    | Past notification history + bell badge              | After the backend creates the record and mobile refetches |
 
 ---
 
@@ -59,20 +61,20 @@
 
 | Platform         | Development | Production | Firebase Required |
 | ---------------- | :---------: | :--------: | :---------------: |
-| Android Emulator |      ✓      |     -      |   ✓ ต้องติดตั้ง   |
-| iOS Simulator    |      ✓      |     -      |     ✗ ไม่ต้อง     |
-| Android Device   |      ✓      |     ✓      |   ✓ ต้องติดตั้ง   |
-| iOS Device       |      ✓      |     ✓      |     ✗ ไม่ต้อง     |
+| Android Emulator |      ✓      |     -      |   ✓ Required      |
+| iOS Simulator    |      ✓      |     -      |   ✗ Not required  |
+| Android Device   |      ✓      |     ✓      |   ✓ Required      |
+| iOS Device       |      ✓      |     ✓      |   ✗ Not required  |
 
 ### Quick Start
 
-**1. ติดตั้ง Dependencies:**
+**1. Install Dependencies:**
 
 ```bash
 npx expo install expo-notifications expo-device expo-constants
 ```
 
-**2. ขอ Permission และ Token:**
+**2. Request Permission and Token:**
 
 ```typescript
 import * as Notifications from "expo-notifications";
@@ -98,7 +100,7 @@ async function registerForPushNotifications() {
 }
 ```
 
-**3. ส่ง Token ไป Backend:**
+**3. Send the Token to the Backend:**
 
 ```typescript
 await api.put("/api/users/me/push-token", {
@@ -108,14 +110,14 @@ await api.put("/api/users/me/push-token", {
 
 ### Firebase Setup (Android Only)
 
-1. **สร้าง Firebase Project** — ไปที่ [Firebase Console](https://console.firebase.google.com/)
-2. **เพิ่ม Android App** — Package name: `com.yourcompany.fallhelp`, Download `google-services.json`
-3. **วางไฟล์ในโปรเจค:**
+1. **Create a Firebase Project** — go to the [Firebase Console](https://console.firebase.google.com/)
+2. **Add an Android App** — Package name: `com.yourcompany.fallhelp`, Download `google-services.json`
+3. **Place the file in the project:**
 
 ```
 apps/mobile/
 ├── app.json
-├── google-services.json  ← วางที่นี่
+├── google-services.json  ← place it here
 └── ...
 ```
 
@@ -161,27 +163,27 @@ async function sendPushNotification(
 
 ### Token Management
 
-- Token ถูกเก็บที่ `users.pushToken`
-- Mobile App อัปเดต Token ทุกครั้งที่เปิดแอป (`registerPushToken`)
-- เมื่อ mobile logout จะเรียก `POST /api/auth/logout` ก่อนล้าง local JWT เพื่อให้ backend ล้าง `users.pushToken`
-- โมเดลปัจจุบันเป็น 1 User ↔ 1 Elder จึงส่งไปยังเจ้าของ elder คนนั้น
+- The token is stored in `users.pushToken`
+- The Mobile App updates the token every time the app opens (`registerPushToken`)
+- On mobile logout, the app calls `POST /api/auth/logout` before clearing the local JWT so the backend clears `users.pushToken`
+- The current model is 1 User ↔ 1 Elder, so notifications go to that elder's owner
 
 ---
 
 ## Architecture Flow
 
-ตัวอย่าง Flow: **Fall Confirmed**
+Example Flow: **Fall Confirmed**
 
-1. **IoT Device:** ส่ง `fall_confirmed` (พร้อมค่า BPM ถ้ามี) ผ่าน MQTT
+1. **IoT Device:** sends `fall_confirmed` (with the BPM value if available) via MQTT
 2. **Backend (`fallHandler.ts`):**
-   - ค้นหา pending event และอัปเดต `fallStage` เป็น `CONFIRMED`
-   - บันทึก BPM ใน `Event.bpm` จาก heart-rate cache (ถ้ามี)
+   - Finds the pending event and updates `fallStage` to `CONFIRMED`
+   - Saves the BPM in `Event.bpm` from the heart-rate cache (if available)
 3. **Trigger Alert Channels:**
-   - **Socket:** Emit `fall_detected` ไปยัง room ของ elder ก่อน เพื่อให้ Dashboard card ตอบสนองเร็วที่สุด
-   - **DB:** สร้าง record ลง `notifications` table (สำหรับ History)
-   - **Push:** ส่ง Expo Push Notification ผ่าน Expo Push API
+   - **Socket:** Emit `fall_detected` to the elder's room first, so the Dashboard card responds as fast as possible
+   - **DB:** Create a record in the `notifications` table (for History)
+   - **Push:** Send an Expo Push Notification via the Expo Push API
 
-> ลำดับนี้ตั้งใจให้ real-time card เร็วกว่าหรือมาพร้อม push ส่วน badge กระดิ่งและ notification list ไม่ทำ optimistic fake item แต่รอ refetch หลัง backend สร้าง `Notification` จริงแล้ว จึงควรมาพร้อมกัน
+> This order is intentional so the real-time card arrives before or together with the push. The bell badge and notification list do not use an optimistic fake item; they wait to refetch after the backend has actually created the `Notification`, so they should arrive together.
 
 ---
 
@@ -189,12 +191,12 @@ async function sendPushNotification(
 
 ### Socket.io Events (Namespace: `/`)
 
-Events ที่ Mobile App ต้อง Listen:
+Events the Mobile App must listen to:
 
-- `fall_detected` → เปิดหน้า Fall Alert
-- `event_status_changed` → lifecycle signal ภายในสำหรับ pending/confirmed/cancelled guard; ไม่สร้าง caregiver alert หรือ notification record
-- `heart_rate_update` → อัปเดตค่า BPM บน Dashboard (real-time, ไม่สร้าง notification)
-- `device_status_update` → อัปเดตสถานะ online/offline ของอุปกรณ์
+- `fall_detected` → opens the Fall Alert screen
+- `event_status_changed` → internal lifecycle signal for the pending/confirmed/cancelled guard; does not create a caregiver alert or notification record
+- `heart_rate_update` → updates the BPM value on the Dashboard (real-time, does not create a notification)
+- `device_status_update` → updates the device's online/offline status
 
 ### Database Schema
 
@@ -213,26 +215,26 @@ model Notification {
 }
 ```
 
-> `Notification` ใน phase ปัจจุบันมาจาก fall event เท่านั้น จึงบังคับ `eventId` และใช้ `onDelete: Cascade` เพื่อไม่ให้เหลือ history ที่ไม่มี event ต้นทาง
+> `Notification` in the current phase comes only from fall events, so `eventId` is required and `onDelete: Cascade` is used so no history remains without its source event
 
 ### Client-Side Handling (Mobile)
 
 **Foreground:**
 
-- Socket event เข้ามา → แสดง Modal/Overlay ทันที
-- `useSocketConnection` หน่วงสั้น ๆ แล้ว refetch `unread-count` และ notification list พร้อมกัน เพื่อให้จุดแดงกระดิ่งไม่ขึ้นก่อนรายการจริง
-- Push Notification เข้ามา → invalidate notification/history queries และใช้เป็น fallback เมื่อแอปอยู่ foreground
+- Socket event arrives → shows the Modal/Overlay immediately
+- `useSocketConnection` waits briefly, then refetches `unread-count` and the notification list together, so the bell's red dot does not appear before the actual list
+- Push Notification arrives → invalidates notification/history queries and serves as a fallback while the app is in the foreground
 
 **Background/Quit:**
 
-- User แตะที่ Push Notification → นำทางไปยังหน้า **Dashboard (หน้าหลัก)** เสมอ
-- ไม่ deep link ไปหน้า Event Detail โดยตรง — เพื่อให้ผู้ดูแลเห็น real-time status ก่อนตัดสินใจ (โทร หรือดูรายละเอียด)
+- User taps the Push Notification → always navigates to the **Dashboard (home screen)**
+- No deep link straight to the Event Detail screen — so the caregiver sees the real-time status before deciding (call or view details)
 
 ---
 
 ## Backend API Endpoints
 
-### ลงทะเบียน Expo Push Token
+### Register Expo Push Token
 
 ```
 PUT /api/users/me/push-token
@@ -246,25 +248,25 @@ PUT /api/users/me/push-token
 }
 ```
 
-### Logout และล้าง Push Token
+### Logout and Clear Push Token
 
 ```
 POST /api/auth/logout
 ```
 
-Mobile ต้องเรียก endpoint นี้ก่อนล้าง local JWT เพื่อให้ backend ตั้งค่า `users.pushToken = null`
-และหยุดส่ง push ไปยังเครื่อง/session ที่ออกจากระบบแล้ว
+Mobile must call this endpoint before clearing the local JWT so the backend sets `users.pushToken = null`
+and stops sending push to the device/session that has logged out.
 
 ---
 
 ## Troubleshooting
 
-| ปัญหา                 | วิธีแก้ไข                       |
+| Problem               | Solution                        |
 | --------------------- | ------------------------------- |
-| Token เป็น null       | ใช้อุปกรณ์จริง ไม่ใช่ Simulator |
-| Android ไม่ได้รับ     | Setup Firebase ก่อน             |
-| iOS Simulator ไม่แสดง | ปกติ - ใช้อุปกรณ์จริงทดสอบ      |
-| Backend ส่งไม่ได้     | ตรวจสอบ projectId ใน app.json   |
+| Token is null         | Use a real device, not a Simulator |
+| Android not receiving | Set up Firebase first           |
+| iOS Simulator shows nothing | Normal - test on a real device |
+| Backend cannot send   | Check projectId in app.json     |
 
 ---
 

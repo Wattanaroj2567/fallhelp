@@ -1,5 +1,7 @@
 # Testing Glossary
 
+[English](testing-glossary.md) · [ภาษาไทย](testing-glossary.th.md)
+
 ## Doc Meta
 
 - Audience: QA, Developers, PM
@@ -11,48 +13,48 @@
 
 ## Overview
 
-เอกสารนี้ใช้เป็น glossary กลางสำหรับคำศัพท์การทดสอบที่ใช้ในโปรเจกต์ FallHelp เพื่อให้ทีมตีความคำว่า Unit, Integration, E2E, UAT, Smoke, Regression, และ V&V ตรงกันก่อนอ่าน test reports หรือสั่ง AI ให้ช่วยประเมิน coverage
+This document is the shared glossary of testing terms used in the FallHelp project, so the team interprets Unit, Integration, E2E, UAT, Smoke, Regression, and V&V the same way before reading test reports or asking AI to help assess coverage.
 
 ---
 
 ## Core Terms
 
-| Term | ความหมายใน FallHelp | ตัวอย่างใน repo |
+| Term | Meaning in FallHelp | Example in repo |
 | --- | --- | --- |
-| Unit Test | ทดสอบ function, hook, helper, หรือ service แบบแยกส่วนและควบคุม dependency | backend service tests, payload validator tests |
-| Integration Test | ทดสอบการทำงานร่วมกันของหลายชั้นใน module เดียวกัน | Express route + service + DB test doubles |
-| End-to-End (E2E) | ทดสอบ flow ข้ามหลายระบบตั้งแต่ trigger ถึงผลลัพธ์ปลายทาง | ESP32 -> MQTT -> Backend -> Socket -> Mobile alert |
-| Smoke Test | ชุดทดสอบสั้นเพื่อเช็กว่าระบบยัง boot/run ได้หลังเปลี่ยนแปลง | `infra:scan`, build, light tests |
-| Regression Test | ทดสอบเพื่อกัน behavior เดิมพังหลัง refactor/fix | auth flow, event history, notification read state |
-| UAT | ให้ผู้ใช้หรือ stakeholder ทดลองตาม scenario จริง | caregiver pairing, dashboard monitoring, feedback flow |
-| Verification | เช็กว่า implementation ตรง spec หรือ runtime contract | API response shape, payload validation, docs sync กับ code |
-| Validation | เช็กว่าสิ่งที่สร้างตอบโจทย์การใช้งานจริงของผู้ใช้ | alert readability, pairing usability, incident handling |
+| Unit Test | Tests a function, hook, helper, or service in isolation with controlled dependencies | backend service tests, payload validator tests |
+| Integration Test | Tests how multiple layers within the same module work together | Express route + service + DB test doubles |
+| End-to-End (E2E) | Tests a flow across multiple systems, from trigger to final outcome | ESP32 -> MQTT -> Backend -> Socket -> Mobile alert |
+| Smoke Test | A short test set to check the system still boots/runs after a change | `infra:scan`, build, light tests |
+| Regression Test | Tests that prevent existing behavior from breaking after a refactor/fix | auth flow, event history, notification read state |
+| UAT | Users or stakeholders try the system following real scenarios | caregiver pairing, dashboard monitoring, feedback flow |
+| Verification | Checks that the implementation matches the spec or runtime contract | API response shape, payload validation, docs in sync with code |
+| Validation | Checks that what was built meets users' real needs | alert readability, pairing usability, incident handling |
 
 ---
 
-## V&V ในบริบทโปรเจกต์นี้
+## V&V in This Project's Context
 
-| Term | คำถามที่ใช้ตัดสิน | ตัวอย่าง |
+| Term | Deciding question | Example |
 | --- | --- | --- |
-| Verification | "เราสร้างระบบตรงตามที่ออกแบบไว้ไหม" | route ตอบ status code ถูก, MQTT payload ผ่าน validator, docs sync กับ code |
-| Validation | "สิ่งที่สร้างตอบโจทย์ผู้ใช้จริงไหม" | caregiver เข้าใจ alert flow, hardware setup ทำตาม runbook ได้, UAT ผ่าน |
+| Verification | "Did we build the system as designed?" | route returns the correct status code, MQTT payload passes the validator, docs in sync with code |
+| Validation | "Does what we built meet real users' needs?" | caregiver understands the alert flow, hardware setup can be done by following the runbook, UAT passes |
 
 ---
 
 ## Recommended Evidence By Scope
 
-| การเปลี่ยนแปลง | หลักฐานขั้นต่ำที่ควรมี |
+| Change | Minimum evidence required |
 | --- | --- |
 | Docs, config, path updates | `npm run docs:lint`, `npm run infra:scan -- --skip-runtime-checks` |
 | Backend logic | typecheck, lint, relevant Jest tests, `infra:scan:strict` |
-| Mobile UI หรือ state flow | typecheck, lint/light tests ตาม scope, flow notes ใน owner docs |
-| Firmware docs หรือ operator runbook | docs lint + cross-check กับ current firmware path/runbook |
+| Mobile UI or state flow | typecheck, lint/light tests according to scope, flow notes in owner docs |
+| Firmware docs or operator runbook | docs lint + cross-check against the current firmware path/runbook |
 
 ---
 
 ## Feature Report Boundary
 
-ถ้าต้องการสรุปผลการทดสอบรายฟีเจอร์ ให้ใช้ template จาก `.agent/skills/testing-expert/references/feature-report-template.md` แยกเป็น feature report ต่างหาก ไม่ควรยัดผลรันเฉพาะรอบลงใน glossary นี้
+To summarize test results per feature, use the template from `.agent/skills/testing-expert/references/feature-report-template.md` as a separate feature report. Do not put run-specific results into this glossary.
 
 ---
 

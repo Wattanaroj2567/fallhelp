@@ -20,6 +20,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { CONFIG } from '../constants/Config';
 import { getToken } from '../services/tokenStorage';
 import Logger from '../utils/logger';
+import { filterHeartRateSpike } from '../utils/heartRate';
 import { getUnreadCount, listNotifications } from '../services/notificationService';
 import { listEvents } from '../services/eventService';
 import type { Event } from '../services/types';
@@ -79,6 +80,7 @@ export const useSocketConnection = () => {
   const disconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const deviceOfflineTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const clearHeartRateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingHeartRateSpikeRef = useRef<number | null>(null);
 
   // ใช้จำจังหวะ authenticate เพื่อให้ช่วงแรกมี grace period ก่อนตัดสินว่า offline
   const socketAuthenticatedAtRef = useRef<number>(0);
@@ -437,9 +439,14 @@ export const useSocketConnection = () => {
 
         const currentHr = sensorStore.heartRate;
 
-        // ข้าม spike ที่กระโดดแรงเกินไป เพื่อไม่ให้ UI แสดงค่าหัวใจผิดปกติชั่วขณะ
-        if (currentHr !== null && currentHr !== 0 && Math.abs(data.heartRate - currentHr) > 50)
-          return;
+        // ข้าม spike ครั้งเดียว แต่ยอมรับเมื่อค่าถัดไปยืนยันว่าชีพจรเปลี่ยนจริง
+        const spike = filterHeartRateSpike(
+          currentHr,
+          pendingHeartRateSpikeRef.current,
+          data.heartRate,
+        );
+        pendingHeartRateSpikeRef.current = spike.pending;
+        if (!spike.accept) return;
 
         if (deviceOfflineTimeoutRef.current) {
           clearTimeout(deviceOfflineTimeoutRef.current);

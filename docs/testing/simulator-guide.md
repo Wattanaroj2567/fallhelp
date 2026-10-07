@@ -1,57 +1,61 @@
 # Simulator Guide
 
+[English](simulator-guide.md) · [ภาษาไทย](simulator-guide.th.md)
+
 ## Doc Meta
 
 - Audience: Developer, QA
 - Source of Truth: `apps/backend-api/scripts/sim-*.ts`
 - Status: Active
-- Last Updated: June 20, 2026
+- Last Updated: October 7, 2026
 
 ---
 
 ## Overview
 
-FallHelp มี simulator scripts สำหรับทดสอบ fall pipeline แบบ manual โดยไม่ต้องรอสัญญาณจากอุปกรณ์จริง
-ทุก script อยู่ใน `apps/backend-api/scripts/` และรันผ่าน npm scripts ของ `apps/backend-api`
+FallHelp has simulator scripts for testing the fall pipeline manually without waiting for signals from a real device.
+All scripts live in `apps/backend-api/scripts/` and run through the npm scripts of `apps/backend-api`.
 
-Simulator scripts เป็น QA/development helpers สำหรับสร้างข้อมูลทดสอบ, ทดสอบ Push/Socket, และตรวจ pipeline แบบควบคุมได้ ไม่ใช่ firmware runtime และไม่แทนการทดสอบกับอุปกรณ์จริงก่อน demo หรือ release
+If you want web buttons instead of the CLI (good for presentations), use the [device simulator](../../apps/device-simulator/README.md) following the steps in the [demo guide](../demo/DEMO_GUIDE.md).
+
+Simulator scripts are QA/development helpers for creating test data, testing Push/Socket, and checking the pipeline in a controlled way. They are not firmware runtime and do not replace testing with a real device before a demo or release.
 
 ---
 
-## เลือก Script ไหน?
+## Which Script?
 
 ```
-ต้องการทดสอบอะไร?
+What do you want to test?
 │
-├─ หน้า Monthly Report / Event History (ข้อมูลย้อนหลังหลายวัน)
+├─ Monthly Report / Event History pages (historical data across many days)
 │    └─→ sim:events
 │
-├─ Push Notification + หน้าแจ้งเตือน (ทดสอบเร็ว ไม่ต้องรอ)
+├─ Push Notification + notification page (quick test, no waiting)
 │    └─→ sim:push
 │
-└─ Full 2-stage pipeline พร้อม cancel window จริง
-     ├─ ไม่มีอุปกรณ์ / ไม่ต้องการให้อุปกรณ์ตื่น
+└─ Full 2-stage pipeline with a real cancel window
+     ├─ No device / don't want the device to wake up
      │    └─→ sim:fall  (default)
-     └─ มีอุปกรณ์ online และต้องการทดสอบ firmware จริง
+     └─ Device is online and you want to test real firmware
           └─→ sim:fall --hardware
 ```
 
 ---
 
-## sim:events — Seed ข้อมูลย้อนหลัง
+## sim:events — Seed Historical Data
 
-**ไฟล์:** `scripts/sim-events.ts`
+**File:** `scripts/sim-events.ts`
 
-สร้าง FALL events กระจายในเดือนปัจจุบัน (เวลาไทย UTC+7) สำหรับทดสอบ Monthly Report และ Event History
+Creates FALL events spread across the current month (Thai time UTC+7) for testing the Monthly Report and Event History.
 
-### ต้องการ
+### Requires
 
-| สิ่งที่ต้องรัน | จำเป็น |
+| What must be running | Required |
 |---|---|
 | Database (PostgreSQL) | ✅ |
 | Backend server | ❌ |
 | MQTT broker | ❌ |
-| อุปกรณ์ ESP32 | ❌ |
+| ESP32 device | ❌ |
 
 ### Commands
 
@@ -59,45 +63,45 @@ Simulator scripts เป็น QA/development helpers สำหรับสร�
 # seed 10 events (6 CRITICAL + 4 WARNING)
 npm run sim:events
 
-# ล้างข้อมูลทดสอบทั้งหมดในเดือนปัจจุบัน
+# clear all test data in the current month
 npm run sim:events -- --clear
 ```
 
-### Events ที่สร้าง
+### Events Created
 
-| ประเภท | Severity | จำนวน | วัตถุประสงค์ |
+| Type | Severity | Count | Purpose |
 |---|---|---|---|
-| FALL + ชีพจรสูง (>100 BPM) | CRITICAL | 3 | ทดสอบ HR badge สีแดง |
-| FALL + ชีพจรปกติ (60–100) | CRITICAL | 2 | ทดสอบ HR badge สีเขียว |
-| FALL + ชีพจรต่ำ (<60) | CRITICAL | 1 | ทดสอบ HR badge สีน้ำเงิน |
-| FALL (suspected) | WARNING | 4 | ทดสอบ peak hour (02:xx น.) |
+| FALL + high heart rate (>100 BPM) | CRITICAL | 3 | Test the red HR badge |
+| FALL + normal heart rate (60–100) | CRITICAL | 2 | Test the green HR badge |
+| FALL + low heart rate (<60) | CRITICAL | 1 | Test the blue HR badge |
+| FALL (suspected) | WARNING | 4 | Test peak hour (02:xx) |
 
-> **หมายเหตุ:** WARNING events จะไม่แสดงในหน้า Event History (ถูก filter ออก) แต่ใช้ทดสอบ peak hour ใน Monthly Report
+> **Note:** WARNING events are not shown on the Event History page (they are filtered out), but they are used to test the peak hour in the Monthly Report.
 
 ---
 
 ## sim:push — Push Notification (Bypass Hardware)
 
-**ไฟล์:** `scripts/sim-push.ts`
+**File:** `scripts/sim-push.ts`
 
-สร้าง FALL CRITICAL event ตรงเข้า DB แล้วยิง Push Notification ทันที ไม่ผ่าน MQTT หรือ 2-stage flow
+Creates a FALL CRITICAL event directly in the DB and sends a Push Notification immediately, without going through MQTT or the 2-stage flow.
 
-### ต้องการ
+### Requires
 
-| สิ่งที่ต้องรัน | จำเป็น |
+| What must be running | Required |
 |---|---|
 | Database (PostgreSQL) | ✅ |
 | Backend server | ❌ |
 | MQTT broker | ❌ |
-| อุปกรณ์ ESP32 | ❌ |
+| ESP32 device | ❌ |
 
 ### Commands
 
 ```bash
-# สร้าง FALL event + ส่ง Push (BPM สุ่ม 85–124)
+# create a FALL event + send Push (random BPM 85–124)
 npm run sim:push
 
-# กำหนด BPM เอง
+# set the BPM yourself
 npm run sim:push -- --bpm 120
 ```
 
@@ -105,44 +109,44 @@ npm run sim:push -- --bpm 120
 
 ## sim:fall — Full 2-Stage Pipeline
 
-**ไฟล์:** `scripts/sim-fall.ts`
+**File:** `scripts/sim-fall.ts`
 
-จำลอง fall pipeline แบบครบวงจรพร้อม cancel window รองรับ 2 โหมด
+Simulates the full fall pipeline end to end with a cancel window. Supports 2 modes.
 
 ---
 
-### โหมด 1: No-Hardware (default)
+### Mode 1: No-Hardware (default)
 
-ส่ง MQTT events ตรงไปหา broker แทน ESP32 โดย script จำลอง 2-stage เอง
+Sends MQTT events directly to the broker in place of the ESP32; the script simulates the 2 stages itself.
 
-**topic ที่ใช้:** `device/{serialNumber}/event` — เป็น topic ที่ ESP32 *publish* ไม่ใช่ subscribe
-ดังนั้นแม้อุปกรณ์จริงต่ออยู่และมีแบต **อุปกรณ์จะไม่ตื่นหรือทำงานใดๆ**
+**Topic used:** `device/{serialNumber}/event` — this is a topic the ESP32 *publishes*, not one it subscribes to.
+So even if a real device is connected and has battery, **the device will not wake up or do anything**.
 
-#### ต้องการ
+#### Requires
 
-| สิ่งที่ต้องรัน | จำเป็น |
+| What must be running | Required |
 |---|---|
 | Database (PostgreSQL) | ✅ |
 | Backend server | ✅ |
 | MQTT broker | ✅ |
-| อุปกรณ์ ESP32 | ❌ (ต่ออยู่ก็ไม่กระทบ) |
+| ESP32 device | ❌ (no effect if connected) |
 
 #### Commands
 
 ```bash
-# รัน pipeline พร้อม cancel window 15s (เหมือนจริง)
+# run the pipeline with a 15s cancel window (same as real)
 npm run sim:fall
 
-# เร่งเวลา — cancel window 3s (สำหรับ dev)
+# speed up — 3s cancel window (for dev)
 npm run sim:fall -- --fast
 
-# กำหนด cancel window เอง (หน่วย: วินาที)
+# set the cancel window yourself (unit: seconds)
 npm run sim:fall -- --timeout 8
 
-# จำลองการกดยกเลิก (Cancel mode) - ส่ง fall_cancelled แทน confirmed
+# simulate pressing cancel (Cancel mode) - sends fall_cancelled instead of confirmed
 npm run sim:fall -- --cancel
 
-# ระบุ serialNumber เอง (ข้าม DB query)
+# specify the serialNumber yourself (skip the DB query)
 npm run sim:fall -- --serial ESP32-XXXXXXXXXXXX
 ```
 
@@ -152,73 +156,73 @@ npm run sim:fall -- --serial ESP32-XXXXXXXXXXXX
 script
   │
   ├─ [1/2] publish suspected_fall ──→ broker ──→ backend fallHandler
-  │                                              └─ สร้าง PENDING_CONFIRMATION event
+  │                                              └─ create PENDING_CONFIRMATION event
   │                                              └─ emit event_status_changed / FALL_SUSPECTED
   │                                              └─ no caregiver alert / push
   │
-  ├─ ⏱  รอ cancel window (15s / --fast 3s / --timeout N)
+  ├─ ⏱  wait for cancel window (15s / --fast 3s / --timeout N)
   │
   └─ [2/2] publish fall_confirmed ──→ broker ──→ backend fallHandler
-                                                 └─ อัปเดตเป็น CRITICAL event
-                                                 └─ สร้าง Notification record
-                                                 └─ ส่ง Push Notification
+                                                 └─ update to CRITICAL event
+                                                 └─ create Notification record
+                                                 └─ send Push Notification
                                                  └─ emit fall_detected + event_status_changed / FALL_CONFIRMED
                                                  
-  *(ถ้ารันด้วย --cancel)*
+  *(if run with --cancel)*
   └─ [2/2] publish fall_cancelled ──→ broker ──→ backend fallCancelledHandler
-                                                 └─ อัปเดต Event เป็น CANCELLED
+                                                 └─ update Event to CANCELLED
                                                  └─ emit event_status_changed / FALL_CANCELLED
-                                                 └─ ❌ ไม่ส่ง Push Notification
+                                                 └─ ❌ no Push Notification sent
 ```
 
 ---
 
-### โหมด 2: Hardware (`--hardware`)
+### Mode 2: Hardware (`--hardware`)
 
-ส่ง `{ cmd: "sim_fall" }` ไปยัง ESP32 แล้วให้ firmware จัดการ 2-stage pipeline เอง
+Sends `{ cmd: "sim_fall" }` to the ESP32 and lets the firmware handle the 2-stage pipeline itself.
 
-**topic ที่ใช้:** `device/{serialNumber}/cmd` — ESP32 subscribe อยู่ → firmware ตื่นและทำงานจริง
+**Topic used:** `device/{serialNumber}/cmd` — the ESP32 subscribes to it → the firmware wakes up and actually runs.
 
-#### ต้องการ
+#### Requires
 
-| สิ่งที่ต้องรัน | จำเป็น |
+| What must be running | Required |
 |---|---|
 | Database (PostgreSQL) | ✅ |
 | Backend server | ✅ |
 | MQTT broker | ✅ |
-| อุปกรณ์ ESP32 | ✅ (ต้อง online) |
+| ESP32 device | ✅ (must be online) |
 
 #### Commands
 
 ```bash
 npm run sim:fall -- --hardware
 
-# ระบุ serial เอง
+# specify the serial yourself
 npm run sim:fall -- --hardware --serial ESP32-XXXXXXXXXXXX
 ```
 
 ---
 
-## เปรียบเทียบสรุป
+## Comparison Summary
 
 | | sim:events | sim:push | sim:fall | sim:fall --hardware |
 |---|---|---|---|---|
-| ต้องการ backend server | ❌ | ❌ | ✅ | ✅ |
-| ต้องการ MQTT broker | ❌ | ❌ | ✅ | ✅ |
-| ต้องการ ESP32 online | ❌ | ❌ | ❌ | ✅ |
-| อุปกรณ์ต่ออยู่จะตื่นไหม | ❌ | ❌ | ❌ | ✅ |
-| ผ่าน fallHandler จริง | ❌ | ❌ | ✅ | ✅ |
-| Socket lifecycle emit ทำงาน | ❌ | ❌ | ✅ | ✅ |
+| Requires backend server | ❌ | ❌ | ✅ | ✅ |
+| Requires MQTT broker | ❌ | ❌ | ✅ | ✅ |
+| Requires ESP32 online | ❌ | ❌ | ❌ | ✅ |
+| Does a connected device wake up? | ❌ | ❌ | ❌ | ✅ |
+| Goes through the real fallHandler | ❌ | ❌ | ✅ | ✅ |
+| Socket lifecycle emit works | ❌ | ❌ | ✅ | ✅ |
 | Push Notification | ❌ | ✅ | ✅ | ✅ |
-| มี cancel window จริง | ❌ | ❌ | ✅ | ✅ |
-| เหมาะกับ | Monthly Report / History | Push / Notification UI | Pipeline + Socket + Push | End-to-end จริง |
+| Has a real cancel window | ❌ | ❌ | ✅ | ✅ |
+| Best for | Monthly Report / History | Push / Notification UI | Pipeline + Socket + Push | Real end-to-end |
 
 ---
 
-## รัน script จาก root (ทางเลือก)
+## Running Scripts from the Root (Alternative)
 
 ```bash
-# sim:fall เท่านั้นที่ expose ไว้ที่ root
+# only sim:fall is exposed at the root
 npm run iot:sim-fall               # = sim:fall (no-hardware)
 npm run iot:sim-fall -- --hardware # = sim:fall --hardware
 ```

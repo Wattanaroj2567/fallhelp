@@ -6,7 +6,8 @@
   "workspaces": [
     "apps/backend-api",
     "apps/mobile",
-    "apps/admin"
+    "apps/admin",
+    "apps/device-simulator"
   ],
   "scripts": {
     "postinstall": "node node_modules/patch-package/index.js && node scripts/dev/platform-install.mjs stamp root && node scripts/dev/fix-eslint-brace-expansion.mjs",
@@ -16,7 +17,10 @@
     "dev:all": "node scripts/dev/run-dev-suite.mjs",
     "dev:backend-mobile": "node scripts/dev/run-dev-suite.mjs --no-admin",
     "dev:backend-admin": "node scripts/dev/run-dev-suite.mjs --no-mobile",
-    "dev:stop": "npx kill-port 3000 8081 5173 5174 --silent",
+    "dev:stop": "npx kill-port 3000 8081 5173 5174 5175 --silent",
+    "demo:up": "node scripts/demo/demo-up.mjs",
+    "demo:tunnel": "docker compose -f docker-compose.yml -f docker-compose.demo.yml --env-file apps/backend-api/.env --profile tunnel up tunnel",
+    "backend:db:seed:demo": "node scripts/dev/platform-install.mjs check backend && npm run seed:demo --prefix apps/backend-api",
     "nx": "nx",
     "nx:show": "nx show projects",
     "nx:graph": "nx graph",
@@ -35,7 +39,7 @@
     "audit:instructions": "nx audit-instructions backend-api",
     "audit:instructions:drift": "node scripts/audit/audit-instruction-drift.mjs",
     "audit:comments:strict": "node scripts/audit/audit-comments.mjs --strict",
-    "docs:lint": "markdownlint-cli2",
+    "docs:lint": "markdownlint-cli2 && node scripts/audit/check-bilingual-docs.mjs",
     "docs:lint:fix": "markdownlint-cli2 --fix",
     "backend:dev": "node scripts/dev/platform-install.mjs check backend && npm run dev --prefix apps/backend-api",
     "backend:debug": "node scripts/dev/platform-install.mjs check backend && npm run debug --prefix apps/backend-api",

@@ -1,59 +1,61 @@
 # Trial Protocol
 
-เอกสารนี้ใช้กำหนดขั้นตอนการเก็บ Log จากอุปกรณ์สวมใส่ โดยใช้ `sensor_tuning` และ Node-RED
+[English](trial_protocol.md) · [ภาษาไทย](trial_protocol.th.md)
 
-## ขอบเขตการเก็บข้อมูล
+This document defines the procedure for collecting logs from the wearable device using `sensor_tuning` and Node-RED.
 
-การเก็บข้อมูลนี้เป็นชุดเก็บท่าพื้นฐาน หรือ Basic Activity Collection สำหรับอธิบายการทำงานของระบบต้นแบบ
+## Data-Collection Scope
 
-| กฎ | รายละเอียด |
+This data collection is a set of basic activities (Basic Activity Collection) used to explain how the prototype system works.
+
+| Rule | Details |
 |---|---|
-| 1 Trial | ทำ 1 ท่าเท่านั้น |
-| 1 Trial | ได้ 1 CSV file |
-| จำนวนรอบ | เท่ากับจำนวน Trial |
-| Firmware | ใช้ `sensor_tuning` |
+| 1 Trial | Perform only 1 activity |
+| 1 Trial | Produces 1 CSV file |
+| Number of rounds | Equal to the number of Trials |
+| Firmware | Uses `sensor_tuning` |
 | Sensor | MPU6050 |
-| Metadata | เติมโดย Node-RED |
-| ภาพประกอบ | ถ่ายภาพท่าทดสอบสำหรับบันทึกรายงานผล |
+| Metadata | Filled in by Node-RED |
+| Illustrations | Take photos of the test activities for the results report |
 
-## ขั้นตอนก่อนเริ่ม Session
+## Steps Before Starting a Session
 
-| ลำดับ | ขั้นตอน |
+| Step | Procedure |
 |---:|---|
-| 1 | อัปโหลด firmware `sensor_tuning` |
-| 2 | ตรวจสอบว่าอุปกรณ์เชื่อม Wi-Fi / MQTT ได้ |
-| 3 | เปิด Node-RED ผ่าน Docker เป็นหลัก: `npm run sensor-lab -- node-red up` |
-| 4 | เปิด Dashboard `Fall Detection Sensor Lab` ที่ `/ui` แล้วกรอก `Session ID` เช่น `1`, `01` หรือ `S01` ระบบจะสร้างโฟลเดอร์ให้โดยอัตโนมัติ (กรอกครั้งเดียวต่อรอบ) |
-| 5 | ดู System / Trial Info: สถานะ MQTT, Device, IMU sample, Recording เป็น dot/badge สีชัดเจน, Last seen age ต่ำกว่า 3s และไม่มี `Warning: No recent IMU sample` ก่อนเริ่มเก็บ |
-| 6 | สวมอุปกรณ์ในตำแหน่งเดิมทุกครั้ง |
-| 7 | ตรวจสอบว่า CSV จะถูกบันทึกใน `runs/S01/raw/` |
-| 8 | เตรียมพื้นที่ทดสอบ โดยท่าล้มต้องทำบนเบาะหรือฟูก |
+| 1 | Upload the `sensor_tuning` firmware |
+| 2 | Check that the device can connect to Wi-Fi / MQTT |
+| 3 | Start Node-RED, primarily via Docker: `npm run sensor-lab -- node-red up` |
+| 4 | Open the `Fall Detection Sensor Lab` Dashboard at `/ui` and enter the `Session ID`, e.g. `1`, `01`, or `S01`; the system creates the folders automatically (enter it once per round) |
+| 5 | Check System / Trial Info: MQTT, Device, IMU sample, and Recording statuses shown as clear colored dots/badges, Last seen age below 3s, and no `Warning: No recent IMU sample` before starting collection |
+| 6 | Wear the device in the same position every time |
+| 7 | Check that the CSV will be saved in `runs/S01/raw/` |
+| 8 | Prepare the test area; fall activities must be done on a cushion or mattress |
 
-Node-RED ใช้ FlowFuse Dashboard 2.0 และ flow `fall-detection-sensor-lab-flow.v2.json`
-โดยอ่าน MQTT broker จาก env (`MQTT_BROKER_HOST`, `MQTT_BROKER_PORT`,
-`MQTT_USE_TLS`, `MQTT_USERNAME`, `MQTT_PASSWORD`) ห้ามใส่ host/credential จริงใน flow JSON
+Node-RED uses FlowFuse Dashboard 2.0 and the flow `fall-detection-sensor-lab-flow.v2.json`,
+reading the MQTT broker from env (`MQTT_BROKER_HOST`, `MQTT_BROKER_PORT`,
+`MQTT_USE_TLS`, `MQTT_USERNAME`, `MQTT_PASSWORD`). Never put the real host/credentials in the flow JSON
 
-## ขั้นตอนต่อ 1 Trial
+## Steps per Trial
 
-ผู้ทดลองทำคนเดียว ใช้ Dashboard เป็นหลัก กดปุ่มท่าเดียว metadata ตั้งอัตโนมัติ
+The tester works alone, mainly using the Dashboard; press a single activity button and the metadata is set automatically
 
-| ลำดับ | ขั้นตอน |
+| Step | Procedure |
 |---:|---|
-| 1 | กดปุ่มท่าที่จะเก็บใน Dashboard (ท่าปกติอยู่ฝั่ง Normal / Daily Activities, ท่าล้มอยู่ฝั่ง Fall Simulations) — `activityLabel`, `expectedType`, `trialId` ถูกตั้งอัตโนมัติ |
-| 2 | Dashboard เริ่ม **Countdown 10 วินาที** ใช้เดินไปตำแหน่งทดสอบ/เตรียมตัวบนเบาะ |
-| 3 | Countdown จบ → สถานะ "Recording: action" → เริ่มบันทึก |
-| 4 | นิ่ง 2–3 วินาที (baseline) แล้วทำท่าที่กำหนด 1 ท่า |
-| 5 | ค้างท่าหลังเหตุการณ์ 3–5 วินาที |
-| 6 | กด **Stop Trial** เอง (ไม่มี auto-stop รอบนี้) |
-| 7 | ตรวจว่า CSV ถูกสร้าง, Current Trial Metadata แสดง `Last Saved CSV` ล่าสุด และ Dashboard แสดง Next Trial เพิ่มเป็นรอบถัดไปอัตโนมัติ |
-| 8 | จด `note` หากมีเหตุการณ์ผิดปกติ |
-| 9 | ถ่ายภาพท่าทดสอบสำหรับบันทึกรายงานผล หากยังไม่มีภาพ |
+| 1 | Press the button for the activity to collect in the Dashboard (normal activities are on the Normal / Daily Activities side, falls on the Fall Simulations side) — `activityLabel`, `expectedType`, `trialId` are set automatically |
+| 2 | The Dashboard starts a **10-second Countdown**; use it to walk to the test position/get ready on the cushion |
+| 3 | Countdown ends → status "Recording: action" → recording starts |
+| 4 | Stay still for 2–3 seconds (baseline), then perform the 1 assigned activity |
+| 5 | Hold the post-event posture for 3–5 seconds |
+| 6 | Press **Stop Trial** yourself (no auto-stop in this round) |
+| 7 | Check that the CSV was created, Current Trial Metadata shows the latest `Last Saved CSV`, and the Dashboard automatically advances Next Trial to the next round |
+| 8 | Write a `note` if anything abnormal happened |
+| 9 | Take a photo of the test activity for the results report, if there is none yet |
 
-> **หมายเหตุ Manual Stop:** เพราะทำคนเดียว หลังทำท่า/ล้มอาจต้องลุกขึ้นหรือเดินกลับมากด Stop
-> ข้อมูลช่วง post-action (ลุก/เดินกลับ) จะติดอยู่ใน raw CSV ได้ — ยอมรับได้ เพราะ workflow
-> มี raw → selected → exports และจะคัดเฉพาะค่าช่วง event หลักภายหลัง (ดู `selection_guide.md`)
+> **Manual Stop note:** Because the tester works alone, after performing the activity/falling they may need to get up or walk back to press Stop.
+> Post-action data (getting up/walking back) may end up in the raw CSV — this is acceptable, because the workflow
+> goes raw → selected → exports and only the main event window is selected afterwards (see `selection_guide.md`)
 
-## รูปแบบชื่อไฟล์
+## File Naming Pattern
 
 ```text
 S01_T01_standing_still.csv
@@ -63,53 +65,53 @@ S01_T04_sit_hard.csv
 S01_T05_side_fall_left.csv
 ```
 
-| ส่วน | ความหมาย |
+| Part | Meaning |
 |---|---|
 | S01 | Session 01 |
 | T01 | Trial 01 |
-| standing_still | ท่าที่ทำ |
-| .csv | ไฟล์ Log |
+| standing_still | Activity performed |
+| .csv | Log file |
 
-## รายการท่าพื้นฐานที่ต้องเก็บ
+## Basic Activities to Collect
 
-| Activity Label | ความหมาย | Expected Type | จำนวน Trial |
+| Activity Label | Meaning | Expected Type | Number of Trials |
 |---|---|---|---:|
-| standing_still | ยืนนิ่ง | non_fall | 2 |
-| walking_normal | เดินปกติ | non_fall | 2 |
-| running_light | วิ่งเบา ๆ | non_fall | 3 |
-| sit_normal | นั่งลงปกติ | non_fall | 2 |
-| sit_hard | นั่งลงแรง | non_fall | 3 |
-| side_fall_left | ล้มด้านซ้าย | fall | 3 |
-| side_fall_right | ล้มด้านขวา | fall | 3 |
-| forward_fall | ล้มไปข้างหน้า | fall | 3 |
-| backward_fall | ล้มไปข้างหลัง | fall | 3 |
+| standing_still | Standing still | non_fall | 2 |
+| walking_normal | Normal walking | non_fall | 2 |
+| running_light | Light running | non_fall | 3 |
+| sit_normal | Sitting down normally | non_fall | 2 |
+| sit_hard | Sitting down hard | non_fall | 3 |
+| side_fall_left | Fall to the left side | fall | 3 |
+| side_fall_right | Fall to the right side | fall | 3 |
+| forward_fall | Forward fall | fall | 3 |
+| backward_fall | Backward fall | fall | 3 |
 
-**รวมทั้งหมด 24 Trials**
+In total: **24 trials**
 
-## คำอธิบายท่าทดสอบ
+## Test Activity Descriptions
 
-| Activity Label | วิธีทำโดยย่อ |
+| Activity Label | Brief method |
 |---|---|
-| standing_still | ยืนนิ่ง 10–15 วินาที |
-| walking_normal | เดินปกติ 10–15 วินาที |
-| running_light | วิ่งเบา ๆ 10–15 วินาที |
-| sit_normal | ยืน → นั่งลงปกติ → ค้าง 3–5 วินาที |
-| sit_hard | ยืน → นั่งลงแรงกว่าปกติ → ค้าง 3–5 วินาที |
-| side_fall_left | ล้มจำลองไปด้านซ้ายบนเบาะ |
-| side_fall_right | ล้มจำลองไปด้านขวาบนเบาะ |
-| forward_fall | ล้มจำลองไปข้างหน้าบนเบาะ |
-| backward_fall | ล้มจำลองไปข้างหลังบนเบาะ |
+| standing_still | Stand still for 10–15 seconds |
+| walking_normal | Walk normally for 10–15 seconds |
+| running_light | Run lightly for 10–15 seconds |
+| sit_normal | Stand → sit down normally → hold 3–5 seconds |
+| sit_hard | Stand → sit down harder than normal → hold 3–5 seconds |
+| side_fall_left | Simulated fall to the left onto the cushion |
+| side_fall_right | Simulated fall to the right onto the cushion |
+| forward_fall | Simulated forward fall onto the cushion |
+| backward_fall | Simulated backward fall onto the cushion |
 
-## ภาพที่ควรถ่ายไว้
+## Photos to Take
 
-| ภาพ | ใช้ประกอบ |
+| Photo | Used to illustrate |
 |---|---|
-| อุปกรณ์ที่สวมใส่ | สภาพแวดล้อมการทดสอบ |
-| ยืนนิ่ง | กิจกรรมปกติ |
-| เดินปกติ | กิจกรรมปกติ |
-| วิ่งเบา ๆ | กิจกรรมที่มีแรงเคลื่อนไหว |
-| นั่งลงแรง | กิจกรรมคล้ายล้ม |
-| ล้มด้านซ้าย/ขวา | ท่าล้มด้านข้าง |
-| ล้มไปข้างหน้า | ท่าล้มด้านหน้า |
-| ล้มไปข้างหลัง | ท่าล้มด้านหลัง |
-| หน้าจอแจ้งเตือน | ผลหลังระบบตรวจพบเหตุการณ์ |
+| Worn device | Test environment |
+| Standing still | Normal activity |
+| Normal walking | Normal activity |
+| Light running | Activity with movement force |
+| Sitting down hard | Fall-like activity |
+| Fall to the left/right | Side falls |
+| Forward fall | Forward fall |
+| Backward fall | Backward fall |
+| Alert screen | Result after the system detects the event |

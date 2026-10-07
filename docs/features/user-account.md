@@ -1,5 +1,7 @@
 # User Account Lifecycle
 
+[English](user-account.md) · [ภาษาไทย](user-account.th.md)
+
 ## Doc Meta
 
 - Audience: Backend Dev / Mobile Dev
@@ -11,7 +13,7 @@
 
 ## Overview
 
-ระบบจัดการบัญชีผู้ใช้ของ FallHelp รองรับ **Profile Management** และ **Push Token Management**
+The FallHelp user account system supports **Profile Management** and **Push Token Management**.
 
 ---
 
@@ -19,16 +21,16 @@
 
 ### Account States
 
-เอกสารชุดนี้อธิบายเฉพาะ lifecycle ที่มีอยู่จริงใน runtime ปัจจุบัน:
+This document set describes only the lifecycle that actually exists in the current runtime:
 
-- บัญชีที่ใช้งานได้ตามปกติ (`Active`)
-- การออกจากระบบ (`Logout`) ซึ่งล้าง `users.pushToken` ฝั่ง backend
+- An account in normal use (`Active`)
+- Logging out (`Logout`), which clears `users.pushToken` on the backend
 
-ยังไม่มี user deletion / deactivate flow เป็น feature ที่เปิดใช้งานอยู่ในระบบปัจจุบัน
+There is no user deletion / deactivate flow enabled as a feature in the current system.
 
 ### Profile Management
 
-**ข้อมูลที่แก้ไขได้:**
+**Editable data:**
 
 | Field        | Type   | Validation            |
 | :----------- | :----- | :-------------------- |
@@ -39,9 +41,9 @@
 | profileImage | string | URL                   |
 | gender       | string | MALE / FEMALE / OTHER |
 
-### เปลี่ยนรหัสผ่าน
+### Change Password
 
-ต้องระบุ `currentPassword` เพื่อยืนยันตัวตนก่อนเปลี่ยน:
+`currentPassword` must be provided to verify identity before changing:
 
 ```
 PUT /api/users/me/password
@@ -53,12 +55,12 @@ PUT /api/users/me/password
 
 **Validation:**
 
-- รหัสผ่านใหม่ต้องผ่าน Strong Password Check
-- รหัสผ่านเก่าต้องตรงกับ DB
+- The new password must pass the Strong Password Check
+- The old password must match the DB
 
 ### Push Token Management
 
-Mobile App อัปเดต Push Token ทุกครั้งที่เปิดแอป:
+The Mobile App updates the Push Token every time the app opens:
 
 ```
 PUT /api/users/me/push-token
@@ -67,45 +69,45 @@ PUT /api/users/me/push-token
 }
 ```
 
-- Token ถูกเก็บที่ `users.pushToken`
-- ใช้สำหรับ Expo Push Notification
+- The token is stored in `users.pushToken`
+- Used for Expo Push Notification
 
 ### User's Elder
 
-ดึง Elder คนเดียวของผู้ใช้ปัจจุบันผ่าน elder domain โดย mobile เรียก:
+Fetches the current user's single Elder through the elder domain; mobile calls:
 
 ```
 GET /api/elders/current
 ```
 
-**Response ของ elder จะมี:**
+**The elder response includes:**
 
-- ข้อมูลพื้นฐาน (ชื่อ, อายุ, โรคประจำตัว)
-- อุปกรณ์ที่ผูกอยู่ (`device`)
+- Basic information (name, age, underlying conditions)
+- The bound device (`device`)
 
 ---
 
 ## Technical Implementation
 
-### Scope ที่มีอยู่จริง
+### Scope That Actually Exists
 
-API ปัจจุบันรองรับเฉพาะ:
+The current API supports only:
 
-- ดูและแก้ไข profile
-- เปลี่ยนรหัสผ่าน
-- อัปเดต Expo push token
-- ดู elder ที่เป็นของผู้ใช้
+- Viewing and editing the profile
+- Changing the password
+- Updating the Expo push token
+- Viewing the elder that belongs to the user
 
-**ข้อจำกัดสำคัญ:**
+**Important limitations:**
 
-- ยังไม่มี endpoint ลบบัญชีผู้ใช้
-- ยังไม่มี deactivate/reactivate user lifecycle ฝั่ง runtime
-- อย่าอ้าง state `Deleted` หรือ soft-delete ฝั่ง user ถ้ายังไม่มี flow ในโค้ด
+- There is no endpoint to delete a user account yet
+- There is no deactivate/reactivate user lifecycle in the runtime yet
+- Do not claim a `Deleted` state or user soft-delete unless the flow exists in the code
 
 ### Profile Update Contract
 
-- ใช้ `GET /api/users/me` และ `PATCH /api/users/me`
-- field ที่แก้ไขได้ต้องสอดคล้องกับ validation ฝั่ง backend เช่น `firstName`, `lastName`, `phone`, `email`, `profileImage`, `gender`
+- Uses `GET /api/users/me` and `PATCH /api/users/me`
+- Editable fields must match the backend validation, e.g. `firstName`, `lastName`, `phone`, `email`, `profileImage`, `gender`
 
 ### Password Change Contract
 
@@ -117,8 +119,8 @@ PUT /api/users/me/password
 }
 ```
 
-- ต้องตรวจ `currentPassword` ก่อนเสมอ
-- `newPassword` ต้องผ่าน password policy เดียวกับ auth flow
+- `currentPassword` must always be checked first
+- `newPassword` must pass the same password policy as the auth flow
 
 ### Push Token Contract
 
@@ -129,19 +131,19 @@ PUT /api/users/me/push-token
 }
 ```
 
-- token ถูกเก็บไว้ที่ `users.pushToken`
-- ใช้สำหรับ Expo push notification ฝั่ง caregiver
+- The token is stored in `users.pushToken`
+- Used for caregiver-side Expo push notifications
 
 ### Logout Push Cleanup
 
-- Mobile เรียก `POST /api/auth/logout` ก่อนล้าง local JWT
-- Backend ล้าง `users.pushToken` เพื่อหยุดส่ง Expo Push Notification ไปยัง session ที่ออกจากระบบแล้ว
+- Mobile calls `POST /api/auth/logout` before clearing the local JWT
+- The backend clears `users.pushToken` to stop sending Expo Push Notifications to the logged-out session
 
 ### User's Elder Contract
 
-- mobile ใช้ `GET /api/elders/current` ผ่าน `elderService.getCurrentElder()`
-- response เป็น `Elder | null` สำหรับผู้สูงอายุคนเดียวที่ผูกกับ caregiver ปัจจุบัน
-- response ต้องสะท้อน ownership จริงของ user ไม่ใช่ข้อมูล elder ทั้งระบบ
+- Mobile uses `GET /api/elders/current` via `elderService.getCurrentElder()`
+- The response is `Elder | null` for the single elder bound to the current caregiver
+- The response must reflect the user's actual ownership, not elder data for the whole system
 
 ---
 
@@ -161,11 +163,11 @@ User's Elder:    GET /api/elders/current → Elder | null
 
 | Method | Endpoint                   | Description            | Auth |
 | :----- | :------------------------- | :--------------------- | :--- |
-| GET    | `/api/users/me`            | ดูโปรไฟล์              | ✅   |
-| PATCH  | `/api/users/me`            | แก้ไขโปรไฟล์           | ✅   |
-| PUT    | `/api/users/me/password`   | เปลี่ยนรหัสผ่าน        | ✅   |
-| GET    | `/api/elders`              | ดูรายการ Elder ของผู้ใช้ | ✅   |
-| PUT    | `/api/users/me/push-token` | อัปเดต Push Token      | ✅   |
+| GET    | `/api/users/me`            | View profile           | ✅   |
+| PATCH  | `/api/users/me`            | Edit profile           | ✅   |
+| PUT    | `/api/users/me/password`   | Change password        | ✅   |
+| GET    | `/api/elders`              | View the user's Elder list | ✅   |
+| PUT    | `/api/users/me/push-token` | Update Push Token      | ✅   |
 
 ---
 

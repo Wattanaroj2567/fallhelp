@@ -21,6 +21,23 @@ on:
       - "apps/admin/package-lock.json"
       - "scripts/**"
       - ".github/workflows/cross-platform-smoke.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".npmrc"
+      - "package.json"
+      - "package-lock.json"
+      - "nx.json"
+      - "patches/**"
+      - "apps/backend-api/package.json"
+      - "apps/backend-api/package-lock.json"
+      - "apps/mobile/package.json"
+      - "apps/mobile/package-lock.json"
+      - "apps/admin/package.json"
+      - "apps/admin/package-lock.json"
+      - "scripts/**"
+      - ".github/workflows/cross-platform-smoke.yml"
 
 jobs:
   smoke:

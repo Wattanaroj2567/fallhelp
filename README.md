@@ -1,26 +1,34 @@
 # FallHelp
 
+[English](README.md) · [ภาษาไทย](README.th.md)
+
 <!-- markdownlint-disable MD033 -->
 <p align="center">
   <img src="./apps/mobile/assets/images/logoicon.png" alt="FallHelp app logo" width="320" />
 </p>
 <!-- markdownlint-enable MD033 -->
 
-> 🎓 Senior Project — Bachelor of Science in Data Science and Software Innovation  
-> Faculty of Science, Ubon Ratchathani University · Academic Year 2025
->
-> **Developer:** Wattanaroj Butdee (นายวรรธนโรจน์ บุตรดี)  
-> **Advisor:** Dr. Tossaporn Alherbe (ดร.ทศพร อเลิร์ป)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/Wattanaroj2567/fallhelp?include_prereleases)](https://github.com/Wattanaroj2567/fallhelp/releases/latest)
 
 **A prototype wearable neck-worn fall detection device with a caregiver mobile application.** Real-time fall detection via IMU sensor, heart rate capture at fall time via PPG earclip sensor, instant push notifications, and a 15-second false alarm cancellation period.
 
 ---
 
+## Try the Demo
+
+- 📱 **Android APK:** [download the latest preview build](https://github.com/Wattanaroj2567/fallhelp/releases/latest)
+- 🧪 **No hardware?** The [device simulator](apps/device-simulator) sends the same MQTT messages as the real device. See the [demo guide](docs/demo/DEMO_GUIDE.md).
+
+---
+
 ## Table of Contents
 
+- [Try the Demo](#try-the-demo)
 - [Overview](#overview)
 - [Project Status](#project-status)
 - [System Architecture](#system-architecture)
+- [Screenshots](#screenshots)
 - [Hardware Components](#hardware-components)
 - [Hardware Wiring Overview](#hardware-wiring-overview)
 - [Tech Stack](#tech-stack)
@@ -34,6 +42,7 @@
 - [Development Approach](#development-approach)
 - [Contributing](#contributing)
 - [License](#license)
+- [Acknowledgments](#acknowledgments)
 
 ---
 
@@ -104,6 +113,37 @@ MPU6050 (Accelerometer + Gyroscope)
         |-- Button pressed (GPIO27, device wearer only) -> fall_cancelled
         `-- Timeout -> fall_confirmed -> MQTT publish -> Backend -> Alert caregivers
 ```
+
+---
+
+## Screenshots
+
+<!-- markdownlint-disable MD033 -->
+<details>
+<summary>📸 Screenshots</summary>
+
+<table>
+  <tr>
+    <td align="center" valign="top"><img src="docs/screenshots/mobile/m_01_auth_login.jpg" width="220" alt="Login" /><br /><sub>Login</sub></td>
+    <td align="center" valign="top"><img src="docs/screenshots/mobile/m_22_dashboard_online_normal_bpm.jpg" width="220" alt="Dashboard" /><br /><sub>Dashboard</sub></td>
+    <td align="center" valign="top"><img src="docs/screenshots/mobile/m_23_dashboard_fall_alert.jpg" width="220" alt="Fall alert" /><br /><sub>Fall alert</sub></td>
+  </tr>
+  <tr>
+    <td align="center" valign="top"><img src="docs/screenshots/mobile/m_24_dashboard_fall_detail_modal.jpg" width="220" alt="Fall details" /><br /><sub>Fall details</sub></td>
+    <td align="center" valign="top"><img src="docs/screenshots/mobile/m_26_history_event_list.jpg" width="220" alt="History" /><br /><sub>History</sub></td>
+    <td align="center" valign="top"><img src="docs/screenshots/mobile/m_27_report_summary_with_data.jpg" width="220" alt="Monthly report" /><br /><sub>Monthly report</sub></td>
+  </tr>
+  <tr>
+    <td align="center" valign="top"><img src="docs/screenshots/mobile/m_11_setup_pairing_qr_scan.jpg" width="220" alt="Pair device (QR)" /><br /><sub>Pair device (QR)</sub></td>
+    <td align="center" valign="top"><img src="docs/screenshots/mobile/m_36_device_info_online.jpg" width="220" alt="Device" /><br /><sub>Device</sub></td>
+    <td align="center" valign="top"><img src="docs/screenshots/mobile/m_53_emergency_call_with_contacts.jpg" width="220" alt="Emergency call" /><br /><sub>Emergency call</sub></td>
+  </tr>
+</table>
+
+All 58 app screens and the admin panel: [docs/SCREENSHOTS.md](docs/SCREENSHOTS.md)
+
+</details>
+<!-- markdownlint-enable MD033 -->
 
 ---
 
@@ -196,7 +236,8 @@ fallhelp/
 ├── apps/
 │   ├── backend-api/   # Express v5 + Prisma backend, MQTT, Socket.io, push notifications
 │   ├── mobile/        # Expo caregiver mobile app, BLE provisioning, realtime dashboard
-│   └── admin/         # Vite + React admin dashboard for device operations
+│   ├── admin/         # Vite + React admin dashboard for device operations
+│   └── device-simulator/ # Web device simulator for demos without hardware
 ├── firmware/esp32/    # ESP32 production firmware, sensor tuning, and sensor-lab workflow
 ├── docs/              # Architecture, feature docs, API docs, ops guides, AI context
 ├── scripts/           # Repo automation for dev, env, audit, Docker, IoT helpers
@@ -305,146 +346,18 @@ Dashboard UI: `http://localhost:1880/ui`.
 
 ## Development Commands
 
-### Root
+Most-used commands (run from the repo root):
 
-#### Core Scripts
+| Command | Description |
+| ------- | ----------- |
+| `npm run install:all` | Install all workspaces |
+| `npm run env:setup` | Create env files from templates |
+| `npm run backend:db:setup` | Migrate and seed the database |
+| `npm run dev:all` | Start backend, mobile and admin |
+| `npm run test:all` | Run all tests |
+| `npm run demo:up` | Start the demo stack (no hardware) |
 
-| Script                                     | Description                                                         |
-| ------------------------------------------ | ------------------------------------------------------------------- |
-| `npm run dev:all`                          | Start all services concurrently                                     |
-| `npm run dev:backend-mobile`               | Start Backend + Mobile only                                         |
-| `npm run dev:backend-admin`                | Start Backend + Admin only                                          |
-| `npm run install:all`                      | Install root + package dependencies on the current OS               |
-| `npm run platform:check`                   | Verify node_modules matches the current OS/arch                     |
-| `npm run dev:stop`                         | Stop common local dev ports (3000, 8081, 5173, 5174)                |
-| `npm run backend:dev`                      | Backend only                                                        |
-| `npm run mobile:start`                     | Mobile only                                                         |
-| `npm run admin:dev`                        | Admin only                                                          |
-| `npm run env:setup`                        | Copy .env.example → .env (cross-platform)                           |
-| `npm run docs:lint`                        | Lint root/docs Markdown using the shared markdownlint configuration |
-| `npm run docs:lint:fix`                    | Auto-fix Markdown issues that can be fixed safely                   |
-| `npm run audit:comments:strict`            | Enforce repo comment standard in strict mode                        |
-| `npm run infra:scan`                       | Baseline runtime/docs/env consistency checks                        |
-| `npm run infra:scan:strict`                | Adds lint + typecheck + integration checks                          |
-| `npm run infra:scan:strict:no-integration` | Strict checks without integration DB tests                          |
-| `npm run nx:show`                          | Show Nx-detected projects in this workspace                         |
-| `npm run nx:graph`                         | Open the local Nx project graph                                     |
-| `npm run affected:build`                   | Run build only on affected projects                                 |
-| `npm run affected:lint`                    | Run lint only on affected projects                                  |
-| `npm run affected:test`                    | Run test only on affected projects                                  |
-| `npm run affected:typecheck`               | Run typecheck only on affected projects                             |
-
-Note: Nx is currently enabled conservatively with explicit project configuration for `backend-api` and `admin` first. The `mobile` app still relies mainly on npm scripts to avoid React Native/Expo plugin compatibility risk. If local Nx cache/state becomes unstable or graph commands hang, run `npm exec nx reset` before `npm exec nx show` or `npm exec nx affected`.
-
-#### IoT & Hardware Scripts
-
-| Script                     | Description                                               |
-| -------------------------- | --------------------------------------------------------- |
-| `npm run sensor-lab -- node-red up` | Start the Fall Detection Sensor Lab Node-RED Docker service |
-| `npm run sensor-lab -- node-red rebuild` | Rebuild and recreate the Node-RED lab service |
-| `node scripts/iot/node-red-launch.mjs` | Optional host fallback for local Node-RED debugging |
-| `node scripts/iot/firmware-doctor.mjs` | Check arduino-cli, ESP32 core, libraries, and serial port |
-| `node scripts/iot/firmware-arduino-cli.mjs deps` | Install required Arduino libraries                        |
-| `node scripts/iot/firmware-arduino-cli.mjs compile main` | Compile main firmware                                     |
-| `node scripts/iot/firmware-arduino-cli.mjs upload main` | Upload main firmware                                      |
-| `node scripts/iot/firmware-monitor.mjs` | Open firmware serial monitor (uses arduino-cli)           |
-
-### Backend
-
-```bash
-cd apps/backend-api
-```
-
-| Script                   | Description                                              |
-| ------------------------ | -------------------------------------------------------- |
-| `npm run dev`            | Start API server (hot-reload, uses external MQTT broker) |
-| `npm run build`          | Compile TypeScript                                       |
-| `npm run prisma:migrate` | Run database migrations                                  |
-| `npm run prisma:studio`  | Open Prisma Studio UI                                    |
-| `npm run prisma:seed`    | Seed initial data (admin user, test devices)             |
-| `npm run db:reset`       | Full DB reset + schema setup                             |
-| `npm run db:verify`      | Verify PostgreSQL schema objects required by the backend |
-| `npm run test:ci`        | Unit tests in CI/sandbox-safe mode                       |
-| `npm run lint`           | ESLint check                                             |
-| `npm run format`         | Prettier format                                          |
-
-### Mobile
-
-```bash
-cd apps/mobile
-```
-
-| Script                 | Description                    |
-| ---------------------- | ------------------------------ |
-| `npx expo start`       | Start Expo dev server          |
-| `npx expo run:android` | Run on Android device/emulator |
-| `npx expo run:ios`     | Run on iOS simulator           |
-| `npm run lint`         | ESLint check                   |
-
-### Admin
-
-```bash
-cd apps/admin
-```
-
-| Script            | Description              |
-| ----------------- | ------------------------ |
-| `npm run dev`     | Start Vite dev server    |
-| `npm run build`   | Production build         |
-| `npm run preview` | Preview production build |
-| `npm run lint`    | ESLint check             |
-
-### Cross-Platform Reinstall
-
-```bash
-# Reinstall all workspace dependencies when node_modules was generated on another OS
-npm run install:all
-```
-
-Use this when `npm run dev:all`, `npm run admin:dev`, or `npm run platform:check`
-reports an install-stamp mismatch after switching between Windows and WSL/Ubuntu.
-
-### Fall Detection Sensor Lab (Optional)
-
-Sensor Lab module for testing the sensor workflow and collecting labeled MPU6050 IMU activity
-CSV files from the `sensor_tuning` firmware via Node-RED FlowFuse Dashboard 2.0.
-The root README only maps the module; detailed lab workflow, CSV schema, and dashboard
-operation steps live in `firmware/esp32/fall_detection_sensor_lab/`.
-
-**Start Node-RED Dashboard:**
-
-```bash
-# Docker primary path — includes @flowfuse/node-red-dashboard automatically
-npm run sensor-lab -- node-red up
-
-# Rebuild and reload the lab flow/container
-npm run sensor-lab -- node-red rebuild
-
-# Optional host fallback for quick developer use
-node scripts/iot/node-red-launch.mjs
-```
-
-Dashboard UI: `http://localhost:1880/ui`; flow source:
-`firmware/esp32/fall_detection_sensor_lab/node-red/flows/fall-detection-sensor-lab-flow.v2.json`.
-MQTT config comes from Docker/env values such as `MQTT_BROKER_HOST`,
-`MQTT_BROKER_PORT`, `MQTT_USE_TLS`, `MQTT_USERNAME`, and `MQTT_PASSWORD`.
-Never commit real `.env` values or credentials.
-
-**Data pipeline scripts:**
-
-```bash
-# Validate collected raw CSV against the schema
-npm run sensor-lab -- validate
-
-# Summarize selected trials into exports/selected_values_table.csv
-npm run sensor-lab -- summarize
-
-# Generate Markdown summaries from the selected trial table
-npm run sensor-lab -- chapters
-
-# Run all three in order
-npm run sensor-lab -- all
-```
+Full command reference (backend, mobile, admin, firmware, sensor lab, cross-platform reinstall): [docs/ops/development-commands.md](docs/ops/development-commands.md)
 
 ---
 
@@ -455,6 +368,19 @@ Create environment files from the provided templates:
 ```bash
 npm run env:setup
 ```
+
+Every secret file has a committed template with placeholder values. Copy the template, fill in real values, and never commit the real file:
+
+| Template | Copy to | Used by |
+| -------- | ------- | ------- |
+| `apps/backend-api/.env.example` | `apps/backend-api/.env` | Backend API, Prisma seeds (`ADMIN_*`, `DEMO_PASSWORD`) |
+| `apps/mobile/.env.example` | `apps/mobile/.env` | Mobile app (`EXPO_PUBLIC_*`) |
+| `apps/admin/.env.example` | `apps/admin/.env` | Admin panel (`VITE_API_URL`) |
+| `apps/device-simulator/.env.example` | `apps/device-simulator/.env` | Device simulator (optional, `VITE_MQTT_WS_URL`) |
+| `firmware/esp32/src/main_firmware/mqtt_secrets.h.example` | `mqtt_secrets.h` (same folder) | Main firmware MQTT broker (HiveMQ Cloud or local Mosquitto) |
+| `firmware/esp32/src/sensor_tuning/wifi_secrets.h.example` | `wifi_secrets.h` (same folder) | Sensor tuning firmware Wi-Fi + local MQTT |
+
+`npm run env:setup` creates the backend, mobile and admin `.env` files; copy the others by hand.
 
 Key backend variables:
 
@@ -488,83 +414,27 @@ RESEND_API_KEY="re_xxxxxxxxxxxxx"
 EMAIL_FROM="FallHelp <noreply@your-domain.com>"
 ```
 
-> ⚠️ Never commit `.env` files. Use `.env.example` as a template only.
+> ⚠️ Never commit `.env`, `mqtt_secrets.h` or `wifi_secrets.h` (all are gitignored). Templates (`*.example`) hold placeholders only.
 
 ---
 
 ## Testing
 
-### Backend
+| Command | Description |
+| ------- | ----------- |
+| `npm run test:all` | Run unit tests for every project (Nx) |
+| `npm run backend:test:integration` | Backend integration tests (PostgreSQL required) |
+| `npm run infra:scan:strict` | Full gate: lint, typecheck, tests, integration tests |
 
-```bash
-cd apps/backend-api
-npm test -- --watchman=false
-npm run test:ci
-npm run test:coverage
-npm run test:integration
-npm run test:all
-```
-
-| Script                         | Description                             |
-| ------------------------------ | --------------------------------------- |
-| `npm test -- --watchman=false` | Unit tests                              |
-| `npm run test:ci`              | Watchman-safe mode (sandbox/CI)         |
-| `npm run test:coverage`        | Unit tests with coverage report         |
-| `npm run test:integration`     | Integration tests (requires running DB) |
-| `npm run test:all`             | Unit + Integration                      |
-
-### Mobile
-
-```bash
-cd apps/mobile
-npm test -- --watchman=false
-npm run test:light -- --watchman=false
-npm run test:light -- --runInBand --watchman=false
-npm run test:coverage
-```
-
-| Script                                               | Description                     |
-| ---------------------------------------------------- | ------------------------------- |
-| `npm test -- --watchman=false`                       | All tests                       |
-| `npm run test:light -- --watchman=false`             | Fast smoke tests only           |
-| `npm run test:light -- --runInBand --watchman=false` | Watchman-safe mode (sandbox/CI) |
-| `npm run test:coverage`                              | With coverage report            |
-
-### Admin
-
-```bash
-cd apps/admin
-npm test
-npm run test:coverage
-```
-
-### Infra Scan
-
-```bash
-npm run infra:scan
-npm run infra:scan:strict
-npm run infra:scan:strict:no-integration
-```
-
-- `infra:scan`: runtime + docs/env consistency baseline
-- `infra:scan:strict`: baseline + lint/typecheck (apps/backend-api, apps/mobile, apps/admin) + backend integration tests (DB required)
-- `infra:scan:strict:no-integration`: strict mode without integration tests (useful in sandbox/dev without DB)
-
-### Sensor-Lab
-
-`firmware/esp32/fall_detection_sensor_lab/` is the **Fall Detection Sensor Lab Basic Activity
-Collection** lab module — not required for the active FallHelp runtime to function,
-but used for sensor workflow testing and labeled data collection.
-
-It is independent from `main_firmware` (production) and `sensor_tuning` (hardware
-calibration). The lab runs Node-RED with FlowFuse Dashboard 2.0 to record labeled
-IMU activity CSV trials from the ESP32 `sensor_tuning` firmware.
+Per-app commands, coverage, infra-scan modes and the sensor lab: [docs/testing/running-tests.md](docs/testing/running-tests.md)
 
 ---
 
 ## Documentation
 
-Use `npm run docs:lint` to validate the main Markdown docs in this repository, and use
+Every document is available in English (`.md`) and Thai (`.th.md`), except the AI context docs in `docs/ai/`.
+
+Use `npm run docs:lint` to validate the Markdown docs in this repository (including that each `X.md` / `X.th.md` pair has the same headings, code blocks and tables), and use
 `npm run docs:lint:fix` to auto-fix spacing and blank-line issues where possible.
 
 | Document                                                                                 | Description                                   |
@@ -581,6 +451,9 @@ Use `npm run docs:lint` to validate the main Markdown docs in this repository, a
 | [docs/api/api-reference.md](./docs/api/api-reference.md)                                 | Full REST API reference                       |
 | [docs/ops/local-deployment.md](./docs/ops/local-deployment.md)                           | Local deployment guide                        |
 | [docs/ops/cross-platform-development.md](./docs/ops/cross-platform-development.md)       | Windows + Ubuntu local development guide      |
+| [docs/ops/development-commands.md](./docs/ops/development-commands.md) | Full development command reference |
+| [docs/testing/running-tests.md](./docs/testing/running-tests.md) | How to run every test suite |
+| [docs/demo/DEMO_GUIDE.md](./docs/demo/DEMO_GUIDE.md) | Demo without hardware (simulator + tunnel) |
 | [firmware/esp32/README.md](./firmware/esp32/README.md)                                   | ESP32 firmware overview                       |
 | [firmware/esp32/docs/components/mpu6050.md](./firmware/esp32/docs/components/mpu6050.md) | MPU6050 fall detection tuning guide           |
 
@@ -612,10 +485,18 @@ AI tools were used to accelerate development and improve consistency, but final 
 
 ## License
 
-This project was developed by Wattanaroj Butdee as an academic senior project at Ubon Ratchathani University.
-
-Copyright © 2025-present Wattanaroj Butdee. All rights reserved.
+[MIT](LICENSE) © 2026 Wattanaroj Butdee
 
 ---
 
-**Status:** 🧪 Active Development &nbsp;|&nbsp; **Last Updated:** June 20, 2026
+## Acknowledgments
+
+This project took part in the 28th National Software Contest (NSC 2026).
+
+> โครงการ แอปพลิเคชันและอุปกรณ์ตรวจจับการหกล้มสำหรับดูแลผู้สูงอายุแบบคล้องคอ ได้รับทุนอุดหนุนการทำกิจกรรมส่งเสริมและสนับสนุนการวิจัยและนวัตกรรมจากสำนักงานการวิจัยแห่งชาติ และสำนักงานพัฒนาวิทยาศาสตร์และเทคโนโลยีแห่งชาติ
+>
+> This research and innovation activity is funded by National Research Council of Thailand (NRCT) and National Science and Technology Development Agency (NSTDA).
+
+---
+
+**Status:** 🧪 Active Development &nbsp;|&nbsp; **Last Updated:** October 7, 2026

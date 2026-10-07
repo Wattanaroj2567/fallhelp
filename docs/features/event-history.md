@@ -1,111 +1,113 @@
-# ประวัติเหตุการณ์และรายงานสรุปรายเดือน (Event History & Monthly Report)
+# Event History & Monthly Report
+
+[English](event-history.md) · [ภาษาไทย](event-history.th.md)
 
 ## Doc Meta
 
-- **Audience**: Dev / QA / Stakeholder / ผู้วิจัย
+- **Audience**: Dev / QA / Stakeholder / Researchers
 - **Source of Truth**: `apps/mobile/app/(tabs)/history.tsx`, `apps/mobile/app/(features)/(report)/report-summary.tsx`
-- **Status**: **Active** — ฟีเจอร์ที่พัฒนาแล้วและใช้งานจริง
+- **Status**: **Active** — feature implemented and in real use
 - Last Updated: May 21, 2026
 
 ## Overview
 
-ผู้ดูแลสามารถดูประวัติเหตุการณ์หกล้มและเหตุการณ์เสียการทรงตัว (กดยกเลิกทันเวลา) ย้อนหลัง และดูรายงานสรุปสถิติรายเดือนได้ ข้อมูลอัปเดตแบบ Real-time ผ่าน Socket.io เมื่อมีเหตุการณ์ใหม่เข้ามา
+Caregivers can view the past history of fall events and loss-of-balance events (the wearer cancelled in time), and view a monthly statistics summary report. Data updates in real time via Socket.io when a new event arrives.
 
 ## Users
 
-- **ญาติผู้ดูแล (Caregiver)** — ดูประวัติเหตุการณ์และรายงานสรุป
+- **Caregiver (family member)** — views event history and the summary report
 
 ## Features
 
-### 1. การดูประวัติเหตุการณ์ (Event History)
+### 1. Viewing Event History
 
-**ข้อมูลที่แสดง:**
+**Displayed data:**
 
-- รายการเหตุการณ์เรียงจากใหม่สุดไปเก่าสุด รวมทั้ง CONFIRMED และ CANCELLED
-- แต่ละรายการแสดง:
-  - ไอคอนและสีตามประเภท:
-    - 🔴 **ล้มจริง** (CONFIRMED) — ไอคอน warning พื้นแดง ป้าย "ตรวจพบเหตุหกล้ม"
-    - 🟡 **เสียการทรงตัว** (CANCELLED) — ไอคอน elderly พื้นเหลือง ป้าย "เสียการทรงตัว" + badge "กดยกเลิกทันเวลา"
-  - ค่า BPM ณ เวลาที่เกิดเหตุ (เฉพาะ CONFIRMED เท่านั้น — CANCELLED แสดงข้อความ "ผู้สวมใส่กดยกเลิกการแจ้งเตือนทันเวลา" แทน)
-  - วันที่และเวลา (แสดงเป็น พ.ศ.)
+- List of events sorted from newest to oldest, including both CONFIRMED and CANCELLED
+- Each item shows:
+  - Icon and color by type:
+    - 🔴 **Actual fall** (CONFIRMED) — warning icon on a red background, label "ตรวจพบเหตุหกล้ม" (Fall detected)
+    - 🟡 **Loss of balance** (CANCELLED) — elderly icon on a yellow background, label "เสียการทรงตัว" (Loss of balance) + badge "กดยกเลิกทันเวลา" (Cancelled in time)
+  - BPM value at the time of the event (CONFIRMED only — CANCELLED shows the text "ผู้สวมใส่กดยกเลิกการแจ้งเตือนทันเวลา" (The wearer cancelled the alert in time) instead)
+  - Date and time (shown in the Buddhist Era, B.E.)
 
-**ฟังก์ชัน:**
+**Functions:**
 
-- ตัวกรองจำนวนรายการ: 25 / 50 / ทั้งหมด
-- ปุ่มลัด "ดูรายงานสรุป" → ไปหน้า Monthly Report
-- รีเฟรชข้อมูลแบบ Pull-to-Refresh
-- อัปเดตแบบ Real-time เมื่อมี Event ใหม่
+- Item count filter: 25 / 50 / All
+- Shortcut button "ดูรายงานสรุป" (View summary report) → goes to the Monthly Report screen
+- Pull-to-Refresh data refresh
+- Real-time updates when a new Event arrives
 
-### 2. การดูรายงานสรุปรายเดือน (Monthly Report)
+### 2. Viewing the Monthly Report
 
-**ข้อมูลที่แสดง:**
+**Displayed data:**
 
-- ตัวเลือกเดือน/ปี (เลื่อนซ้าย-ขวา หรือกดเลือกจาก Picker) ย้อนหลังได้ 12 เดือน
-- **การ์ดช่วงเวลาเกิดเหตุบ่อยที่สุด** — แสดง Peak Hour (เช่น 08:00 - 09:00 น.)
-- **การ์ดเหตุการณ์หกล้ม** — จำนวนครั้งที่ล้มในเดือนนั้น (`fallCount`)
-- **การ์ดเสียการทรงตัว** — จำนวนครั้งที่เซ็นเซอร์ดังและผู้สวมกดยกเลิกทันเวลา (`cancelledCount`) ไม่มี BPM breakdown เพราะตัวเลขความถี่คือตัวชี้วัดหลัก
-- **การ์ดชีพจร ณ เวลาล้ม** — แยกเป็น 3 กล่อง (เฉพาะ CONFIRMED เท่านั้น):
-  - ชีพจรสูง (> 100 BPM) — จำนวนครั้งที่ล้มแล้วชีพจรสูง (`heartRateAtFallHigh`)
-  - ชีพจรปกติ (60–100 BPM) — จำนวนครั้งที่ล้มแล้วชีพจรปกติ (`heartRateAtFallNormal`)
-  - ชีพจรต่ำ (< 60 BPM) — จำนวนครั้งที่ล้มแล้วชีพจรต่ำ (`heartRateAtFallLow`)
-  - ไม่มีข้อมูลชีพจร — กรณีที่ไม่มี HR cache ขณะล้ม (`heartRateAtFallUnknown`)
+- Month/year selector (swipe left-right or pick from the Picker), up to 12 months back
+- **Most frequent incident time card** — shows the Peak Hour (e.g. 08:00 - 09:00)
+- **Fall events card** — number of falls in that month (`fallCount`)
+- **Loss of balance card** — number of times the sensor triggered and the wearer cancelled in time (`cancelledCount`); no BPM breakdown because the frequency count is the key metric
+- **Heart rate at fall time card** — split into 3 boxes (CONFIRMED only):
+  - High heart rate (> 100 BPM) — number of falls with a high heart rate (`heartRateAtFallHigh`)
+  - Normal heart rate (60–100 BPM) — number of falls with a normal heart rate (`heartRateAtFallNormal`)
+  - Low heart rate (< 60 BPM) — number of falls with a low heart rate (`heartRateAtFallLow`)
+  - No heart rate data — cases where there was no HR cache at fall time (`heartRateAtFallUnknown`)
 
-**ฟังก์ชัน:**
+**Functions:**
 
-- เลื่อนเดือนซ้าย/ขวา
-- กดเลือกเดือนจาก Month Picker Modal
-- ไม่สามารถดูเดือนในอนาคตได้ (ปุ่มขวาจะถูก Disable เมื่อถึงเดือนปัจจุบัน)
-- Auto-refresh ทุก 60 วินาทีสำหรับข้อมูลเดือนปัจจุบัน
+- Swipe months left/right
+- Pick a month from the Month Picker Modal
+- Future months cannot be viewed (the right button is disabled once the current month is reached)
+- Auto-refresh every 60 seconds for the current month's data
 
 ## Related Screens
 
-### หน้าประวัติเหตุการณ์ (History Tab)
+### History Tab
 
-**ไฟล์:** `(tabs)/history.tsx`
-**สิ่งที่ผู้ใช้เห็น:**
+**File:** `(tabs)/history.tsx`
+**What the user sees:**
 
-- รายการเหตุการณ์เรียงจากใหม่สุดไปเก่าสุด
-- ตัวกรองจำนวนรายการ: 25 / 50 / ทั้งหมด
-- ปุ่มลัด "ดูรายงานสรุป"
-  **สิ่งที่ผู้ใช้ทำได้:**
-- ดึงลงเพื่อรีเฟรชข้อมูล (Pull-to-Refresh)
-- เปลี่ยนจำนวนรายการที่แสดง (25 / 50 / ทั้งหมด)
-- กดปุ่ม "ดูรายงานสรุป" เพื่อเข้าหน้ารายงานรายเดือน
+- List of events sorted from newest to oldest
+- Item count filter: 25 / 50 / All
+- Shortcut button "ดูรายงานสรุป" (View summary report)
+  **What the user can do:**
+- Pull down to refresh data (Pull-to-Refresh)
+- Change the number of items displayed (25 / 50 / All)
+- Tap the "ดูรายงานสรุป" (View summary report) button to open the monthly report screen
 
-### หน้ารายงานสรุปรายเดือน (Monthly Report Summary)
+### Monthly Report Summary
 
-**ไฟล์:** `(features)/(report)/report-summary.tsx`
-**สิ่งที่ผู้ใช้เห็น:**
+**File:** `(features)/(report)/report-summary.tsx`
+**What the user sees:**
 
-- ตัวเลือกเดือน/ปี (เลื่อนซ้าย-ขวา หรือกดเลือกจาก Picker)
-- การ์ดช่วงเวลาเกิดเหตุบ่อยที่สุด (Peak Hour)
-- การ์ดเหตุการณ์หกล้ม
-- การ์ดชีพจร ณ เวลาล้ม (สูง / ปกติ / ต่ำ / ไม่มีข้อมูล)
-  **สิ่งที่ผู้ใช้ทำได้:**
-- เลื่อนเดือนซ้าย/ขวา
-- กดเลือกเดือนจาก Month Picker Modal
-- ไม่สามารถดูเดือนในอนาคตได้
+- Month/year selector (swipe left-right or pick from the Picker)
+- Most frequent incident time card (Peak Hour)
+- Fall events card
+- Heart rate at fall time card (High / Normal / Low / No data)
+  **What the user can do:**
+- Swipe months left/right
+- Pick a month from the Month Picker Modal
+- Future months cannot be viewed
 
 ## Business Rules
 
-| หัวข้อ                  | รายละเอียด                                                       |
+| Topic                  | Details                                                       |
 | ----------------------- | ---------------------------------------------------------------- |
-| ประเภทเหตุการณ์ที่แสดงใน History | `CONFIRMED` (ล้มจริง) และ `CANCELLED` (เสียการทรงตัว) — แยก visual ชัดเจน |
-| ซ่อนเหตุการณ์ PENDING_CONFIRMATION | ซ่อนเหตุการณ์ที่ยังไม่ได้ข้อสรุป ไม่เกี่ยวกับประวัติ |
-| BPM ใน History | เฉพาะ CONFIRMED — แสดง BPM ถ้ามีค่า ถ้าไม่มีแสดง "ไม่มีข้อมูลชีพจร"; CANCELLED แสดงข้อความ "ผู้สวมใส่กดยกเลิกการแจ้งเตือนทันเวลา" แทน |
-| BPM ใน Report | เฉพาะ CONFIRMED เท่านั้น — CANCELLED แสดงแค่จำนวนครั้ง ไม่มี breakdown |
-| cancelledCount ใน Report | นับจาก `getMonthlySummary` — ตัวชี้วัดความถี่เกือบล้มต่อเดือน |
-| การอัปเดตแบบ Real-time  | อัปเดตทันทีเมื่อมี Event ใหม่                                    |
-| ช่วงเวลา Peak Hour      | แสดงช่วงเวลาที่เกิดเหตุบ่อยที่สุด                                |
-| การจำกัดเดือน           | ไม่สามารถดูเดือนในอนาคตได้                                       |
-| การรีเฟรช               | Auto-refresh ทุก 60 วินาทีสำหรับเดือนปัจจุบัน                    |
+| Event types shown in History | `CONFIRMED` (actual fall) and `CANCELLED` (loss of balance) — clearly distinct visuals |
+| Hide PENDING_CONFIRMATION events | Hide events that are not yet resolved; they are not part of the history |
+| BPM in History | CONFIRMED only — shows BPM if a value exists, otherwise shows "ไม่มีข้อมูลชีพจร" (No heart rate data); CANCELLED shows the text "ผู้สวมใส่กดยกเลิกการแจ้งเตือนทันเวลา" (The wearer cancelled the alert in time) instead |
+| BPM in Report | CONFIRMED only — CANCELLED shows only the count, no breakdown |
+| cancelledCount in Report | Counted from `getMonthlySummary` — metric for near-fall frequency per month |
+| Real-time updates  | Updates immediately when a new Event arrives                                    |
+| Peak Hour time range      | Shows the time range with the most incidents                                |
+| Month limit           | Future months cannot be viewed                                       |
+| Refresh               | Auto-refresh every 60 seconds for the current month                    |
 
 ## Related Docs
 
-- [dashboard.md](dashboard.md) — หน้า Dashboard แสดงสถานะ Real-time
-- [elder-profile.md](elder-profile.md) — ข้อมูลผู้สูงอายุ
-- [emergency-contact.md](emergency-contact.md) — ผู้ติดต่อฉุกเฉิน
+- [dashboard.md](dashboard.md) — Dashboard screen showing real-time status
+- [elder-profile.md](elder-profile.md) — Elder information
+- [emergency-contact.md](emergency-contact.md) — Emergency contacts
 
 ---
 
-**หมายเหตุ:** เอกสารนี้อธิบายฟีเจอร์ที่พัฒนาแล้วและใช้งานจริงในระบบ FallHelp
+**Note:** This document describes a feature that is implemented and in real use in the FallHelp system.
