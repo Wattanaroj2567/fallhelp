@@ -106,8 +106,9 @@ export async function seedDemo(db: Db, input: DemoSeedInput): Promise<DemoSeedRe
       },
     });
 
+    // Reset history from the demo device and from any device the demo elder used before.
     // Notifications cascade with their events.
-    await tx.event.deleteMany({ where: { deviceId: device.id } });
+    await tx.event.deleteMany({ where: { OR: [{ deviceId: device.id }, { elderId: elder.id }] } });
 
     const confirmedAt = new Date(now.getTime() - 2 * DAY_MS);
     const confirmed = await tx.event.create({

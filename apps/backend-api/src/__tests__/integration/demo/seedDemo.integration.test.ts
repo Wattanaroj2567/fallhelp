@@ -47,6 +47,25 @@ describe('seedDemo', () => {
     expect(user ? await comparePassword('DemoPass456', user.password) : false).toBe(true);
   });
 
+  it('clears demo elder events recorded on a previously paired device', async () => {
+    const first = await seedDemo(prisma, { password: 'DemoPass123' });
+    const otherDevice = await prisma.device.create({
+      data: { serialNumber: 'ESP32-0000000000AA', deviceCode: 'OTHER001', status: 'UNPAIRED' },
+    });
+    await prisma.event.create({
+      data: {
+        fallStage: 'CONFIRMED',
+        timestamp: new Date(),
+        elderId: first.elderId,
+        deviceId: otherDevice.id,
+      },
+    });
+
+    await seedDemo(prisma, { password: 'DemoPass123' });
+
+    expect(await prisma.event.count({ where: { elderId: first.elderId } })).toBe(2);
+  });
+
   it('rejects a password shorter than 8 characters', async () => {
     await expect(seedDemo(prisma, { password: 'short' })).rejects.toThrow(
       'DEMO_PASSWORD must be at least 8 characters',

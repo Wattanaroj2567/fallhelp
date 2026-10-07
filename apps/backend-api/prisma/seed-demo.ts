@@ -7,6 +7,10 @@ import prisma from '../src/prisma';
 import { DEMO_DEVICE_SERIAL, DEMO_EMAIL, seedDemo } from '../src/demo/seedDemo';
 
 const main = async (): Promise<void> => {
+  // The demo seed resets the demo account; never run it against production data.
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('Refusing to run the demo seed with NODE_ENV=production.');
+  }
   const password = process.env.DEMO_PASSWORD;
   if (!password) {
     throw new Error(
