@@ -1,5 +1,7 @@
 # Local Deployment Guide
 
+[English](local-deployment.md) · [ภาษาไทย](local-deployment.th.md)
+
 ## Doc Meta
 
 - Audience: Backend/DevOps, QA

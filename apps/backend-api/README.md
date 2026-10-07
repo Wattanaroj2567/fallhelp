@@ -1,5 +1,7 @@
 # FallHelp Backend
 
+[English](README.md) · [ภาษาไทย](README.th.md)
+
 Express v5 + TypeScript API for FallHelp, including MQTT ingestion, Socket.io realtime events, and PostgreSQL persistence.
 
 **Last Updated:** June 20, 2026
@@ -60,9 +62,9 @@ Default local URLs:
 
 ## Docker Compose
 
-ไฟล์ [`../../docker-compose.yml`](../../docker-compose.yml) ที่ root ใช้ยก `backend`, `admin` และ `tunnel` ขึ้นพร้อมกันได้ (Mosquitto รันเป็น native service แยกต่างหาก)
-โดย `npm run env:setup` จะสร้าง root `.env` เป็น symlink ไปที่ `apps/backend-api/.env`
-เพื่อให้ Docker Compose อ่านค่า secret/local config ได้อัตโนมัติ
+The root [`../../docker-compose.yml`](../../docker-compose.yml) file can bring up `backend`, `admin`, and `tunnel` together (Mosquitto runs separately as a native service).
+`npm run env:setup` creates the root `.env` as a symlink to `apps/backend-api/.env`
+so Docker Compose can read the secrets/local config automatically.
 
 ```bash
 docker compose up -d --build --pull always
@@ -70,29 +72,29 @@ docker compose exec backend npx prisma migrate deploy
 docker compose exec backend npx prisma db seed
 ```
 
-ค่าปริยาย:
+Defaults:
 
 - Backend: `http://localhost:3000`
 - Admin: `http://localhost:5173`
 
-หมายเหตุ runtime ปัจจุบัน:
+Current runtime notes:
 
-- Docker image ของ backend รันจาก `dist/server.js` ไม่ได้รัน `tsx src/server.ts` ใน container แล้ว
-- image ถูกลดขนาดโดยติดตั้งเฉพาะ production dependencies ของ backend ใน runtime stage
-- ยังรองรับ `docker compose exec backend npx prisma migrate deploy` ตามเดิม
-- ถ้าต้องการ Cloudflare named tunnel ให้เพิ่ม `--profile tunnel`
+- The backend Docker image runs from `dist/server.js`; it no longer runs `tsx src/server.ts` inside the container
+- The image is slimmed down by installing only the backend's production dependencies in the runtime stage
+- `docker compose exec backend npx prisma migrate deploy` is still supported as before
+- If you need the Cloudflare named tunnel, add `--profile tunnel`
 
-Admin Docker image จะรับค่า `ADMIN_VITE_API_URL` จาก Compose แล้วส่งต่อเป็น build arg `VITE_API_URL` ให้ Vite
-ถ้าต้องการ override ตอน build ให้ตั้ง `ADMIN_VITE_API_URL` ก่อนรัน `docker compose up --build`
+The Admin Docker image takes `ADMIN_VITE_API_URL` from Compose and passes it to Vite as the `VITE_API_URL` build arg.
+To override it at build time, set `ADMIN_VITE_API_URL` before running `docker compose up --build`.
 
-คำสั่ง cleanup ที่ใช้บ่อย:
+Common cleanup commands:
 
 ```bash
 docker builder prune -f
 docker image prune -f
 ```
 
-ถ้าต้องการดูขนาด image ปัจจุบัน:
+To check the current image sizes:
 
 ```bash
 docker image ls fallhelp-backend fallhelp-admin
@@ -145,8 +147,8 @@ If integration environment is ready (DB + broker):
 npm run test:integration
 ```
 
-`test:integration` จะ derive URL จาก `apps/backend-api/.env`, สร้างฐาน `fallhelp_test` ถ้ายังไม่มี, แล้ว recreate `public` schema ของ test DB ก่อน apply migration history ปัจจุบันทุกครั้ง
-เพื่อกันปัญหา "มี test DB แต่ schema ไม่ครบ" โดยไม่แตะ dev DB หลัก
+`test:integration` derives the URL from `apps/backend-api/.env`, creates the `fallhelp_test` database if it does not exist, then recreates the test DB's `public` schema before applying the current migration history every time.
+This prevents the "test DB exists but the schema is incomplete" problem without touching the main dev DB.
 
 ## Related Docs
 

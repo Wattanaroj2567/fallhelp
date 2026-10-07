@@ -1,92 +1,94 @@
-# ส่งออกรายงานสุขภาพ (Health Data Export)
+# Health Data Export
+
+[English](health-data-export.md) · [ภาษาไทย](health-data-export.th.md)
 
 ## Doc Meta
 
-- **Audience**: Dev / QA / Stakeholder / ผู้วิจัย
-- **Source of Truth**: ยังไม่พัฒนา (Planned Feature)
-- **Status**: **Planned** — ฟีเจอร์ที่วางแผนพัฒนาในอนาคต
+- **Audience**: Dev / QA / Stakeholder / Researcher
+- **Source of Truth**: Not yet developed (Planned Feature)
+- **Status**: **Planned** — a feature planned for future development
 - Last Updated: May 10, 2026
 
 ## Overview
 
-ฟีเจอร์การส่งออกรายงานสุขภาพเป็นฟังก์ชันเสริมที่อนุญาตให้ผู้ดูแลสามารถส่งออกข้อมูลสุขภาพของผู้สูงอายุเป็นไฟล์ PDF หรือ CSV เพื่อนำไปใช้ประกอบการพบแพทย์ หรือเก็บเป็นบันทึกสุขภาพส่วนตัว
+Health data export is an add-on feature that lets caregivers export an elder's health data as a PDF or CSV file, for use when seeing a doctor or for keeping as a personal health record.
 
-**หมายเหตุ**: ฟีเจอร์นี้ยังไม่ได้พัฒนาจริง แต่เป็นส่วนหนึ่งของแผนการพัฒนาระบบในอนาคต
+**Note**: This feature has not been developed yet; it is part of the system's future development plan.
 
 ## Current Data Constraint
 
-ระบบปัจจุบัน persist เฉพาะ fall events ใน `Event` table และเก็บ `bpm` เป็น snapshot ณ ขณะเกิดเหตุล้มเท่านั้น
-ส่วน heart-rate stream ปกติ/ผิดปกติใช้ realtime update และยังไม่ได้เก็บเป็น event แยกในฐานข้อมูล
-ดังนั้นรายงานที่นับ "ชีพจรสูง/ต่ำผิดปกติเป็นจำนวนครั้ง" ต้องเพิ่ม data model สำหรับ heart-rate history หรือปรับ scope ให้สรุปจาก fall-event BPM snapshot เท่านั้น
+The current system persists only fall events in the `Event` table, and stores `bpm` only as a snapshot at the moment of the fall.
+The normal/abnormal heart-rate stream uses realtime updates and is not yet stored as separate events in the database.
+A report that counts "abnormally high/low pulse occurrences" therefore needs an additional data model for heart-rate history, or the scope must be reduced to summarising fall-event BPM snapshots only.
 
 ## Users
 
-- **ญาติผู้ดูแล (Caregiver)** — ผู้ต้องการรายงานสุขภาพเพื่อนำไปพบแพทย์
-- **แพทย์/บุคลากรทางการแพทย์** — ผู้ต้องการดูข้อมูลสุขภาพย้อนหลัง
-- **ผู้ดูแลระบบ (Admin)** — ผู้จัดการระบบส่งออกข้อมูล
+- **Caregiver (family member)** — wants a health report to bring to a doctor
+- **Doctor / medical staff** — wants to view historical health data
+- **Admin** — manages the data export system
 
 ## Features
 
-### 1. การส่งออกรายงานรายเดือน
+### 1. Monthly Report Export
 
-**รูปแบบรายงาน:**
+**Report contents:**
 
-- **สรุปจำนวนหกล้ม** — จำนวนครั้งที่ล้มในเดือนนั้น
-- **สรุปอัตราการเต้นหัวใจผิดปกติ** — ต้องเพิ่มการเก็บ heart-rate history ก่อนจึงจะนับเหตุการณ์ได้ แยกเป็น:
-  - ชีพจรสูงผิดปกติ (จำนวนครั้ง)
-  - ชีพจรต่ำผิดปกติ (จำนวนครั้ง)
-- **ช่วงเวลาเกิดเหตุบ่อยที่สุด** — แสดง Peak Hour
-- **ข้อมูลผู้สูงอายุ** — ชื่อ, อายุ, โรคประจำตัว, น้ำหนัก, ส่วนสูง
+- **Fall count summary** — number of falls in that month
+- **Abnormal heart rate summary** — heart-rate history storage must be added before these occurrences can be counted, split into:
+  - Abnormally high pulse (number of occurrences)
+  - Abnormally low pulse (number of occurrences)
+- **Most frequent incident time** — shows the Peak Hour
+- **Elder information** — name, age, chronic conditions, weight, height
 
-### 2. การส่งออกรายงานช่วงเวลา
+### 2. Date Range Report Export
 
-**ตัวเลือกช่วงเวลา:**
+**Range options:**
 
-- **เดือนเดียว** — เลือกเดือน/ปี ย้อนหลังได้ 12 เดือน
-- **กำหนดเอง** — เลือกช่วงวันที่เอง (เช่น 3 เดือนย้อนหลัง)
-- **ทั้งหมด** — ข้อมูลตั้งแต่เริ่มใช้งาน
+- **Single month** — pick a month/year, up to 12 months back
+- **Custom** — pick your own date range (e.g. the last 3 months)
+- **All** — data since the start of use
 
-### 3. รูปแบบไฟล์ส่งออก
+### 3. Export File Formats
 
-| รูปแบบ        | คุณสมบัติ                                      | ใช้สำหรับ                         |
-| ------------- | ---------------------------------------------- | --------------------------------- |
-| **PDF**       | - อ่านง่าย\n- พิมพ์สวย\n- ส่งอีเมลได้          | พิมพ์ / ส่งแพทย์ / เก็บเป็นเอกสาร |
-| **CSV/Excel** | - วิเคราะห์ข้อมูล\n- กราฟได้\n- นำเข้าระบบอื่น | วิเคราะห์ข้อมูลเพิ่มเติม          |
+| Format        | Characteristics                                          | Used for                                |
+| ------------- | -------------------------------------------------------- | --------------------------------------- |
+| **PDF**       | - Easy to read\n- Prints nicely\n- Can be emailed        | Printing / sending to a doctor / filing |
+| **CSV/Excel** | - Data analysis\n- Charting\n- Import into other systems | Further data analysis                   |
 
 ## Related Screens
 
-### หน้ารายงานสรุปรายเดือน
+### Monthly Summary Report Screen
 
-**ไฟล์:** `(features)/(report)/report-summary.tsx` (จะเพิ่มปุ่มส่งออก)
-**สิ่งที่ผู้ใช้เห็น:**
+**File:** `(features)/(report)/report-summary.tsx` (an export button will be added)
+**What the user sees:**
 
-- ปุ่ม "ส่งออกรายงาน" อยู่ด้านบนขวาของหน้า
-- ปุ่มเลือกรูปแบบไฟล์ (PDF / CSV)
-  **สิ่งที่ผู้ใช้ทำได้:**
-- กดปุ่มส่งออกเพื่อดาวน์โหลดรายงานเดือนปัจจุบัน
+- An "Export Report" button at the top right of the screen
+- A file format selector (PDF / CSV)
+  **What the user can do:**
+- Tap the export button to download the current month's report
 
-### หน้าเลือกช่วงเวลาส่งออก
+### Export Range Selection Screen
 
-**ไฟล์:** `(features)/(report)/export-options.tsx` (จะสร้างในอนาคต)
-**สิ่งที่ผู้ใช้เห็น:**
+**File:** `(features)/(report)/export-options.tsx` (to be created in the future)
+**What the user sees:**
 
-- ตัวเลือกช่วงเวลา (เดือนเดียว / กำหนดเอง / ทั้งหมด)
-- ตัวเลือกรูปแบบไฟล์ (PDF / CSV)
-- ปุ่ม "ส่งออก"
-  **สิ่งที่ผู้ใช้ทำได้:**
-- เลือกช่วงเวลาและรูปแบบที่ต้องการ
-- กดส่งออกเพื่อดาวน์โหลดไฟล์
+- Range options (Single month / Custom / All)
+- File format options (PDF / CSV)
+- An "Export" button
+  **What the user can do:**
+- Choose the desired range and format
+- Tap export to download the file
 
 ## Business Rules
 
-| หัวข้อ           | รายละเอียด                           |
-| ---------------- | ------------------------------------ |
-| ช่วงเวลาส่งออก   | ย้อนหลังได้สูงสุด 12 เดือน           |
-| รูปแบบไฟล์       | PDF สำหรับพิมพ์, CSV สำหรับวิเคราะห์ |
-| ข้อมูลผู้สูงอายุ | รวมอยู่ในรายงานทุกครั้ง              |
-| การประมวลผล      | สร้างไฟล์ทันที ไม่ต้องรอ             |
-| ความปลอดภัย      | ส่งออกได้เฉพาะข้อมูลของตนเอง         |
+| Topic            | Details                                   |
+| ---------------- | ----------------------------------------- |
+| Export range     | Up to 12 months back                      |
+| File format      | PDF for printing, CSV for analysis        |
+| Elder data       | Always included in the report             |
+| Processing       | File is generated immediately, no waiting |
+| Security         | Users can only export their own data      |
 
 ---
 
-**หมายเหตุสำคัญ:** เอกสารนี้เป็นส่วนหนึ่งของแผนการพัฒนาระบบในอนาคต (Future Roadmap) ยังไม่ได้ดำเนินการพัฒนาจริง แต่เป็นแนวทางสำหรับการพัฒนาต่อไป
+**Important note:** This document is part of the system's future development plan (Future Roadmap). It has not been implemented yet, but serves as guidance for further development.

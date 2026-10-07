@@ -1,4 +1,6 @@
-# Functional Requirements (ความต้องการเชิงฟังก์ชัน)
+# Functional Requirements
+
+[English](functional-requirements.md) · [ภาษาไทย](functional-requirements.th.md)
 
 ## Doc Meta
 
@@ -11,174 +13,174 @@
 
 ## Overview
 
-เอกสารนี้สรุปความต้องการเชิงฟังก์ชันของระบบ FallHelp จากโค้ดปัจจุบัน โดยโฟกัสที่ 2 actors หลักคือ Caregiver และ Admin มี 1 supporting actor คือ Elder (ผู้สูงอายุผู้สวมใส่อุปกรณ์) และมี 1 external system actor คือ IoT Device ภายใต้โมเดล Single-Caregiver (1 ญาติ : 1 ผู้สูงอายุ)
+This document summarises the functional requirements of the FallHelp system based on the current code. It focuses on 2 primary actors, Caregiver and Admin, with 1 supporting actor, the Elder (the elderly person wearing the device), and 1 external system actor, the IoT Device, under the Single-Caregiver model (1 family caregiver : 1 elder).
 
-## Terminology (คำศัพท์มาตรฐาน)
+## Terminology (Standard Terms)
 
-- ลงทะเบียนบัญชีผู้ใช้งาน: การสร้างบัญชีใหม่ของผู้ใช้ระบบ (Caregiver/Admin) สำหรับการเข้าสู่ระบบครั้งแรก
-- ลงทะเบียนอุปกรณ์: การเพิ่มอุปกรณ์ใหม่เข้าสู่ระบบโดยผู้ดูแลระบบ (Admin)
-- จับคู่อุปกรณ์: การเชื่อมอุปกรณ์ที่ลงทะเบียนแล้วเข้ากับผู้สูงอายุผ่าน QR Code ในแอป Caregiver
+- Account registration: creating a new account for a system user (Caregiver/Admin) for their first sign-in
+- Device registration: adding a new device to the system, done by the Admin
+- Device pairing: linking a registered device to an elder via a QR Code in the Caregiver app
 
 ---
 
 ## Actors & Requirements
 
-### 1) ญาติผู้ดูแล (Caregiver)
+### 1) Caregiver (Family Member)
 
-ผู้ใช้แอปมือถือสำหรับดูแลผู้สูงอายุและติดตามเหตุการณ์สำคัญ
+A mobile app user who looks after an elder and follows important events
 
-|  รหัส  | ความต้องการ                                                                                       |
+|  ID    | Requirement                                                                                       |
 | :----: | ------------------------------------------------------------------------------------------------- |
-| FR-C01 | ญาติผู้ดูแลสามารถลงทะเบียนบัญชีผู้ใช้งาน เข้าสู่ระบบ และออกจากระบบได้                             |
-| FR-C02 | ญาติผู้ดูแลสามารถลืมรหัสผ่านและตั้งรหัสผ่านใหม่ผ่าน OTP ได้                                       |
-| FR-C03 | ญาติผู้ดูแลสามารถแก้ไขข้อมูลส่วนตัว เปลี่ยนรหัสผ่าน เปลี่ยนอีเมล เปลี่ยนเบอร์โทรศัพท์ และอัปโหลดรูปโปรไฟล์ได้ |
-| FR-C04 | ญาติผู้ดูแลสามารถเพิ่ม ดู แก้ไขข้อมูลผู้สูงอายุได้                                                |
-| FR-C05 | ญาติผู้ดูแลสามารถจับคู่อุปกรณ์ผ่านการสแกน QR Code ได้                                             |
-| FR-C06 | ญาติผู้ดูแลสามารถตั้งค่าการเชื่อมต่อ Wi-Fi ของอุปกรณ์ได้                                          |
-| FR-C07 | ญาติผู้ดูแลสามารถยกเลิกการเชื่อมต่ออุปกรณ์ (Unpair) ได้                                           |
-| FR-C08 | ญาติผู้ดูแลสามารถดู Dashboard เพื่อติดตามสถานะอุปกรณ์ เหตุการณ์หกล้ม และค่าชีพจรแบบเรียลไทม์ได้           |
-| FR-C09 | ญาติผู้ดูแลจะได้รับการแจ้งเตือน Push Notification เมื่อเกิดการหกล้ม พร้อมแสดงค่าชีพจร ณ ขณะที่ล้ม |
-| FR-C10 | ญาติผู้ดูแลสามารถกดปุ่ม "รับทราบแล้ว" บนแอปเพื่อรับทราบเหตุการณ์และคืนการ์ดเหตุการณ์หกล้มบนหน้า Dashboard เป็นปกติได้ |
-| FR-C11 | ญาติผู้ดูแลสามารถเพิ่ม แก้ไข ลบ หรือจัดลำดับความสำคัญของผู้ติดต่อฉุกเฉินได้                       |
-| FR-C12 | ญาติผู้ดูแลสามารถแตะรายชื่อผู้ติดต่อฉุกเฉินเพื่อเปิดแอปโทรศัพท์ของเครื่องและโทรออกได้ทันที        |
-| FR-C13 | ญาติผู้ดูแลสามารถดูประวัติเหตุการณ์หกล้มและรายงานสรุปเหตุการณ์ในแต่ละเดือนได้                    |
-| FR-C14 | ญาติผู้ดูแลสามารถดูประวัติการแจ้งเตือนย้อนหลัง ทำเครื่องหมายว่าอ่านแล้วทีละรายการ หรืออ่านแล้วทั้งหมดพร้อมกันได้ |
+| FR-C01 | The caregiver can register a user account, sign in, and sign out                                  |
+| FR-C02 | The caregiver can recover a forgotten password and set a new password via OTP                     |
+| FR-C03 | The caregiver can edit personal information, change password, change email, change phone number, and upload a profile picture |
+| FR-C04 | The caregiver can add, view, and edit elder information                                           |
+| FR-C05 | The caregiver can pair a device by scanning a QR Code                                             |
+| FR-C06 | The caregiver can configure the device's Wi-Fi connection                                         |
+| FR-C07 | The caregiver can disconnect the device (Unpair)                                                  |
+| FR-C08 | The caregiver can view the Dashboard to follow device status, fall events, and pulse readings in real time |
+| FR-C09 | The caregiver receives a Push Notification when a fall occurs, showing the pulse reading at the moment of the fall |
+| FR-C10 | The caregiver can tap the "รับทราบแล้ว" (Acknowledged) button in the app to Acknowledge the event and return the fall event card on the Dashboard to normal |
+| FR-C11 | The caregiver can add, edit, delete, or reorder the priority of emergency contacts                |
+| FR-C12 | The caregiver can tap an emergency contact to open the phone's dialer app and call immediately    |
+| FR-C13 | The caregiver can view fall event history and monthly event summary reports                      |
+| FR-C14 | The caregiver can view past notification history, mark notifications as read one by one, or mark all as read at once |
 
-### 2) ผู้ดูแลระบบ (Admin)
+### 2) Admin
 
-ผู้ดูแลระบบที่ใช้งานผ่าน Admin Panel บนเว็บไซต์
+The system administrator who works through the web-based Admin Panel
 
-|  รหัส  | ความต้องการ                                                                                                                                                 |
+|  ID    | Requirement                                                                                                                                                 |
 | :----: | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR-A01 | ผู้ดูแลระบบสามารถเข้าสู่ระบบและออกจากระบบของระบบผู้ดูแลได้                                                                                                   |
-| FR-A02 | ผู้ดูแลระบบสามารถตรวจสอบภาพรวมสถานะอุปกรณ์ในระบบ ได้แก่ จำนวนอุปกรณ์ทั้งหมด, จำนวนอุปกรณ์ที่จับคู่แล้ว (เชื่อมโยงกับผู้สูงอายุ), และจำนวนอุปกรณ์ที่ยังไม่จับคู่ (พร้อมสำหรับการจับคู่) |
-| FR-A03 | ผู้ดูแลระบบสามารถดูรายการอุปกรณ์และสถานะ (จับคู่แล้ว/ยังไม่จับคู่, ออนไลน์/ออฟไลน์/รอเชื่อมต่อ WiFi) เพื่อติดตามความพร้อมในการใช้งานของอุปกรณ์                      |
-| FR-A04 | ผู้ดูแลระบบสามารถลงทะเบียนอุปกรณ์ใหม่ สร้างคิวอาร์โค้ดสิทธิ์การเข้าใช้งาน บังคับยกเลิกการจับคู่อุปกรณ์ และลบอุปกรณ์ที่ยังไม่ถูกจับคู่ออกจากระบบได้            |
+| FR-A01 | The admin can sign in to and sign out of the admin system                                                                                                   |
+| FR-A02 | The admin can review an overview of device status in the system: total number of devices, number of paired devices (linked to an elder), and number of unpaired devices (ready for pairing) |
+| FR-A03 | The admin can view the device list and status (paired/unpaired, online/offline/waiting for WiFi connection) to track device readiness                       |
+| FR-A04 | The admin can register new devices, generate access QR codes, force-unpair devices, and delete unpaired devices from the system                             |
 
-### 3) ผู้สูงอายุผู้สวมใส่อุปกรณ์ (Elder - Supporting Actor)
+### 3) Elder Wearing the Device (Elder - Supporting Actor)
 
-ผู้ที่สวมใส่อุปกรณ์คล้องคอและโต้ตอบผ่านปุ่มจริงบนอุปกรณ์ (ไม่ใช่ผู้ใช้งานแอปโดยตรง)
+The person who wears the neck-worn device and interacts through the physical button on the device (not a direct app user)
 
-|  รหัส  | ความต้องการ                                                                                                   |
+|  ID    | Requirement                                                                                                   |
 | :----: | ------------------------------------------------------------------------------------------------------------- |
-| FR-E01 | ผู้สูงอายุสามารถกดปุ่มยกเลิกการแจ้งเตือนผิดพลาด (False Alarm) จากอุปกรณ์ได้                                  |
+| FR-E01 | The elder can press the button on the device to cancel a false alarm                                          |
 
-### 4) อุปกรณ์ตรวจจับการหกล้ม (IoT Device - External System Actor)
+### 4) Fall Detection Device (IoT Device - External System Actor)
 
-ระบบอุปกรณ์ภายนอกที่ทำงานร่วมกับ Backend ผ่าน MQTT และ BLE provisioning
+An external device system that works with the Backend via MQTT and BLE provisioning
 
-|  รหัส  | ความต้องการ                                                                                 |
+|  ID    | Requirement                                                                                 |
 | :----: | ------------------------------------------------------------------------------------------- |
-| FR-I01 | อุปกรณ์สามารถตรวจจับเหตุการณ์หกล้มและส่งข้อมูลไปยังระบบผ่านโปรโตคอล MQTT ได้                  |
-| FR-I02 | อุปกรณ์สามารถวัดและส่งค่าอัตราชีพจรของผู้สวมใส่ไปยังระบบได้แบบเรียลไทม์                         |
-| FR-I03 | อุปกรณ์สามารถส่งสัญญาณเสียงเตือนเมื่อตรวจพบการหกล้มได้                                        |
-| FR-I04 | อุปกรณ์สามารถรับสัญญาณยกเลิกเหตุการณ์จากปุ่มกดและส่งข้อมูลยกเลิกไปยังระบบได้                    |
-| FR-I05 | อุปกรณ์สามารถส่งสถานะการเชื่อมต่อของตัวเองไปยังระบบได้                                        |
+| FR-I01 | The device can detect fall events and send data to the system via the MQTT protocol         |
+| FR-I02 | The device can measure the wearer's pulse rate and send it to the system in real time       |
+| FR-I03 | The device can sound an audible alarm when a fall is detected                               |
+| FR-I04 | The device can receive a cancel signal from its button and send the cancellation to the system |
+| FR-I05 | The device can send its own connection status to the system                                 |
 
 ---
 
 ## Hardware Reference (Non-Actor)
 
-ข้อกำหนดด้านฮาร์ดแวร์ที่ใช้เป็นข้อมูลอ้างอิง ไม่จัดเป็น actor หลัก
+Hardware specifications used as reference information, not classified as a primary actor
 
-|  รหัส  | ความต้องการ                                                         |
+|  ID    | Requirement                                                         |
 | :----: | ------------------------------------------------------------------- |
-| FR-D01 | อุปกรณ์ตรวจจับการหกล้มโดยใช้ Accelerometer และ Gyroscope            |
-| FR-D02 | อุปกรณ์วัดค่าชีพจร (Pulse/PPG)                                      |
-| FR-D03 | อุปกรณ์ส่งข้อมูลไปยัง Backend ผ่าน MQTT                             |
-| FR-D04 | อุปกรณ์รองรับการตั้งค่า Wi-Fi ผ่าน BLE (Bluetooth Low Energy)       |
-| FR-D05 | อุปกรณ์มีปุ่มกดสำหรับยกเลิก False Alarm (False Alarm Cancel Button) |
-| FR-D06 | อุปกรณ์มีเสียงเตือนเมื่อตรวจพบการล้ม                                |
+| FR-D01 | The device detects falls using an Accelerometer and Gyroscope       |
+| FR-D02 | The device measures pulse (Pulse/PPG)                               |
+| FR-D03 | The device sends data to the Backend via MQTT                       |
+| FR-D04 | The device supports Wi-Fi setup via BLE (Bluetooth Low Energy)      |
+| FR-D05 | The device has a button for cancelling a False Alarm (False Alarm Cancel Button) |
+| FR-D06 | The device sounds an alarm when a fall is detected                  |
 
 ---
 
 ## Primary Flows (Use Cases)
 
-### UC-1: ลืมรหัสผ่านผ่าน OTP
+### UC-1: Forgot Password via OTP
 
-1. ญาติขอ OTP ด้วยอีเมล
-2. ระบบส่ง OTP ไปทางอีเมล
-3. ญาติกรอก OTP และตั้งรหัสผ่านใหม่
-4. เข้าสู่ระบบด้วยรหัสผ่านใหม่
+1. The caregiver requests an OTP with their email
+2. The system sends the OTP by email
+3. The caregiver enters the OTP and sets a new password
+4. Sign in with the new password
 
-### UC-2: จับคู่อุปกรณ์ + ตั้งค่า Wi-Fi (BLE)
+### UC-2: Device Pairing + Wi-Fi Setup (BLE)
 
-1. ญาติสแกน QR Code เพื่อจับคู่อุปกรณ์กับผู้สูงอายุ
-2. ญาติเลือก WiFi และส่งค่าตั้งค่าผ่าน BLE
-3. อุปกรณ์เชื่อมต่อและส่งสถานะกลับ
+1. The caregiver scans the QR Code to pair the device with the elder
+2. The caregiver selects a WiFi network and sends the settings via BLE
+3. The device connects and reports its status back
 
-### UC-3: ตรวจจับการหกล้ม — 2 เส้นทาง
+### UC-3: Fall Detection — 2 Paths
 
-**แนวทางหลัก (Fall Flow):**
+**Main path (Fall Flow):**
 
-1. อุปกรณ์ตรวจจับการหกล้ม → ส่ง `suspected_fall` ผ่าน MQTT
-2. อุปกรณ์ส่งเสียงเตือน — เปิดช่วงยืนยัน **15 วินาที**
-3. Backend รับ event → สร้างเหตุการณ์ `PENDING_CONFIRMATION` ใน DB และส่ง internal Socket `event_status_changed/FALL_SUSPECTED`; ยังไม่ส่ง Push/alert ไปยังผู้ดูแล
-4. ครบ 15 วินาทีโดยไม่กดปุ่ม → อุปกรณ์ส่ง `fall_confirmed` → Backend อัปเดตเป็น `CONFIRMED` → ส่ง Push Notification + Socket (`fall_detected` และ `event_status_changed/FALL_CONFIRMED`)
-5. สถานะการ์ดเหตุการณ์หกล้มบนหน้า Dashboard จะแสดง **FALL** จนกว่าญาติจะกด "รับทราบแล้ว" เองหลังตรวจสอบแล้วว่าผู้สวมใส่ปลอดภัย — เป็นการคืนการ์ดเหตุการณ์หกล้มบนหน้า Dashboard เป็นปกติเท่านั้น (`setFallStatus('NORMAL')`) ไม่ยิง API และไม่เปลี่ยน `cancelledAt` ใน DB
+1. The device detects a fall → sends `suspected_fall` via MQTT
+2. The device sounds an alarm — opening a **15-second** confirmation window
+3. Backend receives the event → creates a `PENDING_CONFIRMATION` event in the DB and sends the internal Socket `event_status_changed/FALL_SUSPECTED`; no Push/alert is sent to the caregiver yet
+4. 15 seconds pass without a button press → the device sends `fall_confirmed` → Backend updates to `CONFIRMED` → sends a Push Notification + Socket (`fall_detected` and `event_status_changed/FALL_CONFIRMED`)
+5. The fall event card on the Dashboard shows **FALL** until the caregiver taps "รับทราบแล้ว" (Acknowledged) themselves after checking that the wearer is safe — this only returns the fall event card on the Dashboard to normal (`setFallStatus('NORMAL')`); it does not call the API and does not change `cancelledAt` in the DB
 
-**เส้นทาง False Alarm (Pre-Confirmation):**
+**False Alarm path (Pre-Confirmation):**
 
-4b. ผู้สวมใส่กดปุ่มยกเลิก (GPIO27) ภายใน 15 วินาที → อุปกรณ์ส่ง `fall_cancelled` → Backend อัปเดต `cancelledAt`/`CANCELLED` ใน DB เท่านั้น ไม่มี Socket หรือ Push ส่งออก
+4b. The wearer presses the cancel button (GPIO27) within 15 seconds → the device sends `fall_cancelled` → Backend only updates `cancelledAt`/`CANCELLED` in the DB; no Socket or Push is sent
 
-**หมายเหตุ:** Push Notification ส่งเฉพาะ `fall_confirmed` เท่านั้น และ push ที่ส่งออกไปแล้วไม่ถูกเพิกถอนเมื่อญาติรับทราบเหตุการณ์ในแอป
+**Note:** Push Notifications are sent only for `fall_confirmed`, and a push that has already been sent is not revoked when the caregiver Acknowledges the event in the app
 
-### UC-4: Admin จัดการอุปกรณ์
+### UC-4: Admin Manages Devices
 
-1. Admin เข้าสู่ระบบ
-2. ลงทะเบียนอุปกรณ์และสร้าง QR Code
-3. ตรวจสอบสถานะอุปกรณ์
-4. บังคับยกเลิกการจับคู่ หรือลบอุปกรณ์ที่ไม่ได้ใช้งาน
-
----
-
-## 3.2.2 ความต้องการด้านคุณภาพ (Non-Functional Requirements)
-
-### ด้านประสิทธิภาพ
-
-- ระบบต้องรองรับการแจ้งเตือนเหตุการณ์สำคัญไปยังผู้ดูแลได้แบบเรียลไทม์
-- ระบบต้องตรวจจับสถานะอุปกรณ์ออฟไลน์และแจ้งเตือนได้อัตโนมัติ
-
-### ด้านความเสถียร
-
-- ระบบต้องมีการ Auto-reconnect สำหรับ MQTT และ Socket.io เพื่อความต่อเนื่องของการสื่อสาร
-
-### ด้านความปลอดภัย
-
-- ระบบต้องยืนยันตัวตนผู้ใช้งานด้วย JWT Authentication ทุก Request
-- ระบบต้องเข้ารหัสรหัสผ่านด้วย Bcrypt ก่อนจัดเก็บลงฐานข้อมูล
-- ระบบต้องกำหนดสิทธิ์การเข้าถึงตามบทบาทผู้ใช้งาน (RBAC) โดยแบ่งเป็น ADMIN และ CAREGIVER
-- ระบบต้องจำกัดจำนวน Request ต่อหน่วยเวลา (Rate Limiting) โดยแยกตามประเภท Endpoint
-- ระบบต้องควบคุมการเข้าถึงข้ามโดเมน (CORS) โดยอนุญาตเฉพาะ Origin ที่กำหนดไว้เท่านั้น
-
-### ด้านความสามารถใช้งาน
-
-- แอปพลิเคชันต้องรองรับการใช้งานบนระบบปฏิบัติการ Android ได้
-
-### ข้อจำกัดการใช้งาน
-
-- ระบบต้องทำงานได้ในพื้นที่ที่มีสัญญาณ Wi-Fi เท่านั้น
-
-### ตัวชี้วัดเชิงปริมาณ (กำลังกำหนด)
-
-- เวลาส่งการแจ้งเตือนเหตุการณ์สำคัญถึงผู้ดูแลภายใน 2 วินาที
-- ตรวจจับสถานะอุปกรณ์ออฟไลน์/ขาดการเชื่อมต่อภายใน 1 นาที
-- API response time สำหรับการใช้งานทั่วไป < 500ms (P95)
-- Real-time updates ผ่าน Socket/MQTT ภายใน 500ms (P95)
-- BLE provisioning ต้องสำเร็จภายใน 1 รอบ
-- ความพร้อมใช้งานของระบบ (Availability) >= 99.9%
+1. Admin signs in
+2. Registers a device and generates a QR Code
+3. Checks device status
+4. Force-unpairs or deletes unused devices
 
 ---
 
-## Validation Targets (ภาษาง่าย)
+## 3.2.2 Non-Functional Requirements
 
-- ต้องแจ้งเตือนเมื่อเกิดการล้มภายใน 2 วินาที
-- ไม่ควรแจ้งเตือนผิดบ่อยเกิน 1 ครั้ง/สัปดาห์ ต่อผู้ใช้
-- ต้องไม่พลาดการล้ม (เป้าหมาย 100%)
-- ทดสอบด้วยสถานการณ์จริงอย่างน้อย 50 ครั้ง
-- ใช้หลาย dataset เพื่อช่วยตั้งค่า baseline ให้ตรงกับ sensor ของระบบ
+### Performance
 
-**หมายเหตุ:** ส่วนนี้เป็นเป้าหมาย validation สำหรับระบบเต็มในอนาคต ไม่ใช่ผล Accuracy ปัจจุบันของ Fall Detection Sensor Lab
+- The system must deliver notifications of important events to the caregiver in real time
+- The system must automatically detect offline device status and raise notifications
+
+### Reliability
+
+- The system must Auto-reconnect MQTT and Socket.io to keep communication continuous
+
+### Security
+
+- The system must authenticate users with JWT Authentication on every Request
+- The system must hash passwords with Bcrypt before storing them in the database
+- The system must enforce role-based access control (RBAC), split into ADMIN and CAREGIVER
+- The system must limit the number of Requests per unit of time (Rate Limiting), separately per Endpoint type
+- The system must control cross-origin access (CORS), allowing only configured Origins
+
+### Usability
+
+- The application must run on the Android operating system
+
+### Operating Constraints
+
+- The system must operate only in areas with Wi-Fi coverage
+
+### Quantitative Metrics (Being Defined)
+
+- Notification of important events reaches the caregiver within 2 seconds
+- Offline/disconnected device status detected within 1 minute
+- API response time for general use < 500ms (P95)
+- Real-time updates via Socket/MQTT within 500ms (P95)
+- BLE provisioning must succeed within 1 attempt
+- System Availability >= 99.9%
+
+---
+
+## Validation Targets (Plain Language)
+
+- Must notify within 2 seconds when a fall happens
+- Should not raise false alarms more than once per week per user
+- Must not miss a fall (target 100%)
+- Test with real scenarios at least 50 times
+- Use multiple datasets to help set a baseline that matches the system's sensor
+
+**Note:** This section is the validation target for the full future system, not the current Accuracy result of the Fall Detection Sensor Lab
 
 ---
 

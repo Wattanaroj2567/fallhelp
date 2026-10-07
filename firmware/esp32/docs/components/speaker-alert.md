@@ -1,5 +1,7 @@
 # Grove - Speaker Alert Guide
 
+[English](speaker-alert.md) · [ภาษาไทย](speaker-alert.th.md)
+
 ## Doc Meta
 
 - Audience: Hardware Dev, QA
@@ -11,39 +13,39 @@
 
 ## Overview
 
-Speaker output ใช้แจ้งเตือนผู้สวมใส่เมื่อ firmware เข้าสู่ fall alert flow และต้องหยุดตรงจังหวะเมื่อ cancel หรือ reset state สำเร็จ
+The speaker output alerts the wearer when the firmware enters the fall alert flow, and it must stop at the right moment when cancel or a state reset succeeds.
 
-เอกสารนี้ใช้คำว่า `speaker`, `alert sound`, หรือ `device sound behavior` ตาม terminology ของ repo
+This document uses the terms `speaker`, `alert sound`, or `device sound behavior` following the repo terminology.
 
 ---
 
 ## Scope
 
-ไฟล์นี้ครอบคลุม:
+This file covers:
 
-1. ข้อเท็จจริงของ speaker output
-2. ความต่างระหว่าง `main_firmware` และ `sensor_tuning`
-3. device sound behavior ที่ต้องรักษา
-4. checklist สำหรับทดสอบเสียงเตือน
+1. Facts about the speaker output
+2. Differences between `main_firmware` and `sensor_tuning`
+3. Device sound behavior that must be preserved
+4. A checklist for testing the alert sound
 
-ไฟล์นี้ไม่ครอบคลุม:
+This file does not cover:
 
-1. การเปลี่ยน fall detection threshold
-2. การเปลี่ยน cancel timeout
-3. การเพิ่มเสียงใน Node-RED Dashboard หรือ mobile app
-4. การเปลี่ยน payload หรือ alert flow
+1. Changing the fall detection threshold
+2. Changing the cancel timeout
+3. Adding sound to the Node-RED Dashboard or mobile app
+4. Changing the payload or alert flow
 
 ---
 
 ## Hardware Facts
 
-| รายการ | ค่า |
+| Item | Value |
 | --- | --- |
 | Component | Grove - Speaker |
 | Output pin | `GPIO25` |
 | Firmware API | `AlertSystem` |
-| Output type | PWM tone ผ่าน speaker |
-| Boot safety | บังคับ output LOW / duty 0 ตอนเริ่มต้น |
+| Output type | PWM tone through the speaker |
+| Boot safety | Forces output LOW / duty 0 at startup |
 
 Variant-specific values:
 
@@ -52,18 +54,18 @@ Variant-specific values:
 | `main_firmware` | `1800 Hz` | `800 ms` | enabled |
 | `sensor_tuning` | `800 Hz` | `1500 ms` | controlled by tuning build/profile |
 
-ค่าข้างต้นมาจาก source ปัจจุบัน ไม่ควรสรุปเป็นค่าเดียวร่วมกันทั้งสอง firmware
+The values above come from the current source. Do not collapse them into a single shared value for both firmware variants.
 
 ---
 
 ## Firmware Ownership
 
-| Firmware | บทบาทของ speaker |
+| Firmware | Role of the speaker |
 | --- | --- |
-| `main_firmware` | alert sound ของ prototype runtime flow |
-| `sensor_tuning` | ใช้เปิด/ปิดเสียงระหว่าง hardware tuning และ simulation |
+| `main_firmware` | Alert sound of the prototype runtime flow |
+| `sensor_tuning` | Used to turn sound on/off during hardware tuning and simulation |
 
-`sensor_tuning` มีคำสั่ง runtime สำหรับเปิด/ปิด speaker output ระหว่างทดสอบ เพื่อเลี่ยงเสียงรบกวนในรอบจูนที่ไม่ต้องใช้เสียง
+`sensor_tuning` has a runtime command to turn the speaker output on/off during testing, to avoid noise in tuning rounds that do not need sound.
 
 ---
 
@@ -88,13 +90,13 @@ GPIO27 cancel within timeout
 
 ### Confirm / Reset
 
-เมื่อ firmware จบ alert state หรือ reset pending fall state แล้ว speaker ต้องไม่ค้างเสียงต่อ
+When the firmware ends the alert state or resets the pending fall state, the speaker must not keep sounding.
 
-ข้อควรระวัง:
+Cautions:
 
-1. Speaker เป็น local device feedback ไม่ใช่ backend notification
-2. ไม่มี dashboard audio ใน Fall Detection Sensor Lab
-3. การเปลี่ยนเสียงต้องไม่เปลี่ยน fall detection decision หรือ MQTT payload
+1. The speaker is local device feedback, not a backend notification
+2. There is no dashboard audio in the Fall Detection Sensor Lab
+3. Changing the sound must not change the fall detection decision or the MQTT payload
 
 ---
 
@@ -102,74 +104,74 @@ GPIO27 cancel within timeout
 
 ### Basic Output Check
 
-1. Upload firmware variant ที่ต้องการทดสอบ
-2. เปิด Serial Monitor `115200`
-3. ยืนยันว่า speaker init สำเร็จ
-4. ถ้าเป็น `sensor_tuning` และเสียงถูกปิด ให้เปิดด้วยคำสั่ง `speaker` หรือคำสั่งที่ firmware แสดงใน help
+1. Upload the firmware variant you want to test
+2. Open Serial Monitor at `115200`
+3. Confirm that speaker init succeeded
+4. If it is `sensor_tuning` and sound is off, turn it on with the `speaker` command or the command the firmware shows in help
 
 ### Fall Alert Sound Check
 
-1. รัน `sim fall`
-2. ยืนยันว่า alert sound เริ่มเมื่อเข้า fall alert state
-3. ยืนยันว่า pattern เล่นซ้ำตาม firmware variant ที่ใช้
+1. Run `sim fall`
+2. Confirm that the alert sound starts when entering the fall alert state
+3. Confirm that the pattern repeats according to the firmware variant in use
 
 ### Stop Sound Check
 
-1. ระหว่าง alert sound ให้กด cancel ภายใน 15 วินาที
-2. ยืนยันว่าเสียงหยุดทันทีเมื่อ cancel สำเร็จ
-3. ทดสอบอีกครั้งโดยปล่อยให้ timeout แล้วตรวจว่าเสียงไม่ค้างหลัง state reset
+1. While the alert sound is playing, press cancel within 15 seconds
+2. Confirm that the sound stops immediately when cancel succeeds
+3. Test again by letting it time out, and check that the sound does not persist after the state reset
 
 ---
 
 ## Evidence To Collect
 
-| งาน | หลักฐาน |
+| Task | Evidence |
 | --- | --- |
-| Init | Serial log ที่ระบุ speaker/AlertSystem พร้อมใช้งาน |
-| Start alert | Serial log + observation ว่าเสียงเริ่มเมื่อ `suspected_fall` |
-| Stop on cancel | Serial log + observation ว่าเสียงหยุดเมื่อ `fall_cancelled` |
-| No stuck output | observation หลัง reset state ว่า GPIO25 ไม่ค้างเสียง |
+| Init | Serial log stating speaker/AlertSystem is ready |
+| Start alert | Serial log + observation that the sound starts on `suspected_fall` |
+| Stop on cancel | Serial log + observation that the sound stops on `fall_cancelled` |
+| No stuck output | Observation after state reset that GPIO25 is not stuck sounding |
 
-ไม่ต้องใช้ Node-RED CSV เพื่อพิสูจน์ speaker behavior ยกเว้นรอบนั้นเป็น Sensor Lab ที่ต้องเก็บข้อมูลแยกอยู่แล้ว
+Node-RED CSV is not needed to prove speaker behavior, unless that round is a Sensor Lab round that already collects data separately.
 
 ---
 
 ## Troubleshooting
 
-### ไม่มีเสียง
+### No sound
 
-ตรวจ:
+Check:
 
-1. Speaker ต่อกับ `GPIO25` ถูกต้องหรือไม่
-2. firmware variant เปิด speaker output อยู่หรือไม่
-3. อยู่ใน alert state จริงหรือไม่
-4. PWM attach สำเร็จหรือไม่
-5. ภาคจ่ายไฟพอสำหรับ speaker หรือไม่
+1. Is the speaker correctly wired to `GPIO25`?
+2. Does the firmware variant have speaker output enabled?
+3. Is the device actually in the alert state?
+4. Did PWM attach succeed?
+5. Is the power supply sufficient for the speaker?
 
-### เสียงไม่หยุด
+### Sound does not stop
 
-ตรวจ:
+Check:
 
-1. cancel flow ทำงานจริงหรือไม่
-2. `AlertSystem` ได้รับคำสั่ง stop หรือ reset state หรือไม่
-3. PWM ถูก set กลับเป็น tone 0 / duty 0 หรือไม่
-4. simulation หรือ alert state ยัง active อยู่หรือไม่
+1. Does the cancel flow actually work?
+2. Did `AlertSystem` receive the stop or reset state command?
+3. Was PWM set back to tone 0 / duty 0?
+4. Is a simulation or alert state still active?
 
-### เสียงผิด pattern หรือผิดความถี่
+### Wrong pattern or frequency
 
-ตรวจ:
+Check:
 
-1. กำลังทดสอบ `main_firmware` หรือ `sensor_tuning`
-2. ใช้ค่าความถี่ของ firmware variant นั้น ไม่ใช้ค่าของอีก variant
-3. มีการแก้ `AlertSystem.ino` โดยไม่ได้ sync docs/tests หรือไม่
+1. Are you testing `main_firmware` or `sensor_tuning`?
+2. Use the frequency values of that firmware variant, not those of the other variant
+3. Was `AlertSystem.ino` changed without syncing docs/tests?
 
-### เสียงดังตอน boot
+### Sound at boot
 
-ตรวจ:
+Check:
 
-1. GPIO25 ถูกบังคับ LOW ตอน setup หรือไม่
-2. PWM duty เริ่มต้นเป็น 0 หรือไม่
-3. สาย speaker หรือ module มี floating input หรือไม่
+1. Is GPIO25 forced LOW during setup?
+2. Does PWM duty start at 0?
+3. Does the speaker wiring or module have a floating input?
 
 ---
 

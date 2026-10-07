@@ -1,5 +1,7 @@
 # Running Tests
 
+[English](running-tests.md) · [ภาษาไทย](running-tests.th.md)
+
 ## Doc Meta
 
 - Audience: Developers, QA

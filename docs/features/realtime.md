@@ -1,5 +1,7 @@
 # Socket.io Real-time System
 
+[English](realtime.md) · [ภาษาไทย](realtime.th.md)
+
 ## Doc Meta
 
 - Audience: Backend Dev / Mobile Dev
@@ -11,7 +13,7 @@
 
 ## Overview
 
-FallHelp ใช้ **Socket.io** สำหรับการสื่อสารแบบ Real-time ระหว่าง Backend กับ Mobile App เพื่อให้ผู้ดูแลได้รับการแจ้งเตือนทันทีขณะเปิดแอป (< 1 วินาที)
+FallHelp uses **Socket.io** for Real-time communication between the Backend and the Mobile App so caregivers receive alerts immediately while the app is open (< 1 second).
 
 ---
 
@@ -23,16 +25,16 @@ Client connect -> emit authenticate(token, elderId) -> JWT verify -> join user/e
 
 **Authentication:**
 
-- Client เชื่อมต่อ socket ก่อน แล้วส่ง event `authenticate`
-- Payload ปัจจุบันใช้ `{ token, elderId }`
-- Server verify JWT ก่อนให้เข้า room ใด ๆ
-- ถ้า token ไม่ถูกต้อง → socket ได้รับ `authenticated: { success: false }`
+- The client connects the socket first, then sends the `authenticate` event
+- The current payload is `{ token, elderId }`
+- The server verifies the JWT before allowing it into any room
+- If the token is invalid → the socket receives `authenticated: { success: false }`
 
 **Room System:**
 
-- ทุก client จะถูกผูกกับ room `user:{userId}` หลัง authenticate สำเร็จ
-- ถ้าส่ง `elderId` มาและตรวจ ownership ผ่าน จะ join room `elder:{elderId}`
-- ระบบปัจจุบันบังคับ 1 user = 1 active socket session หลัก ถ้า login ซ้ำ session เก่าจะถูกตัด
+- Every client is bound to room `user:{userId}` after authenticating successfully
+- If `elderId` is sent and the ownership check passes, it joins room `elder:{elderId}`
+- The current system enforces 1 user = 1 primary active socket session; if the user logs in again, the old session is disconnected
 
 ---
 
@@ -40,7 +42,7 @@ Client connect -> emit authenticate(token, elderId) -> JWT verify -> join user/e
 
 ### fall_detected
 
-**เมื่อไร:** ตรวจพบการหกล้ม (Confirmed)
+**When:** A fall is detected (Confirmed)
 
 ```typescript
 {
@@ -55,13 +57,13 @@ Client connect -> emit authenticate(token, elderId) -> JWT verify -> join user/e
 }
 ```
 
-**Mobile Action:** เปิดหน้า Full-Screen Fall Alert สีแดง
+**Mobile Action:** Opens the red Full-Screen Fall Alert screen
 
 ---
 
 ### event_status_changed
 
-**เมื่อไร:** backend เปลี่ยน lifecycle ของ fall event ระหว่าง suspected / confirmed / cancelled
+**When:** The backend changes the fall event lifecycle between suspected / confirmed / cancelled
 
 ```typescript
 {
@@ -75,13 +77,13 @@ Client connect -> emit authenticate(token, elderId) -> JWT verify -> join user/e
 }
 ```
 
-**Mobile Action:** ใช้เป็น internal guard ระหว่างรอ confirmed/cancelled และ clear pending guard หลังจบ flow; ไม่ใช้แทน `fall_detected` สำหรับ caregiver alert หลัก
+**Mobile Action:** Used as an internal guard while waiting for confirmed/cancelled and to clear the pending guard after the flow ends; not used in place of `fall_detected` for the main caregiver alert
 
 ---
 
 ### heart_rate_update
 
-**เมื่อไร:** ชีพจรปกติ (อัปเดตค่าบน Dashboard)
+**When:** Normal heart rate (updates the value on the Dashboard)
 
 ```typescript
 {
@@ -95,13 +97,13 @@ Client connect -> emit authenticate(token, elderId) -> JWT verify -> join user/e
 }
 ```
 
-**Mobile Action:** อัปเดตค่า BPM บน Dashboard (ไม่แสดง Alert)
+**Mobile Action:** Updates the BPM value on the Dashboard (no Alert shown)
 
 ---
 
 ### device_status_update
 
-**เมื่อไร:** อุปกรณ์ Online/Offline
+**When:** Device goes Online/Offline
 
 ```typescript
 {
@@ -119,13 +121,13 @@ Client connect -> emit authenticate(token, elderId) -> JWT verify -> join user/e
 }
 ```
 
-**Mobile Runtime Filter:** `apps/mobile/hooks/useSocketConnection.ts` ใช้ event นี้เป็น realtime device truth เฉพาะเมื่อ `source === "mqtt_status_update"` และ `serverTimestamp` parse ได้เท่านั้น เพื่อกัน snapshot เก่าหรือ packet ที่ไม่มี server time มาเปลี่ยนสถานะ online/offline ปัจจุบัน
+**Mobile Runtime Filter:** `apps/mobile/hooks/useSocketConnection.ts` uses this event as the realtime device truth only when `source === "mqtt_status_update"` and `serverTimestamp` can be parsed, to prevent old snapshots or packets without server time from changing the current online/offline status
 
 ---
 
 ### system_message
 
-**เมื่อไร:** Broadcast ข้อความจากระบบ (เช่น Maintenance Notice)
+**When:** Broadcast messages from the system (e.g. Maintenance Notice)
 
 ```typescript
 {
@@ -147,9 +149,9 @@ origin: (origin, callback) => {
 };
 ```
 
-- **Mobile App:** ไม่มี Origin header → อนุญาตอัตโนมัติ
-- **Development:** อนุญาต `localhost:*`, `127.0.0.1:*`, LAN IP (`192.168.*`, `10.*`) และ Expo scheme
-- **Production:** ใช้ allowlist จาก `FRONTEND_URL`, `ADMIN_URL`, และ `API_BASE_URL`
+- **Mobile App:** no Origin header → allowed automatically
+- **Development:** allows `localhost:*`, `127.0.0.1:*`, LAN IPs (`192.168.*`, `10.*`) and the Expo scheme
+- **Production:** uses an allowlist from `FRONTEND_URL`, `ADMIN_URL`, and `API_BASE_URL`
 
 ---
 
@@ -193,41 +195,41 @@ socket.on("heart_rate_update", (data) => {
 
 ### Reconnection
 
-Socket.io มี auto-reconnect ใน transport layer อยู่แล้ว แต่แอปปัจจุบันยังมี logic เพิ่มใน `apps/mobile/hooks/useSocketConnection.ts` สำหรับ:
+Socket.io already has auto-reconnect in the transport layer, but the current app adds extra logic in `apps/mobile/hooks/useSocketConnection.ts` for:
 
-- re-authenticate หลัง reconnect
-- stale watchdog สำหรับ mark device offline เมื่อ realtime activity เก่าเกิน 15 วินาที
-- debounce การ mark offline เพื่อกัน connection flapping
-- grace period 8 วินาทีหลัง authenticate ก่อนรับ offline event แรก
+- re-authenticating after reconnect
+- a stale watchdog that marks the device offline when realtime activity is older than 15 seconds
+- debouncing the offline mark to prevent connection flapping
+- an 8-second grace period after authenticate before accepting the first offline event
 
 ### Device Online / Offline Timing
 
-ค่าปัจจุบันของ realtime device status ใช้ heartbeat เป็นตัวหลัก และใช้ MQTT LWT เป็นสัญญาณเสริม:
+The current realtime device status values use the heartbeat as the primary signal and MQTT LWT as a supplementary signal:
 
 | Layer | Timing | Purpose |
 | :---- | :----- | :------ |
-| Firmware status heartbeat | ส่ง `device/{serial}/status` ทุก 5 วินาที | เป็น source หลักในการยืนยันว่าอุปกรณ์ยัง online |
-| Mobile watchdog | ตรวจทุก 1 วินาที และ mark offline เมื่อ realtime activity หายเกิน 15 วินาที | ให้หน้าแอปเปลี่ยน offline โดยอิง heartbeat/heart-rate ล่าสุด ไม่ใช่ socket disconnect อย่างเดียว |
-| Backend / Admin freshness | ถือว่า offline เมื่อ `lastOnline` เกิน 15 วินาที | เป็น threshold กลางสำหรับ API/Admin และกรณีไม่มี socket สด |
-| MQTT LWT | ใช้ทันทีเมื่อ broker trigger | เป็น fast signal เสริม แต่ไม่ใช้เป็น source เดียว เพราะเวลา trigger ขึ้นกับ broker/keepalive/network |
+| Firmware status heartbeat | Sends `device/{serial}/status` every 5 seconds | Primary source for confirming the device is still online |
+| Mobile watchdog | Checks every 1 second and marks offline when realtime activity has been missing for more than 15 seconds | Lets the app switch to offline based on the latest heartbeat/heart-rate, not on socket disconnect alone |
+| Backend / Admin freshness | Treated as offline when `lastOnline` is older than 15 seconds | Central threshold for API/Admin and for cases without a live socket |
+| MQTT LWT | Used immediately when the broker triggers it | Supplementary fast signal, but not used as the sole source because trigger timing depends on the broker/keepalive/network |
 
-ผลทดสอบ hardware วันที่ 2026-04-28:
+Hardware test results on 2026-04-28:
 
 | Case | Observed Timing | Notes |
 | :--- | :-------------- | :---- |
-| Steady online heartbeat | status มาทุกประมาณ 5.0 วินาที | MQTT verbose เห็น `15:44:39.670`, `15:44:44.669`, `15:44:49.679`, `15:44:54.688`, `15:44:59.704`, `15:45:04.700`, `15:45:09.692`, `15:45:14.696`, `15:45:19.703`, `15:45:24.707` |
-| Power/reboot to MQTT online | ประมาณ 5.5 วินาทีจาก boot banner ถึง status online แรก | Serial `15:44:04.143` → MQTT status `15:44:09.647`; ถ้านับจาก `SW_CPU_RESET` คือประมาณ 7.1 วินาที |
-| WiFi connected to MQTT online | ประมาณ 1.8 วินาที | Serial WiFi connected `15:44:07.841` → MQTT status `15:44:09.647` |
-| Mobile expected offline after power-off | ประมาณ 15-16 วินาทีหลัง realtime activity ล่าสุด | MQTT status ล่าสุด `15:45:24.707` → mobile watchdog ควร mark offline แถว `15:45:39.707` ถึง `15:45:40.707` ตามรอบตรวจ 1 วินาที |
-| Backend/Admin expected offline after power-off | ประมาณ 15 วินาทีหลัง status ล่าสุด | MQTT status ล่าสุด `15:45:24.707` → backend/admin threshold แถว `15:45:39.707` |
-| LWT trigger after short reconnect | ประมาณ 24.2 วินาทีหลัง status ล่าสุด | MQTT status ล่าสุด `15:39:04.793` → LWT `15:39:28.970`; เป็นสัญญาณจาก broker ไม่ใช่ตัวหลัก |
-| LWT trigger after power-off | ประมาณ 46.1 วินาทีหลัง status ล่าสุด | MQTT status ล่าสุด `15:45:24.707` → LWT `15:46:10.822`; ช้ากว่า heartbeat timeout จึงใช้เป็น fallback เท่านั้น |
+| Steady online heartbeat | status arrives about every 5.0 seconds | MQTT verbose shows `15:44:39.670`, `15:44:44.669`, `15:44:49.679`, `15:44:54.688`, `15:44:59.704`, `15:45:04.700`, `15:45:09.692`, `15:45:14.696`, `15:45:19.703`, `15:45:24.707` |
+| Power/reboot to MQTT online | about 5.5 seconds from the boot banner to the first online status | Serial `15:44:04.143` → MQTT status `15:44:09.647`; counting from `SW_CPU_RESET` it is about 7.1 seconds |
+| WiFi connected to MQTT online | about 1.8 seconds | Serial WiFi connected `15:44:07.841` → MQTT status `15:44:09.647` |
+| Mobile expected offline after power-off | about 15-16 seconds after the latest realtime activity | Latest MQTT status `15:45:24.707` → mobile watchdog should mark offline around `15:45:39.707` to `15:45:40.707` given the 1-second check cycle |
+| Backend/Admin expected offline after power-off | about 15 seconds after the latest status | Latest MQTT status `15:45:24.707` → backend/admin threshold around `15:45:39.707` |
+| LWT trigger after short reconnect | about 24.2 seconds after the latest status | Latest MQTT status `15:39:04.793` → LWT `15:39:28.970`; a signal from the broker, not the primary one |
+| LWT trigger after power-off | about 46.1 seconds after the latest status | Latest MQTT status `15:45:24.707` → LWT `15:46:10.822`; slower than the heartbeat timeout, so used only as a fallback |
 
 Expected UX:
 
-- หน้าแอปควรแสดง offline ภายในประมาณ 15-16 วินาทีหลัง realtime activity ล่าสุดหาย
-- Backend/Admin ควรสะท้อน offline ไม่เกินประมาณ 15 วินาทีหลัง status ล่าสุด
-- เมื่อเปิดเครื่องกลับมา ถ้า WiFi/MQTT พร้อมแล้ว หน้าแอปควรกลับ online หลัง backend ได้รับ status แรก โดย hardware test รอบนี้อยู่ราว 5-6 วินาทีจาก boot ช่วงปกติ
+- The app should show offline within about 15-16 seconds after the latest realtime activity stops
+- Backend/Admin should reflect offline within about 15 seconds after the latest status
+- When the device is powered back on, if WiFi/MQTT is ready, the app should return to online after the backend receives the first status; in this hardware test round that was around 5-6 seconds from boot under normal conditions
 
 ---
 

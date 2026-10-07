@@ -1,5 +1,7 @@
 # Development Commands
 
+[English](development-commands.md) · [ภาษาไทย](development-commands.th.md)
+
 ## Doc Meta
 
 - Audience: Developers, QA

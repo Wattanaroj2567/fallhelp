@@ -1,5 +1,7 @@
 # Cross-Platform Development
 
+[English](cross-platform-development.md) · [ภาษาไทย](cross-platform-development.th.md)
+
 ## Doc Meta
 
 - Audience: Developers, QA

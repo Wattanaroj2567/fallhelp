@@ -1,5 +1,7 @@
 # Device Simulator
 
+[English](README.md) · [ภาษาไทย](README.th.md)
+
 Web app that pretends to be the FallHelp neck device. It publishes to the same MQTT topics as the ESP32 through Mosquitto's WebSocket listener.
 
 | Button | Topic | Payload |

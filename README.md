@@ -432,6 +432,8 @@ Per-app commands, coverage, infra-scan modes and the sensor lab: [docs/testing/r
 
 ## Documentation
 
+Every document is available in English (`.md`) and Thai (`.th.md`), except the AI context docs in `docs/ai/`.
+
 Use `npm run docs:lint` to validate the main Markdown docs in this repository, and use
 `npm run docs:lint:fix` to auto-fix spacing and blank-line issues where possible.
 

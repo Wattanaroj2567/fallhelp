@@ -1,5 +1,7 @@
 # ESP32 System Operation Guide
 
+[English](Esp32SystemOperationGuide.md) · [ภาษาไทย](Esp32SystemOperationGuide.th.md)
+
 ## Doc Meta
 
 - Audience: Hardware Dev, Backend Dev, QA
@@ -11,24 +13,24 @@
 
 ## Overview
 
-ไฟล์นี้เป็น runbook สำหรับตรวจ `main_firmware` แบบระบบเต็ม ตั้งแต่ boot, BLE provisioning, WiFi, MQTT, sensor readiness, ไปจนถึง fall flow
+This file is the runbook for checking `main_firmware` as a full system, from boot, BLE provisioning, WiFi, MQTT, and sensor readiness through to the fall flow.
 
-ใช้ไฟล์นี้เมื่อ:
+Use this file when:
 
-1. ทำงานกับ `main_firmware`
-2. ต้องพิสูจน์ว่า device เชื่อมกับ mobile/backend ได้
-3. ต้องยืนยัน flow `suspected_fall -> fall_cancelled / fall_confirmed`
+1. Working with `main_firmware`
+2. You need to prove the device can connect to mobile/backend
+3. You need to confirm the flow `suspected_fall -> fall_cancelled / fall_confirmed`
 
-ไม่ใช้ไฟล์นี้เป็นคู่มือ Fall Detection Sensor Lab หรือ sensor tuning
+Do not use this file as the Fall Detection Sensor Lab or sensor tuning manual.
 
 ---
 
 ## System Scope
 
-`main_firmware` ครอบคลุม:
+`main_firmware` covers:
 
-1. BLE provisioning เมื่อยังไม่มี WiFi config
-2. WiFi และ MQTT runtime connection
+1. BLE provisioning when there is no WiFi config yet
+2. WiFi and MQTT runtime connection
 3. MPU6050 fall detection
 4. XD-58C heart rate monitoring
 5. GPIO27 cancel button
@@ -48,14 +50,14 @@ Runtime code is split across the `main_firmware/` folder:
 ## Step 1 - Boot And Runtime Check
 
 1. Upload `firmware/esp32/src/main_firmware/main_firmware.ino` (Arduino IDE will compile all `.ino` files in the folder together)
-2. เปิด Serial Monitor `115200`
-3. รัน `info`
-4. ตรวจค่า fall cancel timeout ใน output ของ `info`
+2. Open Serial Monitor at `115200`
+3. Run `info`
+4. Check the fall cancel timeout value in the `info` output
 
-ควรเห็น:
+You should see:
 
-1. board boot สำเร็จ
-2. sensor initialize ผ่าน
+1. The board boots successfully
+2. Sensors initialize successfully
 3. cancel timeout = `15000 ms`
 4. WiFi provisioning attempts = `40`
 
@@ -63,56 +65,58 @@ Runtime code is split across the `main_firmware/` folder:
 
 ## Step 2 - BLE Provisioning Path
 
-ใช้เมื่อ device ยังไม่มี WiFi config ใน NVS:
+Use when the device has no WiFi config in NVS yet:
 
-1. device เข้า BLE advertising/provisioning mode
-2. mobile app scan เจอ ESP32 service
-3. mobile เขียน SSID/password
-4. device ออกจาก BLE provisioning แล้วเริ่ม WiFi connect
+1. The device enters BLE advertising/provisioning mode
+2. The mobile app scans and finds the ESP32 service
+3. The mobile app writes the SSID/password
+4. The device leaves BLE provisioning and starts WiFi connect
 
-ถ้า device มี WiFi config อยู่แล้ว ต้องข้าม BLE provisioning และเริ่ม WiFi/MQTT auto-connect
+If the device already has a WiFi config, it must skip BLE provisioning and start WiFi/MQTT auto-connect.
 
 ---
 
 ## Step 3 - WiFi And MQTT Check
 
-เลือก MQTT profile ใน `firmware/esp32/src/main_firmware/mqtt_secrets.h` ก่อน upload:
+Choose the MQTT profile in `firmware/esp32/src/main_firmware/mqtt_secrets.h` before uploading:
 
-1. HiveMQ Cloud: `HIVEMQ_PORT 8883`, `FALLHELP_MQTT_USE_TLS 1`, ใส่ username/password
-2. Local Mosquitto: `HIVEMQ_PORT 1883`, `FALLHELP_MQTT_USE_TLS 0`, no-auth ให้ตั้ง username/password เป็น `""`
+1. HiveMQ Cloud: `HIVEMQ_PORT 8883`, `FALLHELP_MQTT_USE_TLS 1`, set username/password
+2. Local Mosquitto: `HIVEMQ_PORT 1883`, `FALLHELP_MQTT_USE_TLS 0`, for no-auth set username/password to `""`
 
-1. ยืนยันว่าได้ IP address
-2. ยืนยันว่า MQTT broker connect สำเร็จ
-3. ถ้าใช้ local tooling ให้เปิด MQTT monitor
-4. ยืนยันว่า status/heartbeat ออกตามรอบ
+Then check the connection:
 
-ถ้า MQTT ไม่ขึ้น ให้ตรวจ:
+1. Confirm that an IP address is obtained
+2. Confirm that the MQTT broker connection succeeds
+3. If using local tooling, open the MQTT monitor
+4. Confirm that status/heartbeat is published on schedule
+
+If MQTT does not come up, check:
 
 1. broker host/port
 2. TLS setting
-3. username/password หรือ local no-auth profile
-4. network route ระหว่าง device กับ broker
+3. username/password or the local no-auth profile
+4. network route between the device and the broker
 
-อย่า commit real credentials ลง source หรือ docs
+Do not commit real credentials to source or docs.
 
 ---
 
 ## Step 4 - Sensor Readiness
 
-ตรวจ sensor ตาม owner docs:
+Check the sensors according to their owner docs:
 
-| Component | Owner doc | สิ่งที่ต้องเห็น |
+| Component | Owner doc | What you should see |
 | --- | --- | --- |
-| MPU6050 | [../components/mpu6050.md](../components/mpu6050.md) | init ผ่าน, ไม่อยู่ใน `mpu on` diagnostic mode ระหว่าง fall test |
-| XD-58C | [../components/pulse-sensor.md](../components/pulse-sensor.md) | raw/heart rate ไม่ค้างผิดปกติ |
-| Cancel button | [../components/cancel-button.md](../components/cancel-button.md) | GPIO27 พร้อมใช้งาน |
-| Speaker | [../components/speaker-alert.md](../components/speaker-alert.md) | AlertSystem init และ output ไม่ค้างเสียง |
+| MPU6050 | [../components/mpu6050.md](../components/mpu6050.md) | init passes, not in `mpu on` diagnostic mode during the fall test |
+| XD-58C | [../components/pulse-sensor.md](../components/pulse-sensor.md) | raw/heart rate is not abnormally stuck |
+| Cancel button | [../components/cancel-button.md](../components/cancel-button.md) | GPIO27 is ready |
+| Speaker | [../components/speaker-alert.md](../components/speaker-alert.md) | AlertSystem init and output not stuck sounding |
 
 ---
 
 ## Step 5 - Fall Flow Check
 
-ลำดับที่ต้องพิสูจน์:
+Sequence to prove:
 
 ```text
 suspected_fall
@@ -122,58 +126,58 @@ suspected_fall
   -> timeout without cancel -> fall_confirmed
 ```
 
-กติกาที่ต้องรักษา:
+Rules to preserve:
 
-1. `Cancel` เป็น device-only action ผ่าน GPIO27
-2. caregiver app ทำได้แค่ acknowledge/reset view
-3. push notification ที่ส่งไปแล้วไม่ถูก retract
-4. `fall_cancelled` ต้องมาจาก device button flow เท่านั้น
+1. `Cancel` is a device-only action via GPIO27
+2. The caregiver app can only acknowledge/reset the view
+3. Push notifications that have already been sent are not retracted
+4. `fall_cancelled` must come only from the device button flow
 
 ---
 
 ## Serial Commands
 
-| คำสั่ง | ใช้ทำอะไร |
+| Command | Purpose |
 | --- | --- |
-| `info` | ดู runtime, WiFi, MQTT, cancel timeout, และ WiFi provisioning attempts |
-| `sensor status` | เช็ก sensor manager ถ้า firmware build รองรับ |
-| `sim fall` | จำลอง fall flow เพื่อเช็ก alert/cancel |
-| `speaker` / `speaker status` | ทดสอบ speaker output ถ้า firmware build รองรับ |
-| `reset_nvs` | ล้าง WiFi/MQTT config แล้ว reboot |
-| `reboot` | reboot board |
+| `info` | Show runtime, WiFi, MQTT, cancel timeout, and WiFi provisioning attempts |
+| `sensor status` | Check the sensor manager if the firmware build supports it |
+| `sim fall` | Simulate the fall flow to check alert/cancel |
+| `speaker` / `speaker status` | Test speaker output if the firmware build supports it |
+| `reset_nvs` | Clear WiFi/MQTT config and reboot |
+| `reboot` | Reboot the board |
 
-ค่า fall threshold ของ `main_firmware` เป็น compile-time values ใน `FallDetectionConfig.ino`; คำสั่ง `fall config` มีไว้ใน `sensor_tuning` สำหรับรอบ Sensor Lab เท่านั้น
+The fall threshold values of `main_firmware` are compile-time values in `FallDetectionConfig.ino`; the `fall config` command exists in `sensor_tuning` for Sensor Lab rounds only.
 
 ---
 
 ## Pass / Fail Criteria
 
-ผ่านเมื่อ:
+Passes when:
 
-1. boot สม่ำเสมอ
-2. BLE provisioning ใช้ได้เมื่อไม่มี WiFi config
-3. WiFi + MQTT connect ได้จริง
-4. sensor readiness ผ่าน
-5. fall flow ครบทั้ง cancel และ confirm
+1. Boot is consistent
+2. BLE provisioning works when there is no WiFi config
+3. WiFi + MQTT actually connect
+4. Sensor readiness passes
+5. The fall flow is complete for both cancel and confirm
 
-ยังไม่ผ่านเมื่อ:
+Does not pass yet when:
 
-1. BLE ค้างหรือ provisioning ไม่สำเร็จ
-2. WiFi สำเร็จแต่ MQTT ไม่ขึ้น
-3. `suspected_fall` เกิดแต่ speaker/cancel ไม่สัมพันธ์
-4. กด GPIO27 แล้วไม่เกิด `fall_cancelled`
-5. timeout แล้วไม่เกิด `fall_confirmed`
+1. BLE hangs or provisioning fails
+2. WiFi succeeds but MQTT does not come up
+3. `suspected_fall` occurs but speaker/cancel are not consistent with it
+4. Pressing GPIO27 does not produce `fall_cancelled`
+5. Timeout does not produce `fall_confirmed`
 
 ---
 
 ## Evidence To Collect
 
-1. Serial log ของ boot และ `info`
-2. Serial/MQTT log ของ WiFi + MQTT connect
-3. Serial log ของ fall flow
-4. backend/mobile observation เฉพาะ system integration
+1. Serial log of boot and `info`
+2. Serial/MQTT log of WiFi + MQTT connect
+3. Serial log of the fall flow
+4. backend/mobile observation for system integration only
 
-ไม่ต้องใช้ Fall Detection Sensor Lab CSV เพื่อพิสูจน์ `main_firmware`
+Fall Detection Sensor Lab CSV is not needed to prove `main_firmware`.
 
 ---
 

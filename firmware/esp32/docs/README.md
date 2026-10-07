@@ -1,5 +1,7 @@
 # ESP32 Firmware Docs
 
+[English](README.md) · [ภาษาไทย](README.th.md)
+
 ## Doc Meta
 
 - Audience: Hardware Dev, Backend Dev, QA
@@ -11,78 +13,78 @@
 
 ## Overview
 
-เอกสารชุดนี้เป็นแผนที่กลางของงาน ESP32 ใน FallHelp ครอบคลุมทั้ง firmware ระบบหลัก, firmware สำหรับจูนฮาร์ดแวร์, และ Sensor Lab
+This doc set is the central map of ESP32 work in FallHelp. It covers the main system firmware, the hardware tuning firmware, and the Sensor Lab.
 
-หลักการอ่านมีดังนี้:
+Reading principles:
 
-1. เริ่มจากหน้า index นี้เพื่อเลือกงานที่กำลังจะทำ
-2. เปิด `guide` ที่ตรงกับโหมดการทำงานก่อนเสมอ
-3. เปิด `component guide` เฉพาะเซนเซอร์หรืออุปกรณ์ที่กำลังแตะจริง
-4. ถ้าเป็น Fall Detection Sensor Lab ให้ไปที่ `fall_detection_sensor_lab/` สำหรับ workflow ละเอียด
-5. ถ้าต้องอธิบายเหตุผลเชิงทฤษฎีหรืออ้างงานวิจัย ค่อยไป `references/`
+1. Start from this index page to choose the task you are about to do
+2. Always open the `guide` that matches the operating mode first
+3. Open a `component guide` only for the sensor or device you are actually touching
+4. For the Fall Detection Sensor Lab, go to `fall_detection_sensor_lab/` for the detailed workflow
+5. Only when you need to explain theoretical rationale or cite research, go to `references/`
 
 ---
 
 ## Reading Path By Goal
 
-| งานที่ต้องทำ | ให้เปิดไฟล์นี้ก่อน | ไปต่อเมื่อ |
+| Task | Open this file first | Continue when |
 | --- | --- | --- |
-| เริ่มรอบทดสอบหน้างาน | [guides/PracticalOperationGuide.md](guides/PracticalOperationGuide.md) | ต้องเลือกโหมด firmware หรือเตรียมหลักฐาน |
-| เชื่อมระบบเต็มกับ backend/mobile | [guides/Esp32SystemOperationGuide.md](guides/Esp32SystemOperationGuide.md) | ต้องเช็ก BLE, WiFi, MQTT, fall flow |
-| จูนเซนเซอร์แบบไม่พึ่ง backend | [guides/SensorHardwareOnlyTuningGuide.md](guides/SensorHardwareOnlyTuningGuide.md) | ต้องแยก Pulse/MPU และเก็บหลักฐานก่อน-หลัง |
-| เก็บข้อมูล Fall Detection Sensor Lab | [../fall_detection_sensor_lab/README.md](../fall_detection_sensor_lab/README.md) | ต้องใช้ Node-RED Dashboard, CSV, หรือ protocol ของ lab |
-| จูนการล้มจาก MPU6050 | [components/mpu6050.md](components/mpu6050.md) | ต้องเข้าใจ SVM, postureDelta, threshold, หรือ fall state |
-| จูนชีพจรจาก XD-58C | [components/pulse-sensor.md](components/pulse-sensor.md) | ต้องตัดสินใจเรื่อง signal quality หรือ accepted rate |
-| เช็กปุ่มยกเลิก | [components/cancel-button.md](components/cancel-button.md) | ต้องพิสูจน์ `fall_cancelled` ภายใน 15 วินาที |
-| เช็กเสียงเตือน | [components/speaker-alert.md](components/speaker-alert.md) | ต้องพิสูจน์ว่าเสียงเริ่มและหยุดถูกจังหวะ |
-| หาเหตุผลเชิงทฤษฎีหรือคำศัพท์ | [references/README.md](references/README.md) | ต้องอ้างสูตร, metric, หรือ research |
+| Start a field test round | [guides/PracticalOperationGuide.md](guides/PracticalOperationGuide.md) | You need to choose a firmware mode or prepare evidence |
+| Connect the full system with backend/mobile | [guides/Esp32SystemOperationGuide.md](guides/Esp32SystemOperationGuide.md) | You need to check BLE, WiFi, MQTT, fall flow |
+| Tune sensors without relying on the backend | [guides/SensorHardwareOnlyTuningGuide.md](guides/SensorHardwareOnlyTuningGuide.md) | You need to separate Pulse/MPU and collect before/after evidence |
+| Collect Fall Detection Sensor Lab data | [../fall_detection_sensor_lab/README.md](../fall_detection_sensor_lab/README.md) | You need the Node-RED Dashboard, CSV, or the lab protocol |
+| Tune fall detection from the MPU6050 | [components/mpu6050.md](components/mpu6050.md) | You need to understand SVM, postureDelta, threshold, or fall state |
+| Tune heart rate from the XD-58C | [components/pulse-sensor.md](components/pulse-sensor.md) | You need to decide on signal quality or accepted rate |
+| Check the cancel button | [components/cancel-button.md](components/cancel-button.md) | You need to prove `fall_cancelled` within 15 seconds |
+| Check the alert sound | [components/speaker-alert.md](components/speaker-alert.md) | You need to prove the sound starts and stops at the right time |
+| Find theoretical rationale or terminology | [references/README.md](references/README.md) | You need to cite a formula, metric, or research |
 
 ---
 
 ## Document Ownership
 
-| หมวด | หน้าที่ | ไฟล์หลัก |
+| Category | Role | Main files |
 | --- | --- | --- |
-| Runbook | ขั้นตอนใช้งานจริงแบบ step-by-step | `guides/*.md` |
-| Component Guide | วิธีทดสอบ/ปรับค่ารายอุปกรณ์ | `components/*.md` |
-| Reference | ทฤษฎี, คำศัพท์, งานวิจัยอ้างอิง | `references/*.md` |
-| Sensor Lab | ขั้นตอนเก็บข้อมูล Fall Detection Sensor Lab และ CSV pipeline | `../fall_detection_sensor_lab/` |
+| Runbook | Step-by-step real-world operating procedures | `guides/*.md` |
+| Component Guide | How to test/tune each device | `components/*.md` |
+| Reference | Theory, terminology, cited research | `references/*.md` |
+| Sensor Lab | Fall Detection Sensor Lab data collection procedure and CSV pipeline | `../fall_detection_sensor_lab/` |
 
-กติกา:
+Rules:
 
-- ถ้าต้อง “ลงมือทำ” ให้เริ่มที่ `guides/`
-- ถ้าต้อง “ปรับค่า/ดีบักอุปกรณ์” ให้ไป `components/`
-- ถ้าต้อง “อธิบายเหตุผลว่าทำไมใช้ค่านี้” ให้ไป `references/`
+- If you need to "do the work", start at `guides/`
+- If you need to "tune/debug a device", go to `components/`
+- If you need to "explain why this value is used", go to `references/`
 
 ---
 
 ## Step-by-Step Workflow
 
-### Step 1 — เลือกโหมดงาน
+### Step 1 — Choose the work mode
 
-1. `main_firmware` — firmware หลักของ prototype สำหรับ BLE, WiFi, MQTT, fall flow, heart rate, และ alert sound
-2. `sensor_tuning` — firmware แยกสำหรับจูนฮาร์ดแวร์ ลดตัวแปรจาก backend/mobile
-3. `fall_detection_sensor_lab` — lab module สำหรับ Basic Activity Collection และ CSV pipeline
-4. ถ้าไม่แน่ใจ ให้เริ่มจาก [guides/PracticalOperationGuide.md](guides/PracticalOperationGuide.md)
+1. `main_firmware` — the main prototype firmware for BLE, WiFi, MQTT, fall flow, heart rate, and alert sound
+2. `sensor_tuning` — separate firmware for hardware tuning, reducing variables from backend/mobile
+3. `fall_detection_sensor_lab` — lab module for Basic Activity Collection and the CSV pipeline
+4. If unsure, start from [guides/PracticalOperationGuide.md](guides/PracticalOperationGuide.md)
 
-### Step 2 — เปิด owner doc ให้ถูก
+### Step 2 — Open the right owner doc
 
-1. งานระบบเต็ม → [guides/Esp32SystemOperationGuide.md](guides/Esp32SystemOperationGuide.md)
-2. งานจูนฮาร์ดแวร์ → [guides/SensorHardwareOnlyTuningGuide.md](guides/SensorHardwareOnlyTuningGuide.md)
-3. งานรายเซนเซอร์ → component guide ที่เกี่ยวข้อง
+1. Full system work → [guides/Esp32SystemOperationGuide.md](guides/Esp32SystemOperationGuide.md)
+2. Hardware tuning work → [guides/SensorHardwareOnlyTuningGuide.md](guides/SensorHardwareOnlyTuningGuide.md)
+3. Per-sensor work → the relevant component guide
 
-### Step 3 — เตรียมหลักฐาน
+### Step 3 — Prepare evidence
 
-1. ใช้ `capture_commands.md` บันทึกคำสั่งทุกครั้ง
-2. ใช้ Serial/backend/mobile/MQTT logs ตามประเภทงาน
-3. ใช้ CSV จาก Node-RED เฉพาะงาน Sensor Lab หรือ sensor_tuning ที่ต้องเก็บข้อมูลเป็นตาราง
-4. ใช้ `session_notes.md` เพื่อสรุปผลและเหตุผลของการปรับค่า
+1. Use `capture_commands.md` to record every command
+2. Use Serial/backend/mobile/MQTT logs according to the type of work
+3. Use CSV from Node-RED only for Sensor Lab work or sensor_tuning work that needs tabular data
+4. Use `session_notes.md` to summarize results and the reasons for tuning changes
 
-### Step 4 — สรุปผลรอบ
+### Step 4 — Summarize the round
 
-1. ห้ามสรุปโดยไม่มี log ดิบ
-2. 1 รอบ ปรับได้ 1 ค่าเท่านั้น
-3. ถ้าไม่ผ่านเกณฑ์ ให้บอกชัดว่า failed เพราะอะไร ไม่ใช่แค่ “ยังไม่ดี”
+1. Do not draw conclusions without raw logs
+2. Only 1 value may be changed per round
+3. If the criteria are not met, state clearly why it failed, not just "not good yet"
 
 ---
 

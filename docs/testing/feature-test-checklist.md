@@ -1,5 +1,7 @@
 # Feature Test Checklist — FallHelp
 
+[English](feature-test-checklist.md) · [ภาษาไทย](feature-test-checklist.th.md)
+
 ## Doc Meta
 
 - Audience: Dev / QA / Reviewer
@@ -11,7 +13,7 @@
 
 ## 1. Verification Snapshot
 
-ตัวเลขด้านล่างวัดจากโค้ดจริง ณ วันที่อัปเดตเอกสารนี้ ไม่ใช่ตัวเลขจากแผนเดิม
+The numbers below were measured from the actual code as of this document's update date, not taken from the original plan.
 
 | Module  | Test files | Test declarations | Last command run                                                                  | Result                                                  |
 | ------- | ---------- | ----------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------- |
@@ -19,29 +21,29 @@
 | Mobile  | 43         | 224               | `npm run --prefix apps/mobile test -- --watchman=false --runInBand`               | PASS: 43 suites / 224 tests                             |
 | Admin   | 4          | 10                | `npm run --prefix apps/admin test -- --runInBand --watchman=false`                | PASS: 4 suites / 10 tests                               |
 
-หมายเหตุ:
+Notes:
 
-- Backend coverage script ต้องรันใน shell ที่อนุญาตให้ `supertest` bind local server ได้; sandbox ปกติจะติด `listen EPERM 0.0.0.0`
-- Backend test declaration count รวม integration tests ด้วยและนับเฉพาะ `it(`/`test(` calls จริง ไม่รวม method call เช่น `.test(...)`; coverage command ด้านบนเป็น Jest unit/config/route/service coverage ตาม `jest.config.cjs`
-- Mobile full test ผ่านครบ แต่ Jest ยังมี open-handle warning หลังจบชุดทดสอบ ถ้าจะ cleanup test runtime ให้รันเพิ่มด้วย `--detectOpenHandles`
-- Admin test default ติด Watchman ใน sandbox ต้องเพิ่ม `--watchman=false`
+- The backend coverage script must run in a shell that allows `supertest` to bind a local server; a normal sandbox fails with `listen EPERM 0.0.0.0`
+- The backend test declaration count includes integration tests and counts only real `it(`/`test(` calls, not method calls such as `.test(...)`; the coverage command above is Jest unit/config/route/service coverage per `jest.config.cjs`
+- The full mobile test run passes, but Jest still shows an open-handle warning after the suite finishes; to clean up the test runtime, also run with `--detectOpenHandles`
+- The default admin test run gets stuck on Watchman in the sandbox; add `--watchman=false`
 
 ---
 
 ## 2. Feature Coverage Matrix
 
-สัญลักษณ์:
+Legend:
 
-- ✅ มี automated test ตรงกับโค้ดจริง
-- ◐ มี test บางส่วนหรือ indirect coverage
-- ⬜ มี test แต่ต้องรันใน environment ที่มี DB/local bind พร้อม
-- — ไม่เกี่ยวข้องกับ module นั้น
-- ❌ ยังไม่พบ automated test เฉพาะจุด
+- ✅ Automated test exists and matches the actual code
+- ◐ Partial test or indirect coverage
+- ⬜ Test exists but must run in an environment with DB/local bind available
+- — Not applicable to that module
+- ❌ No dedicated automated test found yet
 
 | Feature / Runtime Flow                  | Backend Unit | Backend Integration | Mobile | Admin | Notes                                                                                        |
 | --------------------------------------- | :----------: | :-----------------: | :----: | :---: | -------------------------------------------------------------------------------------------- |
 | Authentication: register/login/logout   |      ✅      |         ✅          |   ✅   |  ✅   | Backend auth controller/service + mobile auth routes + admin login                           |
-| OTP forgot/reset password               |      ✅      |         ✅          |   ✅   |   —   | Mobile รวมใน `password-reset.test.tsx`                                                       |
+| OTP forgot/reset password               |      ✅      |         ✅          |   ✅   |   —   | Mobile covered in `password-reset.test.tsx`                                                  |
 | User profile / password / push token    |      ✅      |         ✅          |   ✅   |   —   | Mobile profile tests cover account/edit/password/email/phone UI                              |
 | Elder profile CRUD                      |      ✅      |         ✅          |   ✅   |   —   | Admin no longer has elder management or dashboard summary scope                              |
 | Device lookup and pairing               |      ✅      |         ✅          |   ✅   |  ✅   | Mobile covers pairing route/action; admin covers device create/list/delete                   |
@@ -87,7 +89,7 @@
 
 ### Coverage Script Result
 
-Last Updated: May 10, 2026 — วัดจาก `npm run --prefix apps/backend-api test:coverage -- --runInBand --watchman=false`
+Last Updated: May 10, 2026 — measured with `npm run --prefix apps/backend-api test:coverage -- --runInBand --watchman=false`
 
 | Metric     | Coverage |
 | ---------- | -------- |
@@ -96,7 +98,7 @@ Last Updated: May 10, 2026 — วัดจาก `npm run --prefix apps/backend
 | Functions  | 96.96%   |
 | Lines      | 97.72%   |
 
-Jest result: 47 suites passed / 824 tests passed. ตัวเลขนี้เป็น unit/config/route/service coverage จาก `jest.config.cjs`; integration API tests อยู่ใน `jest.integration.config.cjs` และนับใน inventory แยกต่างหาก.
+Jest result: 47 suites passed / 824 tests passed. These numbers are unit/config/route/service coverage from `jest.config.cjs`; integration API tests live in `jest.integration.config.cjs` and are counted separately in the inventory.
 
 ### Commands
 
@@ -331,7 +333,7 @@ Admin app currently has only two page source files: `Devices.tsx` and `Login.tsx
 
 ## 7. Release Verification Checklist
 
-ใช้ checklist นี้ก่อน push เข้า `main` หรือปิด milestone ที่แตะ logic:
+Use this checklist before pushing to `main` or closing a milestone that touches logic:
 
 - [x] Backend touched: run `npm run --prefix apps/backend-api test:ci` in a normal local shell
 - [x] Backend API/DB touched: run `npm run --prefix apps/backend-api test:integration`

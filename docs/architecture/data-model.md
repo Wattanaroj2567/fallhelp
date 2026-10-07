@@ -1,5 +1,7 @@
 # Data Model
 
+[English](data-model.md) · [ภาษาไทย](data-model.th.md)
+
 ## Doc Meta
 
 - Audience: Backend Dev / Data Analyst / Thesis Reviewer
@@ -11,7 +13,7 @@
 
 ## Overview
 
-FallHelp ใช้ **PostgreSQL** เป็น Database หลักสำหรับ Event และข้อมูลเชิงสัมพันธ์ โดยมี 7 Models หลักที่เชื่อมโยงกัน
+FallHelp uses **PostgreSQL** as the main database for Events and relational data, with 7 core Models linked together.
 
 ---
 
@@ -116,50 +118,50 @@ erDiagram
 
 ## Notification -> Event Relation Note
 
-`notifications` ใช้ FK แบบ required ผ่าน `eventId -> events.id`:
+`notifications` uses a required FK via `eventId -> events.id`:
 
-1. Notification ทุกตัวใน phase ปัจจุบันต้องมาจาก event จริง
-2. Query relation จาก Notification ไป Event ได้ตรงด้วย relational model
-3. ถ้า Event ถูกลบ ให้ลบ Notification ตามด้วย `onDelete: Cascade` เพื่อไม่ทิ้ง record ที่ไม่มีต้นทาง
+1. Every Notification in the current phase must originate from a real event
+2. The relation from Notification to Event can be queried directly through the relational model
+3. If an Event is deleted, its Notifications are deleted too via `onDelete: Cascade`, so no orphaned records are left behind
 
 ## User -> Elder Relation Note
 
-ความสัมพันธ์ `User -> Elder` ใน schema ปัจจุบันควรอ่านเป็น **1 Mandatory to 1 Optional**
-ไม่ใช่ `1 to 1` แบบบังคับทั้งสองฝั่ง ด้วยเหตุผลดังนี้:
+The `User -> Elder` relationship in the current schema should be read as **1 Mandatory to 1 Optional**,
+not a `1 to 1` that is mandatory on both sides, for these reasons:
 
-1. `Elder.userId` เป็น required และ unique
-   - แปลว่า Elder ทุกคนต้องมี User เจ้าของแน่ ๆ 1 คน
-2. ฝั่ง `User` ยังเป็น optional
-   - แปลว่า User 1 คนอาจยังไม่มี Elder ก็ได้ในระดับ schema
-3. เหตุผลเชิงระบบ:
-   - รองรับช่วง onboarding ที่สมัครบัญชีก่อนกรอกข้อมูลผู้สูงอายุ
-   - รองรับบัญชี `ADMIN` ที่ไม่ได้ผูกกับ Elder
+1. `Elder.userId` is required and unique
+   - Every Elder must have exactly 1 owning User
+2. The `User` side is still optional
+   - A User may have no Elder yet at the schema level
+3. System-level reasons:
+   - Supports the onboarding period where an account is registered before the elder's information is filled in
+   - Supports `ADMIN` accounts that are not linked to any Elder
 
-ดังนั้นให้แยกความเข้าใจ 2 ระดับ:
+So keep two levels of understanding separate:
 
-- **Schema truth:** `User` อาจมี Elder 0 หรือ 1 คน
-- **Business expectation:** ผู้ใช้บทบาท `CAREGIVER` ควรมี Elder ครบเมื่อ setup เสร็จแล้ว
+- **Schema truth:** a `User` may have 0 or 1 Elder
+- **Business expectation:** a user with the `CAREGIVER` role should have an Elder once setup is complete
 
-สรุป:
+Summary:
 
-- ฝั่ง `Elder` -> `User` = mandatory
-- ฝั่ง `User` -> `Elder` = optional
+- `Elder` -> `User` side = mandatory
+- `User` -> `Elder` side = optional
 
 ---
 
 ## Cascade & Deletion Rules
 
-เมื่อลบ Record หลัก → Record ที่เชื่อมโยงจะทำอย่างไร:
+What happens to linked records when a parent record is deleted:
 
-| Parent     | Child            | Rule      | ผลลัพธ์                            |
-| :--------- | :--------------- | :-------- | :--------------------------------- |
-| **Elder**  | Event            | `Cascade` | ลบประวัติเหตุการณ์ทั้งหมด          |
-| **Elder**  | EmergencyContact | `Cascade` | ลบผู้ติดต่อฉุกเฉินทั้งหมด          |
-| **Elder**  | Device           | `SetNull` | ยกเลิกการผูกอุปกรณ์ (ไม่ลบ Device) |
-| **User**   | Elder            | `Cascade` | ลบ Elder ที่ดูแลทั้งหมด            |
-| **User**   | Notification     | `Cascade` | ลบแจ้งเตือนทั้งหมด                 |
-| **User**   | AuthOtp          | `Cascade` | ลบ OTP ทั้งหมด                     |
-| **Device** | Event            | `Cascade` | ลบ Events ทั้งหมด                  |
+| Parent     | Child            | Rule      | Result                                          |
+| :--------- | :--------------- | :-------- | :---------------------------------------------- |
+| **Elder**  | Event            | `Cascade` | Deletes all event history                       |
+| **Elder**  | EmergencyContact | `Cascade` | Deletes all emergency contacts                  |
+| **Elder**  | Device           | `SetNull` | Unpairs the device (the Device is not deleted)  |
+| **User**   | Elder            | `Cascade` | Deletes all Elders under their care             |
+| **User**   | Notification     | `Cascade` | Deletes all notifications                       |
+| **User**   | AuthOtp          | `Cascade` | Deletes all OTPs                                |
+| **Device** | Event            | `Cascade` | Deletes all Events                              |
 
 ---
 
@@ -193,21 +195,21 @@ erDiagram
 
 ### Unique Constraints
 
-| Table                | Constraint            | Purpose                          |
-| :------------------- | :-------------------- | :------------------------------- |
-| `users`              | `email`               | ป้องกัน Email ซ้ำ                |
-| `users`              | `phone`               | ป้องกันเบอร์โทรซ้ำ               |
-| `elders`             | `userId`              | 1 User : 1 Elder                 |
-| `devices`            | `deviceCode`          | QR Code ไม่ซ้ำ                   |
-| `devices`            | `serialNumber`        | Serial Number ไม่ซ้ำ             |
-| `devices`            | `elderId`             | 1 Elder : 1 Device               |
-| `emergency_contacts` | `(elderId, priority)` | Priority ไม่ซ้ำใน Elder เดียวกัน |
+| Table                | Constraint            | Purpose                                   |
+| :------------------- | :-------------------- | :---------------------------------------- |
+| `users`              | `email`               | Prevents duplicate emails                 |
+| `users`              | `phone`               | Prevents duplicate phone numbers          |
+| `elders`             | `userId`              | 1 User : 1 Elder                          |
+| `devices`            | `deviceCode`          | Unique QR Code                            |
+| `devices`            | `serialNumber`        | Unique Serial Number                      |
+| `devices`            | `elderId`             | 1 Elder : 1 Device                        |
+| `emergency_contacts` | `(elderId, priority)` | Unique priority within the same Elder     |
 
 ---
 
 ## Event Data Model
 
-ระบบ Event เป็นหัวใจของการเก็บข้อมูลจากอุปกรณ์ IoT บน **PostgreSQL** โดยออกแบบดัชนีตามเวลาเพื่อรองรับการ Query ข้อมูลย้อนหลังเป็นรายวัน/รายเดือน
+The Event system is the core of data collection from IoT devices on **PostgreSQL**, with time-based indexes designed to support daily/monthly historical queries.
 
 ### Prisma Schema
 
@@ -217,9 +219,9 @@ model Event {
   elderId      String
   deviceId     String
   fallStage    String   // PENDING_CONFIRMATION | CONFIRMED | CANCELLED
-  bpm          Int?     // ค่า BPM ณ ขณะหกล้ม (null ถ้าไม่มีข้อมูลชีพจร)
-  magnitude    Float?   // ค่าความแรงจาก processed evidence
-  postureDelta Float?   // ค่าการเปลี่ยนท่าทางจาก processed evidence
+  bpm          Int?     // BPM at the time of the fall (null if no pulse data)
+  magnitude    Float?   // Impact strength from processed evidence
+  postureDelta Float?   // Posture change from processed evidence
   cancelledAt  DateTime?
   timestamp    DateTime @default(now())
 }
@@ -227,38 +229,38 @@ model Event {
 
 ### Event Query Strategy
 
-Events Table ใช้ **Primary Key** แบบเดี่ยวที่ `id` และอาศัย index `timestamp` สำหรับ time-range queries:
+The Events table uses a single-column **Primary Key** on `id` and relies on the `timestamp` index for time-range queries:
 
-- **ข้อดี:** Query by ID และ relation ทำได้ตรงไปตรงมา
-- **ข้อดี:** Time-range query ยังเร็วจากดัชนี `timestamp`
-- **ข้อสังเกต:** ไม่ต้องส่ง `timestamp` คู่กับ `id` ตอนเรียกดู event รายตัว
+- **Pro:** Queries by ID and by relation are straightforward
+- **Pro:** Time-range queries stay fast thanks to the `timestamp` index
+- **Note:** There is no need to pass `timestamp` together with `id` when fetching an individual event
 
 ### Notification Reference Strategy
 
-`Notification` ใช้ Foreign Key แบบ required ผ่าน `eventId -> events.id`
+`Notification` uses a required Foreign Key via `eventId -> events.id`
 
-- Notification ทุกตัวใน phase ปัจจุบันต้องมาจาก event จริง
-- สามารถ join จาก notifications ไป events ได้ตรงโดย relational constraint
-- ถ้า event ถูกลบ ระบบลบ notification ตามด้วย `onDelete: Cascade`
+- Every Notification in the current phase must originate from a real event
+- notifications can be joined directly to events through the relational constraint
+- If an event is deleted, the system deletes its notifications too via `onDelete: Cascade`
 
 ---
 
 ## Event Scope
 
-ระบบ Event ใน phase ปัจจุบันใช้สำหรับ **fall event เท่านั้น**
-จึงไม่เก็บ `type` แยกอีกชั้น และไม่เก็บ `severity` ไว้ในฐานข้อมูลโดยตรง
+In the current phase, the Event system is used for **fall events only**,
+so there is no separate `type` layer, and `severity` is not stored in the database directly.
 
-- ถ้าต้องตัดสิน lifecycle ของเหตุการณ์ ให้ดู `fallStage`
-- ถ้าหน้า UI อยากแสดงระดับความรุนแรง สามารถ derive ได้จาก `fallStage`
+- To determine an event's lifecycle, look at `fallStage`
+- If the UI wants to show a severity level, it can be derived from `fallStage`
   - `PENDING_CONFIRMATION` -> `WARNING`
   - `CONFIRMED` -> `CRITICAL`
-  - `CANCELLED` -> ไม่ถือเป็น active alert แล้ว
+  - `CANCELLED` -> no longer considered an active alert
 
 ---
 
 ## Fall Event Stages
 
-Fall Detection ใช้ **2-Stage Confirmation:**
+Fall Detection uses **2-Stage Confirmation:**
 
 ```text
 Suspected (fallStage=PENDING_CONFIRMATION)
@@ -266,47 +268,47 @@ Suspected (fallStage=PENDING_CONFIRMATION)
   -> Cancelled (fallStage=CANCELLED, cancelledAt != null)
 ```
 
-| Stage     | `fallStage`             | `cancelledAt` |
-| :-------- | :---------------------- | :------------ |
-| Suspected | `PENDING_CONFIRMATION`  | `null`        |
-| Confirmed | `CONFIRMED`             | `null`        |
-| Cancelled | `CANCELLED`             | เวลาที่ยกเลิก |
+| Stage     | `fallStage`             | `cancelledAt`        |
+| :-------- | :---------------------- | :------------------- |
+| Suspected | `PENDING_CONFIRMATION`  | `null`               |
+| Confirmed | `CONFIRMED`             | `null`               |
+| Cancelled | `CANCELLED`             | Time of cancellation |
 
 ### `fallStage` as Source of Truth
 
-สำหรับ flow การล้มปัจจุบัน ให้ถือว่า `fallStage` คือ **source of truth** ของ lifecycle เหตุการณ์
-ส่วน field อื่นทำหน้าที่เป็นข้อมูลประกอบเท่านั้น:
+For the current fall flow, treat `fallStage` as the **source of truth** of the event lifecycle.
+Other fields serve only as supporting data:
 
-- `fallStage` บอกสถานะหลักของเหตุการณ์ว่าอยู่ในช่วง `PENDING_CONFIRMATION`, `CONFIRMED`, หรือ `CANCELLED`
-- `cancelledAt` ใช้เก็บเวลาเมื่อผู้สวมใส่กดปุ่มยกเลิกจริง ไม่ใช่ตัวตัดสินสถานะหลัก
-- `magnitude` และ `postureDelta` เป็น evidence ประกอบการตรวจจับ ไม่ใช่ตัวบอก lifecycle
+- `fallStage` gives the main state of the event: `PENDING_CONFIRMATION`, `CONFIRMED`, or `CANCELLED`
+- `cancelledAt` records the time when the wearer actually pressed the cancel button; it does not decide the main state
+- `magnitude` and `postureDelta` are supporting detection evidence, not lifecycle indicators
 
-กติกาการตีความที่ควรใช้ทั้งระบบ:
+Interpretation rules to use across the whole system:
 
-| `fallStage` | ความหมาย | UI state | Notification behavior | Socket behavior |
+| `fallStage` | Meaning | UI state | Notification behavior | Socket behavior |
 | :---------- | :-------- | :------- | :-------------------- | :-------------- |
-| `PENDING_CONFIRMATION` | ตรวจพบการล้มเบื้องต้นและกำลังรอยืนยัน | ไม่เปลี่ยน Mobile UI | ยังไม่ส่ง push/in-app notification | ส่ง `event_status_changed` ด้วย `FALL_SUSPECTED` เป็น internal guard |
-| `CONFIRMED` | ยืนยันการล้มแล้ว | `FALL` | ส่ง push + in-app notification | ส่ง `fall_detected` และ `event_status_changed` ด้วย `FALL_CONFIRMED` |
-| `CANCELLED` | ผู้สวมใส่กดยกเลิกที่อุปกรณ์ทันเวลา | ไม่เปลี่ยน Mobile UI | ไม่ส่ง notification เพิ่ม | ส่ง `event_status_changed` ด้วย `FALL_CANCELLED` เพื่อ clear pending guard |
+| `PENDING_CONFIRMATION` | Initial fall detected, awaiting confirmation | No Mobile UI change | No push/in-app notification yet | Sends `event_status_changed` with `FALL_SUSPECTED` as an internal guard |
+| `CONFIRMED` | Fall confirmed | `FALL` | Sends push + in-app notification | Sends `fall_detected` and `event_status_changed` with `FALL_CONFIRMED` |
+| `CANCELLED` | The wearer pressed cancel on the device in time | No Mobile UI change | No additional notification | Sends `event_status_changed` with `FALL_CANCELLED` to clear the pending guard |
 
-**Cancellation Source (อนุญาตเพียงแหล่งเดียว):**
+**Cancellation Source (only one source allowed):**
 
-- **Device Button เท่านั้น:** ผู้สวมใส่กดปุ่ม GPIO27 ภายใน 15 วินาที → ESP32 ส่ง MQTT `fall_cancelled` → Backend อัปเดต `cancelledAt`
-- **State Guard:** backend ยอมเปลี่ยนเป็น `CANCELLED` เฉพาะ event ที่ยังเป็น `PENDING_CONFIRMATION` เท่านั้น ถ้า event เป็น `CONFIRMED` แล้ว late `fall_cancelled` ต้องถูก ignore
+- **Device Button only:** the wearer presses the GPIO27 button within 15 seconds → ESP32 sends MQTT `fall_cancelled` → Backend updates `cancelledAt`
+- **State Guard:** the backend only allows a change to `CANCELLED` for events that are still `PENDING_CONFIRMATION`. If the event is already `CONFIRMED`, a late `fall_cancelled` must be ignored
 
-> ⚠️ **Caregiver ไม่สามารถ Cancel ได้** — ฝั่ง caregiver ทำได้เพียง **กดรับทราบแล้วในแอป** เพื่อคืนมุมมองเป็นปกติ ซึ่งไม่เปลี่ยน `cancelledAt` ใน DB
+> ⚠️ **Caregivers cannot cancel a fall event** — the caregiver can only **Acknowledge in the app** to return the view to normal, which does not change `cancelledAt` in the DB
 
 ### Fall Evidence Fields
 
-สำหรับ 2-stage flow จะเก็บ evidence สำคัญใน event โดยตรง:
+For the 2-stage flow, the key evidence is stored directly on the event:
 
-- `magnitude`: ค่า SVM/impact evidence
-- `postureDelta`: ค่าการเปลี่ยนท่าทางหลังเกิดเหตุ
+- `magnitude`: SVM/impact evidence value
+- `postureDelta`: posture change after the incident
 
 ### Realtime Status Mapping (Socket -> Mobile)
 
-Mobile เปลี่ยน fall alert state หลักจาก Socket `fall_detected` เท่านั้น ซึ่งหมายถึงเหตุล้มถูกยืนยันแล้ว
-`PENDING_CONFIRMATION` และ `CANCELLED` ถูกส่งเป็น `event_status_changed` เพื่อให้ mobile จัดการ pending guard ภายใน แต่ไม่แสดง caregiver alert และไม่สร้าง notification
+Mobile changes its main fall alert state only from the Socket `fall_detected` event, which means the fall has been confirmed.
+`PENDING_CONFIRMATION` and `CANCELLED` are sent as `event_status_changed` so mobile can manage its internal pending guard, but they do not show a caregiver alert and do not create a notification.
 
 ---
 
@@ -314,18 +316,18 @@ Mobile เปลี่ยน fall alert state หลักจาก Socket `fall
 
 ### getEventsByElder
 
-ดึง Events ตาม Elder พร้อม Pagination และ Filter:
+Fetches Events by Elder with Pagination and Filters:
 
 ```
 GET /api/events?elderId=elder-uuid&startDate=2026-01-01&endDate=2026-02-01&page=1&limit=20
 ```
 
-- **Access:** เจ้าของ elder เท่านั้น (single-caregiver model ปัจจุบัน)
-- **Default Sort:** `timestamp DESC` (ล่าสุดก่อน)
+- **Access:** the elder's owner only (current single-caregiver model)
+- **Default Sort:** `timestamp DESC` (newest first)
 
 ### getMonthlySummary
 
-สรุปเหตุการณ์รายเดือน:
+Monthly event summary:
 
 ```
 GET /api/events/summary/monthly?elderId=elder-uuid&year=2026&month=2
@@ -333,20 +335,20 @@ GET /api/events/summary/monthly?elderId=elder-uuid&year=2026&month=2
 
 ## Access Control
 
-| Operation         | OWNER                       | VIEWER |
-| :---------------- | :-------------------------- | :----- |
-| ดู Events         | ✅                          | ✅     |
-| ยกเลิก Fall Event | ❌ (device-only via GPIO27) | ❌     |
-| ดู Summary        | ✅                          | ✅     |
-| สร้าง Event       | ❌ (System/IoT only)        | ❌     |
+| Operation           | OWNER                       | VIEWER |
+| :------------------ | :-------------------------- | :----- |
+| View Events         | ✅                          | ✅     |
+| Cancel a Fall Event | ❌ (device-only via GPIO27) | ❌     |
+| View Summary        | ✅                          | ✅     |
+| Create Event        | ❌ (System/IoT only)        | ❌     |
 
-> **หมายเหตุ:** `cancelledAt` ใน DB เปลี่ยนได้จาก MQTT `fall_cancelled` เท่านั้น (device button GPIO27) — ฝั่ง caregiver ทำได้เพียง UI-only reset ไม่เปลี่ยน DB
+> **Note:** `cancelledAt` in the DB can only be changed by MQTT `fall_cancelled` (device button GPIO27) — the caregiver can only do a UI-only reset (Acknowledge), which does not change the DB
 
 ---
 
 ## Cascade Delete
 
-เมื่อลบ Elder → Events ทั้งหมดของ Elder จะถูกลบอัตโนมัติ (`onDelete: Cascade`)
+When an Elder is deleted → all of that Elder's Events are deleted automatically (`onDelete: Cascade`)
 
 ---
 

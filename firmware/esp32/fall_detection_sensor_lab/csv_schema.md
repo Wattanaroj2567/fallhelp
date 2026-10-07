@@ -1,72 +1,74 @@
 # CSV Schema
 
-เอกสารนี้อธิบายความหมายของ column ที่ใช้ในไฟล์ CSV จาก Node-RED
+[English](csv_schema.md) · [ภาษาไทย](csv_schema.th.md)
+
+This document explains the meaning of the columns used in the CSV files from Node-RED.
 
 ## Metadata
 
-| Column | ความหมาย | ตัวอย่าง |
+| Column | Meaning | Example |
 |---|---|---|
-| `session_id` | รหัสชุดการเก็บข้อมูล | `S01` |
-| `trial_id` | รหัสรอบทดลอง | `T01` |
-| `activity_label` | ท่าที่ทำจริง | `side_fall_left` |
-| `expected_type` | ประเภทของท่า | `fall` |
-| `timestamp_ms` | เวลาในอุปกรณ์ (millis uptime) | `123456` |
-| `note` | หมายเหตุ | `fall on mattress` |
+| `session_id` | Data-collection session ID | `S01` |
+| `trial_id` | Trial ID | `T01` |
+| `activity_label` | Activity actually performed | `side_fall_left` |
+| `expected_type` | Activity type | `fall` |
+| `timestamp_ms` | Device time (millis uptime) | `123456` |
+| `note` | Note | `fall on mattress` |
 
 ## Sensor Raw Data
 
-| Column | ความหมาย | หน่วย |
+| Column | Meaning | Unit |
 |---|---|---|
-| `ax_g` | ความเร่งแกน X | g |
-| `ay_g` | ความเร่งแกน Y | g |
-| `az_g` | ความเร่งแกน Z | g |
-| `gx_dps` | ความเร็วเชิงมุมแกน X | deg/s |
-| `gy_dps` | ความเร็วเชิงมุมแกน Y | deg/s |
-| `gz_dps` | ความเร็วเชิงมุมแกน Z | deg/s |
+| `ax_g` | X-axis acceleration | g |
+| `ay_g` | Y-axis acceleration | g |
+| `az_g` | Z-axis acceleration | g |
+| `gx_dps` | X-axis angular velocity | deg/s |
+| `gy_dps` | Y-axis angular velocity | deg/s |
+| `gz_dps` | Z-axis angular velocity | deg/s |
 
 ## Impact Data
 
-| Column | ความหมาย | ใช้ทำอะไร |
+| Column | Meaning | Purpose |
 |---|---|---|
-| `svm_raw_g` | ค่า SVM ก่อนกรอง | ดูแรงกระแทกดิบ |
-| `svm_filtered_g` | ค่า SVM หลังกรอง | ใช้เทียบ impact threshold |
-| `impact_threshold_g` | ค่าเกณฑ์แรงกระแทก | ใช้ตัดสิน impact |
+| `svm_raw_g` | SVM before filtering | View the raw impact |
+| `svm_filtered_g` | SVM after filtering | Compared with the impact threshold |
+| `impact_threshold_g` | Impact threshold | Used to decide impact |
 
 ## Posture Data
 
-| Column | ความหมาย | ใช้ทำอะไร |
+| Column | Meaning | Purpose |
 |---|---|---|
-| `pitch_deg` | มุม Pitch ปัจจุบัน | ดูท่าทาง |
-| `roll_deg` | มุม Roll ปัจจุบัน | ดูท่าทาง |
-| `pitch_before_deg` | Pitch ก่อน/ขณะ impact | คำนวณ delta |
-| `roll_before_deg` | Roll ก่อน/ขณะ impact | คำนวณ delta |
-| `pitch_after_deg` | Pitch หลังรอ stabilization | คำนวณ delta |
-| `roll_after_deg` | Roll หลังรอ stabilization | คำนวณ delta |
-| `pitch_delta_deg` | การเปลี่ยน Pitch | ใช้หา postureDelta |
-| `roll_delta_deg` | การเปลี่ยน Roll | ใช้หา postureDelta |
-| `posture_delta_deg` | ค่าการเปลี่ยนท่าทางสูงสุด | ใช้เทียบ posture threshold |
-| `posture_threshold_deg` | ค่าเกณฑ์ท่าทาง | ใช้ตัดสิน posture |
+| `pitch_deg` | Current Pitch angle | View posture |
+| `roll_deg` | Current Roll angle | View posture |
+| `pitch_before_deg` | Pitch before/at impact | Compute delta |
+| `roll_before_deg` | Roll before/at impact | Compute delta |
+| `pitch_after_deg` | Pitch after waiting for stabilization | Compute delta |
+| `roll_after_deg` | Roll after waiting for stabilization | Compute delta |
+| `pitch_delta_deg` | Pitch change | Used to derive postureDelta |
+| `roll_delta_deg` | Roll change | Used to derive postureDelta |
+| `posture_delta_deg` | Maximum posture change | Compared with the posture threshold |
+| `posture_threshold_deg` | Posture threshold | Used to decide posture |
 
 ## Decision Data
 
-| Column | ความหมาย | ตัวอย่าง |
+| Column | Meaning | Example |
 |---|---|---|
-| `type` | ประเภท log | `imu_sample`, `imu_impact`, `imu_decision` |
-| `state` | สถานะของ fall detection | `IDLE`, `POSTURE_CHECK` |
-| `decision` | ผลที่ระบบตัดสิน | `sample`, `pending`, `suspected_fall`, `ignored` |
-| `stabilize_ms` | เวลารอให้ท่าทางนิ่ง | `1500` |
+| `type` | Log type | `imu_sample`, `imu_impact`, `imu_decision` |
+| `state` | Fall detection state | `IDLE`, `POSTURE_CHECK` |
+| `decision` | The system's decision | `sample`, `pending`, `suspected_fall`, `ignored` |
+| `stabilize_ms` | Time to wait for the posture to settle | `1500` |
 
-> `imu_sample` = snapshot เป็นระยะจาก `sensor_tuning` (ทุก ~300ms) ให้ท่า non-fall
-> ที่ไม่เกิด impact ยังมีข้อมูล sensor. ท่า non-fall อาจมีแต่ `imu_sample`
-> ไม่มี `imu_decision` ได้ — ถือว่าถูกต้อง
+> `imu_sample` = periodic snapshot from `sensor_tuning` (every ~300ms) so that non-fall activities
+> with no impact still have sensor data. A non-fall activity may have only `imu_sample`
+> rows and no `imu_decision` — this is considered correct
 
 ## Number Formatting
 
-ปัดทศนิยมเฉพาะ Sensor Lab path (sensor_tuning lab payload + Dashboard +
-summarize/export scripts) ไม่กระทบ main_firmware / production payload / DB schema
-คงค่าเป็นตัวเลข (number)
+Decimal rounding applies only to the Sensor Lab path (sensor_tuning lab payload + Dashboard +
+summarize/export scripts). It does not affect main_firmware / production payload / DB schema.
+Values stay numeric (number)
 
-| Field | ทศนิยม |
+| Field | Decimals |
 |---|---|
 | `ax_g`, `ay_g`, `az_g` | 3 |
 | `gx_dps`, `gy_dps`, `gz_dps` | 2 |

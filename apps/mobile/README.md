@@ -1,5 +1,7 @@
 # FallHelp Mobile
 
+[English](README.md) · [ภาษาไทย](README.th.md)
+
 React Native (Expo SDK 55) caregiver application for FallHelp.  
 Supports authentication, elder/device management, realtime alerts, and monitoring flows.
 

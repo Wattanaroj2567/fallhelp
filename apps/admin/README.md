@@ -1,5 +1,7 @@
 # FallHelp Admin
 
+[English](README.md) · [ภาษาไทย](README.th.md)
+
 React + Vite web admin panel for FallHelp device operations.
 
 ## Scope
@@ -34,13 +36,13 @@ npm run preview
 
 ## Docker
 
-สามารถรันผ่าน compose ที่ root ได้จาก [`../../docker-compose.yml`](../../docker-compose.yml)
+It can be run through the root compose file at [`../../docker-compose.yml`](../../docker-compose.yml)
 
 ```bash
 docker compose --env-file apps/backend-api/.env up -d --build --pull always admin
 ```
 
-ค่าปริยายของหน้าเว็บใน container คือ `http://localhost:5173`
+The default web URL for the container is `http://localhost:5173`
 
 ## Environment
 
@@ -50,10 +52,10 @@ Use `apps/admin/.env.example` as source of truth.
 
 ## Data Layer
 
-- `src/services/api.ts` เป็น Axios instance กลางสำหรับ base URL, auth token, interceptors และ 401 handling
-- `src/services/adminAuthService.ts` รับผิดชอบการเข้าสู่ระบบของผู้ดูแลระบบ
-- `src/services/adminDeviceService.ts` รวม fetch/mutation functions ของ Admin API สำหรับ device list, register, delete และ force-unpair
-- `src/hooks/useAdminDevices.ts` รับผิดชอบ TanStack Query cache/state ของหน้า Devices เช่น `queryKey`, polling interval และ invalidation
+- `src/services/api.ts` is the shared Axios instance for the base URL, auth token, interceptors, and 401 handling
+- `src/services/adminAuthService.ts` handles administrator login
+- `src/services/adminDeviceService.ts` groups the Admin API fetch/mutation functions for device list, register, delete, and force-unpair
+- `src/hooks/useAdminDevices.ts` owns the TanStack Query cache/state of the Devices page, such as `queryKey`, polling interval, and invalidation
 
 ## Verify Before PR
 

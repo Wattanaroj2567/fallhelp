@@ -1,5 +1,7 @@
 # System Design & Architecture
 
+[English](system-design.md) · [ภาษาไทย](system-design.th.md)
+
 ## Doc Meta
 
 - Audience: Backend/Mobile/Admin Dev, QA
@@ -11,7 +13,7 @@
 
 ## Overview
 
-เอกสารนี้อธิบายสถาปัตยกรรมหลักของระบบ FallHelp: IoT ingestion, Database, Mobile App, Admin Panel และ Notification System
+This document describes the core architecture of the FallHelp system: IoT ingestion, Database, Mobile App, Admin Panel, and Notification System
 
 ---
 
@@ -51,7 +53,7 @@ npm run db:verify --prefix apps/backend-api
 
 - **AuthProvider** - auth state + token
 - **DialogProvider** - centralized dialogs
-- **useSocketConnection + Zustand stores** - realtime socket lifecycle และ runtime telemetry state
+- **useSocketConnection + Zustand stores** - realtime socket lifecycle and runtime telemetry state
 - **React Query** - caching + fetching
 - **SafeAreaProvider + PaperProvider** - UI base
 - **useProtectedRoute** - route guard
@@ -86,13 +88,13 @@ npm run db:verify --prefix apps/backend-api
 
 ## 4) Background Scheduler Architecture
 
-Scheduled tasks ปัจจุบันถูก bootstrap ผ่าน `initSchedulers()` ใน `apps/backend-api/src/schedulers/otpScheduler.ts` และถูกเรียกครั้งเดียวใน `server.ts` หลัง HTTP server เริ่มทำงาน
+Current scheduled tasks are bootstrapped via `initSchedulers()` in `apps/backend-api/src/schedulers/otpScheduler.ts`, which is called once in `server.ts` after the HTTP server starts
 
 | Scheduler    | Location          | Schedule         | Purpose                      |
 | ------------ | ----------------- | ---------------- | ---------------------------- |
-| `otpCleanup` | `otpScheduler.ts` | Hourly + startup | ลบ OTP หมดอายุใน `auth_otps` |
+| `otpCleanup` | `otpScheduler.ts` | Hourly + startup | Deletes expired OTPs in `auth_otps` |
 
-> ถ้าจะเพิ่ม scheduler ใหม่ในโครงสร้างปัจจุบัน ให้เพิ่ม logic ลงไฟล์ scheduler bootstrap ที่ใช้งานจริง หรือแยก helper ใหม่แล้ว import เข้ามาที่ `otpScheduler.ts` ในโฟลเดอร์ `schedulers`
+> To add a new scheduler in the current structure, add the logic to the scheduler bootstrap file actually in use, or split it into a new helper and import it into `otpScheduler.ts` in the `schedulers` folder
 
 ---
 
@@ -105,7 +107,7 @@ Scheduled tasks ปัจจุบันถูก bootstrap ผ่าน `initSc
 - `userRoutes` exposes `/api/users/me/push-token`
 - `authRoutes` exposes `/api/auth/logout` to clear `users.pushToken` when the mobile app signs out
 - `fallHandler.ts` emits Socket.io before push/notification side effects so the dashboard card updates first
-- `notifications.eventId` เป็น required FK ไปยัง `events.id` เพื่อให้ join เหตุการณ์ตรงจาก relational model
+- `notifications.eventId` is a required FK to `events.id` so events can be joined directly through the relational model
 
 ### Mobile
 

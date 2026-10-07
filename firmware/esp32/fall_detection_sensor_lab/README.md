@@ -1,145 +1,147 @@
 # Fall Detection Sensor Lab
 
-โฟลเดอร์นี้ใช้สำหรับเก็บ Log และวิเคราะห์ค่าจากเซ็นเซอร์ MPU6050 เพื่อสอบเทียบและปรับจูนเกณฑ์การตรวจจับการหกล้ม (Sensor Calibration & Threshold Tuning)
+[English](README.md) · [ภาษาไทย](README.th.md)
 
-## เป้าหมาย
+This folder is used to collect logs and analyze values from the MPU6050 sensor to calibrate and tune the fall detection thresholds (Sensor Calibration & Threshold Tuning).
 
-| เรื่อง | รายละเอียด |
+## Goals
+
+| Topic | Details |
 |---|---|
-| ใช้ทำอะไร | เก็บข้อมูลจากอุปกรณ์สวมใส่เพื่อวิเคราะห์และจูนเกณฑ์การตรวจจับการหกล้ม |
-| อัลกอริทึมและการตัดสิน | อธิบายที่มาของ `magnitude` และ `postureDelta` |
-| ผลการทดลองและการเปรียบเทียบ | สรุปผลการทดสอบจากท่าจำลองและกิจกรรมพื้นฐาน |
-| Firmware ที่ใช้ | `firmware/esp32/src/sensor_tuning/` |
+| Purpose | Collect data from the wearable device to analyze and tune the fall detection thresholds |
+| Algorithm and decision | Explains where `magnitude` and `postureDelta` come from |
+| Experimental results and comparison | Summarizes test results from simulated falls and basic activities |
+| Firmware used | `firmware/esp32/src/sensor_tuning/` |
 | MQTT Topic | `device/{deviceSerial}/lab/imu` |
-| Output | CSV แยกตามรอบทดลอง |
+| Output | CSV per trial |
 
-## หลักการทำงาน
+## How It Works
 
 ```text
 MPU6050
-→ อ่านค่า ax, ay, az, gx, gy, gz
-→ คำนวณ magnitude / SVM
-→ ตรวจ impact threshold
-→ คำนวณ Pitch / Roll
-→ คำนวณ postureDelta
-→ ตัดสินผล
-→ ส่ง Log ไป Node-RED
-→ บันทึก CSV
+→ read ax, ay, az, gx, gy, gz
+→ compute magnitude / SVM
+→ check impact threshold
+→ compute Pitch / Roll
+→ compute postureDelta
+→ decide the result
+→ send Log to Node-RED
+→ write CSV
 ```
 
 ## Fall Detection Sensor Lab Dashboard (Node-RED)
 
-flow `node-red/flows/fall-detection-sensor-lab-flow.v2.json` มี Web UI (@flowfuse/node-red-dashboard) ที่ `/ui`
-ชื่อหน้า Dashboard คือ **Fall Detection Sensor Lab**
-สำหรับเก็บข้อมูลคนเดียว ลดการกรอกมือ:
+The flow `node-red/flows/fall-detection-sensor-lab-flow.v2.json` has a Web UI (@flowfuse/node-red-dashboard) at `/ui`.
+The Dashboard page is named **Fall Detection Sensor Lab**.
+It is designed for single-person data collection with minimal manual entry:
 
-ทางหลักของรอบนี้คือ Docker service:
+The main path for this round is the Docker service:
 
 ```bash
 npm run sensor-lab -- node-red up
 ```
 
-คำสั่ง Docker ที่ใช้บ่อย:
+Common Docker commands:
 
 ```bash
 npm run sensor-lab -- node-red build
 npm run sensor-lab -- node-red rebuild
-npm run sensor-lab -- node-red down       # ปิดบริการ Node-RED เมื่อไม่ได้ใช้งานแล็ป
-npm run sensor-lab -- node-red clean      # ล้างไฟล์ runtime เก่าเพื่อเริ่มระบบแบบ Fresh Start
+npm run sensor-lab -- node-red down       # Stop the Node-RED service when the lab is not in use
+npm run sensor-lab -- node-red clean      # Clear old runtime files for a fresh start
 npm run sensor-lab -- node-red logs
 npm run sensor-lab -- node-red sync-flow
 ```
 
-host fallback สำหรับ developer ใช้ `node scripts/iot/node-red-launch.mjs` แต่ workflow
-หลักของ Lab ให้ยึด Docker/env/secrets เพื่อให้ MQTT config ไม่ฝังอยู่ใน flow JSON
+The host fallback for developers is `node scripts/iot/node-red-launch.mjs`, but the main Lab
+workflow relies on Docker/env/secrets so the MQTT config is not embedded in the flow JSON
 
-| ส่วน | หน้าที่ |
+| Part | Function |
 |---|---|
-| Session ID input | ตั้งครั้งเดียว เช่น `S01` (รองรับเฉพาะตัวเลขหรือ S##, ระบบจะสร้างโฟลเดอร์ `raw/`, `selected/` และ `session_notes.md` ให้อัตโนมัติ พร้อมรีเซ็ตฟอร์ม) |
-| Next Trial | แสดง `trialId` ถัดไป auto-increment |
-| Trial Control | แยกปุ่มเป็น 2 ฝั่ง: Normal / Daily Activities และ Fall Simulations |
-| ปุ่ม 9 ท่า | กดแล้วตั้ง `activityLabel` + `expectedType` อัตโนมัติ โดยท่าปกติอยู่ฝั่งซ้าย และท่าล้มอยู่ฝั่งขวา |
-| Countdown | นับถอยหลัง 10 วินาทีก่อนเริ่มบันทึก (ไม่มีเสียงใน dashboard) |
-| Stop Trial | หยุดบันทึกเอง (manual, ไม่มี auto-stop) |
-| System / Trial Info | Operator-style multiline status with visible status dots for MQTT, Device, IMU sample, optional Warning, Last seen, Last seen age, Current activity/expected type, Next trial ID, Topic `device/+/lab/imu`, และ trial metadata (อัปเดตทุก 1 วิ) |
-| Current Trial Metadata | แสดง `sessionId`, `trialId`, `activityLabel`, `expectedType`, `recordingState`, และ `Last Saved CSV` ในกล่องเดียวกับ System / Trial Info |
+| Session ID input | Set once, e.g. `S01` (accepts only digits or S##; the system automatically creates the `raw/`, `selected/` folders and `session_notes.md`, and resets the form) |
+| Next Trial | Shows the next `trialId`, auto-incremented |
+| Trial Control | Buttons split into 2 sides: Normal / Daily Activities and Fall Simulations |
+| 9 activity buttons | Pressing one sets `activityLabel` + `expectedType` automatically; normal activities are on the left and falls on the right |
+| Countdown | 10-second countdown before recording starts (no sound in the dashboard) |
+| Stop Trial | Stop recording manually (manual, no auto-stop) |
+| System / Trial Info | Operator-style multiline status with visible status dots for MQTT, Device, IMU sample, optional Warning, Last seen, Last seen age, Current activity/expected type, Next trial ID, Topic `device/+/lab/imu`, and trial metadata (updated every 1 s) |
+| Current Trial Metadata | Shows `sessionId`, `trialId`, `activityLabel`, `expectedType`, `recordingState`, and `Last Saved CSV` in the same box as System / Trial Info |
 | Recording State | Ready / Countdown / Recording / Stopped / CSV Saved / Countdown cancelled |
-| Live Sensor | แยกกลุ่ม Acceleration, Gyroscope, Impact, Posture, Decision |
-| Live Charts | Chart A = Impact Magnitude (SVM) จาก payload `svmFiltered` พร้อม `impactThreshold`; Chart B = Attitude & Posture Delta จาก `pitch`, `roll`, `postureDelta` พร้อม `postureThreshold`; X axis ใช้ `Time`, Y axis ใช้ `SVM Filtered (g)` และ `Degrees (deg)` |
+| Live Sensor | Grouped into Acceleration, Gyroscope, Impact, Posture, Decision |
+| Live Charts | Chart A = Impact Magnitude (SVM) from payload `svmFiltered` with `impactThreshold`; Chart B = Attitude & Posture Delta from `pitch`, `roll`, `postureDelta` with `postureThreshold`; X axis uses `Time`, Y axis uses `SVM Filtered (g)` and `Degrees (deg)` |
 
-MQTT runtime config อ่านจาก env:
+The MQTT runtime config is read from env:
 
-| Env | ใช้ทำอะไร |
+| Env | Purpose |
 |---|---|
-| `MQTT_BROKER_HOST` | broker host เช่น `host.docker.internal` (local service) หรือ cloud MQTT host |
-| `MQTT_BROKER_PORT` | broker port เช่น `1883` หรือ `8883` |
-| `MQTT_USE_TLS` | `true` สำหรับ TLS, `false` สำหรับ local no-TLS |
-| `MQTT_USERNAME` | username จาก `.env` จริง หรือว่างได้สำหรับ local no-auth |
-| `MQTT_PASSWORD` | password จาก `.env` จริง หรือว่างได้สำหรับ local no-auth |
+| `MQTT_BROKER_HOST` | broker host, e.g. `host.docker.internal` (local service) or a cloud MQTT host |
+| `MQTT_BROKER_PORT` | broker port, e.g. `1883` or `8883` |
+| `MQTT_USE_TLS` | `true` for TLS, `false` for local no-TLS |
+| `MQTT_USERNAME` | username from the real `.env`, or empty for local no-auth |
+| `MQTT_PASSWORD` | password from the real `.env`, or empty for local no-auth |
 
-ห้าม commit ค่า `.env` จริงหรือ credential ของ MQTT ลง flow/docs
+Never commit real `.env` values or MQTT credentials into the flow/docs
 
 Readiness thresholds: Device Online = lab message ≤ 3s, Stale = > 3–10s,
-Offline = ไม่มี/ > 10s; Sensor Receiving = `imu_sample` ≤ 3s
+Offline = none / > 10s; Sensor Receiving = `imu_sample` ≤ 3s
 
-ขั้นตอน: ตั้ง Session → กดปุ่มท่า → Countdown 10 วิ → ทำท่า → กด Stop →
-ได้ `{sessionId}_{trialId}_{activityLabel}.csv` ใน `runs/Sxx/raw/` (1 Trial = 1 CSV)
+Steps: set the Session → press an activity button → 10 s Countdown → perform the activity → press Stop →
+get `{sessionId}_{trialId}_{activityLabel}.csv` in `runs/Sxx/raw/` (1 Trial = 1 CSV)
 
-ชื่อที่ใช้ในแต่ละชั้นข้อมูล:
+Names used at each data layer:
 
-| ชั้นข้อมูล | ชื่อที่ใช้ |
+| Data layer | Name used |
 |---|---|
-| Live payload / Dashboard chart | `svmFiltered` แสดงเป็น `Impact Magnitude (SVM)` และ series `Magnitude (SVM)` |
+| Live payload / Dashboard chart | `svmFiltered`, shown as `Impact Magnitude (SVM)` and series `Magnitude (SVM)` |
 | Raw CSV | `svm_filtered_g` |
 | Export summary | `magnitude_g` |
 
-> raw CSV อาจมี movement ช่วง post-action (ลุก/เดินกลับมากด Stop) ได้
-> workflow นี้จึงเก็บ raw log ก่อน แล้วใช้ `selection_guide.md` คัดช่วง event หลักภายหลัง
+> The raw CSV may contain post-action movement (getting up/walking back to press Stop).
+> That is why this workflow stores the raw log first, then uses `selection_guide.md` to pick the main event window afterwards
 
-> firmware `sensor_tuning` ส่ง `imu_sample` เป็นระยะ (ทุก ~300ms) เพื่อให้ท่า non-fall
-> ที่ไม่เกิด impact ยังมีข้อมูล sensor; Node-RED เป็นตัวคุมช่วงบันทึก (recording window)
-> ส่งเฉพาะ lab topic ไม่กระทบ production event flow และไม่แก้ `main_firmware`
+> The `sensor_tuning` firmware sends `imu_sample` periodically (every ~300ms) so that non-fall activities
+> with no impact still have sensor data; Node-RED controls the recording window.
+> It publishes only on the lab topic, does not affect the production event flow, and does not modify `main_firmware`
 
-## ทดสอบ pipeline (ไม่ต้องใช้ฮาร์ดแวร์)
+## Test the Pipeline (No Hardware Needed)
 
 ```bash
 npm run sensor-lab -- test
 ```
 
-จำลอง sensor publish `device/+/lab/imu` ตาม `publishLabImuLog()` จริง →
-รัน function ของ Node-RED flow ที่ commit จริง → ครบ 24 trials →
-validate / summarize / generate + ตรวจ contract firmware↔flow↔schema.
-เขียนลง temp dir เท่านั้น ไม่แตะ `runs/` จริง
+Simulates the sensor publishing `device/+/lab/imu` exactly like the real `publishLabImuLog()` →
+runs the functions of the committed Node-RED flow → all 24 trials →
+validate / summarize / generate + checks the firmware↔flow↔schema contract.
+It writes only to a temp dir and never touches the real `runs/`
 
-## กฎสำคัญ
+## Key Rules
 
-| กฎ | รายละเอียด |
+| Rule | Details |
 |---|---|
-| 1 Trial | ทำ 1 ท่าเท่านั้น |
-| 1 Trial | ได้ 1 CSV file |
-| Metadata | Node-RED เป็นผู้เติม |
-| Firmware | ส่งเฉพาะค่า sensor และผลคำนวณ |
-| Raw Data | เก็บไว้ใน `runs/Sxx/raw/` |
-| Selected Data | ให้ AI Agent คัดไปไว้ใน `runs/Sxx/selected/` |
-| Export | ใช้เตรียมตารางและสรุปผลการวิเคราะห์ |
+| 1 Trial | Perform only 1 activity |
+| 1 Trial | Produces 1 CSV file |
+| Metadata | Filled in by Node-RED |
+| Firmware | Sends only sensor values and computed results |
+| Raw Data | Kept in `runs/Sxx/raw/` |
+| Selected Data | The AI Agent picks them into `runs/Sxx/selected/` |
+| Export | Used to prepare tables and analysis summaries |
 
-## โครงสร้างข้อมูล
+## Data Structure
 
-| Folder/File | หน้าที่ |
+| Folder/File | Function |
 |---|---|
-| `trial_protocol.md` | ขั้นตอน session/trial และรายการท่าที่ต้องเก็บ |
-| `csv_schema.md` | ความหมายของ column ใน CSV และรูปแบบตัวเลข |
-| `selection_guide.md` | วิธีให้ AI Agent คัดข้อมูล |
-| `chapter_usage.md` | วิธีนำข้อมูลไปใช้สรุปรายงานผล |
-| `session_notes.md` | จดปัญหาและข้อสังเกตของแต่ละเซสชัน |
-| `node-red/` | Flow source, Dockerfile, entrypoint, และ runtime ของ Node-RED |
-| `node-red/flows/` | Source flow ที่ commit ลง Git |
-| `node-red/runtime/` | Runtime userDir ของ Node-RED, ถูก ignore ไม่ใช่ source |
-| `runs/Sxx/raw/` | CSV ดิบ |
-| `runs/Sxx/selected/` | CSV ที่คัดแล้ว |
-| `exports/` | ตาราง/ตัวอย่างรายงานผลสรุปวิเคราะห์ |
+| `trial_protocol.md` | Session/trial procedure and the list of activities to collect |
+| `csv_schema.md` | Meaning of each CSV column and number formats |
+| `selection_guide.md` | How the AI Agent selects data |
+| `chapter_usage.md` | How the data is used in the results report |
+| `session_notes.md` | Notes on problems and observations for each session |
+| `node-red/` | Node-RED flow source, Dockerfile, entrypoint, and runtime |
+| `node-red/flows/` | Source flow committed to Git |
+| `node-red/runtime/` | Node-RED runtime userDir; ignored, not source |
+| `runs/Sxx/raw/` | Raw CSV |
+| `runs/Sxx/selected/` | Selected CSV |
+| `exports/` | Tables/sample analysis summary reports |
 
-## หมายเหตุสำคัญ
+## Important Note
 
-ไฟล์ใน `examples/` เป็นข้อมูลจำลองเพื่อแสดง **format เท่านั้น** ไม่ใช่ผลทดสอบจริง
-ห้าม claim ว่าเป็นผลทดสอบจริงจนกว่าจะมี CSV จริงจากการเก็บข้อมูล
+Files in `examples/` are mock data to show the **format only**; they are not real test results.
+Do not claim they are real test results until there are real CSVs from data collection

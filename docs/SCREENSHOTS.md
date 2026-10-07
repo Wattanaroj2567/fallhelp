@@ -1,5 +1,7 @@
 # Screenshots
 
+[English](SCREENSHOTS.md) · [ภาษาไทย](SCREENSHOTS.th.md)
+
 [README](../README.md) · Real screens from the caregiver app (Android) and the admin panel. All data shown is test data.
 
 <!-- markdownlint-disable MD033 -->

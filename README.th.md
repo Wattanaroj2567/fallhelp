@@ -16,7 +16,7 @@
 ## ลองใช้งาน Demo
 
 - 📱 **Android APK:** [ดาวน์โหลด preview build ล่าสุด](https://github.com/Wattanaroj2567/fallhelp/releases/latest)
-- 🧪 **ไม่มีฮาร์ดแวร์?** [Device simulator](apps/device-simulator) ส่งข้อความ MQTT แบบเดียวกับอุปกรณ์จริง ดูขั้นตอนที่[คู่มือ Demo](docs/demo/DEMO_GUIDE.th.md)
+- 🧪 **ไม่มีฮาร์ดแวร์?** [Device simulator](apps/device-simulator/README.th.md) ส่งข้อความ MQTT แบบเดียวกับอุปกรณ์จริง ดูขั้นตอนที่[คู่มือ Demo](docs/demo/DEMO_GUIDE.th.md)
 
 ## ฟีเจอร์
 
@@ -62,7 +62,7 @@ flowchart LR
   </tr>
 </table>
 
-ภาพทุกหน้าของแอป (58 หน้า) และ admin panel: [docs/SCREENSHOTS.md](docs/SCREENSHOTS.md)
+ภาพทุกหน้าของแอป (58 หน้า) และ admin panel: [docs/SCREENSHOTS.th.md](docs/SCREENSHOTS.th.md)
 
 </details>
 <!-- markdownlint-enable MD033 -->
@@ -97,6 +97,15 @@ npm run dev:all
 ```
 
 คู่มือฉบับเต็ม: [README ภาษาอังกฤษ](README.md#getting-started) · ฮาร์ดแวร์: [Hardware Components](README.md#hardware-components)
+
+## เอกสาร
+
+เอกสารทุกฉบับมีทั้งภาษาอังกฤษ (`.md`) และภาษาไทย (`.th.md`) เริ่มที่[สารบัญเอกสาร](docs/README.th.md)
+
+- [คู่มือ Demo](docs/demo/DEMO_GUIDE.th.md) · [Cloudflare Tunnel](docs/demo/cloudflare-tunnel.th.md)
+- [คำสั่งสำหรับพัฒนา](docs/ops/development-commands.th.md) · [การรันเทสต์](docs/testing/running-tests.th.md)
+- [สถาปัตยกรรมระบบ](docs/architecture/system-design.th.md) · [API Reference](docs/api/api-reference.th.md)
+- [Firmware ESP32](firmware/esp32/README.th.md)
 
 ## License
 

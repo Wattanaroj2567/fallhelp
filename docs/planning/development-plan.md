@@ -1,4 +1,6 @@
-# Development Plan: 4 Phases (แผนการพัฒนา 4 ระยะ)
+# Development Plan: 4 Phases
+
+[English](development-plan.md) · [ภาษาไทย](development-plan.th.md)
 
 ## Doc Meta
 
@@ -11,19 +13,19 @@
 
 ## Overview
 
-แผนการพัฒนานี้แบ่งออกเป็น 2 ส่วนหลัก: **Software** (Mobile App + Backend + Admin) และ **Hardware** (IoT Device) โดยใช้บอกลำดับงานที่ยังเหลือและระดับความพร้อมของโปรเจกต์ในมุม roadmap
+This development plan is split into 2 main parts: **Software** (Mobile App + Backend + Admin) and **Hardware** (IoT Device). It shows the order of remaining work and the project's readiness from a roadmap perspective.
 
-## ภาพรวมความคืบหน้า (Progress Overview)
+## Progress Overview
 
-| ส่วน           | เสร็จแล้ว | ทั้งหมด |     สถานะ     |
-| -------------- | :-------: | :-----: | :-----------: |
-| **Software**   |    27     |   27    | ✅ **100.0%** |
-| **Hardware**   |    27     |   27    | ✅ **100.0%** |
-| **รวมทั้งหมด** |    54     |   54    | ✅ **100.0%** |
+| Part           | Done | Total |    Status     |
+| -------------- | :--: | :---: | :-----------: |
+| **Software**   |  27  |  27   | ✅ **100.0%** |
+| **Hardware**   |  27  |  27   | ✅ **100.0%** |
+| **Total**      |  54  |  54   | ✅ **100.0%** |
 
-> สรุปสั้น: โปรเจกต์เสร็จครบสำหรับการสาธิต (Demo Scope) — Software + Hardware core features ทั้งหมด ✅
+> In short: the project is complete for the demonstration (Demo Scope) — all Software + Hardware core features ✅
 
-### Software ที่เสร็จแล้ว (27/27):
+### Completed Software (27/27):
 
 **Core Features:**
 
@@ -48,9 +50,9 @@
 - ✅ Unit Tests (196)
 - ✅ Integration Tests (44)
 
-### Hardware ที่เสร็จแล้ว — Demo Scope (27/27)
+### Completed Hardware — Demo Scope (27/27)
 
-> **หมายเหตุ:** Hardware core features ครบสำหรับการสาธิต ทั้งหมด 27 รายการ ไม่นับรวม production variants (PCB manufacturing, mass production setup เป็นต้น)
+> **Note:** Hardware core features are complete for the demonstration, 27 items in total, not counting production variants (PCB manufacturing, mass production setup, etc.)
 
 **Connectivity & Provisioning:**
 
@@ -59,420 +61,420 @@
 
 **Sensing & Detection:**
 
-- ✅ MPU6050 อ่านค่า Accel/Gyro
+- ✅ MPU6050 Accel/Gyro readout
 - ✅ SMV + Complementary Filter
-- ✅ Pulse Sensor อ่านค่า HR
+- ✅ Pulse Sensor HR readout
 - ✅ Fall Detection Algorithm (threshold-based)
 
 **Alert & Event Flow:**
 
 - ✅ Grove Speaker
-- ✅ ส่ง JSON ผ่าน MQTT
-- ✅ ยกเลิก False Alarm ผ่านปุ่ม
+- ✅ JSON over MQTT
+- ✅ False Alarm cancel via button
 
 **Power & Hardware Build:**
 
-- ✅ แบตเตอรี่ LiPo + TP4056
+- ✅ LiPo battery + TP4056
 - ✅ Step-Up 5V
-- ✅ ปุ่มกดทำงาน
-- ✅ ประกอบ Prototype เสร็จ
-- ✅ ออกแบบ PCB/กล่อง
+- ✅ Working push button
+- ✅ Prototype assembly complete
+- ✅ PCB/enclosure design
 - ✅ Slide Switch
-- ✅ สายคล้องคอ/Earclip
+- ✅ Neck strap/Earclip
 
 ---
 
-## ⚡ สิ่งที่เหลือต้องทำ (Remaining Work)
+## ⚡ Remaining Work
 
-> อัปเดต: 10 พฤษภาคม 2026 — งานหลักฝั่ง Device/Integration ที่ยืนยันแล้วทำครบ เหลือเตรียมการนำเสนอเดโม
+> Updated: May 10, 2026 — the confirmed core Device/Integration work is complete; only demo presentation preparation remains
 
-### ลำดับความสำคัญ (Priority Order)
+### Priority Order
 
-| #   | งาน                                                      | ส่วน    | ความสำคัญ | สถานะ |
-| --- | -------------------------------------------------------- | ------- | :-------: | :---: |
-| 1   | **Demo/Presentation** — เตรียมสาธิตให้อาจารย์/คณะกรรมการ | ทุกส่วน |  🟢 ต่ำ   |  ⏳   |
+| #   | Task                                                                  | Part      | Priority | Status |
+| --- | --------------------------------------------------------------------- | --------- | :------: | :----: |
+| 1   | **Demo/Presentation** — prepare the demo for advisors/committee       | All parts |  🟢 Low  |   ⏳   |
 
-### รายละเอียดแต่ละงาน
+### Task Details
 
-#### 1. ทดสอบล้มจริง (Real Fall Test)
-
-```
-สิ่งที่ต้องทำ:
-- ทดสอบการล้มจริงในสภาพแวดล้อมที่ปลอดภัย
-- ครอบคลุมท่าหลัก: Forward Fall, Backward Fall, Side Fall
-- ตรวจดูว่าอุปกรณ์ส่ง event และแจ้งเตือนได้ถูกต้อง
-- บันทึกผลการทดสอบ
-
-ผลลัพธ์ที่ต้องการ:
-- ยืนยันว่าระบบตรวจจับและส่งเหตุการณ์หกล้มได้
-- ยืนยันว่าการกดปุ่มยกเลิก False Alarm ยังทำงานตามปกติ
-```
-
-#### 2. ตรวจสอบการอ่านชีพจร (Heart Rate Readout Check)
+#### 1. Real Fall Test
 
 ```
-สิ่งที่ต้องทำ:
-- ยืนยันว่า Pulse Sensor XD-58C อ่านค่า HR จากอุปกรณ์จริงได้
-- ตรวจดูว่าค่า BPM ถูกส่งเข้าระบบและแนบกับ FALL event ได้เมื่อมีข้อมูล
-- ปรับ Band-Pass Filter เฉพาะกรณีที่สัญญาณอ่านไม่ออกหรือมี noise มาก
+To do:
+- Test real falls in a safe environment
+- Cover the main postures: Forward Fall, Backward Fall, Side Fall
+- Check that the device sends the event and alerts correctly
+- Record the test results
 
-ผลลัพธ์ที่ต้องการ:
-- อ่านค่า HR ได้จากอุปกรณ์จริง
-- แนบ BPM กับ FALL event ได้เมื่อมีข้อมูลพร้อมใช้งาน
+Expected outcome:
+- Confirm that the system detects and sends fall events
+- Confirm that the False Alarm cancel button still works normally
+```
+
+#### 2. Heart Rate Readout Check
+
+```
+To do:
+- Confirm that the Pulse Sensor XD-58C reads HR from the real device
+- Check that the BPM value is sent into the system and attached to the FALL event when data is available
+- Tune the Band-Pass Filter only if the signal is unreadable or very noisy
+
+Expected outcome:
+- HR can be read from the real device
+- BPM is attached to the FALL event when data is available
 ```
 
 #### 3. System Integration Test (End-to-End)
 
 ```
-Test Flow ที่ต้องทดสอบ:
+Test flows to cover:
 
 Flow A — Fall Detection:
-  Sensors (MPU6050 + Pulse Sensor) อ่านข้อมูล → ESP32 ประมวลผล → ตรวจจับล้ม
-  → MQTT → Backend → Push Notification → Mobile แสดงแจ้งเตือน → Event History บันทึก
+  Sensors (MPU6050 + Pulse Sensor) read data → ESP32 processes → detects fall
+  → MQTT → Backend → Push Notification → Mobile shows alert → Event History records
 
 Flow B — False Alarm Cancel:
-  Sensors ตรวจจับล้ม → ESP32 ส่งค่า → ผู้สูงอายุกดปุ่มยกเลิกใน 15 วินาที
-  → MQTT fall_cancelled → Backend อัปเดต event เป็น CANCELLED โดยไม่แจ้ง Mobile
+  Sensors detect fall → ESP32 sends values → elder presses the cancel button within 15 seconds
+  → MQTT fall_cancelled → Backend updates the event to CANCELLED without notifying Mobile
 
 Flow C — Heart Rate at Fall:
-  Pulse Sensor วัด HR → ESP32 ตรวจจับล้ม + cache BPM → MQTT → Backend แนบ BPM ล่าสุด (cache ≤ 5 นาที) ใน FALL event.bpm
-  → Mobile แสดง BPM ณ ขณะล้มบนหน้า Fall Alert
+  Pulse Sensor measures HR → ESP32 detects fall + caches BPM → MQTT → Backend attaches the latest BPM (cache ≤ 5 minutes) to FALL event.bpm
+  → Mobile shows the BPM at the time of the fall on the Fall Alert screen
 
 Flow D — Device Status:
-  ESP32 เปิดเครื่อง → MQTT status ONLINE → Backend อัปเดต → Mobile แสดง Online
-  ESP32 ปิดเครื่อง → timeout → Backend อัปเดต OFFLINE → Mobile แสดง Offline
+  ESP32 powers on → MQTT status ONLINE → Backend updates → Mobile shows Online
+  ESP32 powers off → timeout → Backend updates OFFLINE → Mobile shows Offline
 ```
 
 ---
 
-# ส่วนที่ 1: แผนพัฒนา (Development Plan)
+# Part 1: Development Plan
 
-## Software Development Plan (แผนพัฒนาซอฟต์แวร์)
+## Software Development Plan
 
-### ภาพรวมสำหรับนำเสนอ (Summary)
+### Summary for Presentation
 
-| Phase | ระยะ                              | ช่วงเวลา      |  สถานะ   |
-| :---: | --------------------------------- | ------------- | :------: |
-|   1   | ฟังก์ชันหลัก (Core Functions)     | ก.ย.-พ.ย. 68  | ✅ 100%  |
-|   2   | ฟังก์ชันรอง (Secondary Functions) | พ.ย.-ธ.ค. 68  | ✅ 100%  |
-|   3   | ฟังก์ชันทั้งหมด (Full Functions)  | ธ.ค.-ม.ค. 69  | ✅ 100%  |
-|   4   | การทดสอบ (Testing & Deployment)   | ก.พ.-มี.ค. 69 | 🔄 66.7% |
+| Phase | Stage                             | Period          |  Status  |
+| :---: | --------------------------------- | --------------- | :------: |
+|   1   | Core Functions                    | Sep-Nov 2025    | ✅ 100%  |
+|   2   | Secondary Functions               | Nov-Dec 2025    | ✅ 100%  |
+|   3   | Full Functions                    | Dec 2025-Jan 2026 | ✅ 100%  |
+|   4   | Testing & Deployment              | Feb-Mar 2026    | 🔄 66.7% |
 
-**Phase 3 ที่เหลือ (0 รายการ):**
+**Phase 3 remaining (0 items):**
 
-- ไม่มี (สำเร็จครบถ้วน)
+- None (fully complete)
 
-**Phase 4 งานหลัก (3 รายการ):**
+**Phase 4 main tasks (3 items):**
 
-- ✅ **System Integration:** ทดสอบ Mobile ↔ Backend ↔ ESP32 ครบ loop
-- ✅ **Sensor Calibration:** ปรับจูนการตรวจจับล้มและยืนยันการอ่านชีพจรจากอุปกรณ์จริง
-- ⏳ **Demo/Presentation:** เตรียมสาธิตให้อาจารย์/คณะกรรมการ
+- ✅ **System Integration:** tested the full Mobile ↔ Backend ↔ ESP32 loop
+- ✅ **Sensor Calibration:** tuned fall detection and confirmed pulse readout from the real device
+- ⏳ **Demo/Presentation:** prepare the demo for advisors/committee
 
-**สิ่งที่ทำไปแล้ว (Phase 4):**
+**Done so far (Phase 4):**
 
 - ✅ System Integration (Mobile ↔ Backend ↔ ESP32)
 - ✅ Sensor Calibration (Fall + HR Readout)
 - ✅ Deployment (student scope): EAS Build Preview (Mobile), Backend Docker + Cloudflare, Admin Local, MQTT HiveMQ Cloud
-- ✅ Security Audit (3 รอบ, 24 fixes)
+- ✅ Security Audit (3 rounds, 24 fixes)
 - ✅ Unit Tests (196 tests)
 - ✅ Integration Tests (44 tests)
 
-#### Phase 1: ฟังก์ชันหลัก (Core Functions)
+#### Phase 1: Core Functions
 
-**เป้าหมาย:** ผู้ใช้สามารถลงทะเบียน จัดการข้อมูลผู้สูงอายุ และโทรฉุกเฉินได้ (ก่อนเชื่อมต่อ IoT)
+**Goal:** users can register, manage elder information, and make emergency calls (before IoT connection)
 
-**ฟังก์ชัน (Caregiver):**
+**Functions (Caregiver):**
 
-- ลงทะเบียน/เข้าสู่ระบบ (Register, Login)
-- จัดการข้อมูลผู้สูงอายุ (Elder Profile)
-- จัดการผู้ติดต่อฉุกเฉิน (Emergency Contacts)
-- โทรฉุกเฉิน (Emergency Call)
-- Dashboard เปล่า (Empty State)
+- Register/Sign in (Register, Login)
+- Manage elder information (Elder Profile)
+- Manage emergency contacts (Emergency Contacts)
+- Emergency call (Emergency Call)
+- Empty Dashboard (Empty State)
 
-**ฟังก์ชัน (Admin):**
+**Functions (Admin):**
 
-- เข้าสู่ระบบ/ออกจากระบบ (Admin Login/Logout)
-- จัดการและลบอุปกรณ์ (Device List & Management)
+- Sign in/Sign out (Admin Login/Logout)
+- Manage and delete devices (Device List & Management)
 
-#### Phase 2: ฟังก์ชันรอง (Secondary Functions)
+#### Phase 2: Secondary Functions
 
-**เป้าหมาย:** ผู้ใช้สามารถจับคู่อุปกรณ์และติดตามสถานะ Online/Offline ได้
+**Goal:** users can pair a device and track Online/Offline status
 
-**ฟังก์ชัน (Caregiver):**
+**Functions (Caregiver):**
 
-- เชื่อมต่ออุปกรณ์ (Device Pairing) ผ่าน QR Code
-- Dashboard แสดงสถานะ Online/Offline
-- ดูเหตุการณ์ย้อนหลัง (Event History)
+- Connect a device (Device Pairing) via QR Code
+- Dashboard shows Online/Offline status
+- View past events (Event History)
 
-**ฟังก์ชัน (Admin):**
+**Functions (Admin):**
 
-- ลงทะเบียนอุปกรณ์และสร้าง QR Code (Register Device)
-- ดูรายการ/ลบ/ยกเลิกการจับคู่อุปกรณ์ (Device Management)
-- Dashboard แสดงภาพรวมระบบ (System Overview)
+- Register devices and generate QR Codes (Register Device)
+- List/delete/unpair devices (Device Management)
+- Dashboard shows a system overview (System Overview)
 
-#### Phase 3: ฟังก์ชันทั้งหมด (Full Functions)
+#### Phase 3: Full Functions
 
-**เป้าหมาย:** ผู้ใช้ได้รับข้อมูล Sensor แบบ Real-time และแจ้งเตือนเมื่อเกิดเหตุการณ์ผิดปกติ
+**Goal:** users receive real-time Sensor data and are notified when abnormal events occur
 
-**ฟังก์ชัน (Caregiver):**
+**Functions (Caregiver):**
 
-- แสดง Heart Rate และ Fall Status แบบ Real-time
+- Show Heart Rate and Fall Status in Real-time
 - Push Notifications (Fall only, with BPM at time of fall)
-- รายงานสุขภาพรายเดือน (Monthly Report)
-- ดูประวัติการแจ้งเตือน (Notification History)
+- Monthly health report (Monthly Report)
+- View notification history (Notification History)
 
-#### Phase 4: การทดสอบ (Testing & Deployment)
+#### Phase 4: Testing & Deployment
 
-**เป้าหมาย:** ระบบทดสอบ Integration กับ Hardware จริงและพร้อมสาธิต
+**Goal:** the system is integration-tested with the real Hardware and ready for the demo
 
-**ขั้นตอน:**
+**Steps:**
 
-- System Integration Testing (Mobile + Backend + Hardware ทำงานร่วมกัน)
-- Sensor Calibration (ทดสอบล้มจริงและยืนยันการอ่านชีพจร)
+- System Integration Testing (Mobile + Backend + Hardware working together)
+- Sensor Calibration (real fall tests and pulse readout confirmation)
 - Demo Preparation
 
 ---
 
-## Hardware Development Plan (แผนพัฒนาฮาร์ดแวร์)
+## Hardware Development Plan
 
-### ภาพรวมสำหรับนำเสนอ (Summary)
+### Summary for Presentation
 
-| Phase | ระยะ                              | ช่วงเวลา          |  สถานะ  |
-| :---: | --------------------------------- | ----------------- | :-----: |
-|   1   | ฟังก์ชันหลัก (Core Functions)     | พ.ย. 68 - ม.ค. 69 | ✅ 100% |
-|   2   | ฟังก์ชันรอง (Secondary Functions) | พ.ย. 68 - ม.ค. 69 | ✅ 100% |
-|   3   | ฟังก์ชันทั้งหมด (Full Functions)  | ธ.ค. 68 - ม.ค. 69 | ✅ 100% |
-|   4   | การทดสอบ (Testing & Validation)   | ก.พ.-มี.ค. 69     | ✅ 100% |
+| Phase | Stage                             | Period              |  Status  |
+| :---: | --------------------------------- | ------------------- | :-----: |
+|   1   | Core Functions                    | Nov 2025 - Jan 2026 | ✅ 100% |
+|   2   | Secondary Functions               | Nov 2025 - Jan 2026 | ✅ 100% |
+|   3   | Full Functions                    | Dec 2025 - Jan 2026 | ✅ 100% |
+|   4   | Testing & Validation              | Feb-Mar 2026        | ✅ 100% |
 
-> **อัปเดต 10 พฤษภาคม 2026:** ฮาร์ดแวร์ประกอบรวมอุปกรณ์เสร็จแล้ว พร้อมทดสอบจริง
+> **Update May 10, 2026:** the hardware has been fully assembled and is ready for real testing
 
-**Phase 3 ที่เหลือ (0 รายการ):**
+**Phase 3 remaining (0 items):**
 
-- ไม่มี (สำเร็จครบถ้วน)
+- None (fully complete)
 
-**Phase 4 ที่เหลือ (ทั้งหมด):**
+**Phase 4 remaining (all):**
 
-- ไม่มี (งานทดสอบหลักที่วางไว้ทำครบแล้ว)
+- None (all planned core testing is done)
 
-**สิ่งที่ทำสำเร็จใน Phase 4:**
+**Achieved in Phase 4:**
 
-- ทดสอบล้มจริง: Forward/Backward/Side Fall บนพื้นที่ปลอดภัย
-- ตรวจสอบการอ่านชีพจร: อ่านค่า HR จาก Pulse Sensor ได้จากอุปกรณ์จริง
-- การเชื่อมต่อพื้นฐาน: ตรวจสอบ Wi-Fi/MQTT ทำงานต่อเนื่องในงานจริง
+- Real fall tests: Forward/Backward/Side Fall in a safe area
+- Pulse readout check: HR read from the Pulse Sensor on the real device
+- Basic connectivity: verified that Wi-Fi/MQTT keep working in real use
 
-#### Phase 1: ฟังก์ชันหลัก (Core Functions)
+#### Phase 1: Core Functions
 
-**เป้าหมาย:** พัฒนาฮาร์ดแวร์พื้นฐานให้สามารถตรวจจับการเคลื่อนไหวและสื่อสารกับ Backend ได้
+**Goal:** develop the basic hardware so it can detect movement and communicate with the Backend
 
-**ฟังก์ชัน:**
+**Functions:**
 
-- ESP32 + MPU6050 อ่านค่า Accelerometer/Gyroscope
-- เชื่อมต่อ Wi-Fi + MQTT
-- รองรับ BLE สำหรับตั้งค่า Wi-Fi
+- ESP32 + MPU6050 reading Accelerometer/Gyroscope
+- Wi-Fi + MQTT connection
+- BLE support for Wi-Fi setup
 
-#### Phase 2: ฟังก์ชันรอง (Secondary Functions)
+#### Phase 2: Secondary Functions
 
-**เป้าหมาย:** เพิ่ม Sensor วัดชีพจรและระบบพลังงานแบบพกพา
+**Goal:** add a pulse Sensor and a portable power system
 
-**ฟังก์ชัน:**
+**Functions:**
 
-- Pulse Sensor XD-58C วัดชีพจร
-- LiPo Battery + TP4056 ชาร์จ
-- Grove Speaker เสียงเตือน
+- Pulse Sensor XD-58C pulse measurement
+- LiPo Battery + TP4056 charging
+- Grove Speaker audible alarm
 
-#### Phase 3: ฟังก์ชันทั้งหมด (Full Functions)
+#### Phase 3: Full Functions
 
-**เป้าหมาย:** พัฒนา Algorithm ตรวจจับการล้มและระบบแจ้งเตือนครบถ้วน
+**Goal:** develop the fall detection Algorithm and a complete alert system
 
-**ฟังก์ชัน:**
+**Functions:**
 
 - Fall Detection (Threshold-based)
-- ส่ง JSON ผ่าน MQTT
-- ออกแบบ PCB/กล่อง และสายคล้องคอ
+- JSON over MQTT
+- PCB/enclosure and neck strap design
 
-#### Phase 4: การทดสอบ (Testing & Validation)
+#### Phase 4: Testing & Validation
 
-**เป้าหมาย:** ทดสอบการล้มจริงและยืนยันการอ่านชีพจรจากอุปกรณ์จริง
+**Goal:** test real falls and confirm pulse readout from the real device
 
-**ขั้นตอน:**
+**Steps:**
 
-- ทดสอบการล้มจริง (Forward/Backward/Side Fall)
-- ตรวจสอบการอ่านค่า HR และการแนบ BPM กับ FALL event
-- ตรวจสอบการเชื่อมต่อ Wi-Fi/MQTT ในการใช้งานปกติ
+- Real fall tests (Forward/Backward/Side Fall)
+- Check HR readout and attaching BPM to the FALL event
+- Check Wi-Fi/MQTT connectivity in normal use
 
 ---
 
-# ส่วนที่ 2: Checklist สำหรับติดตามงาน
+# Part 2: Task Tracking Checklist
 
 ## Software Development Tracker
 
-### Phase 1: ฟังก์ชันหลัก (Core Functions)
+### Phase 1: Core Functions
 
-**เป้าหมาย:** ผู้ใช้สามารถลงทะเบียน จัดการข้อมูลผู้สูงอายุ และโทรฉุกเฉินได้ (ก่อนเชื่อมต่อ IoT)
+**Goal:** users can register, manage elder information, and make emergency calls (before IoT connection)
 
-**Actor: ญาติผู้ดูแล (Caregiver):**
+**Actor: Caregiver (family member):**
 
-- [x] พัฒนาฟังก์ชันการลงทะเบียนบัญชีผู้ใช้ (Register) เข้าสู่ระบบ (Login) และจัดการข้อมูลส่วนตัว
-- [x] พัฒนาฟังก์ชันการเพิ่ม ดู แก้ไข ข้อมูลผู้สูงอายุ (Elder Profile)
-- [x] พัฒนาฟังก์ชันการจัดการรายชื่อผู้ติดต่อฉุกเฉิน (Emergency Contacts) เพิ่ม/ลบ/จัดลำดับ
-- [x] พัฒนาฟังก์ชันโทรฉุกเฉิน (Emergency Call) รองรับทั้งการกดเองและผ่านการแจ้งเตือน
-- [x] พัฒนาฟังก์ชันแสดงหน้า Dashboard เปล่า (Empty State) รองรับการเริ่มใช้งาน
+- [x] Develop user account registration (Register), sign-in (Login), and personal information management
+- [x] Develop adding, viewing, and editing elder information (Elder Profile)
+- [x] Develop emergency contact list management (Emergency Contacts): add/delete/reorder
+- [x] Develop emergency calling (Emergency Call), supporting both manual dialing and dialing from an alert
+- [x] Develop the empty Dashboard (Empty State) to support getting started
 
-**Actor: ผู้ดูแลระบบ (Admin):**
+**Actor: Admin:**
 
-- [x] พัฒนาฟังก์ชันเข้าสู่ระบบ (Admin Login) และจัดการบัญชีผู้ดูแล
-- [x] พัฒนาฟังก์ชันดูภาพรวมสถานะอุปกรณ์ ได้แก่ จำนวนอุปกรณ์ทั้งหมด จำนวนอุปกรณ์ที่จับคู่แล้ว และอุปกรณ์ที่ยังไม่จับคู่
-
----
-
-### Phase 2: ฟังก์ชันรอง (Secondary Functions)
-
-**เป้าหมาย:** ผู้ใช้สามารถจับคู่อุปกรณ์และติดตามสถานะ Online/Offline ได้
-
-**Actor: ญาติผู้ดูแล (Caregiver):**
-
-- [x] พัฒนาฟังก์ชันเชื่อมต่ออุปกรณ์ (Device Pairing) ผ่าน QR Code และ Manual Entry
-- [x] พัฒนาฟังก์ชันอัปเดตการตั้งค่า Wi-Fi ให้กับอุปกรณ์ (WiFi Update)
-- [x] พัฒนาฟังก์ชัน Dashboard แสดงสถานะอุปกรณ์ Online/Offline แบบ Real-time
-- [x] พัฒนาฟังก์ชันดูเหตุการณ์ย้อนหลัง (Event History) พร้อมตัวกรอง (25, 50, ทั้งหมด)
-
-**Actor: ผู้ดูแลระบบ (Admin):**
-
-- [x] พัฒนาฟังก์ชันลงทะเบียนอุปกรณ์เข้าระบบ (Register Device) และสร้าง QR Code
-- [x] พัฒนาฟังก์ชันดูรายการอุปกรณ์ทั้งหมดและสถานะการเชื่อมต่อ
+- [x] Develop admin sign-in (Admin Login) and admin account management
+- [x] Develop the device status overview: total number of devices, number of paired devices, and unpaired devices
 
 ---
 
-### Phase 3: ฟังก์ชันทั้งหมด (Full Functions)
+### Phase 2: Secondary Functions
 
-**เป้าหมาย:** ผู้ใช้ได้รับข้อมูล Sensor แบบ Real-time และแจ้งเตือนเมื่อเกิดเหตุการณ์ผิดปกติ
+**Goal:** users can pair a device and track Online/Offline status
 
-**Actor: ผู้สูงอายุ (Elder):**
+**Actor: Caregiver (family member):**
 
-- [x] พัฒนาฟังก์ชันการยกเลิกการแจ้งเตือน (False Alarm) ผ่านปุ่มบนอุปกรณ์ (False Alarm Cancel Button)
+- [x] Develop device connection (Device Pairing) via QR Code and Manual Entry
+- [x] Develop updating the device's Wi-Fi settings (WiFi Update)
+- [x] Develop the Dashboard showing device Online/Offline status in Real-time
+- [x] Develop viewing past events (Event History) with filters (25, 50, all)
 
-**Actor: ญาติผู้ดูแล (Caregiver):**
+**Actor: Admin:**
 
-- [x] พัฒนาฟังก์ชันแสดงข้อมูลสุขภาพ Real-time (Heart Rate, Fall Status) บน Dashboard
-- [x] พัฒนาฟังก์ชันการแจ้งเตือน (Push Notifications) สำหรับการหกล้ม (`fall_confirmed` พร้อม BPM ณ ขณะล้ม)
-- [x] พัฒนาฟังก์ชันรายงานสุขภาพรายเดือน (Monthly Health Report) และข้อมูลสรุป
-- [x] พัฒนาฟังก์ชันดูประวัติการแจ้งเตือน (Notification History) จัดการสถานะและลบรายการได้
-**Actor: ผู้ดูแลระบบ (Admin):**
-
-- [x] พัฒนาฟังก์ชัน Dashboard แสดงข้อมูลสรุปภาพรวมของระบบ (System Overview)
-  - แสดงจำนวนอุปกรณ์ทั้งหมด อุปกรณ์ที่จับคู่แล้ว และอุปกรณ์ที่ยังไม่จับคู่
+- [x] Develop registering devices in the system (Register Device) and generating QR Codes
+- [x] Develop viewing the list of all devices and their connection status
 
 ---
 
-### Phase 4: การทดสอบ (Testing & Deployment) - ก.พ.-มี.ค. 2569
+### Phase 3: Full Functions
 
-**เป้าหมาย:** ระบบทดสอบ Integration กับ Hardware จริงและพร้อมสาธิต
+**Goal:** users receive real-time Sensor data and are notified when abnormal events occur
 
-**Actor: ทีมพัฒนาและทดสอบ (Dev & QA Team):**
+**Actor: Elder:**
 
-- [x] **System Integration:** ทดสอบการทำงานร่วมกันทั้งระบบ (Mobile - Backend - Firmware)
-- [x] **Sensor Calibration:** ปรับจูนความแม่นยำในการตรวจจับการหกล้มและวัดชีพจร
-- [x] **Deployment (Student Scope):** ใช้งานจริงผ่าน EAS Preview + Backend Docker/Cloudflare + Admin Local + HiveMQ Cloud
-- [ ] **Demo/Presentation:** เตรียมสาธิตให้อาจารย์/คณะกรรมการ
+- [x] Develop cancelling a false alarm (False Alarm) via the button on the device (False Alarm Cancel Button)
+
+**Actor: Caregiver (family member):**
+
+- [x] Develop showing real-time health data (Heart Rate, Fall Status) on the Dashboard
+- [x] Develop notifications (Push Notifications) for falls (`fall_confirmed` with BPM at the time of the fall)
+- [x] Develop the monthly health report (Monthly Health Report) and summary data
+- [x] Develop viewing notification history (Notification History) with status management and item deletion
+**Actor: Admin:**
+
+- [x] Develop the Dashboard showing a summary overview of the system (System Overview)
+  - Shows the total number of devices, paired devices, and unpaired devices
+
+---
+
+### Phase 4: Testing & Deployment - Feb-Mar 2026
+
+**Goal:** the system is integration-tested with the real Hardware and ready for the demo
+
+**Actor: Development and Testing Team (Dev & QA Team):**
+
+- [x] **System Integration:** test the whole system working together (Mobile - Backend - Firmware)
+- [x] **Sensor Calibration:** tune the accuracy of fall detection and pulse measurement
+- [x] **Deployment (Student Scope):** live use via EAS Preview + Backend Docker/Cloudflare + Admin Local + HiveMQ Cloud
+- [ ] **Demo/Presentation:** prepare the demo for advisors/committee
 
 ---
 
 ## Hardware Development Tracker
 
-### Phase 1: ฟังก์ชันหลัก (Core Functions) - พ.ค. 2569 ถึง ก.ค. 2569
+### Phase 1: Core Functions - May 2026 to Jul 2026
 
-**เป้าหมาย:** พัฒนาฮาร์ดแวร์พื้นฐานให้สามารถตรวจจับการเคลื่อนไหวและสื่อสารกับ Backend ได้
+**Goal:** develop the basic hardware so it can detect movement and communicate with the Backend
 
-**พื้นฐาน (ESP32 + MPU6050):**
+**Basics (ESP32 + MPU6050):**
 
-- [x] ESP32-DevKitC V4 สามารถอ่านค่า Accelerometer และ Gyroscope จาก MPU6050 ผ่าน I²C ได้
-- [x] เขียนโค้ดคำนวณค่า Signal Magnitude Vector (SMV) จากข้อมูล Accelerometer 3 แกน
-- [x] ใช้ Complementary Filter รวมสัญญาณจาก Accelerometer และ Gyroscope เพื่อประมาณมุม Pitch/Roll
+- [x] The ESP32-DevKitC V4 can read Accelerometer and Gyroscope values from the MPU6050 via I²C
+- [x] Write code to compute the Signal Magnitude Vector (SMV) from 3-axis Accelerometer data
+- [x] Use a Complementary Filter to combine Accelerometer and Gyroscope signals to estimate Pitch/Roll angles
 
-**การเชื่อมต่อ (Connectivity):**
+**Connectivity:**
 
-- [x] ESP32 เชื่อมต่อ Wi-Fi และส่งข้อมูลพื้นฐาน (เช่น "Hello World") ไปยัง MQTT Broker ได้สำเร็จ
-- [x] รองรับ BLE สำหรับตั้งค่า Wi-Fi ผ่าน Mobile App
+- [x] The ESP32 connects to Wi-Fi and successfully sends basic data (e.g. "Hello World") to the MQTT Broker
+- [x] Support BLE for Wi-Fi setup via the Mobile App
 
-**ปฏิสัมพันธ์ (User Interaction):**
+**User Interaction:**
 
-- [x] ปุ่มกด (Large Push Button) ทำงานได้และตรวจจับสถานะ HIGH/LOW ได้ถูกต้อง
-
----
-
-### Phase 2: ฟังก์ชันรอง (Secondary Functions) - พ.ค. 2569 ถึง ก.ค. 2569
-
-**เป้าหมาย:** เพิ่ม Sensor วัดชีพจรและระบบพลังงานแบบพกพา
-
-**Sensor เพิ่มเติม (Pulse Sensor XD-58C):**
-
-- [x] เพิ่ม Pulse Sensor (XD-58C) เชื่อมต่อผ่าน GPIO34 (Analog)
-- [x] เขียนโค้ดอ่านค่าสัญญาณ PPG และคำนวณอัตราการเต้นของหัวใจ (BPM)
-- [x] ใช้ Band-Pass Filter (0.5-5 Hz) กรองสัญญาณรบกวนจากการเคลื่อนไหว (ปรับจูนสำหรับการใช้งานจริงแล้ว)
-
-**ระบบพลังงาน (Power System):**
-
-- [x] ประกอบวงจรพื้นฐานด้วยแบตเตอรี่ LiPo 3.7V 450mAh
-- [x] ติดตั้งโมดูลชาร์จ TP4056 พร้อมวงจรป้องกันการชาร์จเกินและคายประจุเกิน
-- [x] ใช้ Power Module (Step-Up Boost 3.7V → 5V) จ่ายไฟให้ ESP32
-
-**การแจ้งเตือน (Alert System):**
-
-- [x] เพิ่มโมดูลลำโพง Grove Speaker สำหรับเสียงเตือน
-- [x] เขียนโค้ดสร้างเสียงเตือนเมื่อตรวจพบเหตุการณ์ผิดปกติ
+- [x] The push button (Large Push Button) works and detects HIGH/LOW states correctly
 
 ---
 
-### Phase 3: ฟังก์ชันทั้งหมด (Full Functions) - มิ.ย. 2569 ถึง ส.ค. 2569
+### Phase 2: Secondary Functions - May 2026 to Jul 2026
 
-**เป้าหมาย:** พัฒนา Algorithm ตรวจจับการล้มและระบบแจ้งเตือนครบถ้วน
+**Goal:** add a pulse Sensor and a portable power system
 
-**Algorithm ตรวจจับการล้ม (Fall Detection):**
+**Additional Sensor (Pulse Sensor XD-58C):**
 
-- [x] พัฒนาและปรับจูน Algorithm การตรวจจับการล้มโดยใช้ Threshold-based Analysis
-- [x] กำหนดค่า Threshold สำหรับ:
-  - ค่าความเร่งรวม (SMV) ≈ 2.5g-3.2g สำหรับตรวจจับ Impact
-  - อัตราการหมุน ≈ 250-300 °/s สำหรับตรวจจับการเสียการทรงตัว
-  - ช่วงนิ่งหลัง Impact (Post-Fall Phase) 0.5-1 วินาที
-- [x] ใช้ Orientation Features (Pitch/Roll) ยืนยันท่าทางหลังการล้ม
+- [x] Add the Pulse Sensor (XD-58C) connected via GPIO34 (Analog)
+- [x] Write code to read the PPG signal and compute heart rate (BPM)
+- [x] Use a Band-Pass Filter (0.5-5 Hz) to filter motion noise (already tuned for real use)
 
-**การแจ้งเตือน (MQTT Messaging):**
+**Power System:**
 
-- [x] เขียนโค้ดส่งข้อมูลที่มีโครงสร้าง JSON ไปยัง MQTT Broker เมื่อตรวจจับ:
-  - การหกล้ม (Fall Detection)
-  - ค่าชีพจร (HR) เพื่อ cache ไว้แนบกับ FALL event (ถ้าเกิดล้มภายใน 5 นาที)
-- [x] รองรับการยกเลิกการแจ้งเตือน (False Alarm) ผ่านปุ่มกดภายใน 15 วินาที (False Alarm Cancel Button)
+- [x] Build the basic circuit with a LiPo 3.7V 450mAh battery
+- [x] Install the TP4056 charging module with overcharge and over-discharge protection
+- [x] Use a Power Module (Step-Up Boost 3.7V → 5V) to power the ESP32
 
-**การออกแบบ (Physical Design):**
+**Alert System:**
 
-- [x] เริ่มออกแบบและประกอบอุปกรณ์ลงบนแผงวงจร PCB หรือกล่องที่เหมาะสม
-- [x] ติดตั้ง Slide Switch SS12D00 สำหรับเปิด/ปิดอุปกรณ์
-- [x] ออกแบบสายคล้องคอ (Neck Strap) และตำแหน่งติดตั้ง Easy Earclip สำหรับ Pulse Sensor
-
-> **หมายเหตุ:** ประกอบ Prototype รวมอุปกรณ์บน proto board เสร็จแล้ว และ **ออกแบบ PCB/กล่องสำหรับ final version เรียบร้อยแล้ว**
+- [x] Add the Grove Speaker module for audible alarms
+- [x] Write code to produce an alarm sound when an abnormal event is detected
 
 ---
 
-### Phase 4: การทดสอบ (Testing & Validation) - ก.พ.-มี.ค. 2569
+### Phase 3: Full Functions - Jun 2026 to Aug 2026
 
-**เป้าหมาย:** ทดสอบการล้มจริงและยืนยันการอ่านชีพจรจากอุปกรณ์จริง
+**Goal:** develop the fall detection Algorithm and a complete alert system
 
-**การทดสอบการล้มจริง (Real Fall Test):**
+**Fall Detection Algorithm:**
 
-- [x] ทดสอบ Algorithm การตรวจจับการล้มในสภาพแวดล้อมที่ปลอดภัย:
-  - การล้มไปข้างหน้า (Forward Fall)
-  - การล้มหงายหลัง (Backward Fall)
-  - การล้มไปด้านข้าง (Side Fall)
-- [x] ยืนยันว่าอุปกรณ์ส่ง event และแจ้งเตือนได้ถูกต้อง
+- [x] Develop and tune the fall detection Algorithm using Threshold-based Analysis
+- [x] Set Threshold values for:
+  - Total acceleration (SMV) ≈ 2.5g-3.2g to detect Impact
+  - Rotation rate ≈ 250-300 °/s to detect loss of balance
+  - Stillness period after Impact (Post-Fall Phase) 0.5-1 seconds
+- [x] Use Orientation Features (Pitch/Roll) to confirm posture after the fall
 
-**การอ่านชีพจร (Heart Rate Readout):**
+**Alerts (MQTT Messaging):**
 
-- [x] ตรวจสอบว่า Pulse Sensor อ่านค่า HR ได้จากอุปกรณ์จริง
-- [x] ตรวจสอบว่า BPM แนบกับ FALL event ได้เมื่อมีข้อมูล
+- [x] Write code to send structured JSON data to the MQTT Broker when detecting:
+  - A fall (Fall Detection)
+  - Pulse (HR) values, cached to attach to the FALL event (if a fall happens within 5 minutes)
+- [x] Support cancelling a false alarm (False Alarm) via the button within 15 seconds (False Alarm Cancel Button)
 
-**การใช้งานพื้นฐาน (Basic Validation):**
+**Physical Design:**
 
-- [x] ตรวจสอบการเชื่อมต่อ Wi-Fi และ MQTT ในการใช้งานปกติ
+- [x] Start designing and assembling the device on a PCB or a suitable enclosure
+- [x] Install the SS12D00 Slide Switch for powering the device on/off
+- [x] Design the neck strap (Neck Strap) and the mounting position of the Easy Earclip for the Pulse Sensor
+
+> **Note:** the Prototype has been assembled on a proto board, and **the PCB/enclosure design for the final version is complete**
+
+---
+
+### Phase 4: Testing & Validation - Feb-Mar 2026
+
+**Goal:** test real falls and confirm pulse readout from the real device
+
+**Real Fall Test:**
+
+- [x] Test the fall detection Algorithm in a safe environment:
+  - Forward fall (Forward Fall)
+  - Backward fall (Backward Fall)
+  - Sideways fall (Side Fall)
+- [x] Confirm that the device sends the event and alerts correctly
+
+**Heart Rate Readout:**
+
+- [x] Check that the Pulse Sensor reads HR from the real device
+- [x] Check that BPM is attached to the FALL event when data is available
+
+**Basic Validation:**
+
+- [x] Check Wi-Fi and MQTT connectivity in normal use
 
 ---
 

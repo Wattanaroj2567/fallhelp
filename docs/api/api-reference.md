@@ -1,4 +1,6 @@
-# เอกสาร API ระบบ FallHelp
+# FallHelp API Reference
+
+[English](api-reference.md) · [ภาษาไทย](api-reference.th.md)
 
 ## Doc Meta
 
@@ -9,7 +11,7 @@
 
 ---
 
-> เอกสารนี้รวบรวม **API Endpoints**, **Request/Response**, และ **Real-time Events** ทั้งหมดของระบบ FallHelp
+> This document collects all **API Endpoints**, **Request/Response** formats, and **Real-time Events** of the FallHelp system.
 
 ## Table of Contents
 
@@ -34,24 +36,24 @@
 
 ## Overview
 
-| รายการ             | ค่า                                                                       |
+| Item               | Value                                                                      |
 | ------------------ | ------------------------------------------------------------------------- |
 | **Base URL**       | `http://localhost:3000`                                                   |
 | **Auth Model**     | JWT Bearer Token                                                          |
 | **Primary Actors** | `CAREGIVER`, `ADMIN`                                                      |
-| **Event Storage**  | `events` ใช้ PostgreSQL พร้อม PK เดี่ยว (`id`) และดัชนีเวลา (`timestamp`) |
+| **Event Storage**  | `events` uses PostgreSQL with a single PK (`id`) and a time index (`timestamp`) |
 
 ---
 
 ## 1. Authentication - `/api/auth`
 
-### 1.1 ลงทะเบียนผู้ใช้ใหม่
+### 1.1 Register a New User
 
-| รายการ       | ค่า                  |
+| Item         | Value                 |
 | ------------ | -------------------- |
 | **Method**   | `POST`               |
 | **Endpoint** | `/api/auth/register` |
-| **Auth**     | ไม่ต้อง              |
+| **Auth**     | None                 |
 
 **Request Body:**
 
@@ -89,13 +91,13 @@
 
 ---
 
-### 1.2 เข้าสู่ระบบ
+### 1.2 Log In
 
-| รายการ       | ค่า               |
+| Item         | Value              |
 | ------------ | ----------------- |
 | **Method**   | `POST`            |
 | **Endpoint** | `/api/auth/login` |
-| **Auth**     | ไม่ต้อง           |
+| **Auth**     | None              |
 
 **Request Body:**
 
@@ -128,13 +130,13 @@
 
 ---
 
-### 1.3 เข้าสู่ระบบผู้ดูแลระบบ
+### 1.3 Admin Login
 
-| รายการ       | ค่า                     |
+| Item         | Value                    |
 | ------------ | ----------------------- |
 | **Method**   | `POST`                  |
 | **Endpoint** | `/api/auth/admin-login` |
-| **Auth**     | ไม่ต้อง                 |
+| **Auth**     | None                    |
 
 **Request Body:**
 
@@ -164,17 +166,17 @@
 }
 ```
 
-**Error (403):** `role_not_allowed` เมื่อบัญชีที่เข้าสู่ระบบไม่ใช่ `ADMIN`
+**Error (403):** `role_not_allowed` when the signed-in account is not `ADMIN`
 
 ---
 
-### 1.4 ขอรหัส OTP (ลืมรหัสผ่าน)
+### 1.4 Request an OTP (Forgot Password)
 
-| รายการ       | ค่า                     |
+| Item         | Value                    |
 | ------------ | ----------------------- |
 | **Method**   | `POST`                  |
 | **Endpoint** | `/api/auth/request-otp` |
-| **Auth**     | ไม่ต้อง                 |
+| **Auth**     | None                    |
 
 **Request Body:**
 
@@ -197,17 +199,17 @@
 }
 ```
 
-**Error (500):** `email_send_failed` เมื่อ backend ส่ง OTP ผ่าน Resend ไม่สำเร็จ
+**Error (500):** `email_send_failed` when the backend fails to send the OTP via Resend
 
 ---
 
-### 1.5 ยืนยัน OTP
+### 1.5 Verify OTP
 
-| รายการ       | ค่า                    |
+| Item         | Value                   |
 | ------------ | ---------------------- |
 | **Method**   | `POST`                 |
 | **Endpoint** | `/api/auth/verify-otp` |
-| **Auth**     | ไม่ต้อง                |
+| **Auth**     | None                   |
 
 **Request Body:**
 
@@ -232,13 +234,13 @@
 
 ---
 
-### 1.6 ตั้งรหัสผ่านใหม่
+### 1.6 Reset Password
 
-| รายการ       | ค่า                        |
+| Item         | Value                       |
 | ------------ | -------------------------- |
 | **Method**   | `POST`                     |
 | **Endpoint** | `/api/auth/reset-password` |
-| **Auth**     | ไม่ต้อง                    |
+| **Auth**     | None                       |
 
 **Request Body:**
 
@@ -263,15 +265,15 @@
 
 ---
 
-### 1.7 ดูข้อมูลผู้ใช้ปัจจุบัน (Canonical Route)
+### 1.7 Get Current User (Canonical Route)
 
-| รายการ       | ค่า             |
+| Item         | Value            |
 | ------------ | --------------- |
 | **Method**   | `GET`           |
 | **Endpoint** | `/api/users/me` |
 | **Auth**     | Bearer Token    |
 
-> route นี้ย้ายออกจาก `auth` มาอยู่ใต้ resource `users/me` แล้ว แต่ยังอ้างไว้ในหมวด auth เพื่อให้เห็น session-related flow ครบชุด
+> This route has moved out of `auth` to the `users/me` resource, but it is still listed under auth so the session-related flow is shown in full.
 
 **Response (200):**
 
@@ -293,9 +295,9 @@
 
 ---
 
-### 1.8 ออกจากระบบ
+### 1.8 Log Out
 
-| รายการ       | ค่า                |
+| Item         | Value               |
 | ------------ | ------------------ |
 | **Method**   | `POST`             |
 | **Endpoint** | `/api/auth/logout` |
@@ -312,15 +314,15 @@
 }
 ```
 
-> ล้าง push token ออกจาก DB เพื่อหยุดส่ง Expo Push Notification ไปยังอุปกรณ์นั้น
+> Clears the push token from the DB to stop sending Expo Push Notifications to that device.
 
 ---
 
 ## 2. Users - `/api/users`
 
-### 2.1 ดูโปรไฟล์ผู้ใช้ปัจจุบัน
+### 2.1 Get Current User Profile
 
-| รายการ       | ค่า             |
+| Item         | Value            |
 | ------------ | --------------- |
 | **Method**   | `GET`           |
 | **Endpoint** | `/api/users/me` |
@@ -345,9 +347,9 @@
 
 ---
 
-### 2.2 แก้ไขโปรไฟล์ผู้ใช้ปัจจุบัน
+### 2.2 Update Current User Profile
 
-| รายการ       | ค่า             |
+| Item         | Value            |
 | ------------ | --------------- |
 | **Method**   | `PATCH`         |
 | **Endpoint** | `/api/users/me` |
@@ -386,9 +388,9 @@
 
 ---
 
-### 2.3 เปลี่ยนรหัสผ่าน
+### 2.3 Change Password
 
-| รายการ       | ค่า                      |
+| Item         | Value                     |
 | ------------ | ------------------------ |
 | **Method**   | `PUT`                    |
 | **Endpoint** | `/api/users/me/password` |
@@ -416,9 +418,9 @@
 
 ---
 
-### 2.4 อัปเดต Push Token
+### 2.4 Update Push Token
 
-| รายการ       | ค่า                        |
+| Item         | Value                       |
 | ------------ | -------------------------- |
 | **Method**   | `PUT`                      |
 | **Endpoint** | `/api/users/me/push-token` |
@@ -447,15 +449,15 @@
 
 ## 3. Elders - `/api/elders`
 
-### 3.1 สร้างข้อมูลผู้สูงอายุ
+### 3.1 Create an Elder
 
-| รายการ       | ค่า           |
+| Item         | Value          |
 | ------------ | ------------- |
 | **Method**   | `POST`        |
 | **Endpoint** | `/api/elders` |
 | **Auth**     | Bearer Token  |
 
-> `dateOfBirth` ใช้รูปแบบ `YYYY-MM-DD` และ API จะตอบกลับเป็นรูปแบบเดียวกัน
+> `dateOfBirth` uses the `YYYY-MM-DD` format, and the API responds in the same format.
 
 **Request Body:**
 
@@ -497,15 +499,15 @@
 
 ---
 
-### 3.2 ดูข้อมูลผู้สูงอายุปัจจุบัน
+### 3.2 Get Current Elder
 
-| รายการ       | ค่า                   |
+| Item         | Value                  |
 | ------------ | --------------------- |
 | **Method**   | `GET`                 |
 | **Endpoint** | `/api/elders/current` |
 | **Auth**     | Bearer Token          |
 
-ใช้กับ single-caregiver model เพื่อดึง elder คนเดียวที่ผูกกับผู้ใช้ปัจจุบัน ถ้ายังไม่มี elder จะคืน `data: null`
+Used with the single-caregiver model to fetch the one elder linked to the current user. If there is no elder yet, it returns `data: null`.
 
 **Response (200):**
 
@@ -530,9 +532,9 @@
 
 ---
 
-### 3.3 ดูข้อมูลผู้สูงอายุตาม id
+### 3.3 Get Elder by id
 
-| รายการ       | ค่า               |
+| Item         | Value              |
 | ------------ | ----------------- |
 | **Method**   | `GET`             |
 | **Endpoint** | `/api/elders/:id` |
@@ -570,15 +572,15 @@
 
 ---
 
-### 3.4 แก้ไขข้อมูลผู้สูงอายุ
+### 3.4 Update Elder
 
-| รายการ       | ค่า               |
+| Item         | Value              |
 | ------------ | ----------------- |
 | **Method**   | `PUT`             |
 | **Endpoint** | `/api/elders/:id` |
 | **Auth**     | Bearer Token      |
 
-**Request Body:** เหมือนข้อ 3.1 แต่ส่งเฉพาะ field ที่ต้องการแก้ได้
+**Request Body:** Same as 3.1, but you may send only the fields you want to change
 
 **Response (200):**
 
@@ -598,15 +600,15 @@
 
 ## 4. Devices - `/api/devices`
 
-### 4.1 ค้นหาอุปกรณ์ด้วย Device Code
+### 4.1 Look Up a Device by Device Code
 
-| รายการ       | ค่า                                |
+| Item         | Value                               |
 | ------------ | ---------------------------------- |
 | **Method**   | `GET`                              |
 | **Endpoint** | `/api/devices/by-code/:deviceCode` |
 | **Auth**     | Bearer Token                       |
 
-ใช้สำหรับตรวจสอบข้อมูลอุปกรณ์หลังผู้ใช้สแกน QR แล้ว ไม่ได้คืนภาพ QR สำเร็จรูปจาก backend
+Used to check device details after the user has scanned the QR code. The backend does not return a ready-made QR image.
 
 **Response (200):**
 
@@ -624,9 +626,9 @@
 
 ---
 
-### 4.2 ตั้งค่า WiFi ให้อุปกรณ์
+### 4.2 Configure Device WiFi
 
-| รายการ       | ค่า                            |
+| Item         | Value                           |
 | ------------ | ------------------------------ |
 | **Method**   | `PUT`                          |
 | **Endpoint** | `/api/devices/:id/wifi-config` |
@@ -662,9 +664,9 @@
 
 ---
 
-### 4.3 ดูการตั้งค่า WiFi ของอุปกรณ์
+### 4.3 Get Device WiFi Configuration
 
-| รายการ       | ค่า                            |
+| Item         | Value                           |
 | ------------ | ------------------------------ |
 | **Method**   | `GET`                          |
 | **Endpoint** | `/api/devices/:id/wifi-config` |
@@ -687,9 +689,9 @@
 
 ## 5. Device Pairings - `/api/device-pairings`
 
-### 5.1 จับคู่อุปกรณ์กับผู้สูงอายุ
+### 5.1 Pair a Device with an Elder
 
-| รายการ       | ค่า                    |
+| Item         | Value                   |
 | ------------ | ---------------------- |
 | **Method**   | `POST`                 |
 | **Endpoint** | `/api/device-pairings` |
@@ -722,9 +724,9 @@
 
 ---
 
-### 5.2 ยกเลิกการจับคู่อุปกรณ์
+### 5.2 Unpair a Device
 
-| รายการ       | ค่า                              |
+| Item         | Value                             |
 | ------------ | -------------------------------- |
 | **Method**   | `DELETE`                         |
 | **Endpoint** | `/api/device-pairings/:deviceId` |
@@ -748,9 +750,9 @@
 
 ## 6. Events - `/api/events`
 
-### 6.1 ดูรายการเหตุการณ์
+### 6.1 List Events
 
-| รายการ       | ค่า                                                                 |
+| Item         | Value                                                                |
 | ------------ | ------------------------------------------------------------------- |
 | **Method**   | `GET`                                                               |
 | **Endpoint** | `/api/events`                                                       |
@@ -784,9 +786,9 @@
 
 ---
 
-### 6.2 ดูรายละเอียดเหตุการณ์
+### 6.2 Get Event Details
 
-| รายการ       | ค่า               |
+| Item         | Value              |
 | ------------ | ----------------- |
 | **Method**   | `GET`             |
 | **Endpoint** | `/api/events/:id` |
@@ -813,20 +815,20 @@
 
 ---
 
-> ⚠️ **ข้อเท็จจริงเกี่ยวกับ Cancel vs Acknowledge ในแอป:**
+> ⚠️ **Facts about Cancel vs Acknowledge in the app:**
 
-| การกระทำ        | ผู้ดำเนินการ                          | เปลี่ยน DB               | ผล                                                          |
+| Action          | Actor                                 | DB Change                | Result                                                      |
 | --------------- | ------------------------------------- | ------------------------ | ----------------------------------------------------------- |
-| **Cancel**      | ผู้สวมใส่ — กดปุ่ม GPIO27 ภายใน 15 วิ | ✅ ตั้งค่า `cancelledAt` | ยกเลิกเหตุการได้จริง                                        |
-| **Acknowledge** | ผู้ดูแล — กดรับทราบแล้วในแอป          | ❌ ไม่เปลี่ยน            | `setFallStatus('NORMAL')` local state เท่านั้น — ไม่ยิง API |
+| **Cancel**      | Wearer — presses the GPIO27 button within 15 s | ✅ Sets `cancelledAt` | Actually cancels the event                     |
+| **Acknowledge** | Caregiver — taps Acknowledge in the app | ❌ No change          | `setFallStatus('NORMAL')` local state only — no API call   |
 
-> 🔒 **Current rule:** ผู้ดูแลทำได้เพียง **Acknowledge ในแอป** เท่านั้น — `fall_cancelled` ต้องมาจาก MQTT device flow เท่านั้น
+> 🔒 **Current rule:** Caregivers can only **Acknowledge in the app** — `fall_cancelled` must come from the MQTT device flow only
 
 ---
 
-### 6.3 สรุปรายเดือน
+### 6.3 Monthly Summary
 
-| รายการ       | ค่า                                |
+| Item         | Value                               |
 | ------------ | ---------------------------------- |
 | **Method**   | `GET`                              |
 | **Endpoint** | `/api/events/summary/monthly`      |
@@ -851,7 +853,7 @@
 }
 ```
 
-> **หมายเหตุ:** ฟิลด์ `heartRateAtFall*` แสดงการกระจายของ BPM เฉพาะบน FALL events ที่ยืนยันแล้ว (thresholds: Low < 60, Normal 60–100, High > 100 BPM; Unknown = ไม่มีข้อมูล HR)
+> **Note:** The `heartRateAtFall*` fields show the BPM distribution for confirmed FALL events only (thresholds: Low < 60, Normal 60–100, High > 100 BPM; Unknown = no HR data)
 
 ---
 
@@ -862,9 +864,9 @@
 > **Reason:** RESTful resource hierarchy — contacts belong to an elder
 > **Note:** `elderId` comes from the URL path parameter
 
-### 7.1 เพิ่มเบอร์ติดต่อฉุกเฉิน
+### 7.1 Add an Emergency Contact
 
-| รายการ       | ค่า                                       |
+| Item         | Value                                      |
 | ------------ | ----------------------------------------- |
 | **Method**   | `POST`                                    |
 | **Endpoint** | `/api/elders/:elderId/emergency-contacts` |
@@ -881,7 +883,7 @@
 ```
 
 **Required:** `name`, `phone`
-**Optional:** `relationship` — คำอธิบายความสัมพันธ์กับผู้สูงอายุ เช่น `ครอบครัว`, `ญาติ`, `เพื่อนบ้าน`, `ผู้ดูแล`, `เพื่อน` หรือคำที่ผู้ใช้ระบุเอง
+**Optional:** `relationship` — describes the relationship to the elder, e.g. `ครอบครัว` (family), `ญาติ` (relative), `เพื่อนบ้าน` (neighbor), `ผู้ดูแล` (caregiver), `เพื่อน` (friend), or any term the user enters
 **Priority:** Auto-assigned (first contact = 1, increments automatically)
 
 **Response (201):**
@@ -902,9 +904,9 @@
 
 ---
 
-### 7.2 ดูรายการเบอร์ติดต่อฉุกเฉิน
+### 7.2 List Emergency Contacts
 
-| รายการ       | ค่า                                       |
+| Item         | Value                                      |
 | ------------ | ----------------------------------------- |
 | **Method**   | `GET`                                     |
 | **Endpoint** | `/api/elders/:elderId/emergency-contacts` |
@@ -936,9 +938,9 @@
 
 ---
 
-### 7.3 แก้ไขเบอร์ติดต่อฉุกเฉิน
+### 7.3 Update an Emergency Contact
 
-| รายการ       | ค่า                                                  |
+| Item         | Value                                                 |
 | ------------ | ---------------------------------------------------- |
 | **Method**   | `PATCH`                                              |
 | **Endpoint** | `/api/elders/:elderId/emergency-contacts/:contactId` |
@@ -971,9 +973,9 @@
 
 ---
 
-### 7.4 ลบเบอร์ติดต่อฉุกเฉิน
+### 7.4 Delete an Emergency Contact
 
-| รายการ       | ค่า                                                  |
+| Item         | Value                                                 |
 | ------------ | ---------------------------------------------------- |
 | **Method**   | `DELETE`                                             |
 | **Endpoint** | `/api/elders/:elderId/emergency-contacts/:contactId` |
@@ -990,9 +992,9 @@
 
 ---
 
-### 7.5 จัดเรียงลำดับเบอร์ติดต่อ
+### 7.5 Reorder Emergency Contacts
 
-| รายการ       | ค่า                                             |
+| Item         | Value                                            |
 | ------------ | ----------------------------------------------- |
 | **Method**   | `PATCH`                                         |
 | **Endpoint** | `/api/elders/:elderId/emergency-contacts/order` |
@@ -1025,9 +1027,9 @@
 
 ## 8. Notifications - `/api/notifications`
 
-### 8.1 ดูรายการแจ้งเตือน
+### 8.1 List Notifications
 
-| รายการ       | ค่า                   |
+| Item         | Value                  |
 | ------------ | --------------------- |
 | **Method**   | `GET`                 |
 | **Endpoint** | `/api/notifications`  |
@@ -1061,14 +1063,14 @@
 }
 ```
 
-> `Notification` อ้างอิง `Event` ผ่าน FK (`eventId -> events.id`) แบบ required
-> ฝั่ง API จะ map `event` กลับมาให้ทุกครั้งที่อ่านรายการ เพื่อให้ mobile/admin trace กลับไปยัง event ต้นทางได้เสมอ
+> `Notification` references `Event` through a required FK (`eventId -> events.id`)
+> The API maps `event` back on every list read, so mobile/admin can always trace back to the source event
 
 ---
 
-### 8.2 ดูจำนวนแจ้งเตือนที่ยังไม่อ่าน
+### 8.2 Get Unread Notification Count
 
-| รายการ       | ค่า                               |
+| Item         | Value                              |
 | ------------ | --------------------------------- |
 | **Method**   | `GET`                             |
 | **Endpoint** | `/api/notifications/unread-count` |
@@ -1087,9 +1089,9 @@
 
 ---
 
-### 8.3 ทำเครื่องหมายว่าอ่านแล้ว
+### 8.3 Mark as Read
 
-| รายการ       | ค่า                      |
+| Item         | Value                     |
 | ------------ | ------------------------ |
 | **Method**   | `PATCH`                  |
 | **Endpoint** | `/api/notifications/:id` |
@@ -1114,9 +1116,9 @@
 
 ---
 
-### 8.4 ทำเครื่องหมายว่าอ่านแล้วทั้งหมด
+### 8.4 Mark All as Read
 
-| รายการ       | ค่า                  |
+| Item         | Value                 |
 | ------------ | -------------------- |
 | **Method**   | `PATCH`              |
 | **Endpoint** | `/api/notifications` |
@@ -1143,11 +1145,11 @@
 
 ## 9. Admin - `/api/admin`
 
-> **สำหรับผู้ดูแลระบบเท่านั้น (Admin Role)**
+> **For system administrators only (Admin Role)**
 
-### 9.1 ลงทะเบียนอุปกรณ์ใหม่ (Admin)
+### 9.1 Register a New Device (Admin)
 
-| รายการ       | ค่า                  |
+| Item         | Value                 |
 | ------------ | -------------------- |
 | **Method**   | `POST`               |
 | **Endpoint** | `/api/admin/devices` |
@@ -1161,7 +1163,7 @@
 }
 ```
 
-`serialNumber` ต้องอยู่ในรูปแบบ `ESP32-XXXXXXXXXXXX` โดย `X` คือเลขฐาน 16 จำนวน 12 ตัวตาม serial ที่ firmware สร้างจาก ESP32 chip ID
+`serialNumber` must use the format `ESP32-XXXXXXXXXXXX`, where `X` is 12 hexadecimal digits matching the serial the firmware builds from the ESP32 chip ID
 
 **Response (201):**
 
@@ -1180,9 +1182,9 @@
 
 ---
 
-### 9.2 ดูรายการอุปกรณ์ทั้งหมด
+### 9.2 List All Devices
 
-| รายการ       | ค่า                  |
+| Item         | Value                 |
 | ------------ | -------------------- |
 | **Method**   | `GET`                |
 | **Endpoint** | `/api/admin/devices` |
@@ -1210,9 +1212,9 @@
 
 ---
 
-### 9.3 ลบอุปกรณ์
+### 9.3 Delete a Device
 
-| รายการ       | ค่า                      |
+| Item         | Value                     |
 | ------------ | ------------------------ |
 | **Method**   | `DELETE`                 |
 | **Endpoint** | `/api/admin/devices/:id` |
@@ -1229,9 +1231,9 @@
 
 ---
 
-### 9.4 บังคับยกเลิกการจับคู่อุปกรณ์
+### 9.4 Force-Unpair a Device
 
-| รายการ       | ค่า                             |
+| Item         | Value                            |
 | ------------ | ------------------------------- |
 | **Method**   | `POST`                          |
 | **Endpoint** | `/api/admin/devices/:id/unpair` |
@@ -1250,13 +1252,13 @@
 
 ## 10. Health Check - `/internal/health`
 
-### 10.1 ตรวจสอบสถานะระบบ
+### 10.1 Check System Status
 
-| รายการ       | ค่า                |
+| Item         | Value               |
 | ------------ | ------------------ |
 | **Method**   | `GET`              |
 | **Endpoint** | `/internal/health` |
-| **Auth**     | ไม่ต้อง            |
+| **Auth**     | None               |
 
 **Response (200 / 503):**
 
@@ -1280,55 +1282,55 @@
 
 ### 11.1 MQTT Topics (IoT → Backend)
 
-| Topic                 | คำอธิบาย                                                                                                          |
+| Topic                 | Description                                                                                                       |
 | --------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `device/+/event`      | Unified event หลักจาก firmware ปัจจุบัน เช่น `suspected_fall`, `fall_confirmed`, `fall_cancelled`, `heart_rate_*` |
+| `device/+/event`      | Main unified event from the current firmware, e.g. `suspected_fall`, `fall_confirmed`, `fall_cancelled`, `heart_rate_*` |
 | `device/+/fall`       | Legacy fall payload compatibility                                                                                 |
 | `device/+/heartrate`  | Legacy heart-rate payload compatibility                                                                           |
-| `device/+/status`     | สถานะอุปกรณ์ / WiFi / heartbeat                                                                                   |
-| `device/+/config/ack` | ACK หลังอุปกรณ์รับคำสั่ง config                                                                                   |
-| `device/+/lwt`        | broker แจ้งว่าอุปกรณ์หลุดแบบผิดปกติ                                                                               |
-| `events/+`            | mock events compatibility สำหรับบาง flow ทดสอบ                                                                    |
+| `device/+/status`     | Device status / WiFi / heartbeat                                                                                   |
+| `device/+/config/ack` | ACK after the device receives a config command                                                                          |
+| `device/+/lwt`        | Broker notice that the device disconnected unexpectedly                                                                          |
+| `events/+`            | Mock events compatibility for some test flows                                                                    |
 
 ---
 
 ### 11.2 Socket.io Events (Backend → Mobile)
 
-| Event                  | คำอธิบาย                                                                      | Payload                                                                                             |
+| Event                  | Description                                                                   | Payload                                                                                             |
 | ---------------------- | ----------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| `fall_detected`        | แจ้งเตือนการล้มที่ยืนยันแล้ว (stage 2A / CRITICAL)                            | `{ eventId, elderId, elderName, deviceId, deviceCode, timestamp, accelerationMagnitude, bpm? }`     |
-| `event_status_changed` | lifecycle signal ภายในสำหรับ mobile pending guard ไม่ใช่ caregiver alert หลัก | `{ eventId?, elderId, deviceId, deviceCode, status, timestamp, bpm? }`                              |
-| `heart_rate_update`    | อัปเดตค่า heart rate แบบ real-time                                            | `{ elderId, elderName, deviceId, deviceCode, heartRate, confidence?, timestamp }`                   |
-| `device_status_update` | สถานะ online/offline ของอุปกรณ์ ส่งไปยัง elder room ของ caregiver              | `{ deviceId, deviceCode, elderId, elderName, online, signalStrength?, wifiSSID?, timestamp, source?, serverTimestamp?, deviceTimestamp? }` |
-| `system_message`       | ข้อความ broadcast ทั่วระบบ                                                    | `{ message, data?, timestamp }`                                                                     |
+| `fall_detected`        | Confirmed fall alert (stage 2A / CRITICAL)                            | `{ eventId, elderId, elderName, deviceId, deviceCode, timestamp, accelerationMagnitude, bpm? }`     |
+| `event_status_changed` | Internal lifecycle signal for the mobile pending guard, not the main caregiver alert | `{ eventId?, elderId, deviceId, deviceCode, status, timestamp, bpm? }`                              |
+| `heart_rate_update`    | Real-time heart rate update                                            | `{ elderId, elderName, deviceId, deviceCode, heartRate, confidence?, timestamp }`                   |
+| `device_status_update` | Device online/offline status, sent to the caregiver's elder room              | `{ deviceId, deviceCode, elderId, elderName, online, signalStrength?, wifiSSID?, timestamp, source?, serverTimestamp?, deviceTimestamp? }` |
+| `system_message`       | System-wide broadcast message                                                    | `{ message, data?, timestamp }`                                                                     |
 
-`suspected_fall` และ `fall_cancelled` ยังคงไม่สร้าง caregiver alert หรือ Push Notification แต่ backend จะส่ง `event_status_changed` ให้ mobile ใช้เป็น internal guard ระหว่างรอยืนยัน/ยกเลิก
+`suspected_fall` and `fall_cancelled` still do not create a caregiver alert or Push Notification, but the backend sends `event_status_changed` so mobile can use it as an internal guard while waiting for confirmation/cancellation
 
 ---
 
 ## 12. Database Schema
 
-| ตาราง            | คำอธิบาย                                                                 |
+| Table            | Description                                                              |
 | ---------------- | ------------------------------------------------------------------------ |
-| User             | ผู้ดูแล (Caregiver) และ Admin                                            |
-| AuthOtp          | รหัส OTP สำหรับ forgot password (ลบอัตโนมัติหลังหมดอายุ)                 |
-| Elder            | ผู้สูงอายุที่ถูกดูแล — 1 User ↔ 1 Elder (FK โดยตรง ไม่มี junction table) |
-| Device           | อุปกรณ์ IoT (ESP32), pairing state, `wifiStatus`, และ `lastOnline`       |
-| Event            | เหตุการณ์การล้ม พร้อม BPM snapshot ณ ขณะเกิดเหตุ (PK: id, indexed by timestamp) |
-| Notification     | ประวัติการแจ้งเตือนจาก event ที่ยืนยันแล้ว — FK แบบ required ไปยัง Event ผ่าน `eventId` |
-| EmergencyContact | เบอร์ติดต่อฉุกเฉิน                                                       |
+| User             | Caregivers and Admins                                            |
+| AuthOtp          | OTP codes for forgot password (auto-deleted after expiry)                 |
+| Elder            | Elder under care — 1 User ↔ 1 Elder (direct FK, no junction table) |
+| Device           | IoT device (ESP32), pairing state, `wifiStatus`, and `lastOnline`       |
+| Event            | Fall event with a BPM snapshot taken at the time of the incident (PK: id, indexed by timestamp) |
+| Notification     | Notification history from confirmed events — required FK to Event via `eventId` |
+| EmergencyContact | Emergency contacts                                                       |
 
 ---
 
 ## 13. Security
 
-| ฟีเจอร์              | รายละเอียด                                                                 |
+| Feature              | Details                                                                    |
 | -------------------- | -------------------------------------------------------------------------- |
-| **Authentication**   | JWT (หมดอายุ 7 วัน)                                                        |
+| **Authentication**   | JWT (expires in 7 days)                                                    |
 | **Password**         | bcrypt hashing                                                             |
-| **Rate Limiting**    | API: 100/15นาที, Auth: 5/15นาที, OTP: 3/10นาที                             |
-| **Access Control**   | JWT + ownership check + `requireAdmin` ตาม route                           |
-| **Input Validation** | custom `validate(ValidationRule[])` factory ใน `middlewares/validation.ts` |
+| **Rate Limiting**    | API: 100/15 min, Auth: 5/15 min, OTP: 3/10 min                          |
+| **Access Control**   | JWT + ownership check + `requireAdmin` per route                           |
+| **Input Validation** | custom `validate(ValidationRule[])` factory in `middlewares/validation.ts` |
 
 ---
 
@@ -1342,13 +1344,13 @@
 }
 ```
 
-| Status Code | ความหมาย                            |
+| Status Code | Meaning                             |
 | :---------: | ----------------------------------- |
-|     400     | Bad Request - ข้อมูลไม่ถูกต้อง      |
-|     401     | Unauthorized - ไม่ได้ Login         |
-|     403     | Forbidden - ไม่มีสิทธิ์เข้าถึง      |
-|     404     | Not Found - ไม่พบข้อมูล             |
-|     429     | Too Many Requests - เกิน Rate Limit |
+|     400     | Bad Request - Invalid data        |
+|     401     | Unauthorized - Not logged in      |
+|     403     | Forbidden - Access denied         |
+|     404     | Not Found - Data not found        |
+|     429     | Too Many Requests - Rate limit exceeded |
 |     500     | Internal Server Error               |
 
 ---

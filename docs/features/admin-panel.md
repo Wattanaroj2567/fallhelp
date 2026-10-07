@@ -1,91 +1,93 @@
-# แผงควบคุมแอดมิน (Admin Panel)
+# Admin Panel
+
+[English](admin-panel.md) · [ภาษาไทย](admin-panel.th.md)
 
 ## Doc Meta
 
-- **Audience**: Dev / QA / Stakeholder / ผู้วิจัย
+- **Audience**: Dev / QA / Stakeholder / Researchers
 - **Source of Truth**: `apps/admin/src/`, `apps/backend-api/src/routes/adminRoutes.ts`
-- **Status**: **Active** — ฟีเจอร์ที่พัฒนาแล้วและใช้งานจริง
+- **Status**: **Active** — feature implemented and in real use
 - **Last Updated**: May 21, 2026
 
 ## Overview
 
-Admin Panel คือระบบสำหรับผู้ดูแลระบบ (Admin) เพื่อจัดการอุปกรณ์ตรวจจับการหกล้มในระบบ โดยมีสิทธิ์การเข้าถึงที่จำกัดและไม่มีการลงทะเบียนสาธารณะ
+The Admin Panel is the system for administrators (Admin) to manage the fall detection devices in the system. Access is restricted and there is no public registration.
 
 ## Users
 
-- **ผู้ดูแลระบบ (Admin)** — ผู้มีสิทธิ์การเข้าถึงระบบทั้งหมด
-- **ผู้พัฒนา (Developer)** — ผู้พัฒนาและบำรักษาระบบ
+- **Administrator (Admin)** — has access to the whole system
+- **Developer** — develops and maintains the system
 
 ## Features
 
-### 1. การเข้าสู่ระบบ (Authentication)
+### 1. Authentication
 
-**กฎการทำงาน:**
+**Operating rules:**
 
-- ไม่มีการลงทะเบียนสาธารณะ (No public register/reset)
-- บัญชี Admin ถูกสร้างผ่าน seed script เท่านั้น
-- ใช้ JWT auth โดยเก็บ token ไว้ใน `sessionStorage`
-- หาก JWT หมดอายุ → redirect กลับหน้า `/login` อัตโนมัติ
+- No public registration (No public register/reset)
+- Admin accounts are created only via the seed script
+- Uses JWT auth, storing the token in `sessionStorage`
+- If the JWT expires → automatically redirects back to `/login`
 
-### 2. การจัดการข้อมูล (Data Management)
+### 2. Data Management
 
-**ฟังก์ชันที่มี:**
+**Available functions:**
 
-- **Devices** — สร้าง (Register), ดูรายการ (List), ยกเลิกการผูก (Force Unpair), และลบอุปกรณ์ (Delete) พร้อมตรวจสอบสถานะการทำงานจริง
+- **Devices** — create (Register), view the list (List), force unpair (Force Unpair), and delete devices (Delete), with live status checks
 
-### 3. การจัดการอุปกรณ์ (Device Management)
+### 3. Device Management
 
-**ความสามารถ:**
+**Capabilities:**
 
-- **Register Device** — สร้างอุปกรณ์ใหม่ในระบบด้วยหมายเลขซีเรียล (Serial Number)
-- **List Devices** — ดูรายการอุปกรณ์ทั้งหมดในระบบ
-- **Device Status** — แสดงสถานะการผูกคู่กับผู้สูงอายุ (`UNPAIRED` / `PAIRED` ใน DB)
-- **Online State** — คำนวณสถานะ Online/Offline จาก `lastOnline` (อิงจากการส่ง heartbeat/event ล่าสุดของตัวอุปกรณ์)
-- **Unpair Device** — บังคับยกเลิกการจับคู่อุปกรณ์จากแผงควบคุมแอดมิน
-- **Delete Device** — ลบอุปกรณ์ที่ยังไม่ถูกจับคู่ออกจากระบบถาวร
+- **Register Device** — create a new device in the system with a Serial Number
+- **List Devices** — view all devices in the system
+- **Device Status** — shows the pairing status with an elder (`UNPAIRED` / `PAIRED` in the DB)
+- **Online State** — computes Online/Offline status from `lastOnline` (based on the device's latest heartbeat/event)
+- **Unpair Device** — force unpair a device from the admin panel
+- **Delete Device** — permanently delete a device that is not paired from the system
 
 ## Related Screens
 
-### หน้า Login
+### Login Screen
 
-**ไฟล์:** `src/pages/Login.tsx`
-**สิ่งที่ผู้ใช้เห็น:**
+**File:** `src/pages/Login.tsx`
+**What the user sees:**
 
-- ฟอร์ม Login (email + password)
-- ไม่มีปุ่ม Register หรือ Forgot Password
-**สิ่งที่ผู้ใช้ทำได้:**
-- กรอกข้อมูลและ Login เพื่อเข้าใช้งานระบบ
+- Login form (email + password)
+- No Register or Forgot Password button
+**What the user can do:**
+- Enter credentials and log in to use the system
 
-### หน้าจัดการ Devices (หน้าหลักของระบบ)
+### Devices Management Screen (main screen of the system)
 
-**ไฟล์:** `src/pages/Devices.tsx`
-**สิ่งที่ผู้ใช้เห็น:**
+**File:** `src/pages/Devices.tsx`
+**What the user sees:**
 
-- ตัวชี้วัดสรุปจำนวนอุปกรณ์ทั้งหมด, อุปกรณ์ที่ผูกแล้ว, อุปกรณ์ที่ยังไม่ผูก
-- ตารางรายการอุปกรณ์
-- ปุ่ม Register Device (เพิ่มอุปกรณ์ใหม่), Unpair (ยกเลิกการผูก), และ Delete (ลบอุปกรณ์ที่ยังไม่ผูก)
-- สถานะการผูก (สถานะ: ผูกแล้ว / ยังไม่ผูก) และสถานะการเชื่อมต่อ (ออนไลน์ / ออฟไลน์ / รอเชื่อมต่อ WiFi)
-- ปุ่มดู/พิมพ์ QR Code สำหรับอุปกรณ์แต่ละชิ้น เพื่อนำไปให้ผู้ใช้ (Caregiver) สแกนจับคู่ในแอปมือถือ
-**สิ่งที่ผู้ใช้ทำได้:**
-- ลงทะเบียนอุปกรณ์ใหม่ด้วย Serial Number (รูปแบบ `ESP32-XXXXXXXXXXXX`)
-- ดูรายละเอียดและสถานะของอุปกรณ์
-- บังคับยกเลิกการผูกอุปกรณ์ หรือลบอุปกรณ์
-- สั่งพิมพ์แผ่นป้าย QR Code สำหรับตัวอุปกรณ์
+- Summary metrics: total devices, paired devices, unpaired devices
+- Device list table
+- Register Device (add a new device), Unpair, and Delete (delete an unpaired device) buttons
+- Pairing status (status: ผูกแล้ว (Paired) / ยังไม่ผูก (Unpaired)) and connection status (ออนไลน์ (Online) / ออฟไลน์ (Offline) / รอเชื่อมต่อ WiFi (Waiting for WiFi))
+- Button to view/print the QR Code for each device, to give to the user (Caregiver) to scan and pair in the mobile app
+**What the user can do:**
+- Register a new device with a Serial Number (format `ESP32-XXXXXXXXXXXX`)
+- View device details and status
+- Force unpair a device, or delete a device
+- Print a QR Code label for the device
 
 ## Business Rules
 
-| หัวข้อ         | รายละเอียด                                        |
+| Topic          | Details                                           |
 | -------------- | ------------------------------------------------- |
-| การสร้าง Admin | ผ่าน seed script เท่านั้น                         |
-| สิทธิ์ Admin   | เข้าถึงได้ทุกหน้าในระบบ                           |
-| สถานะอุปกรณ์   | `UNPAIRED` / `PAIRED` เป็น pairing state ในระบบ  |
-| การลบข้อมูล    | ต้องมีการยืนยันความต้องการผ่าน Modal ทุกครั้ง     |
-| การออกจากระบบ  | Auto-logout เมื่อ JWT หมดอายุ                     |
+| Admin creation | Only via the seed script                          |
+| Admin permissions | Can access every page in the system            |
+| Device status  | `UNPAIRED` / `PAIRED` is the pairing state in the system |
+| Data deletion  | Must be confirmed via a Modal every time          |
+| Logging out    | Auto-logout when the JWT expires                  |
 
 ## Related Docs
 
-- [device-pairing.md](device-pairing.md) — ขั้นตอนการผูกอุปกรณ์และการทำงานของอุปกรณ์ในมุมผู้ดูแลระบบและผู้ใช้งานทั่วไป
+- [device-pairing.md](device-pairing.md) — device pairing steps and how the device works from the administrator's and general user's perspective
 
 ---
 
-**หมายเหตุ:** เอกสารนี้อธิบายฟีเจอร์ของ Admin Panel ที่ใช้งานจริงในปัจจุบันของระบบ FallHelp
+**Note:** This document describes the Admin Panel features currently in real use in the FallHelp system.

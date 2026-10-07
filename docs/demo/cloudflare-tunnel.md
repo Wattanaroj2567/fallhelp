@@ -1,5 +1,7 @@
 # Cloudflare Tunnel for the demo API
 
+[English](cloudflare-tunnel.md) · [ภาษาไทย](cloudflare-tunnel.th.md)
+
 Exposes the backend on your laptop (`http://localhost:3000`) as `https://api.tawanlab.site`, which is the API URL baked into the preview APK. Works on any network the phone uses (Wi-Fi or 4G). The MQTT broker is **not** exposed (the demo broker only listens on `127.0.0.1`).
 
 The demo reuses the project tunnel `fallhelp-backend` (the same one `docker compose --profile tunnel` uses). Its public hostname `api.tawanlab.site` forwards to `http://backend:3000`. `docker-compose.demo.yml` makes `backend` resolve to the host machine, so the tunnel reaches the backend started by `npm run demo:up` without running the backend in Docker.

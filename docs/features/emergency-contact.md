@@ -1,101 +1,103 @@
-# ระบบผู้ติดต่อฉุกเฉิน (Emergency Contact System)
+# Emergency Contact System
+
+[English](emergency-contact.md) · [ภาษาไทย](emergency-contact.th.md)
 
 ## Doc Meta
 
-- **Audience**: Dev / QA / Stakeholder / ผู้วิจัย
+- **Audience**: Dev / QA / Stakeholder / Researcher
 - **Source of Truth**: `apps/mobile/app/(features)/(emergency)/`, `apps/backend-api/src/services/emergencyContactService.ts`
-- **Status**: **Active** — ฟีเจอร์ที่พัฒนาแล้วและใช้งานจริง
+- **Status**: **Active** — implemented feature in real use
 - Last Updated: May 10, 2026
 
 ## Overview
 
-ระบบผู้ติดต่อฉุกเฉินใช้สำหรับเก็บรายชื่อบุคคลที่ควรติดต่อเมื่อเกิดเหตุฉุกเฉินกับผู้สูงอายุ (เช่น หกล้ม, ชีพจรผิดปกติ) โดยมีระบบ **Priority** สำหรับจัดลำดับความสำคัญของผู้ติดต่อแต่ละคน
+The emergency contact system stores the list of people who should be contacted when an emergency happens to the elder (e.g. a fall or an abnormal pulse). It includes a **Priority** system to rank the importance of each contact.
 
 ## Users
 
-- **ญาติผู้ดูแล (Caregiver)** — จัดการรายชื่อผู้ติดต่อฉุกเฉิน
+- **Caregiver (family member)** — manages the emergency contact list
 
 ## Features
 
-### 1. การจัดการรายชื่อผู้ติดต่อ (CRUD Operations)
+### 1. Contact List Management (CRUD Operations)
 
-**ความสามารถ:**
+**Capabilities:**
 
-- **เพิ่มผู้ติดต่อใหม่** — ระบบจะคำนวณ Priority ให้อัตโนมัติ (ต่อจากลำดับสุดท้าย)
-- **ดูรายชื่อทั้งหมด** — เรียงตาม Priority จากน้อยไปมาก (1 = สำคัญที่สุด)
-- **แก้ไขผู้ติดต่อ** — แก้ไขชื่อ, เบอร์โทร, ความสัมพันธ์, หรือ Priority
-- **ลบผู้ติดต่อ** — ลบผู้ติดต่อออกจากรายชื่อ
-- **ความสัมพันธ์กับผู้สูงอายุ** — ใช้ตัวเลือกกลาง เช่น ครอบครัว ญาติ เพื่อนบ้าน ผู้ดูแล เพื่อน และเปิดให้ระบุเองเมื่อเลือก "อื่น ๆ"
+- **Add a new contact** — the system calculates the Priority automatically (after the last position)
+- **View all contacts** — sorted by Priority in ascending order (1 = most important)
+- **Edit a contact** — edit the name, phone number, relationship, or Priority
+- **Delete a contact** — remove the contact from the list
+- **Relationship to the elder** — uses shared options such as family, relative, neighbour, caregiver, friend, and allows free text when "อื่น ๆ" (Other) is selected
 
-### 2. การจัดลำดับความสำคัญ (Reordering)
+### 2. Reordering
 
-**วิธีการทำงาน:**
+**How it works:**
 
-- ผู้ใช้สามารถลากจัดลำดับผู้ติดต่อฉุกเฉินได้
-- ระบบใช้ **Transaction** เพื่อป้องกัน Unique Constraint Violation:
-  - Step 1: Shift ทุก priority += 1000 (หลีกเลี่ยง unique conflict)
-  - Step 2: Set priority ใหม่ตามลำดับที่ส่งมา (1, 2, 3, ...)
+- The user can drag to reorder emergency contacts
+- The system uses a **Transaction** to prevent Unique Constraint Violations:
+  - Step 1: Shift every priority += 1000 (avoid unique conflicts)
+  - Step 2: Set the new priorities in the order received (1, 2, 3, ...)
 
-### 3. การจัดการข้อมูลอัตโนมัติ (Cascade Management)
+### 3. Cascade Management
 
-**กฎการทำงาน:**
+**Rules:**
 
-- เมื่อลบ Elder → ผู้ติดต่อฉุกเฉินทั้งหมดจะถูกลบอัตโนมัติ (`onDelete: Cascade`)
-- รับประกันการลบข้อมูลผิดพลาด
+- When an Elder is deleted → all of their emergency contacts are deleted automatically (`onDelete: Cascade`)
+- Prevents orphaned or inconsistent data after deletion
 
-### 4. การควบคุมการเข้าถึง (Access Control)
+### 4. Access Control
 
-**นโยบาย:**
+**Policy:**
 
-- ระบบ Single-Caregiver — เฉพาะเจ้าของ Elder (จาก `elder.userId`) เข้าถึง API ทุกตัว
-- ผู้ใช้อื่นได้รับ 403 Forbidden
-- ตรวจสอบสิทธิ์ก่อนทุกการดำเนินการ
+- Single-Caregiver system — only the Elder's owner (from `elder.userId`) can access any of the APIs
+- Other users receive 403 Forbidden
+- Permissions are checked before every operation
 
 ## Related Screens
 
-### หน้าจอผู้ติดต่อฉุกเฉิน
+### Emergency Contacts Screen
 
-**ไฟล์:** `(features)/(emergency)/contacts.tsx`
-**สิ่งที่ผู้ใช้เห็น:**
+**File:** `(features)/(emergency)/contacts.tsx`
+**What the user sees:**
 
-- รายชื่อผู้ติดต่อฉุกเฉินเรียงตามลำดับความสำคัญ
-- ปุ่ม "เพิ่มผู้ติดต่อใหม่"
-- ปุ่ม "แก้ไข" และ "ลบ" สำหรับแต่ละรายการ
-  **สิ่งที่ผู้ใช้ทำได้:**
-- กดปุ่มเพิ่มผู้ติดต่อใหม่เพื่อเปิดหน้าเพิ่ม
-- ลากจัดลำดับรายการ
-- กดแก้ไขหรือลบผู้ติดต่อแต่ละรายการ
+- The list of emergency contacts sorted by priority
+- A "เพิ่มผู้ติดต่อใหม่" (Add new contact) button
+- "แก้ไข" (Edit) and "ลบ" (Delete) buttons for each item
+  **What the user can do:**
+- Tap the add-new-contact button to open the add screen
+- Drag to reorder items
+- Tap edit or delete on each contact
 
-### หน้าเพิ่ม/แก้ไขผู้ติดต่อ
+### Add/Edit Contact Screen
 
-**ไฟล์:** `(features)/(emergency)/add.tsx`, `(features)/(emergency)/edit.tsx`
-**สิ่งที่ผู้ใช้เห็น:**
+**File:** `(features)/(emergency)/add.tsx`, `(features)/(emergency)/edit.tsx`
+**What the user sees:**
 
-- ฟอร์มกรอกข้อมูลผู้ติดต่อ (ชื่อ, เบอร์โทร, ความสัมพันธ์กับผู้สูงอายุ)
-- ช่อง Priority (แสดงค่าปัจจุบัน หรือค่าถัดไปอัตโนมัติ)
-- ปุ่ม "บันทึก" และ "ยกเลิก"
-  **สิ่งที่ผู้ใช้ทำได้:**
-- กรอกข้อมูลและบันทึกผู้ติดต่อใหม่
-- แก้ไขข้อมูลผู้ติดต่อเดิม
-- ยกเลิกการทำงาน
+- A contact information form (name, phone number, relationship to the elder)
+- A Priority field (shows the current value, or the next value automatically)
+- "บันทึก" (Save) and "ยกเลิก" (Cancel) buttons
+  **What the user can do:**
+- Fill in the information and save a new contact
+- Edit an existing contact's information
+- Cancel the operation
 
 ## Business Rules
 
-| หัวข้อ         | รายละเอียด                           |
-| -------------- | ------------------------------------ |
-| ลำดับความสำคัญ | 1 = สำคัญที่สุด, 2 = รองลงมา, ...    |
-| การจัดลำดับ    | ใช้การลากวาง (Drag & Drop)           |
-| การตรวจสอบ     | ตรวจสอบรูปแบบเบอร์โทรก่อนบันทึก      |
-| การลบข้อมูล    | ต้องยืนยันก่อนลบ                     |
-| ความสัมพันธ์   | แสดงเพื่อความชัดเจน (เช่น ลูก, หลาน) |
+| Topic          | Details                                            |
+| -------------- | -------------------------------------------------- |
+| Priority       | 1 = most important, 2 = next, ...                  |
+| Reordering     | Uses Drag & Drop                                   |
+| Validation     | Phone number format is checked before saving       |
+| Deletion       | Must be confirmed before deleting                  |
+| Relationship   | Shown for clarity (e.g. child, grandchild)         |
 
 ## Related Docs
 
-- [dashboard.md](dashboard.md) — หน้าแดชบอร์ดที่แสดงการแจ้งเตือน
-- [elder-profile.md](elder-profile.md) — ข้อมูลผู้สูงอายุที่เกี่ยวข้อง
-- [event-history.md](event-history.md) — ประวัติเหตุการณ์ที่อาจแจ้งเตือนผู้ติดต่อ
-- [../api/api-reference.md](../api/api-reference.md) — API สำหรับระบบ Emergency Contact
+- [dashboard.md](dashboard.md) — dashboard screen that shows alerts
+- [elder-profile.md](elder-profile.md) — related elder information
+- [event-history.md](event-history.md) — event history that may notify contacts
+- [../api/api-reference.md](../api/api-reference.md) — APIs for the Emergency Contact system
 
 ---
 
-**หมายเหตุ:** เอกสารนี้อธิบายฟีเจอร์ที่พัฒนาแล้วและใช้งานจริงในระบบ FallHelp
+**Note:** This document describes a feature that has been implemented and is in real use in the FallHelp system.

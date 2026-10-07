@@ -1,5 +1,7 @@
 # System Coverage Audit Report
 
+[English](coverage-audit-2026-05.md) · [ภาษาไทย](coverage-audit-2026-05.th.md)
+
 > **Date:** May 2026
 > **Scope:** Backend, Mobile, and Admin Applications
 > **Objective:** Identify gaps between implementation (src) and test coverage (**tests**) across all 3 modules.

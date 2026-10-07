@@ -1,5 +1,7 @@
 # Authentication System
 
+[English](auth.md) · [ภาษาไทย](auth.th.md)
+
 ## Doc Meta
 
 - Audience: Backend Dev / Mobile Dev
@@ -11,13 +13,13 @@
 
 ## Overview
 
-ระบบ Authentication ของ FallHelp ใช้ **JWT (JSON Web Token)** สำหรับจัดการ Session และ **OTP (One-Time Password)** สำหรับการรีเซ็ตรหัสผ่าน รองรับผู้ใช้ 2 ประเภท: **Caregiver** (Mobile App) และ **Admin** (Backoffice)
+FallHelp's authentication system uses **JWT (JSON Web Token)** for session management and **OTP (One-Time Password)** for password resets. It supports 2 user types: **Caregiver** (Mobile App) and **Admin** (Backoffice).
 
 ---
 
 ## Feature Requirements
 
-### Registration (ลงทะเบียนบัญชีผู้ใช้งาน)
+### Registration (User Account Registration)
 
 | Field     | Required | Validation                    |
 | :-------- | :------- | :---------------------------- |
@@ -30,27 +32,27 @@
 
 ### Login
 
-- ค้นหา User จาก Email หรือ Phone
-- เปรียบเทียบ Password ด้วย `bcrypt.compare()`
-- สร้าง JWT Token พร้อม Payload
+- Look up the User by Email or Phone
+- Compare the Password with `bcrypt.compare()`
+- Create a JWT Token with the Payload
 
-### Password Reset (รีเซ็ตรหัสผ่าน)
+### Password Reset
 
 **OTP Details:**
 
-- **รูปแบบ:** 6 หลัก (e.g., `482931`)
-- **Reference Code:** 4 ตัวอักษร (e.g., `XPQL`) — ใช้ให้ User ยืนยันว่า OTP มาจากระบบเรา
-- **หมดอายุ:** 5 นาที
-- **ใช้ได้ครั้งเดียว:** `verify-otp` ใช้เพื่อตรวจรหัสก่อนเข้าหน้าตั้งรหัสผ่านใหม่ และเมื่อ `reset-password` สำเร็จ ระบบจะลบ OTP ชุดนั้นออกจาก DB ทันที
-- **OTP Purpose:** `PASSWORD_RESET` เท่านั้น
+- **Format:** 6 digits (e.g., `482931`)
+- **Reference Code:** 4 letters (e.g., `XPQL`) — lets the User confirm that the OTP came from our system
+- **Expiry:** 5 minutes
+- **Single use:** `verify-otp` checks the code before entering the new-password screen, and once `reset-password` succeeds the system deletes that OTP from the DB immediately
+- **OTP Purpose:** `PASSWORD_RESET` only
 
 ### Admin Access
 
-ระบบ Admin ใช้ role เดียวคือ `ADMIN`
+The Admin system uses a single role: `ADMIN`
 
-- ไม่มี `OWNER` / `OPERATOR`
-- เมื่อผู้ใช้มี `role = ADMIN` จะเข้าถึง endpoint ฝั่ง admin ได้ทั้งหมด
-- JWT ไม่แนบ `adminRole`
+- There is no `OWNER` / `OPERATOR`
+- A user with `role = ADMIN` can access all admin endpoints
+- The JWT does not include `adminRole`
 
 ---
 
@@ -62,14 +64,14 @@
 Request → validation → hash password → create user(role=CAREGIVER) → return JWT
 ```
 
-- รองรับการสมัคร caregiver เท่านั้น
-- backend สร้าง JWT แล้วตอบกลับทันทีหลังสร้าง user สำเร็จ
+- Only caregiver registration is supported
+- The backend creates a JWT and responds immediately after the user is created successfully
 
-**สิ่งที่เกิดขึ้นเมื่อผู้ใช้ลงทะเบียนบัญชี:**
+**What happens when a user registers an account:**
 
-- Password ถูก Hash ด้วย `bcrypt` ก่อนเก็บลง DB
-- User ได้รับ Role เริ่มต้นเป็น `CAREGIVER`
-- ระบบสร้าง JWT Token และส่งกลับทันที
+- The Password is hashed with `bcrypt` before being stored in the DB
+- The User gets the default Role `CAREGIVER`
+- The system creates a JWT Token and returns it immediately
 
 ### Login Flow
 
@@ -77,9 +79,9 @@ Request → validation → hash password → create user(role=CAREGIVER) → ret
 Email/Phone + Password → find user → compare hash → return JWT
 ```
 
-- lookup ผู้ใช้ได้จาก email หรือ phone
-- JWT payload ปัจจุบันมี `userId`, `email`, `role`
-- Admin Panel ใช้ endpoint แยก `POST /api/auth/admin-login` เพื่อให้ backend ตรวจ `role = ADMIN` ก่อนคืน JWT
+- The user can be looked up by email or phone
+- The current JWT payload contains `userId`, `email`, `role`
+- The Admin Panel uses a separate endpoint `POST /api/auth/admin-login` so the backend checks `role = ADMIN` before returning a JWT
 
 **JWT Payload:**
 
@@ -97,18 +99,18 @@ Email/Phone + Password → find user → compare hash → return JWT
 request-otp → verify-otp → reset-password
 ```
 
-- OTP ใช้เพื่อ `PASSWORD_RESET` เท่านั้น
-- OTP เป็นรหัส 6 หลัก พร้อม reference code 4 ตัวอักษร
-- `verify-otp` ใช้เพื่อตรวจรหัสก่อนเข้าหน้าตั้งรหัสผ่านใหม่ และเมื่อ `reset-password` สำเร็จ ระบบจะลบ OTP ชุดนั้นออกจาก DB ทันที
-- scheduler ใน `apps/backend-api/src/schedulers/otpScheduler.ts` ลบ OTP ที่หมดอายุเป็นระยะ
-- ถ้า Resend ส่งอีเมลไม่สำเร็จ backend จะส่ง error `email_send_failed` กลับไปแทนการตอบ success เพื่อให้ client รู้ว่ารหัสยังไม่ถูกส่งจริง
+- The OTP is used for `PASSWORD_RESET` only
+- The OTP is a 6-digit code with a 4-letter reference code
+- `verify-otp` checks the code before entering the new-password screen, and once `reset-password` succeeds the system deletes that OTP from the DB immediately
+- The scheduler in `apps/backend-api/src/schedulers/otpScheduler.ts` periodically deletes expired OTPs
+- If Resend fails to send the email, the backend returns the error `email_send_failed` instead of a success response, so the client knows the code was not actually sent
 
 ### Logout Flow
 
-- ใช้ `POST /api/auth/logout`
-- Mobile เรียก endpoint นี้ก่อนล้าง local JWT เพื่อให้ backend ยัง authenticate request ได้
-- Backend ตั้งค่า `users.pushToken = null` เพื่อหยุด Expo Push Notification ไปยัง session ที่ออกจากระบบแล้ว
-- ถ้า backend ติดต่อไม่ได้ mobile ยังต้องล้าง local session ต่อแบบ best-effort เพื่อไม่ให้ผู้ใช้ติดอยู่ใน session เดิม
+- Uses `POST /api/auth/logout`
+- Mobile calls this endpoint before clearing the local JWT so the backend can still authenticate the request
+- The backend sets `users.pushToken = null` to stop Expo Push Notifications to the logged-out session
+- If the backend is unreachable, mobile must still clear the local session on a best-effort basis so the user is not stuck in the old session
 
 ---
 
@@ -117,8 +119,8 @@ request-otp → verify-otp → reset-password
 ### Authentication Flow Diagram
 
 ```
-Registration: User กรอกข้อมูล → Validate Email/Password → Hash Password → Create User → Return JWT
-Login:        User ส่ง Email/Phone + Password → Find User → Compare Password → Return JWT
+Registration: User fills in data → Validate Email/Password → Hash Password → Create User → Return JWT
+Login:        User sends Email/Phone + Password → Find User → Compare Password → Return JWT
 Reset:        request-otp → [OTP via email] → verify-otp → reset-password → delete OTP
 ```
 
@@ -126,30 +128,30 @@ Reset:        request-otp → [OTP via email] → verify-otp → reset-password 
 
 ## Security Notes
 
-| มาตรการ / Concern | รายละเอียด                                         |
-| :---------------- | :-------------------------------------------------- |
-| Password Hashing  | `bcrypt` (auto-salt) พร้อม salt                    |
-| Password Strength | ขั้นต่ำ 8 ตัวอักษร ตรวจตาม helper ฝั่ง backend    |
-| JWT Expiry        | กำหนดใน config (default: 7 วัน)                    |
-| JWT scope         | แนบ role เดียว (`ADMIN` หรือ `CAREGIVER`)          |
-| OTP expiry        | อายุสั้น 5 นาทีและใช้ได้ครั้งเดียว                 |
-| OTP Cleanup       | Cron Job ลบ OTP หมดอายุเป็นระยะ                    |
-| Admin access      | ไม่มี `OWNER` / `OPERATOR`; ใช้ role `ADMIN` เดียว |
+| Measure / Concern | Details                                              |
+| :---------------- | :--------------------------------------------------- |
+| Password Hashing  | `bcrypt` (auto-salt) with salt                       |
+| Password Strength | Minimum 8 characters, checked by the backend helper  |
+| JWT Expiry        | Set in config (default: 7 days)                      |
+| JWT scope         | Carries a single role (`ADMIN` or `CAREGIVER`)       |
+| OTP expiry        | Short-lived 5 minutes and single use                 |
+| OTP Cleanup       | Cron Job periodically deletes expired OTPs           |
+| Admin access      | No `OWNER` / `OPERATOR`; a single `ADMIN` role       |
 
 ---
 
 ## API Endpoints
 
-| Method | Endpoint                   | Description             | Auth |
-| :----- | :------------------------- | :---------------------- | :--- |
-| POST   | `/api/auth/register`       | สร้าง caregiver account | ❌   |
-| POST   | `/api/auth/login`          | รับ JWT session         | ❌   |
-| POST   | `/api/auth/admin-login`    | รับ JWT session สำหรับ Admin | ❌   |
-| GET    | `/api/users/me`            | อ่าน profile ปัจจุบัน  | ✅   |
-| POST   | `/api/auth/request-otp`    | ขอ OTP สำหรับ reset     | ❌   |
-| POST   | `/api/auth/verify-otp`     | ตรวจ OTP ก่อน reset     | ❌   |
-| POST   | `/api/auth/reset-password` | เปลี่ยนรหัสผ่านผ่าน OTP | ❌   |
-| POST   | `/api/auth/logout`         | ออกจากระบบและล้าง pushToken | ✅   |
+| Method | Endpoint                   | Description                         | Auth |
+| :----- | :------------------------- | :---------------------------------- | :--- |
+| POST   | `/api/auth/register`       | Create a caregiver account          | ❌   |
+| POST   | `/api/auth/login`          | Get a JWT session                   | ❌   |
+| POST   | `/api/auth/admin-login`    | Get a JWT session for Admin         | ❌   |
+| GET    | `/api/users/me`            | Read the current profile            | ✅   |
+| POST   | `/api/auth/request-otp`    | Request an OTP for reset            | ❌   |
+| POST   | `/api/auth/verify-otp`     | Verify the OTP before reset         | ❌   |
+| POST   | `/api/auth/reset-password` | Change the password via OTP         | ❌   |
+| POST   | `/api/auth/logout`         | Log out and clear the pushToken     | ✅   |
 
 ---
 

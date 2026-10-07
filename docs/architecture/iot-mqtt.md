@@ -1,5 +1,7 @@
 # IoT & MQTT Architecture
 
+[English](iot-mqtt.md) · [ภาษาไทย](iot-mqtt.th.md)
+
 ## Doc Meta
 
 - Audience: Backend Dev / IoT Dev
@@ -11,18 +13,18 @@
 
 ## Overview
 
-FallHelp ใช้ **MQTT Protocol** เป็นช่องทางหลักในการสื่อสารระหว่าง ESP32 IoT Device กับ Backend Server สำหรับส่งข้อมูล Sensor แบบ Real-time (Fall Detection, Heart Rate, Device Status)
+FallHelp uses the **MQTT Protocol** as the main communication channel between the ESP32 IoT Device and the Backend Server for sending real-time Sensor data (Fall Detection, Heart Rate, Device Status).
 
 ---
 
 ## System Architecture
 
-โครงหลักของระบบคือ `ESP32 -> MQTT Broker -> Backend API -> Socket.io / Push / PostgreSQL`
+The backbone of the system is `ESP32 -> MQTT Broker -> Backend API -> Socket.io / Push / PostgreSQL`
 
-- Firmware ส่ง unified event, status, และ config ACK ผ่าน MQTT
-- Backend เป็นศูนย์กลางของ validation, dedup, persistence, realtime broadcast, และ push notification
-- Mobile รับทั้ง Socket.io และ push ตามประเภทเหตุการณ์
-- Admin อ่านข้อมูลผ่าน backend และ refresh สถานะอุปกรณ์/เหตุการณ์ด้วย polling/invalidation
+- Firmware sends unified events, status, and config ACKs over MQTT
+- The Backend is the hub for validation, dedup, persistence, realtime broadcast, and push notification
+- Mobile receives both Socket.io and push, depending on the event type
+- Admin reads data through the backend and refreshes device/event status with polling/invalidation
 
 ---
 
@@ -30,23 +32,23 @@ FallHelp ใช้ **MQTT Protocol** เป็นช่องทางหลั�
 
 ### Subscribe Topics (Backend ← Device)
 
-| Topic Pattern         | Handler              | Description                                                       |
-| :-------------------- | :------------------- | :---------------------------------------------------------------- |
-| `device/+/fall`       | `fallHandler`        | Fall detection event via direct topic                             |
-| `device/+/heartrate`  | `heartRateHandler`   | Heart rate reading                                                |
-| `device/+/status`     | `statusHandler`      | Device online/offline status                                      |
-| `device/+/event`      | `handleUnifiedEvent` | Unified event format (primary — suspected/confirmed/cancelled/hr) |
-| `device/+/config/ack` | `handleConfigAck`    | Config update acknowledgement (WiFi provisioning ACK)             |
-| `device/+/lwt`        | `statusHandler`      | Last Will & Testament — Broker ส่งเมื่ออุปกรณ์หลุดแบบผิดปกติ      |
-| `events/+`            | `handleUnifiedEvent` | Alternative unified event topic                                   |
+| Topic Pattern         | Handler              | Description                                                                |
+| :-------------------- | :------------------- | :------------------------------------------------------------------------- |
+| `device/+/fall`       | `fallHandler`        | Fall detection event via direct topic                                      |
+| `device/+/heartrate`  | `heartRateHandler`   | Heart rate reading                                                         |
+| `device/+/status`     | `statusHandler`      | Device online/offline status                                               |
+| `device/+/event`      | `handleUnifiedEvent` | Unified event format (primary — suspected/confirmed/cancelled/hr)          |
+| `device/+/config/ack` | `handleConfigAck`    | Config update acknowledgement (WiFi provisioning ACK)                      |
+| `device/+/lwt`        | `statusHandler`      | Last Will & Testament — sent by the Broker when a device drops abnormally  |
+| `events/+`            | `handleUnifiedEvent` | Alternative unified event topic                                            |
 
 ### Publish Topics (Backend → Device)
 
-| Topic                      | Purpose                                           |
-| :------------------------- | :------------------------------------------------ |
-| `device/{deviceId}/config` | ส่ง WiFi config หรือ reset command ไปยัง Device |
+| Topic                      | Purpose                                              |
+| :------------------------- | :--------------------------------------------------- |
+| `device/{deviceId}/config` | Sends WiFi config or a reset command to the Device   |
 
-> **Note:** `+` ใน topic pattern คือ MQTT Wildcard ที่จับ `deviceId` (Serial Number ของ ESP32)
+> **Note:** `+` in a topic pattern is the MQTT Wildcard that captures the `deviceId` (the ESP32 Serial Number)
 
 ---
 
@@ -54,7 +56,7 @@ FallHelp ใช้ **MQTT Protocol** เป็นช่องทางหลั�
 
 ### Fall Detection Payload
 
-Fields ที่ firmware ส่งจริง (`publishFallLifecycleEvent` ใน `MPU6050_Sensor.ino`):
+Fields the firmware actually sends (`publishFallLifecycleEvent` in `MPU6050_Sensor.ino`):
 
 ```json
 {
@@ -65,13 +67,13 @@ Fields ที่ firmware ส่งจริง (`publishFallLifecycleEvent` ใ
 }
 ```
 
-> - `main_firmware` payload ส่งเฉพาะ processed snapshot อย่าง `magnitude` และ `postureDelta`
-> - backend ยัง map alias ของ `postureDelta` บางแบบได้เพื่อรองรับ payload รุ่นเก่า
-> - Backend ใช้ **Server Time** ตอน persist เสมอ แม้ payload จะส่ง `timestamp` แบบ `millis()` มา
+> - The `main_firmware` payload only sends processed snapshots such as `magnitude` and `postureDelta`
+> - The backend can still map some aliases of `postureDelta` to support older payloads
+> - The Backend always uses **Server Time** when persisting, even if the payload sends a `millis()` `timestamp`
 
 ### Heart Rate Payload
 
-Fields ที่ firmware ส่งจริง (จาก `topics.ts - HeartRatePayload`):
+Fields the firmware actually sends (from `topics.ts - HeartRatePayload`):
 
 ```json
 {
@@ -83,11 +85,11 @@ Fields ที่ firmware ส่งจริง (จาก `topics.ts - HeartRat
 }
 ```
 
-> - `zone`: `"low"` | `"normal"` | `"high"` — โซนอัตราการเต้นหัวใจ
-> - `confidence`: `"none"` | `"low"` | `"medium"` | `"high"` — ความน่าเชื่อถือของสัญญาณ PPG
-> - `alertType`: `"LOW"` | `"HIGH"` | `null` — ส่งมาเฉพาะกรณีผิดปกติ
-> - `timestamp` จาก ESP32 คือ `millis()` — backend ใช้ **Server Time** แทนเสมอ
-> - ค่า `confidence: "none"` → Mobile แสดง `--` แทน BPM (สัญญาณไม่น่าเชื่อถือ)
+> - `zone`: `"low"` | `"normal"` | `"high"` — heart rate zone
+> - `confidence`: `"none"` | `"low"` | `"medium"` | `"high"` — reliability of the PPG signal
+> - `alertType`: `"LOW"` | `"HIGH"` | `null` — only sent when abnormal
+> - `timestamp` from the ESP32 is `millis()` — the backend always uses **Server Time** instead
+> - `confidence: "none"` → Mobile shows `--` instead of the BPM (unreliable signal)
 
 ### Device Status Payload
 
@@ -138,7 +140,7 @@ Fall detection thresholds are compile-time firmware values in `FallDetectionConf
 
 ## Unified Event Format
 
-ESP32 ส่ง Event ผ่าน Topic เดียว (`device/{id}/event` หรือ `events/{id}`):
+The ESP32 sends Events through a single Topic (`device/{id}/event` or `events/{id}`):
 
 ```json
 {
@@ -152,13 +154,13 @@ ESP32 ส่ง Event ผ่าน Topic เดียว (`device/{id}/event` �
 
 **Backend Route Logic:**
 
-| `type`                              | Handler                   | Action                        |
-| :---------------------------------- | :------------------------ | :---------------------------- |
-| `fall`, `fall_confirmed`            | `fallHandler` (confirmed) | สร้าง CRITICAL Event + Notify |
-| `suspected_fall`                    | `fallHandler` (suspected) | สร้าง WARNING Event (pending) |
-| `heart_rate`, `hr`                  | `heartRateHandler`        | ส่ง BPM realtime              |
-| `heart_rate_high`, `heart_rate_low` | `heartRateHandler`        | ส่ง BPM realtime แบบผิดปกติ   |
-| `fall_cancelled`, `fall_cancel`     | `fallCancelledHandler`    | ยกเลิก Fall Event ล่าสุด      |
+| `type`                              | Handler                   | Action                                |
+| :---------------------------------- | :------------------------ | :------------------------------------ |
+| `fall`, `fall_confirmed`            | `fallHandler` (confirmed) | Creates a CRITICAL Event + Notify     |
+| `suspected_fall`                    | `fallHandler` (suspected) | Creates a WARNING Event (pending)     |
+| `heart_rate`, `hr`                  | `heartRateHandler`        | Sends realtime BPM                    |
+| `heart_rate_high`, `heart_rate_low` | `heartRateHandler`        | Sends realtime abnormal BPM           |
+| `fall_cancelled`, `fall_cancel`     | `fallCancelledHandler`    | Cancels the latest Fall Event         |
 
 ---
 
@@ -168,24 +170,24 @@ ESP32 ส่ง Event ผ่าน Topic เดียว (`device/{id}/event` �
 
 - Firmware constant: `15000 ms` (`FALLHELP_FALL_CANCEL_TIMEOUT_MS`)
 - Source of Truth: `firmware/esp32/src/main_firmware/FallDetectionConfig.ino`
-- เป็น business/firmware invariant ไม่ถูก persist ลง event row
+- It is a business/firmware invariant and is not persisted to the event row
 
-### นิยาม Cancel vs Acknowledge (ตายตัว)
+### Cancel vs Acknowledge Definition (Fixed)
 
-| การกระทำ        | ผู้ดำเนินการ        | ตริกเกอร์                 | เปลี่ยน DB                              |
-| --------------- | ------------------- | ------------------------- | --------------------------------------- |
-| **Cancel**      | ผู้สวมใส่           | กดปุ่ม GPIO27 ภายใน 15 วิ | ✅ ตั้งค่า `cancelledAt`                |
-| **Acknowledge** | ผู้ดูแล (Caregiver) | กด `รับทราบแล้ว` ในแอป    | ❌ ไม่เปลี่ยน (คืน UI เป็นปกติเท่านั้น) |
+| Action          | Actor     | Trigger                                    | Changes DB                                   |
+| --------------- | --------- | ------------------------------------------ | -------------------------------------------- |
+| **Cancel**      | Wearer    | Presses the GPIO27 button within 15 s      | ✅ Sets `cancelledAt`                        |
+| **Acknowledge** | Caregiver | Taps `รับทราบแล้ว` (Acknowledged) in the app | ❌ No change (only returns the UI to normal) |
 
-> `fall_cancelled` ใน DB **ต้องมาจาก MQTT device flow เท่านั้น** — Caregiver หรือ Backend ไม่สามารถ set `cancelledAt` โดยตรงได้
+> `fall_cancelled` in the DB **must come from the MQTT device flow only** — neither the Caregiver nor the Backend can set `cancelledAt` directly
 
 ### Backend -> Mobile Realtime Status
 
-เมื่อ backend รับ unified fall events แล้วจะส่ง caregiver alert เฉพาะเหตุที่ยืนยันแล้ว ส่วน `event_status_changed` เป็น lifecycle signal ภายในของ mobile:
+Once the backend receives unified fall events, it sends a caregiver alert only for confirmed incidents; `event_status_changed` is an internal lifecycle signal for mobile:
 
-1. `suspected_fall` → บันทึก `PENDING_CONFIRMATION` แล้วส่ง `event_status_changed/FALL_SUSPECTED`; ไม่ส่ง Push
-2. `fall_confirmed` → อัปเดต `CONFIRMED` แล้วส่ง `fall_detected` + `event_status_changed/FALL_CONFIRMED` + Push
-3. `fall_cancelled` → อัปเดต `CANCELLED` แล้วส่ง `event_status_changed/FALL_CANCELLED`; ไม่ส่ง Push
+1. `suspected_fall` → records `PENDING_CONFIRMATION` and sends `event_status_changed/FALL_SUSPECTED`; no Push
+2. `fall_confirmed` → updates to `CONFIRMED` and sends `fall_detected` + `event_status_changed/FALL_CONFIRMED` + Push
+3. `fall_cancelled` → updates to `CANCELLED` and sends `event_status_changed/FALL_CANCELLED`; no Push
 
 ---
 
@@ -193,16 +195,16 @@ ESP32 ส่ง Event ผ่าน Topic เดียว (`device/{id}/event` �
 
 ### Normal BPM Streaming
 
-Firmware ส่ง `heart_rate` แบบ `event=normal` ต่อเนื่องเพื่อให้แอปเห็น BPM สดในสถานะปกติ:
+The firmware continuously sends `heart_rate` with `event=normal` so the app can show live BPM in the normal state:
 
-- ส่งทันทีเมื่อโซนกลับเข้า `normal`
-- ส่งต่อเนื่องทุกประมาณ 5 วินาทีระหว่าง `normal`
+- Sent immediately when the zone returns to `normal`
+- Sent continuously about every 5 seconds while in `normal`
 
 ### Abnormal BPM
 
-- `low` / `high` / `critical` route ผ่าน `heartRateHandler` เช่นกัน แต่ไม่สร้าง DB event
-- BPM ทุกค่า (ปกติและผิดปกติ) emit เป็น `heart_rate_update` ไป mobile เหมือนกัน
-- ถ้าเกิด fall ในเวลาใกล้เคียง BPM ล่าสุดจาก in-memory cache (`latestHeartRateByDevice`) จะถูกแนบไปกับ FALL event `bpm` field
+- `low` / `high` / `critical` are also routed through `heartRateHandler`, but do not create a DB event
+- Every BPM value (normal and abnormal) is emitted the same way as `heart_rate_update` to mobile
+- If a fall happens around the same time, the latest BPM from the in-memory cache (`latestHeartRateByDevice`) is attached to the FALL event's `bpm` field
 
 ---
 
@@ -210,7 +212,7 @@ Firmware ส่ง `heart_rate` แบบ `event=normal` ต่อเนื่�
 
 ### 1. Ghost Device Prevention
 
-อุปกรณ์ที่ Unpaired แล้วแต่ยังส่งข้อมูลมา (Ghost Device):
+A device that has been Unpaired but still sends data (Ghost Device):
 
 ```
 Device UNPAIRED → MQTT message received → REJECT + Send RESET_WIFI command
@@ -218,28 +220,28 @@ Device UNPAIRED → MQTT message received → REJECT + Send RESET_WIFI command
 
 ### 2. Deduplication
 
-ป้องกัน MQTT QoS 1 retransmission ทำให้เกิด Event ซ้ำ:
+Prevents MQTT QoS 1 retransmission from creating duplicate Events:
 
 | Mode        | Dedup Window | Source (`fallHandler.ts`)      |
 | :---------- | :----------- | :----------------------------- |
-| `suspected` | 15 วินาที    | `FALL_PENDING_DEDUP_PERIOD_MS` |
-| `confirmed` | 30 วินาที    | `FALL_DEDUP_PERIOD_MS`         |
+| `suspected` | 15 seconds   | `FALL_PENDING_DEDUP_PERIOD_MS` |
+| `confirmed` | 30 seconds   | `FALL_DEDUP_PERIOD_MS`         |
 
-> ℹ️ Dedup period เป็นกลไกป้องกัน MQTT QoS-1 retransmit — **ไม่เกี่ยวกับ cancel timeout 15 วินาทีที่กดปุ่มบนอุปกรณ์**
+> ℹ️ The dedup period is a guard against MQTT QoS-1 retransmits — **it is unrelated to the 15-second cancel timeout for pressing the button on the device**
 
 ### 3. Config ACK with Timeout
 
-เมื่อส่ง Config ไปยัง Device จะรอ ACK กลับมา:
+When Config is sent to the Device, the backend waits for an ACK in return:
 
-- **Timeout:** 15 วินาที (default hardcoded ใน `waitForConfigAck()`, ไม่เกี่ยวกับ fall cancel timeout)
-- ถ้าไม่ได้ ACK → Reject Promise
-- ถ้า MQTT Disconnect → Reject ทุก Pending ACK
+- **Timeout:** 15 seconds (default hardcoded in `waitForConfigAck()`, unrelated to the fall cancel timeout)
+- No ACK → Reject the Promise
+- MQTT Disconnect → Reject every Pending ACK
 
 ---
 
 ## Connection Management
 
-**MQTTClientManager** เป็น Singleton:
+**MQTTClientManager** is a Singleton:
 
 | Feature              | Details                                            |
 | :------------------- | :------------------------------------------------- |
@@ -247,33 +249,33 @@ Device UNPAIRED → MQTT message received → REJECT + Send RESET_WIFI command
 | Connect Timeout      | `15000ms` (Cloud handshake)                        |
 | QoS Level            | 1 (At Least Once)                                  |
 | Clean Session        | `true`                                             |
-| TLS                  | `rejectUnauthorized: true` (HiveMQ Cloud เท่านั้น) |
-| Credential Redaction | WiFi SSID/Password masked ใน Log                   |
+| TLS                  | `rejectUnauthorized: true` (HiveMQ Cloud only)     |
+| Credential Redaction | WiFi SSID/Password masked in Logs                  |
 
 ### Dev Tools
 
 ```bash
-# ตรวจสอบว่า Mosquitto service running
+# Check that the Mosquitto service is running
 npm run mqtt:check
 
-# Monitor MQTT messages realtime จาก ESP32 (ไม่ต้องเปิด backend)
-npm run mqtt:monitor           # อ่าน MQTT_BROKER_URL จาก apps/backend-api/.env
+# Monitor MQTT messages from the ESP32 in realtime (no backend needed)
+npm run mqtt:monitor           # reads MQTT_BROKER_URL from apps/backend-api/.env
 npm run mqtt:monitor:local     # Mosquitto localhost:1883
 npm run mqtt:monitor -- --topic "device/+/heartrate"  # filter topic
-npm run mqtt:monitor -- --verbose   # raw JSON ทุก message
+npm run mqtt:monitor -- --verbose   # raw JSON for every message
 ```
 
 ### Local Mosquitto Service For ESP32
 
-Mosquitto รันเป็น **native service** บน host machine — ไม่ใช้ Docker
+Mosquitto runs as a **native service** on the host machine — Docker is not used
 
-**ติดตั้ง:**
+**Install:**
 
 ```bash
 # Windows (Chocolatey)
 choco install mosquitto
-# จากนั้น copy config\mosquitto\mosquitto.conf → C:\Program Files\mosquitto\mosquitto.conf
-# แล้ว restart service ใน Services.msc หรือ: net stop mosquitto && net start mosquitto
+# Then copy config\mosquitto\mosquitto.conf → C:\Program Files\mosquitto\mosquitto.conf
+# and restart the service in Services.msc or: net stop mosquitto && net start mosquitto
 
 # Linux (Debian/Ubuntu)
 sudo apt install mosquitto
@@ -281,16 +283,16 @@ sudo cp config/mosquitto/mosquitto.conf /etc/mosquitto/conf.d/fallhelp.conf
 sudo systemctl enable --now mosquitto
 ```
 
-**ตรวจสอบ:**
+**Verify:**
 
 ```bash
 npm run mqtt:check
 ```
 
-**ESP32 ใช้ LAN IP ของ host machine โดยตรง** (port 1883) — Mosquitto bind `0.0.0.0` แล้ว
-ตั้ง `HIVEMQ_HOST` ใน `mqtt_secrets.h` เป็น LAN IP จริงของเครื่อง
+**The ESP32 uses the host machine's LAN IP directly** (port 1883) — Mosquitto already binds `0.0.0.0`.
+Set `HIVEMQ_HOST` in `mqtt_secrets.h` to the machine's actual LAN IP.
 
-**Firewall — เปิด inbound TCP 1883 สำหรับ LAN subnet:**
+**Firewall — allow inbound TCP 1883 for the LAN subnet:**
 
 ```powershell
 # Windows (PowerShell as Admin)

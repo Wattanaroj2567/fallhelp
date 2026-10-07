@@ -1,78 +1,80 @@
-# Selection Guide สำหรับ AI Agent
+# Selection Guide for the AI Agent
 
-เอกสารนี้ใช้กำหนดวิธีให้ AI Agent คัดข้อมูลจาก `runs/Sxx/raw/` ไปยัง `runs/Sxx/selected/`
+[English](selection_guide.md) · [ภาษาไทย](selection_guide.th.md)
 
-## เป้าหมาย
+This document defines how the AI Agent selects data from `runs/Sxx/raw/` into `runs/Sxx/selected/`.
 
-| ใช้กับ | ต้องการข้อมูลแบบไหน |
+## Goals
+
+| Used for | What kind of data is needed |
 |---|---|
-| อัลกอริทึมและการตัดสิน | ตัวอย่างที่อธิบายการคำนวณได้ชัด |
-| สรุปผลการทดลอง | ตัวอย่างผลทดสอบแต่ละท่า |
+| Algorithm and decision | Examples that clearly explain the computation |
+| Experimental results summary | Sample test results for each activity |
 
 ## Input
 
-| แหล่งข้อมูล | รายละเอียด |
+| Source | Details |
 |---|---|
-| `runs/Sxx/raw/*.csv` | CSV ดิบจาก Node-RED |
-| `runs/Sxx/session_notes.md` | หมายเหตุของ session |
-| `notes.md` | ปัญหารวมของ Lab |
+| `runs/Sxx/raw/*.csv` | Raw CSV from Node-RED |
+| `runs/Sxx/session_notes.md` | Session notes |
+| `notes.md` | Overall Lab problems |
 
 ## Output
 
-| Output | รายละเอียด |
+| Output | Details |
 |---|---|
-| `runs/Sxx/selected/*.csv` | CSV ที่เลือกแล้ว |
-| `exports/selected_values_table.csv` | ตารางรวมค่าสรุปการทดสอบ |
-| `exports/examples_for_fall_detection_sensor_lab.md` | ตัวอย่างคำนวณทางอัลกอริทึม |
-| `exports/examples_for_chapter_5.md` | ตารางรายงานผลสรุปการทดลอง |
+| `runs/Sxx/selected/*.csv` | Selected CSVs |
+| `exports/selected_values_table.csv` | Combined table of test summary values |
+| `exports/examples_for_fall_detection_sensor_lab.md` | Algorithm calculation examples |
+| `exports/examples_for_chapter_5.md` | Experimental results summary report tables |
 
-## เกณฑ์คัดเลือก Trial
+## Trial Selection Criteria
 
-| เกณฑ์ | เงื่อนไข |
+| Criterion | Condition |
 |---|---|
-| ท่าตรง | `activity_label` ตรงกับท่าที่ทำจริง |
-| ข้อมูลครบ | มีข้อมูล impact และ decision |
-| ค่าอ่านง่าย | มี `svm_filtered_g` และ `posture_delta_deg` ชัดเจน |
-| ใช้เขียนได้ | อธิบายเหตุผลการตัดสินได้ |
-| ไม่มีปัญหารุนแรง | ไม่มี note ว่า MQTT หลุดหรืออุปกรณ์หลุด |
+| Correct activity | `activity_label` matches the activity actually performed |
+| Complete data | Has impact and decision data |
+| Readable values | Has clear `svm_filtered_g` and `posture_delta_deg` |
+| Usable for writing | The decision reasoning can be explained |
+| No serious problems | No note saying MQTT dropped or the device came loose |
 
-## Trial ที่ควรเลือก
+## Trials to Select
 
-| ประเภท | ควรเลือกอย่างน้อย |
+| Type | Select at least |
 |---|---:|
-| Fall case | 2–3 ตัวอย่าง |
-| Non-fall case | 2–3 ตัวอย่าง |
-| False-alarm candidate | 1–2 ตัวอย่าง |
-| Running case | 1 ตัวอย่าง |
-| Normal activity | 1 ตัวอย่าง |
+| Fall case | 2–3 examples |
+| Non-fall case | 2–3 examples |
+| False-alarm candidate | 1–2 examples |
+| Running case | 1 example |
+| Normal activity | 1 example |
 
-## ตัวอย่างการคัดเลือก
+## Selection Examples
 
-| ท่า | เหตุผลที่ควรเลือก |
+| Activity | Why it should be selected |
 |---|---|
-| `side_fall_left` | เห็น peak impact ชัด และมี postureDelta เกิน threshold |
-| `sit_hard` | magnitude สูง แต่ postureDelta ต่ำกว่า threshold |
-| `running_light` | magnitude แกว่ง แต่ decision ไม่ใช่ fall |
-| `standing_still` | ค่า magnitude ใกล้ baseline และไม่มี fall event |
+| `side_fall_left` | Clear peak impact, and postureDelta exceeds the threshold |
+| `sit_hard` | High magnitude, but postureDelta is below the threshold |
+| `running_light` | Magnitude fluctuates, but the decision is not fall |
+| `standing_still` | Magnitude close to baseline and no fall event |
 
-## กฎเลือกค่าจาก raw → selected (สำคัญ)
+## Rules for Picking Values from raw → selected (Important)
 
-raw CSV รอบนี้ใช้ Manual Stop จึงมีหลาย row ต่อ trial (`imu_sample` ระหว่างทาง,
-`imu_impact`, `imu_decision`) และอาจมี movement ช่วงลุก/เดินกลับมากด Stop
-**ห้ามใช้ค่า late post-action เป็นค่าหลักของตารางสรุปผล**
+The raw CSVs in this round use Manual Stop, so each trial has multiple rows (`imu_sample` along the way,
+`imu_impact`, `imu_decision`) and may include movement from getting up/walking back to press Stop.
+**Never use late post-action values as the main values in the results summary table**
 
-| Field | กฎเลือกค่า |
+| Field | Value selection rule |
 |---|---|
-| `magnitude_g` | ใช้ `svm_filtered_g` จาก row `imu_impact` (ถ้าหลาย row ใช้ค่าสูงสุด); ถ้าไม่มี impact ใช้ peak `svm_filtered_g` ใน trial |
-| `posture_delta_deg` | ใช้จาก row `imu_decision` |
-| `decision` | ใช้จาก row `imu_decision` |
-| non-fall sample-only | ไม่มี `imu_decision` ได้ — ใช้ peak `svm_filtered_g` ของ `imu_sample` เป็น magnitude |
-| late post-action | ไม่ใช้เป็นค่าหลัก (เป็นแค่ช่วงลุก/เดินกลับ) |
+| `magnitude_g` | Use `svm_filtered_g` from the `imu_impact` row (if there are several rows, use the maximum); if there is no impact, use the peak `svm_filtered_g` in the trial |
+| `posture_delta_deg` | Use the value from the `imu_decision` row |
+| `decision` | Use the value from the `imu_decision` row |
+| non-fall sample-only | May have no `imu_decision` — use the peak `svm_filtered_g` of `imu_sample` as the magnitude |
+| late post-action | Not used as a main value (it is only the getting up/walking back period) |
 
-`scripts/summarize_selected.mjs` ทำกฎนี้ให้อัตโนมัติ (format-aware: raw multi-row
-ที่มีคอลัมน์ `type` ใช้ impact/peak; ไฟล์ aggregated row เดียวอ่านค่าตรง)
+`scripts/summarize_selected.mjs` applies these rules automatically (format-aware: raw multi-row
+files with a `type` column use impact/peak; single-row aggregated files are read directly)
 
-## รูปแบบชื่อไฟล์ใน selected
+## File Naming in selected
 
 ```text
 fall_side_left_T05.csv
