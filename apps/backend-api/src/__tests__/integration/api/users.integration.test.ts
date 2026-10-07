@@ -118,7 +118,7 @@ describe('User Integration Tests', () => {
 
       expect(res.status).toBe(409);
       expect(res.body.success).toBe(false);
-      expect(res.body.error.code).toBe('duplicate_entry');
+      expect(res.body.error.code).toBe('email_already_exists');
     });
 
     it('should persist profile updates across requests', async () => {
