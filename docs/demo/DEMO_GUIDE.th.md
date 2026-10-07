@@ -16,8 +16,8 @@
 ## 2. ก่อนนำเสนอทุกครั้ง
 
 1. รีเซ็ตข้อมูล demo: `npm run backend:db:seed:demo`
-2. Terminal 1: `cloudflared tunnel run fallhelp-demo`
-3. Terminal 2: `npm run demo:up`
+2. Terminal 1: `npm run demo:up`
+3. Terminal 2: `npm run demo:tunnel` (ต้องเปิด Docker Desktop ไว้)
 4. เปิด simulator: <http://127.0.0.1:5175> จุดสถานะต้องเป็นสีเขียว
 5. บนมือถือ: login ด้วย `demo@fallhelp.app` และ `DEMO_PASSWORD` ที่ตั้งไว้ → เข้า dashboard
 

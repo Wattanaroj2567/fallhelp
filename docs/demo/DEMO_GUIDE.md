@@ -16,8 +16,8 @@ Show the full fall-alert flow without the ESP32: the web simulator plays the dev
 ## 2. Before each presentation
 
 1. Reset demo data: `npm run backend:db:seed:demo`
-2. Terminal 1: `cloudflared tunnel run fallhelp-demo`
-3. Terminal 2: `npm run demo:up`
+2. Terminal 1: `npm run demo:up`
+3. Terminal 2: `npm run demo:tunnel` (Docker Desktop must be running)
 4. Open the simulator: <http://127.0.0.1:5175>. The dot must be green.
 5. On the phone: log in with `demo@fallhelp.app` and your `DEMO_PASSWORD` → dashboard.
 

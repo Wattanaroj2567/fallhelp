@@ -5,7 +5,7 @@
  * - backend ถูกชี้ไปที่ broker ของ demo ผ่าน env (dotenv ไม่ทับค่า env ที่ส่งมา)
  * - ตรวจ port ว่างก่อน (1884, 9001, 3000, 5175) และบอกวิธีแก้เมื่อชน
  * - ถ้า process ใดจบด้วย error จะหยุดทุกตัว; Ctrl+C หยุดทั้งหมด
- * - cloudflared ต้องเปิดแยกเอง (ดู docs/demo/cloudflare-tunnel.md)
+ * - tunnel ต้องเปิดแยกเอง: npm run demo:tunnel (ดู docs/demo/cloudflare-tunnel.md)
  */
 import { spawn, spawnSync } from "node:child_process";
 import net from "node:net";
@@ -117,4 +117,4 @@ process.on("SIGTERM", () => {
 console.log("\n\x1b[32m✔ Demo stack starting\x1b[0m");
 console.log("  Simulator : http://127.0.0.1:5175");
 console.log("  API       : http://localhost:3000/internal/health");
-console.log("  Tunnel    : run `cloudflared tunnel run fallhelp-demo` in another terminal\n");
+console.log("  Tunnel    : run `npm run demo:tunnel` in another terminal\n");

@@ -59,6 +59,7 @@ Note: Nx is currently enabled conservatively with explicit project configuration
 | ------ | ----------- |
 | `npm run backend:db:seed:demo` | Create/reset the demo account, elder and paired simulator device (needs `DEMO_PASSWORD`) |
 | `npm run demo:up` | Start Mosquitto (demo config), backend API and device simulator together |
+| `npm run demo:tunnel` | Run the Cloudflare tunnel container against the host backend (`docker-compose.demo.yml`) |
 
 See the [demo guide](../../docs/demo/DEMO_GUIDE.md).
 

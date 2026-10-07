@@ -2,51 +2,36 @@
 
 Exposes the backend on your laptop (`http://localhost:3000`) as `https://api.tawanlab.site`, which is the API URL baked into the preview APK. Works on any network the phone uses (Wi-Fi or 4G). The MQTT broker is **not** exposed (the demo broker only listens on `127.0.0.1`).
 
+The demo reuses the project tunnel `fallhelp-backend` (the same one `docker compose --profile tunnel` uses). Its public hostname `api.tawanlab.site` forwards to `http://backend:3000`. `docker-compose.demo.yml` makes `backend` resolve to the host machine, so the tunnel reaches the backend started by `npm run demo:up` without running the backend in Docker.
+
 ## One-time setup
 
-1. Install `cloudflared` (check: `cloudflared --version`).
-2. Log in and pick the `tawanlab.site` zone:
+1. Docker Desktop installed.
+2. `TUNNEL_TOKEN` for `fallhelp-backend` set in `apps/backend-api/.env` (template: `CLOUDFLARE TUNNEL` section of `apps/backend-api/.env.example`). Get it from Cloudflare Zero Trust → Networks → Tunnels → `fallhelp-backend` → Configure.
 
-   ```powershell
-   cloudflared tunnel login
-   ```
-
-3. Create the tunnel:
-
-   ```powershell
-   cloudflared tunnel create fallhelp-demo
-   ```
-
-   Note the tunnel ID and the credentials file path it prints.
-4. Point the hostname at the tunnel. If `api.tawanlab.site` already has a DNS record, this replaces it:
-
-   ```powershell
-   cloudflared tunnel route dns --overwrite-dns fallhelp-demo api.tawanlab.site
-   ```
-
-5. Create `%USERPROFILE%\.cloudflared\config.yml`:
-
-   ```yaml
-   tunnel: fallhelp-demo
-   credentials-file: C:\Users\<you>\.cloudflared\<TUNNEL-ID>.json
-   ingress:
-     - hostname: api.tawanlab.site
-       service: http://localhost:3000
-     - service: http_status:404
-   ```
+No DNS or dashboard changes are needed.
 
 ## Every demo
 
+Start `npm run demo:up` first, then in another terminal:
+
 ```powershell
-cloudflared tunnel run fallhelp-demo
+npm run demo:tunnel
 ```
 
-Check: open `https://api.tawanlab.site/internal/health` in a phone browser. Socket.io (WebSocket) is proxied automatically.
+Wait for four `Registered tunnel connection` lines, then check:
+
+```powershell
+curl.exe -s -w "`nHTTP %{http_code}`n" https://api.tawanlab.site/internal/health
+```
+
+Stop with `Ctrl+C`, then `docker compose --profile tunnel down`. Socket.io (WebSocket) is proxied automatically.
 
 ## Troubleshooting
 
 | Symptom | Fix |
 |---|---|
-| `502 Bad Gateway` | Backend not running: start `npm run demo:up`. |
-| DNS error on the phone | Wait 1–2 min after `route dns`; check the CNAME in the Cloudflare dashboard. |
+| `HTTP 502`, log shows `lookup backend ... no such host` | Started without the override. Use `npm run demo:tunnel`, not plain `docker compose --profile tunnel up`. |
+| `HTTP 502`, log shows `connection refused` | Backend not running: start `npm run demo:up`. |
+| `HTTP 530` / `error code: 1033` | Tunnel not connected: check `TUNNEL_TOKEN` and the tunnel container log. |
 | App logs in but no realtime updates | Ensure WebSockets are enabled for the zone (Cloudflare dashboard → Network → WebSockets: On). |
