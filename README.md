@@ -420,71 +420,13 @@ EMAIL_FROM="FallHelp <noreply@your-domain.com>"
 
 ## Testing
 
-### Backend
+| Command | Description |
+| ------- | ----------- |
+| `npm run test:all` | Run unit tests for every project (Nx) |
+| `npm run backend:test:integration` | Backend integration tests (PostgreSQL required) |
+| `npm run infra:scan:strict` | Full gate: lint, typecheck, tests, integration tests |
 
-```bash
-cd apps/backend-api
-npm test -- --watchman=false
-npm run test:ci
-npm run test:coverage
-npm run test:integration
-npm run test:all
-```
-
-| Script                         | Description                             |
-| ------------------------------ | --------------------------------------- |
-| `npm test -- --watchman=false` | Unit tests                              |
-| `npm run test:ci`              | Watchman-safe mode (sandbox/CI)         |
-| `npm run test:coverage`        | Unit tests with coverage report         |
-| `npm run test:integration`     | Integration tests (requires running DB) |
-| `npm run test:all`             | Unit + Integration                      |
-
-### Mobile
-
-```bash
-cd apps/mobile
-npm test -- --watchman=false
-npm run test:light -- --watchman=false
-npm run test:light -- --runInBand --watchman=false
-npm run test:coverage
-```
-
-| Script                                               | Description                     |
-| ---------------------------------------------------- | ------------------------------- |
-| `npm test -- --watchman=false`                       | All tests                       |
-| `npm run test:light -- --watchman=false`             | Fast smoke tests only           |
-| `npm run test:light -- --runInBand --watchman=false` | Watchman-safe mode (sandbox/CI) |
-| `npm run test:coverage`                              | With coverage report            |
-
-### Admin
-
-```bash
-cd apps/admin
-npm test
-npm run test:coverage
-```
-
-### Infra Scan
-
-```bash
-npm run infra:scan
-npm run infra:scan:strict
-npm run infra:scan:strict:no-integration
-```
-
-- `infra:scan`: runtime + docs/env consistency baseline
-- `infra:scan:strict`: baseline + lint/typecheck (apps/backend-api, apps/mobile, apps/admin) + backend integration tests (DB required)
-- `infra:scan:strict:no-integration`: strict mode without integration tests (useful in sandbox/dev without DB)
-
-### Sensor-Lab
-
-`firmware/esp32/fall_detection_sensor_lab/` is the **Fall Detection Sensor Lab Basic Activity
-Collection** lab module — not required for the active FallHelp runtime to function,
-but used for sensor workflow testing and labeled data collection.
-
-It is independent from `main_firmware` (production) and `sensor_tuning` (hardware
-calibration). The lab runs Node-RED with FlowFuse Dashboard 2.0 to record labeled
-IMU activity CSV trials from the ESP32 `sensor_tuning` firmware.
+Per-app commands, coverage, infra-scan modes and the sensor lab: [docs/testing/running-tests.md](docs/testing/running-tests.md)
 
 ---
 
@@ -508,6 +450,7 @@ Use `npm run docs:lint` to validate the main Markdown docs in this repository, a
 | [docs/ops/local-deployment.md](./docs/ops/local-deployment.md)                           | Local deployment guide                        |
 | [docs/ops/cross-platform-development.md](./docs/ops/cross-platform-development.md)       | Windows + Ubuntu local development guide      |
 | [docs/ops/development-commands.md](./docs/ops/development-commands.md) | Full development command reference |
+| [docs/testing/running-tests.md](./docs/testing/running-tests.md) | How to run every test suite |
 | [docs/demo/DEMO_GUIDE.md](./docs/demo/DEMO_GUIDE.md) | Demo without hardware (simulator + tunnel) |
 | [firmware/esp32/README.md](./firmware/esp32/README.md)                                   | ESP32 firmware overview                       |
 | [firmware/esp32/docs/components/mpu6050.md](./firmware/esp32/docs/components/mpu6050.md) | MPU6050 fall detection tuning guide           |

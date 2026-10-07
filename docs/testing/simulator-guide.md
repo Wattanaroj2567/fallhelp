@@ -5,7 +5,7 @@
 - Audience: Developer, QA
 - Source of Truth: `apps/backend-api/scripts/sim-*.ts`
 - Status: Active
-- Last Updated: June 20, 2026
+- Last Updated: October 7, 2026
 
 ---
 
@@ -13,6 +13,8 @@
 
 FallHelp มี simulator scripts สำหรับทดสอบ fall pipeline แบบ manual โดยไม่ต้องรอสัญญาณจากอุปกรณ์จริง
 ทุก script อยู่ใน `apps/backend-api/scripts/` และรันผ่าน npm scripts ของ `apps/backend-api`
+
+ถ้าต้องการปุ่มกดบนเว็บแทน CLI (เหมาะกับการนำเสนอ) ใช้ [device simulator](../../apps/device-simulator/README.md) ตามขั้นตอนใน [demo guide](../demo/DEMO_GUIDE.th.md)
 
 Simulator scripts เป็น QA/development helpers สำหรับสร้างข้อมูลทดสอบ, ทดสอบ Push/Socket, และตรวจ pipeline แบบควบคุมได้ ไม่ใช่ firmware runtime และไม่แทนการทดสอบกับอุปกรณ์จริงก่อน demo หรือ release
 

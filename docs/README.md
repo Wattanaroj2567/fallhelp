@@ -196,6 +196,7 @@ docs/
 | ------------------------------------------------------------------ | ------------------------------------------------------------------ |
 | [feature-test-checklist.md](testing/feature-test-checklist.md)     | Feature coverage matrix and release verification checklist         |
 | [e2e-critical-path.md](testing/e2e-critical-path.md)               | E2E strategy for fall, pairing, mobile, admin, and hardware flows  |
+| [running-tests.md](testing/running-tests.md) | Commands for every test suite (backend, mobile, admin, simulator, infra scan) |
 | [simulator-guide.md](testing/simulator-guide.md)                   | Backend simulator commands for fall, push, and event data          |
 | [testing-glossary.md](testing/testing-glossary.md)                 | Testing terminology (Unit / Integration / E2E / UAT / V&V)         |
 
