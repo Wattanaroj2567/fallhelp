@@ -38,7 +38,7 @@ flowchart LR
   API --> A[Admin panel]
 ```
 
-รายละเอียดเพิ่มเติม: [ภาพรวมโปรเจกต์](docs/PROJECT_OVERVIEW.md) (ภาษาอังกฤษ)
+รายละเอียดเพิ่มเติม: [README ภาษาอังกฤษ](README.md#system-architecture)
 
 <!-- markdownlint-disable MD033 -->
 <details>
@@ -96,7 +96,7 @@ npm run backend:db:setup
 npm run dev:all
 ```
 
-คู่มือฉบับเต็ม: [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) · ฮาร์ดแวร์: [docs/HARDWARE.md](docs/HARDWARE.md)
+คู่มือฉบับเต็ม: [README ภาษาอังกฤษ](README.md#getting-started) · ฮาร์ดแวร์: [Hardware Components](README.md#hardware-components)
 
 ## License
 
