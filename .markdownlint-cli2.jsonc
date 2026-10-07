@@ -2,6 +2,8 @@
   // โฟกัสเฉพาะเอกสารหลักของ repo ก่อน เพื่อลด noise จากไฟล์ Markdown ภายนอก scope
   "globs": [
     "README.md",
+    "README.th.md",
+    "apps/device-simulator/README.md",
     "AGENTS.md",
     "CLAUDE.md",
     "docs/**/*.md",
