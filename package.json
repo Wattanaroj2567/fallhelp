@@ -6,7 +6,8 @@
   "workspaces": [
     "apps/backend-api",
     "apps/mobile",
-    "apps/admin"
+    "apps/admin",
+    "apps/device-simulator"
   ],
   "scripts": {
     "postinstall": "node node_modules/patch-package/index.js && node scripts/dev/platform-install.mjs stamp root && node scripts/dev/fix-eslint-brace-expansion.mjs",
