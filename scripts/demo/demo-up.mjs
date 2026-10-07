@@ -4,7 +4,7 @@
  * - broker ของ demo ใช้ port 1884 จึงรันคู่กับ Mosquitto service (1883) ได้ ไม่ต้องหยุด service
  * - backend ถูกชี้ไปที่ broker ของ demo ผ่าน env (dotenv ไม่ทับค่า env ที่ส่งมา)
  * - ตรวจ port ว่างก่อน (1884, 9001, 3000, 5175) และบอกวิธีแก้เมื่อชน
- * - ถ้า process ใดจบด้วย error จะหยุดทุกตัว; Ctrl+C หยุดทั้งหมด
+ * - ถ้า process ใดเปิดไม่ขึ้นหรือหยุดเอง (แม้ exit 0) จะหยุดทุกตัว; Ctrl+C หยุดทั้งหมด
  * - tunnel ต้องเปิดแยกเอง: npm run demo:tunnel (ดู docs/demo/cloudflare-tunnel.md)
  */
 import { spawn, spawnSync } from "node:child_process";
@@ -96,12 +96,21 @@ for (const service of services) {
   for (const stream of [child.stdout, child.stderr]) {
     readline.createInterface({ input: stream }).on("line", (line) => console.log(prefix + line));
   }
-  child.on("exit", (code) => {
-    if (!stopping && code !== 0) {
-      console.error(`${prefix}exited with code ${code}; stopping the demo stack.`);
-      killAll();
-      process.exitCode = code ?? 1;
-    }
+  // Spawn failures (e.g. command not found) emit "error" instead of "exit".
+  child.on("error", (error) => {
+    if (stopping) return;
+    console.error(`${prefix}failed to start: ${error.message}; stopping the demo stack.`);
+    killAll();
+    process.exitCode = 1;
+  });
+  // Every service is long-running, so any exit (even code 0) breaks the demo.
+  child.on("exit", (code, signal) => {
+    if (stopping) return;
+    console.error(
+      `${prefix}exited (${signal ?? `code ${code}`}); stopping the demo stack.`
+    );
+    killAll();
+    process.exitCode = code || 1;
   });
 }
 
