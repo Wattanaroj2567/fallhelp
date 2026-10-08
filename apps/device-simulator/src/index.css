@@ -1,1 +1,64 @@
 @import "tailwindcss";
+
+/* Class-based dark mode, same as the admin panel */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* FallHelp brand theme: same font and primary colour as the admin panel */
+@theme {
+  --font-sans:
+    "Kanit", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
+  --color-primary: #16ad78;
+}
+
+/* Thin rounded scrollbar for scrollable blocks (message log) */
+.scroll-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-gray-300) transparent;
+}
+.scroll-thin:hover {
+  scrollbar-color: var(--color-gray-400) transparent;
+}
+.dark .scroll-thin {
+  scrollbar-color: var(--color-gray-600) transparent;
+}
+.dark .scroll-thin:hover {
+  scrollbar-color: var(--color-gray-500) transparent;
+}
+.scroll-thin::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.scroll-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scroll-thin::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 9999px;
+  background-clip: padding-box;
+  background-color: var(--color-gray-300);
+}
+.dark .scroll-thin::-webkit-scrollbar-thumb {
+  background-color: var(--color-gray-600);
+}
+
+/* Spaced uppercase caption suits Latin only; Thai letter-spacing breaks the glyphs apart */
+.ring-caption:lang(en) {
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+/* Heart rate chart: slide one reading to the left over one interval (continuous flow) */
+.hr-flow {
+  animation-name: hr-flow;
+  animation-timing-function: linear;
+}
+
+@keyframes hr-flow {
+  from {
+    transform: translateX(var(--hr-step));
+  }
+  to {
+    transform: translateX(0);
+  }
+}

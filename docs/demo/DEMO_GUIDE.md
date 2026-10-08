@@ -18,16 +18,18 @@ Show the full fall-alert flow without the ESP32: the web simulator plays the dev
 1. Reset demo data: `npm run backend:db:seed:demo`
 2. Terminal 1: `npm run demo:up`
 3. Terminal 2: `npm run demo:tunnel` (Docker Desktop must be running)
-4. Open the simulator: <http://127.0.0.1:5175>. The dot must be green.
+4. Open the simulator: <http://127.0.0.1:5175> (full screen works best on a projector). The **Broker** badge must be green.
 5. On the phone: log in with `demo@fallhelp.app` and your `DEMO_PASSWORD` → dashboard.
 
 ## 3. Presentation script
 
-1. **Online** → dashboard shows the device online (the simulator keeps sending status every 5 s, like the device).
-2. Tick **Auto-send every 5 s**, move the BPM slider → heart rate updates live. A jump of more than 50 BPM shows on the next reading (about 5 s later), because the app skips a single outlier.
-3. **Simulate Fall** → the device reports a suspected fall and starts its 15 s cancel window. After 15 s the fall is confirmed and the phone shows the emergency alert and push notification. The caregiver taps **Acknowledge** in the app.
-4. To show a false alarm: press **Simulate Fall**, then **Cancel on device (false alarm)** within 15 s → no alert; history shows a cancelled event.
-5. Wait for the countdown on the Fall button before the next fall (the backend ignores repeats for a short time).
+The simulator opens in Thai; press **EN** in the header for English. Button names below are the English labels.
+
+1. **Go online** → the phone dashboard shows the device online. The simulator keeps sending status every 5 s, like the device.
+2. Heart rate starts automatically (every 5 s, drifting a few BPM around a resting 75 BPM, like the ear-clip sensor) → the phone updates live. To show an abnormal heart rate, press **High** (~125) or **Low** (~50): the value climbs or drops a few BPM per reading and the app labels it above/below normal. Press **Normal** to bring it back.
+3. **Simulate fall** → the ring turns amber and counts down the device's 15 s cancel window. At 0 it turns red (**Fall confirmed — alert sent**): the phone shows the emergency alert and push notification, and the heart rate rises for about a minute. The caregiver taps **Acknowledge** in the app.
+4. To show a false alarm: press **Simulate fall**, then **Cancel on device** while the ring is amber → no alert; history shows a cancelled event.
+5. Before the next fall, wait until the ring shows **Ready** again (it counts the backend cooldown).
 
 ## 4. Troubleshooting
 
